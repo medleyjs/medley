@@ -9,7 +9,6 @@ Fastify has been built since the beginning to be an extremely modular system, we
 - [Register](#register)
 - [Decorators](#decorators)
 - [Hooks](#hooks)
-- [Middlewares](#middlewares)
 - [How to handle encapsulation and distribution](#distribution)
 - [Handle errors](#handle-errors)
 - [Let's start!](#start)
@@ -235,18 +234,6 @@ fastify.get('/plugin2', (request, reply) => {
 ```
 Now your hook will run just for the first route!
 
-As you probably noticed at this time, `request` and `reply` are not the standard Nodejs *request* and *response* objects, but Fastify's objects.<br>
-Let's say that you are arriving from a framework like Express or Restify, and you already have some Middleware that do exactly what you need, and you don't want to redo all the work.
-
-<a name="middlewares"></a>
-## Middlewares
-Fastify [supports](https://github.com/fastify/fastify/blob/master/docs/Middlewares.md) out of the box Express/Restify/Connect middlewares, this means that you can just drop-in your old code and it will work! *(faster, by the way)*<br>
-How we can do that? Checkout our middlewares engine, [middie](https://github.com/fastify/middie).
-```js
-const yourMiddleware = require('your-middleware')
-fastify.use(yourMiddleware)
-```
-
 <a name="distribution"></a>
 ## How to handle encapsulation and distribution
 Perfect, now you know (almost) all the tools that you can use to extend Fastify. But probably there is something you noted when trying out your code.<br>
@@ -302,7 +289,6 @@ Templates rendering (*ejs, pug, handlebars, marko*) plugin support for Fastify.
 Fastify MongoDB connection plugin, with this you can share the same MongoDb connection pool in every part of your server.
 - [`fastify-multipart`](https://github.com/fastify/fastify-multipart)
 Multipart support for Fastify
-- [`fastify-helmet`](https://github.com/fastify/fastify-helmet) Important security headers for Fastify
 
 
 *Do you feel it's missing something here? Let us know! :)*

@@ -12,23 +12,21 @@ Incoming Request
              │
        404 ◀─┴─▶ onRequest Hook
                   │
-        4**/5** ◀─┴─▶ run Middlewares
-                        │
-              4**/5** ◀─┴─▶ Parsing
+        4**/5** ◀─┴─▶ Body Parsing
+                       │
+                 415 ◀─┴─▶ Validation
                              │
-                       415 ◀─┴─▶ Validation
+                       400 ◀─┴─▶ preHandler Hook
                                    │
-                             400 ◀─┴─▶ preHandler Hook
+                         4**/5** ◀─┴─▶ beforeHandler
                                          │
-                               4**/5** ◀─┴─▶ beforeHandler
+                               4**/5** ◀─┴─▶ User Handler
                                                │
-                                     4**/5** ◀─┴─▶ User Handler
+                                               └─▶ Reply
                                                      │
-                                                     └─▶ Reply
-                                                           │
-                                                           └─▶ onSend Hook
+                                                     └─▶ onSend Hook
+                                                            │
+                                                  4**/5** ◀─┴─▶ Outgoing Response
                                                                   │
-                                                        4**/5** ◀─┴─▶ Outgoing Response
-                                                                        │
-                                                                        └─▶ onResponse Hook
+                                                                  └─▶ onResponse Hook
 ```

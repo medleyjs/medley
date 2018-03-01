@@ -4,7 +4,6 @@ const FindMyWay = require('find-my-way')
 const avvio = require('avvio')
 const http = require('http')
 const https = require('https')
-const Middie = require('middie')
 const lightMyRequest = require('light-my-request')
 const abstractLogging = require('abstract-logging')
 
@@ -177,10 +176,6 @@ function build (options) {
   fastify._Reply = Reply.buildReply(Reply)
   fastify._Request = Request.buildRequest(Request)
 
-  // middleware support
-  fastify.use = use
-  fastify._middlewares = []
-
   // fake http injection
   fastify.inject = inject
 
@@ -211,10 +206,10 @@ function build (options) {
         context.onRequest,
         hookIterator,
         new State(req, res, params, context),
-        middlewareCallback
+        onRequestCallback
       )
     } else {
-      middlewareCallback(null, new State(req, res, params, context))
+      onRequestCallback(null, new State(req, res, params, context))
     }
   }
 
@@ -311,8 +306,11 @@ function build (options) {
     return fn(state.req, state.res, next)
   }
 
-  function middlewareCallback (err, state) {
-    if (state.res.finished === true) return
+  function onRequestCallback (err, state) {
+    if (state.res.finished === true) {
+      return
+    }
+
     if (err) {
       const req = state.req
       const request = new state.context.Request(state.params, req, null, req.headers, req.log)
@@ -321,22 +319,7 @@ function build (options) {
       return
     }
 
-    if (state.context._middie !== null) {
-      state.context._middie.run(state.req, state.res, state)
-    } else {
-      onRunMiddlewares(null, state.req, state.res, state)
-    }
-  }
-
-  function onRunMiddlewares (err, req, res, state) {
-    if (err) {
-      const request = new state.context.Request(state.params, req, null, req.headers, req.log)
-      const reply = new state.context.Reply(res, state.context, request)
-      reply.send(err)
-      return
-    }
-
-    handleRequest(req, res, state.params, state.context)
+    handleRequest(state.req, state.res, state.params, state.context)
   }
 
   function override (old, fn, opts) {
@@ -354,7 +337,6 @@ function build (options) {
     instance._hooks = Hooks.buildHooks(instance._hooks)
     instance._routePrefix = buildRoutePrefix(instance._routePrefix, opts.prefix)
     instance._logLevel = opts.logLevel || instance._logLevel
-    instance._middlewares = old._middlewares.slice()
     instance[pluginUtils.registeredPlugins] = Object.create(instance[pluginUtils.registeredPlugins])
 
     if (opts.prefix) {
@@ -517,9 +499,9 @@ function build (options) {
         return
       }
 
-      // It can happen that a user register a plugin with some hooks/middlewares *after*
-      // the route registration. To be sure to load also that hoooks/middlwares,
-      // we must listen for the avvio's preReady event, and update the context object accordingly.
+      // It can happen that a user register a plugin with some hooks *after* the route registration.
+      // To be sure to load also that hoooks, we must listen for the avvio's 'preReady' event and
+      // update the context object accordingly.
       app.once('preReady', () => {
         const onRequest = _fastify._hooks.onRequest
         const onResponse = _fastify._hooks.onResponse
@@ -530,8 +512,6 @@ function build (options) {
         context.preHandler = preHandler.length ? preHandler : null
         context.onSend = onSend.length ? onSend : null
         context.onResponse = onResponse.length ? onResponse : null
-
-        context._middie = buildMiddie(_fastify._middlewares)
       })
 
       done(notHandledErr)
@@ -553,7 +533,6 @@ function build (options) {
     this.onResponse = null
     this.config = config
     this.errorHandler = errorHandler
-    this._middie = null
     this._parserOptions = {
       limit: bodyLimit || null
     }
@@ -579,23 +558,6 @@ function build (options) {
         })
       }).then(() => lightMyRequest(httpHandler, opts))
     }
-  }
-
-  function use (url, fn) {
-    throwIfAlreadyStarted('Cannot call "use" when fastify instance is already started!')
-    if (typeof url === 'string') {
-      const prefix = this._routePrefix
-      url = prefix + (url === '/' && prefix.length > 0 ? '' : url)
-    }
-    return this.after((err, done) => {
-      addMiddleware(this, [url, fn])
-      done(err)
-    })
-  }
-
-  function addMiddleware (instance, middleware) {
-    instance._middlewares.push(middleware)
-    instance[childrenKey].forEach(child => addMiddleware(child, middleware))
   }
 
   function addHook (name, fn) {
@@ -728,19 +690,17 @@ function build (options) {
     )
 
     app.once('preReady', () => {
-      const context = this._404Context
+      const context404 = this._404Context
 
       const onRequest = this._hooks.onRequest
       const preHandler = this._hooks.preHandler
       const onSend = this._hooks.onSend
       const onResponse = this._hooks.onResponse
 
-      context.onRequest = onRequest.length ? onRequest : null
-      context.preHandler = preHandler.length ? preHandler : null
-      context.onSend = onSend.length ? onSend : null
-      context.onResponse = onResponse.length ? onResponse : null
-
-      context._middie = buildMiddie(this._middlewares)
+      context404.onRequest = onRequest.length ? onRequest : null
+      context404.preHandler = preHandler.length ? preHandler : null
+      context404.onSend = onSend.length ? onSend : null
+      context404.onResponse = onResponse.length ? onResponse : null
     })
 
     if (this._404Context !== null) {
@@ -768,19 +728,6 @@ function build (options) {
 
     this._errorHandler = func
     return this
-  }
-
-  function buildMiddie (middlewares) {
-    if (!middlewares.length) {
-      return null
-    }
-
-    const middie = Middie(onRunMiddlewares)
-    for (var i = 0; i < middlewares.length; i++) {
-      middie.use.apply(middie, middlewares[i])
-    }
-
-    return middie
   }
 }
 

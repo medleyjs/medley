@@ -142,7 +142,7 @@ fastify.addHook('onSend', (request, reply, payload, next) => {
 Note: If you change the payload, you may only change it to a `string`, a `Buffer`, a `stream`, or `null`.
 
 ### Respond to a request from a hook
-If needed, you can respond to a request before you reach the route handler. An example could be an authentication hook. If you are using `onRequest` or a middleware, use `res.end`. If you are using the `preHandler` hook, use `reply.send`.
+It is possible to respond to a request within a hook and skip the route handler. An example could be an authentication hook. If you are using `onRequest` should use `res.end()` and `beforeHandler`/`preHandler` hook should use `reply.send`.
 
 ```js
 fastify.addHook('onRequest', (req, res, next) => {
@@ -155,14 +155,15 @@ fastify.addHook('preHandler', async (request, reply) => {
 })
 ```
 
-If you want to respond with a stream, you should avoid using an `async` function for the hook. If you must use an `async` function, your code will need to follow the pattern in [test/hooks-async.js](https://github.com/fastify/fastify/blob/94ea67ef2d8dce8a955d510cd9081aabd036fa85/test/hooks-async.js#L269-L275).
+If responding with a stream, it is best to avoid using an `async` function for the hook. If using an `async` function is necessary, make sure to follow the pattern found in [test/hooks-async.js](https://github.com/fastify/fastify/blob/94ea67ef2d8dce8a955d510cd9081aabd036fa85/test/hooks-async.js#L269-L275).
 
 ```js
 const pump = require('pump')
 
 fastify.addHook('onRequest', (req, res, next) => {
+  if (req.skip) return next()
   const stream = fs.createReadStream('some-file', 'utf8')
-  pump(stream, res, err => req.log.error(err))
+  pump(stream, res, (err) => { /* Handle error */ })
 })
 ```
 
