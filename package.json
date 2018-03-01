@@ -1,67 +1,45 @@
 {
-  "name": "fastify",
-  "version": "1.0.0-rc.2",
-  "description": "Fast and low overhead web framework, for Node.js",
+  "name": "@medley/medley",
+  "version": "0.0.0",
+  "description": "Fast and extendable web framework for Node.js",
   "main": "fastify.js",
-  "typings": "fastify.d.ts",
-  "scripts": {
-    "lint": "standard | snazzy",
-    "unit": "tap -j4 test/*.test.js test/*/*.test.js",
-    "typescript": "tsc test/types/index.ts --target es6 --module commonjs --noEmit --noImplicitThis",
-    "test": "npm run lint && npm run unit && npm run typescript",
-    "coverage": "npm run unit -- --cov --coverage-report=html",
-    "coveralls": "npm run unit --  --cov",
-    "bench": "branchcmp -r 2 -g -s \"npm run benchmark\"",
-    "benchmark": "npx concurrently -k -s first \"node ./examples/simple.js\" \"npx autocannon -c 100 -d 5 -p 10 localhost:3000/\""
+  "files": {
+    "lib": "lib",
+    "medley": "medley"
   },
+  "engines": {
+    "node": ">=8"
+  },
+  "author": "Nathan Woltman <nwoltman@outlook.com>",
+  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/fastify/fastify.git"
+    "url": "git+https://github.com/MedleyJS/medley.git"
   },
+  "bugs": {
+    "url": "https://github.com/MedleyJS/medley/issues"
+  },
+  "homepage": "https://github.com/MedleyJS/medley#readme",
   "keywords": [
+    "fast",
     "web",
     "framework",
-    "json",
-    "schema",
-    "open",
+    "router",
     "api"
   ],
-  "author": "Matteo Collina <hello@matteocollina.com>",
-  "contributors": [
-    {
-      "name": "Tomas Della Vedova",
-      "url": "http://delved.org",
-      "author": true
-    },
-    {
-      "name": "Tommaso Allevi",
-      "email": "tomallevi@gmail.com"
-    },
-    {
-      "name": "Dustin Deus",
-      "url": "http://starptech.de",
-      "email": "deusdustin@gmail.com"
-    },
-    {
-      "name": "Luciano Mammino",
-      "url": "https://loige.co"
-    },
-    {
-      "name": "Evan Shortiss",
-      "email": "evanshortiss@gmail.com"
-    },
-    {
-      "name": "James Sumners",
-      "url": "https://james.sumners.info"
-    }
-  ],
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/fastify/fastify/issues"
-  },
-  "homepage": "https://github.com/fastify/fastify#readme",
-  "engines": {
-    "node": ">=4.5"
+  "dependencies": {
+    "@types/pino": "^4.7.1",
+    "abstract-logging": "^1.0.0",
+    "ajv": "^6.1.1",
+    "avvio": "^5.4.0",
+    "end-of-stream": "^1.4.1",
+    "fast-json-stringify": "^1.0.0",
+    "find-my-way": "^1.10.1",
+    "flatstr": "^1.0.5",
+    "light-my-request": "^2.0.1",
+    "middie": "^3.1.0",
+    "pino": "^4.10.4",
+    "tiny-lru": "^1.5.0"
   },
   "devDependencies": {
     "@types/node": "^8.5.8",
@@ -96,26 +74,7 @@
     "typescript": "^2.7.1",
     "x-xss-protection": "^1.0.0"
   },
-  "dependencies": {
-    "@types/pino": "^4.7.1",
-    "abstract-logging": "^1.0.0",
-    "ajv": "^6.1.1",
-    "avvio": "^5.4.0",
-    "end-of-stream": "^1.4.1",
-    "fast-json-stringify": "^1.0.0",
-    "find-my-way": "^1.10.1",
-    "flatstr": "^1.0.5",
-    "light-my-request": "^2.0.1",
-    "middie": "^3.1.0",
-    "pino": "^4.10.4",
-    "tiny-lru": "^1.5.0"
-  },
-  "greenkeeper": {
-    "ignore": [
-      "boom",
-      "joi",
-      "@types/node",
-      "@types/pino"
-    ]
+  "scripts": {
+    "test": "tap -j4 test/**/*.test.js"
   }
 }
