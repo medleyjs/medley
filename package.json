@@ -29,7 +29,6 @@
   ],
   "dependencies": {
     "abstract-logging": "^1.0.0",
-    "ajv": "^6.1.1",
     "avvio": "^5.4.0",
     "compile-json-stringify": "^0.1.1",
     "end-of-stream": "^1.4.1",

@@ -213,55 +213,28 @@ As discussed previously, Fastify offers a solid encapsulation model, to help you
           └── your services
 ```
 
-<a name="validate-data"></a>
-### Validate your data
-Data validation is extremely important and is a core concept of the framework.<br>
-To validate incoming requests, Fastify uses [JSON Schema](http://json-schema.org/).
-Let's look at an example demonstrating validation for routes:
+### Serialization
+
+Medley has first-class support for JSON and can serialize JSON 2-5x faster if a response schema is set. Here's an example:
+
 ```js
-const opts = {
-  schema: {
-    body: {
+const schema = {
+  response: {
+    200: {
       type: 'object',
       properties: {
-        someKey: { type: 'string' },
-        someOtherKey: { type: 'number' }
+        hello: { type: 'string' }
       }
     }
   }
 }
 
-fastify.post('/', opts, async (request, reply) => {
-  return { hello: 'world' }
+fastify.get('/', { schema }, (request, reply) => {
+  reply.send({ hello: 'world' })
 })
 ```
-This example shows how to pass an options object to the route, which accepts a `schema` key, that contains all of the schemas for route, `body`, `querystring`, `params` and `headers`.<br>
-Read [Validation and Serialization](https://github.com/fastify/fastify/blob/master/docs/Validation-and-Serialization.md) to learn more.
 
-<a name="serialize-data"></a>
-### Serialize your data
-Fastify has first class support for JSON. It is extremely optimized to parse a JSON body and to serialize JSON output.<br>
-To speed up JSON serialization (yes, it is slow!) use the `response` key of the schema option like so:
-```js
-const opts = {
-  schema: {
-    response: {
-      200: {
-        type: 'object',
-        properties: {
-          hello: { type: 'string' }
-        }
-      }
-    }
-  }
-}
-
-fastify.get('/', opts, async (request, reply) => {
-  return { hello: 'world' }
-})
-```
-Simply by specifying a schema as shown, a speed up your of serialization by 2x or even 3x can be achieved. This also helps protect against leaking of sensitive data, since Fastify will serialize only the data present in the response schema.
-Read [Validation and Serialization](https://github.com/fastify/fastify/blob/master/docs/Validation-and-Serialization.md) to learn more.
+For more details on JSON serialization, check out the [`Serialization` documentation](Serialization.md).
 
 <a name="extend-server"></a>
 ### Extend your server

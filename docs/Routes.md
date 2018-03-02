@@ -10,21 +10,10 @@ fastify.route(options)
 * `method`: currently it supports `'DELETE'`, `'GET'`, `'HEAD'`, `'PATCH'`, `'POST'`, `'PUT'` and `'OPTIONS'`. It could also be an array of methods.
 
 * `url`: the path of the url to match this route (alias: `path`).
-* `schema`: an object containing the schemas for the request and response.
-They need to be in
-  [JSON Schema](http://json-schema.org/) format, check [here](https://github.com/fastify/fastify/blob/master/docs/Validation-and-Serialization.md) for more info.
-
-  * `body`: validates the body of the request if it is a POST or a
-    PUT.
-  * `querystring`: validates the querystring. This can be a complete JSON
-  Schema object, with the property `type` of `object` and `properties` object of parameters, or
-  simply the values of what would be contained in the `properties` object as shown below.
-  * `params`: validates the params.
-  * `response`: filter and generate a schema for the response, setting a
-    schema allows us to have 10-20% more throughput.
+* `schema`: an object containing the response schema.
+  * `response`: The schema for a JSON response. See the [`Serialization` documentation](Serialization.md).
 * `beforeHandler(request, reply, done)`: a [function](https://github.com/fastify/fastify/blob/master/docs/Hooks.md#before-handler) called just before the request handler, useful if you need to perform authentication at route level for example, it could also be and array of functions.
 * `handler(request, reply)`: the function that will handle this request.
-* `schemaCompiler(schema)`: the function that build the schema for the validations. See [here](https://github.com/fastify/fastify/blob/master/docs/Validation-and-Serialization.md#schema-compiler)
 * `jsonBodyLimit`: prevents the default JSON body parser from parsing request bodies larger than this number of bytes. Must be an integer. You may also set this option globally when first creating the Fastify instance with `fastify(options)`. Defaults to `1048576` (1 MiB).
 * `logLevel`: set log level for this route. See below.
 * `config`: object used to store custom configuration.

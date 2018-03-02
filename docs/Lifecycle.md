@@ -14,19 +14,17 @@ Incoming Request
                   │
         4**/5** ◀─┴─▶ Body Parsing
                        │
-                 415 ◀─┴─▶ Validation
+                 400 ◀─┴─▶ preHandler Hook
                              │
-                       400 ◀─┴─▶ preHandler Hook
+                   4**/5** ◀─┴─▶ beforeHandler
                                    │
-                         4**/5** ◀─┴─▶ beforeHandler
+                         4**/5** ◀─┴─▶ Route Handler
                                          │
-                               4**/5** ◀─┴─▶ User Handler
+                                         └─▶ Serialize Response Payload
                                                │
-                                               └─▶ Reply
-                                                     │
-                                                     └─▶ onSend Hook
+                                               └─▶ onSend Hook
+                                                      │
+                                            4**/5** ◀─┴─▶ Send Response
                                                             │
-                                                  4**/5** ◀─┴─▶ Outgoing Response
-                                                                  │
-                                                                  └─▶ onResponse Hook
+                                                            └─▶ onResponse Hook
 ```

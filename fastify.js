@@ -14,11 +14,9 @@ const buildSchema = require('./lib/validation').build
 const handleRequest = require('./lib/handleRequest')
 const validation = require('./lib/validation')
 const isValidLogger = validation.isValidLogger
-const buildSchemaCompiler = validation.buildSchemaCompiler
 const decorator = require('./lib/decorate')
 const ContentTypeParser = require('./lib/ContentTypeParser')
 const Hooks = require('./lib/hooks')
-const Schemas = require('./lib/schemas')
 const loggerUtils = require('./lib/logger')
 const pluginUtils = require('./lib/pluginUtils')
 const runHooks = require('./lib/hookRunner').hookRunner
@@ -147,19 +145,12 @@ function build (options) {
   fastify.addHook = addHook
   fastify._hooks = new Hooks()
 
-  // schemas
-  fastify.addSchema = addSchema
-  fastify._schemas = new Schemas()
-
   const onRouteHooks = []
 
   // custom parsers
   fastify.addContentTypeParser = addContentTypeParser
   fastify.hasContentTypeParser = hasContentTypeParser
   fastify._contentTypeParser = new ContentTypeParser(fastify._bodyLimit)
-
-  fastify.setSchemaCompiler = setSchemaCompiler
-  fastify.setSchemaCompiler(buildSchemaCompiler())
 
   // plugin
   fastify.register = fastify.use
@@ -476,7 +467,7 @@ function build (options) {
       )
 
       try {
-        buildSchema(context, opts.schemaCompiler || _fastify._schemaCompiler, _fastify._schemas)
+        buildSchema(context)
       } catch (error) {
         done(error)
         return
@@ -581,12 +572,6 @@ function build (options) {
   function _addHook (instance, name, fn) {
     instance._hooks.add(name, fn.bind(instance))
     instance[childrenKey].forEach(child => _addHook(child, name, fn))
-  }
-
-  function addSchema (name, schema) {
-    throwIfAlreadyStarted('Cannot call "addSchema" when fastify instance is already started!')
-    this._schemas.add(name, schema)
-    return this
   }
 
   function addContentTypeParser (contentType, opts, parser) {
@@ -714,13 +699,6 @@ function build (options) {
 
     fourOhFour.all(prefix + (prefix.endsWith('/') ? '*' : '/*'), routeHandler, context)
     fourOhFour.all(prefix || '/', routeHandler, context)
-  }
-
-  function setSchemaCompiler (schemaCompiler) {
-    throwIfAlreadyStarted('Cannot call "setSchemaCompiler" when fastify instance is already started!')
-
-    this._schemaCompiler = schemaCompiler
-    return this
   }
 
   function setErrorHandler (func) {

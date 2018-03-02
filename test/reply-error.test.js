@@ -255,38 +255,6 @@ test('Support rejection with values that are not Error instances', t => {
   }
 })
 
-test('invalid schema - ajv', t => {
-  t.plan(4)
-
-  const fastify = Fastify()
-  fastify.get('/', {
-    schema: {
-      querystring: {
-        type: 'object',
-        properties: {
-          id: { type: 'number' }
-        }
-      }
-    }
-  }, (req, reply) => {
-    t.fail('we should not be here')
-  })
-
-  fastify.setErrorHandler((err, request, reply) => {
-    t.ok(Array.isArray(err.validation))
-    reply.send('error')
-  })
-
-  fastify.inject({
-    url: '/?id=abc',
-    method: 'GET'
-  }, (err, res) => {
-    t.error(err)
-    t.strictEqual(res.statusCode, 400)
-    t.strictEqual(res.payload, 'error')
-  })
-})
-
 test('should set the status code and the headers from the error object (from route handler)', t => {
   t.plan(4)
   const fastify = Fastify()
