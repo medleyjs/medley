@@ -1,5 +1,7 @@
 # Medley
 
+[![Build Status](https://travis-ci.org/MedleyJS/medley.svg?branch=master)](https://travis-ci.org/MedleyJS/medley)
+
 This project is under development and is not yet ready for production. Use at your own risk (you should probably just use [Fastify](https://github.com/fastify/fastify) instead).
 
 ## Acknowledgements
