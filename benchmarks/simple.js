@@ -18,12 +18,14 @@ const schema = {
 }
 
 fastify
-  .get('/', schema, function (req, reply) {
-    reply
-      .send({ hello: 'world' })
+  .get('/', schema, function (request, reply) {
+    reply.send({hello: 'world'})
   })
 
-fastify.listen(3000, err => {
-  if (err) throw err
-  console.log(`server listening on ${fastify.server.address().port}`)
+fastify.listen(3000, (err) => {
+  if (err) {
+    throw err
+  }
+  // eslint-disable-next-line no-console
+  console.log(`Server listening on port ${fastify.server.address().port}`)
 })

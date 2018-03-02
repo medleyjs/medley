@@ -42,8 +42,8 @@ or
 npm run bench
 ```
 
-### Run different examples
+### Run different benchmarks
 
 ```sh
-branchcmp --rounds 2 -s "node ./node_modules/concurrently -k -s first \"node ./examples/asyncawait.js\" \"node ./node_modules/autocannon -c 100 -d 5 -p 10 localhost:3000/\""
+branchcmp --rounds 2 -s "node ./node_modules/concurrently -k -s first \"node ./benchmarks/asyncawait.js\" \"node ./node_modules/autocannon -c 100 -d 5 -p 10 localhost:3000/\""
 ```

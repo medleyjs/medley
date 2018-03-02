@@ -46,8 +46,6 @@ fastify.addContentTypeParser('application/json', { parseAs: 'string' }, function
 ```
 As you can see, now the function signature is `(req, body, done)` instead of `(req, done)`.
 
-See [`example/parser.js`](https://github.com/fastify/fastify/blob/master/examples/parser.js) for an example.
-
 ##### Custom Parser Options
 + `parseAs` (string): Either `'string'` or `'buffer'` to designate how the incoming data should be collected. Default: `'buffer'`.
 + `bodyLimit` (number): The maximum payload size, in bytes, that the custom parser will accept. Defaults to the global body limit passed to the [`Fastify factory function`](https://github.com/fastify/fastify/blob/master/docs/Factory.md#bodylimit).

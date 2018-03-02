@@ -34,12 +34,13 @@ fastify
   .addHook('onSend', asyncHook)
 
 fastify.get('/', opts, function (request, reply) {
-  reply.send({ hello: 'world' })
+  reply.send({hello: 'world'})
 })
 
-fastify.listen(3000, function (err) {
+fastify.listen(3000, (err) => {
   if (err) {
     throw err
   }
+  // eslint-disable-next-line no-console
   console.log(`server listening on ${fastify.server.address().port}`)
 })
