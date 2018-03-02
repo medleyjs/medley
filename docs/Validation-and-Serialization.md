@@ -139,11 +139,12 @@ In that case the function returned by `schemaCompiler` returns an object like:
 * `error`: filled with an instance of `Error` or a string that describes the validation error
 * `value`: the coerced value that passed the validation
 
-<a name="serialization"></a>
 ### Serialization
-Usually you will send your data to the clients via JSON, and Fastify has a powerful tool to help you, [fast-json-stringify](https://www.npmjs.com/package/fast-json-stringify), which is used if you have provided an output schema in the route options. We encourage you to use an output schema, as it will increase your throughput by 100-400% depending on your payload and will prevent accidental disclosure of sensitive information.
+
+When sending a JSON response, it is serialized with `JSON.stringify()` by default. However, a response schema can be set to enable the payload to be serialized with [`compile-json-stringify`](https://www.npmjs.com/package/compile-json-stringify) instead. `compile-json-stringify` will stringify the payload 2-8x faster than `JSON.stringify()` and it will exclude any properties that are not included in the schema (which can prevent accidental disclosure of sensitive information, although it is not recommended to use this as the primary method of preventing data leaks).
 
 Example:
+
 ```js
 const schema = {
   response: {
@@ -151,13 +152,15 @@ const schema = {
       type: 'object',
       properties: {
         value: { type: 'string' },
-        otherValue: { type: 'boolean' }
+        fast: { type: 'boolean' }
       }
     }
   }
 }
 
-fastify.post('/the/url', { schema }, handler)
+fastify.get('/info', { schema }, (request, reply) => {
+  reply.send({ value: 'medley', fast: true })
+})
 ```
 
 As you can see, the response schema is based on the status code. If you want to use the same schema for multiple status codes, you can use `'2xx'`, for example:
@@ -189,5 +192,5 @@ fastify.post('/the/url', { schema }, handler)
 ### Resources
 - [JSON Schema](http://json-schema.org/)
 - [Understanding JSON schema](https://spacetelescope.github.io/understanding-json-schema/)
-- [fast-json-stringify documentation](https://github.com/fastify/fast-json-stringify)
+- [`compile-json-stringify` documentation](https://github.com/nwoltman/compile-json-stringify)
 - [Ajv documentation](https://github.com/epoberezkin/ajv/blob/master/README.md)

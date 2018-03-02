@@ -10,7 +10,7 @@ Reply is a core Fastify object that exposes the following functions:
 - `.redirect([code,] url)` - Redirect to the specified url, the status code is optional (default to `302`).
 - `.serialize(payload)` - Serializes the specified payload using the default json serializer and returns the serialized payload.
 - `.serializer(function)` - Sets a custom serializer for the payload.
-- `.send(payload)` - Sends the payload to the user, could be a plain text, a buffer, JSON, stream, or an Error object.
+- `.send([payload])` - Sends the response payload for the request.
 - `.sent` - A boolean value that you can use if you need to know if `send` has already been called.
 - `.res` - The [`http.ServerResponse`](https://nodejs.org/dist/latest/docs/api/http.html#http_class_http_serverresponse) from Node core.
 
@@ -79,15 +79,37 @@ reply
 See [`.send()`](#send) for more information on sending different types of values.
 
 <a name="send"></a>
-### Send
- As the name suggests, `.send()` is the function that sends the payload to the end user.
+### `.send([payload])`
 
-<a name="send-object"></a>
-#### Objects
-As noted above, if you are sending JSON objects, `send` will serialize the object with [fast-json-stringify](https://www.npmjs.com/package/fast-json-stringify) if you set an output schema, otherwise `JSON.stringify()` will be used.
+This function is used to send the payload to response to the request. It may be called without any arguments to respond without sending a payload (`reply.send()`).
+
+`.send()` handles payloads differently based on their type. The behavior for each type is described below. However, if the `Content-Type` header is set (and it does not match one of the cases below), the payload will be sent as-is.
+
+#### Sending JSON
+
+The payload will be JSON-serialized by default if it is not a `string`, `buffer`, `stream`, or `Error`. To force a `string` to be serialized as JSON, set the `Content-Type` header to `application/json` before sending the payload.
+
+JSON payloads are serialized with [`compile-json-stringify`](https://www.npmjs.com/package/compile-json-stringify) if a response schema was set, otherwise `JSON.stringify()` is used.
+
 ```js
-fastify.get('/json', options, function (request, reply) {
+fastify.get('/json', {
+  schema: {
+    response: {
+      200: {
+        type: 'object',
+        properties: {
+          hello: { type: 'string' },
+        },
+      },
+    },
+  },
+}, (request, reply) => {
   reply.send({ hello: 'world' })
+})
+
+// Send a string as JSON
+fastify.get('/json-string', (request, reply) => {
+  reply.type('application/json').send('Hello world!')
 })
 ```
 

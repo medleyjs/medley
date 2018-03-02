@@ -57,7 +57,7 @@ test('wrong object for schema - output', t => {
   try {
     fastify.get('/wrong-object-for-schema', opts, function (req, reply) {
       // will send { }
-      reply.code(201).send({ hello: 'world' })
+      reply.code(201).send({ uno: 1 })
     })
     t.pass()
   } catch (e) {
