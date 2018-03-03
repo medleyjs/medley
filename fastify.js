@@ -1,6 +1,6 @@
 'use strict'
 
-const FindMyWay = require('find-my-way')
+const findMyWay = require('find-my-way')
 const avvio = require('avvio')
 const http = require('http')
 const https = require('https')
@@ -8,7 +8,6 @@ const lightMyRequest = require('light-my-request')
 
 const Reply = require('./lib/Reply')
 const Request = require('./lib/Request')
-const supportedMethods = ['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT', 'OPTIONS']
 const handleRequest = require('./lib/handleRequest')
 const decorator = require('./lib/decorate')
 const ContentTypeParser = require('./lib/ContentTypeParser')
@@ -18,8 +17,9 @@ const runHooks = require('./lib/hookRunner').hookRunner
 
 const {buildSerializers} = require('./lib/Serializer')
 
+const supportedMethods = ['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT', 'OPTIONS']
+
 const DEFAULT_BODY_LIMIT = 1024 * 1024 // 1 MiB
-const childrenKey = Symbol('fastify.children')
 
 function validateBodyLimitOption(bodyLimit) {
   if (bodyLimit === undefined) {
@@ -36,16 +36,16 @@ function build(options) {
     throw new TypeError('Options must be an object')
   }
 
-  const fastify = {
-    [childrenKey]: [],
-  }
-  const router = FindMyWay({
+  const router = findMyWay({
     defaultRoute,
     ignoreTrailingSlash: options.ignoreTrailingSlash,
     maxParamLength: options.maxParamLength,
   })
 
-  fastify.printRoutes = router.prettyPrint.bind(router)
+  const fastify = {
+    _children: [],
+    printRoutes: router.prettyPrint.bind(router),
+  }
 
   const app = avvio(fastify, {
     autostart: false,
@@ -140,7 +140,7 @@ function build(options) {
   // fake http injection
   fastify.inject = inject
 
-  var fourOhFour = FindMyWay({defaultRoute: fourOhFourFallBack})
+  var fourOhFour = findMyWay({defaultRoute: fourOhFourFallBack})
   fastify.setNotFoundHandler = setNotFoundHandler
   fastify._notFoundHandler = null
   fastify._404Context = null
@@ -189,15 +189,15 @@ function build(options) {
     // noop
   }
 
-  function listen(port, address, backlog, cb) {
+  function listen(port, host, backlog, cb) {
     /* Deal with listen (port, cb) */
-    if (typeof address === 'function') {
-      cb = address
-      address = undefined
+    if (typeof host === 'function') {
+      cb = host
+      host = undefined
     }
-    address = address || '127.0.0.1'
+    host = host || '127.0.0.1'
 
-    /* Deal with listen (port, address, cb) */
+    /* Deal with listen (port, host, cb) */
     if (typeof backlog === 'function') {
       cb = backlog
       backlog = undefined
@@ -205,7 +205,7 @@ function build(options) {
 
     if (cb === undefined) {
       return new Promise((resolve, reject) => {
-        fastify.listen(port, address, (err) => {
+        fastify.listen(port, host, (err) => {
           if (err) {
             reject(err)
           } else {
@@ -215,40 +215,32 @@ function build(options) {
       })
     }
 
-    fastify.ready(function(err) {
+    fastify.ready((err) => {
       if (err) {
-        return cb(err)
+        cb(err)
+        return
       }
       if (listening) {
-        return cb(new Error('Fastify is already listening'))
+        cb(new Error('Fastify is already listening'))
+        return
       }
 
-      server.on('error', wrap)
+      function handleListening(err) {
+        server.removeListener('error', handleListening)
+        cb(err)
+      }
+
+      server.on('error', handleListening)
       if (backlog) {
-        server.listen(port, address, backlog, wrap)
+        server.listen(port, host, backlog, handleListening)
       } else {
-        server.listen(port, address, wrap)
+        server.listen(port, host, handleListening)
       }
 
       listening = true
     })
 
-    function wrap(err) {
-      if (!err) {
-        let address = server.address()
-        if (typeof address === 'object') {
-          if (address.address.indexOf(':') === -1) {
-            address = address.address + ':' + address.port
-          } else {
-            address = '[' + address.address + ']:' + address.port
-          }
-        }
-        address = 'http' + (options.https ? 's' : '') + '://' + address
-      }
-
-      server.removeListener('error', wrap)
-      cb(err)
-    }
+    return undefined
   }
 
   function State(req, res, params, context) {
@@ -288,11 +280,12 @@ function build(options) {
     }
 
     const instance = Object.create(old)
-    old[childrenKey].push(instance)
-    instance[childrenKey] = []
+    old._children.push(instance)
+    instance._children = []
     instance._Reply = Reply.buildReply(instance._Reply)
     instance._Request = Request.buildRequest(instance._Request)
-    instance._contentTypeParser = ContentTypeParser.buildContentTypeParser(instance._contentTypeParser)
+    instance._contentTypeParser =
+      ContentTypeParser.buildContentTypeParser(instance._contentTypeParser)
     instance._hooks = Hooks.buildHooks(instance._hooks)
     instance._routePrefix = buildRoutePrefix(instance._routePrefix, opts.prefix)
     instance[pluginUtils.registeredPlugins] = Object.create(instance[pluginUtils.registeredPlugins])
@@ -356,19 +349,19 @@ function build(options) {
     return _route(this, supportedMethods, url, opts, handler)
   }
 
-  function _route(_fastify, method, url, options, handler) {
-    if (!handler && typeof options === 'function') {
-      handler = options
-      options = {}
+  function _route(_fastify, method, url, opts, handler) {
+    if (!handler && typeof opts === 'function') {
+      handler = opts
+      opts = {}
     }
 
-    options = Object.assign({}, options, {
+    opts = Object.assign({}, opts, {
       method,
       url,
       handler,
     })
 
-    return _fastify.route(options)
+    return _fastify.route(opts)
   }
 
   // Route management
@@ -428,15 +421,12 @@ function build(options) {
       }
 
       const context = new Context(
+        _fastify,
         serializers,
         opts.handler,
-        _fastify._Reply,
-        _fastify._Request,
-        _fastify._contentTypeParser,
         config,
-        _fastify._errorHandler,
         opts.bodyLimit,
-        _fastify
+        true
       )
 
       try {
@@ -468,22 +458,22 @@ function build(options) {
     return _fastify
   }
 
-  function Context(serializers, handler, Reply, Request, contentTypeParser, config, errorHandler, bodyLimit, fastify) {
+  function Context(appInstance, serializers, handler, config, bodyLimit, storeApp) {
     this._jsonSerializers = serializers
     this.handler = handler
-    this.Reply = Reply
-    this.Request = Request
-    this.contentTypeParser = contentTypeParser
-    this.onRequest = null
-    this.onSend = null
-    this.preHandler = null
-    this.onResponse = null
     this.config = config
-    this.errorHandler = errorHandler
     this._parserOptions = {
       limit: bodyLimit || null,
     }
-    this._fastify = fastify
+    this.Reply = appInstance._Reply
+    this.Request = appInstance._Request
+    this.contentTypeParser = appInstance._contentTypeParser
+    this.errorHandler = appInstance._errorHandler
+    this.onRequest = null
+    this.preHandler = null
+    this.onSend = null
+    this.onResponse = null
+    this._fastify = storeApp ? appInstance : null
   }
 
   function inject(opts, cb) {
@@ -491,14 +481,7 @@ function build(options) {
       return lightMyRequest(httpHandler, opts, cb)
     }
 
-    if (cb) {
-      this.ready((err) => {
-        if (err) {
-          throw err
-        }
-        return lightMyRequest(httpHandler, opts, cb)
-      })
-    } else {
+    if (!cb) {
       return new Promise((resolve, reject) => {
         this.ready((err) => {
           if (err) {
@@ -509,6 +492,15 @@ function build(options) {
         })
       }).then(() => lightMyRequest(httpHandler, opts))
     }
+
+    this.ready((err) => {
+      if (err) {
+        throw err
+      }
+      lightMyRequest(httpHandler, opts, cb)
+    })
+
+    return undefined
   }
 
   function addHook(name, fn) {
@@ -531,11 +523,13 @@ function build(options) {
 
   function _addHook(instance, name, fn) {
     instance._hooks.add(name, fn)
-    instance[childrenKey].forEach(child => _addHook(child, name, fn))
+    instance._children.forEach(child => _addHook(child, name, fn))
   }
 
   function addContentTypeParser(contentType, opts, parser) {
-    throwIfAlreadyStarted('Cannot call "addContentTypeParser" when fastify instance is already started!')
+    throwIfAlreadyStarted(
+      'Cannot call "addContentTypeParser" when fastify instance is already started!'
+    )
 
     if (typeof opts === 'function') {
       parser = opts
@@ -554,7 +548,7 @@ function build(options) {
     return this
   }
 
-  function hasContentTypeParser(contentType, fn) {
+  function hasContentTypeParser(contentType) {
     return this._contentTypeParser.hasParser(contentType)
   }
 
@@ -574,10 +568,14 @@ function build(options) {
   }
 
   function setNotFoundHandler(opts, handler) {
-    throwIfAlreadyStarted('Cannot call "setNotFoundHandler" when fastify instance is already started!')
+    throwIfAlreadyStarted(
+      'Cannot call "setNotFoundHandler" when fastify instance is already started!'
+    )
 
     if (this._notFoundHandler !== null && this._notFoundHandler !== basic404) {
-      throw new Error(`Not found handler already set for Fastify instance with prefix: '${this._routePrefix || '/'}'`)
+      throw new Error(
+        `Not found handler already set for Fastify instance with prefix: '${this._routePrefix || '/'}'`
+      )
     }
 
     if (handler === undefined) {
@@ -597,15 +595,12 @@ function build(options) {
 
   function _setNotFoundHandler(opts, handler, serializers) {
     const context = new Context(
+      this,
       serializers,
       handler,
-      this._Reply,
-      this._Request,
-      this._contentTypeParser,
       opts.config || {},
-      this._errorHandler,
-      this._bodyLimit,
-      null
+      opts.bodyLimit,
+      false
     )
 
     app.once('preReady', () => {
@@ -647,7 +642,8 @@ function http2() {
   try {
     return require('http2')
   } catch (err) {
-    console.error('http2 is available only from node >= 8.8.1')
+    console.error('http2 is available only from node >= 8.8.1') // eslint-disable-line no-console
+    return undefined
   }
 }
 
