@@ -15,7 +15,6 @@ fastify.route(options)
 * `beforeHandler(request, reply, done)`: a [function](https://github.com/fastify/fastify/blob/master/docs/Hooks.md#before-handler) called just before the request handler, useful if you need to perform authentication at route level for example, it could also be and array of functions.
 * `handler(request, reply)`: the function that will handle this request.
 * `jsonBodyLimit`: prevents the default JSON body parser from parsing request bodies larger than this number of bytes. Must be an integer. You may also set this option globally when first creating the Fastify instance with `fastify(options)`. Defaults to `1048576` (1 MiB).
-* `logLevel`: set log level for this route. See below.
 * `config`: object used to store custom configuration.
 
   `request` is defined in [Request](https://github.com/fastify/fastify/blob/master/docs/Request.md).
@@ -135,7 +134,8 @@ fastify.get('/', options, async function (request, reply) {
   reply.send(processed)
 })
 ```
-**Warning:** If you use `return` and `reply.send` at the same time, the first one that happens takes precedence, the second value will be discarded, a *warn* log will also be emitted if the value is not `undefined`.
+
+**Warning:** If `return notUndefined` and `reply.send` are used at the same time, the first one that happens takes precedence; the second value will be ignored.
 
 <a name="route-prefixing"></a>
 ### Route Prefixing
@@ -173,27 +173,3 @@ Now your clients will have access to the following routes:
 
 You can do this as many times as you want, it works also for nested `register` and routes parameter are supported as well.
 Be aware that if you use [`fastify-plugin`](https://github.com/fastify/fastify-plugin) this option won't work.
-
-<a name="custom-log-level"></a>
-### Custom Log Level
-It could happen that you need different log levels in your routes, with Fastify achieve this is very straightforward.<br/>
-You just need to pass the option `logLevel` to the plugin option or the route option with the [value](https://github.com/pinojs/pino/blob/master/docs/API.md#discussion-3) that you need.
-
-Be aware that if you set the `logLevel` at plugin level, also the [`setNotFoundHandler`](https://github.com/fastify/fastify/blob/master/docs/Server-Methods.md#setnotfoundhandler) and [`setErrorHandler`](https://github.com/fastify/fastify/blob/master/docs/Server-Methods.md#seterrorhandler) will be affected.
-
-```js
-// server.js
-const fastify = require('fastify')({ logger: true })
-
-fastify.register(require('./routes/user'), { logLevel: 'warn' })
-fastify.register(require('./routes/events'), { logLevel: 'debug' })
-
-fastify.listen(3000)
-```
-Or you can directly pass it to a route:
-```js
-fastify.get('/', { logLevel: 'warn' }, (request, reply) => {
-  reply.send({ hello: 'world' })
-})
-```
-*Remember that the custom log level is applied only to the routes, and not to the global Fastify Logger, accessible with `fastify.log`*

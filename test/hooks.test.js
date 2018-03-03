@@ -441,16 +441,15 @@ test('onRoute hook should pass correct route with custom prefix', t => {
 })
 
 test('onRoute hook should pass correct route with custom options', t => {
-  t.plan(5)
+  t.plan(4)
   const fastify = Fastify()
   fastify.register((instance, opts, next) => {
-    instance.addHook('onRoute', function (route) {
+    instance.addHook('onRoute', (route) => {
       t.strictEqual(route.method, 'GET')
       t.strictEqual(route.url, '/foo')
-      t.strictEqual(route.logLevel, 'info')
-      t.strictEqual(route.jsonBodyLimit, 100)
+      t.strictEqual(route.bodyLimit, 100)
     })
-    instance.get('/foo', { logLevel: 'info', jsonBodyLimit: 100 }, function (req, reply) {
+    instance.get('/foo', {bodyLimit: 100}, (request, reply) => {
       reply.send()
     })
     next()

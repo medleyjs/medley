@@ -5,19 +5,15 @@ const avvio = require('avvio')
 const http = require('http')
 const https = require('https')
 const lightMyRequest = require('light-my-request')
-const abstractLogging = require('abstract-logging')
 
 const Reply = require('./lib/reply')
 const Request = require('./lib/request')
 const supportedMethods = ['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT', 'OPTIONS']
 const buildSchema = require('./lib/validation').build
 const handleRequest = require('./lib/handleRequest')
-const validation = require('./lib/validation')
-const isValidLogger = validation.isValidLogger
 const decorator = require('./lib/decorate')
 const ContentTypeParser = require('./lib/ContentTypeParser')
 const Hooks = require('./lib/hooks')
-const loggerUtils = require('./lib/logger')
 const pluginUtils = require('./lib/pluginUtils')
 const runHooks = require('./lib/hookRunner').hookRunner
 
@@ -37,22 +33,6 @@ function build (options) {
     throw new TypeError('Options must be an object')
   }
 
-  var log
-  if (isValidLogger(options.logger)) {
-    log = loggerUtils.createLogger({
-      logger: options.logger,
-      serializers: Object.assign({}, loggerUtils.serializers, options.logger.serializers)
-    })
-  } else if (!options.logger) {
-    log = Object.create(abstractLogging)
-    log.child = () => log
-  } else {
-    options.logger = typeof options.logger === 'object' ? options.logger : {}
-    options.logger.level = options.logger.level || 'info'
-    options.logger.serializers = Object.assign({}, loggerUtils.serializers, options.logger.serializers)
-    log = loggerUtils.createLogger(options.logger)
-  }
-
   const fastify = {
     [childrenKey]: []
   }
@@ -63,13 +43,6 @@ function build (options) {
   })
 
   fastify.printRoutes = router.prettyPrint.bind(router)
-
-  // logger utils
-  const customGenReqId = options.logger ? options.logger.genReqId : null
-  const genReqId = customGenReqId || loggerUtils.reqIdGenFactory()
-  const now = loggerUtils.now
-  const onResponseIterator = loggerUtils.onResponseIterator
-  const onResponseCallback = loggerUtils.onResponseCallback
 
   const app = avvio(fastify, {
     autostart: false
@@ -110,10 +83,6 @@ function build (options) {
     }
   })
 
-  if (Number(process.versions.node[0]) >= 6) {
-    server.on('clientError', handleClientError)
-  }
-
   // body limit option
   validateBodyLimitOption(options.bodyLimit)
   fastify._bodyLimit = options.bodyLimit || DEFAULT_BODY_LIMIT
@@ -130,16 +99,12 @@ function build (options) {
   // extended route
   fastify.route = route
   fastify._routePrefix = ''
-  fastify._logLevel = ''
 
   Object.defineProperty(fastify, 'basePath', {
     get: function () {
       return this._routePrefix
     }
   })
-
-  // expose logger instance
-  fastify.log = log
 
   // hooks
   fastify.addHook = addHook
@@ -181,47 +146,42 @@ function build (options) {
   return fastify
 
   function routeHandler (req, res, params, context) {
-    res._context = context
-    req.id = genReqId(req)
-    req.log = res.log = log.child({ reqId: req.id, level: context.logLevel })
-    req.originalUrl = req.url
+    if (context.onResponse !== null) {
+      res._onResponseHooks = context.onResponse
+      res.on('finish', runOnResponseHooks)
+      res.on('error', runOnResponseHooks)
+    }
 
-    req.log.info({ req }, 'incoming request')
-
-    res._startTime = now()
-    res.on('finish', onResFinished)
-    res.on('error', onResFinished)
-
-    if (context.onRequest !== null) {
+    if (context.onRequest === null) {
+      onRequestCallback(null, new State(req, res, params, context))
+    } else {
       runHooks(
         context.onRequest,
         hookIterator,
         new State(req, res, params, context),
         onRequestCallback
       )
-    } else {
-      onRequestCallback(null, new State(req, res, params, context))
     }
   }
 
-  function onResFinished (err) {
-    this.removeListener('finish', onResFinished)
-    this.removeListener('error', onResFinished)
+  function runOnResponseHooks () {
+    this.removeListener('finish', runOnResponseHooks)
+    this.removeListener('error', runOnResponseHooks)
 
-    var ctx = this._context
+    runHooks(
+      this._onResponseHooks,
+      onResponseIterator,
+      this,
+      onResponseCallback
+    )
+  }
 
-    if (ctx && ctx.onResponse !== null) {
-      // deferring this with setImmediate will
-      // slow us by 10%
-      runHooks(
-        ctx.onResponse,
-        onResponseIterator,
-        this,
-        onResponseCallback
-      )
-    } else {
-      onResponseCallback(err, this)
-    }
+  function onResponseIterator (fn, res, next) {
+    return fn(res, next)
+  }
+
+  function onResponseCallback () {
+    // noop
   }
 
   function listen (port, address, backlog, cb) {
@@ -277,7 +237,6 @@ function build (options) {
           }
         }
         address = 'http' + (options.https ? 's' : '') + '://' + address
-        fastify.log.info('Server listening at ' + address)
       }
 
       server.removeListener('error', wrap)
@@ -304,7 +263,7 @@ function build (options) {
 
     if (err) {
       const req = state.req
-      const request = new state.context.Request(state.params, req, null, req.headers, req.log)
+      const request = new state.context.Request(state.params, req, null, req.headers)
       const reply = new state.context.Reply(state.res, state.context, request)
       reply.send(err)
       return
@@ -327,7 +286,6 @@ function build (options) {
     instance._contentTypeParser = ContentTypeParser.buildContentTypeParser(instance._contentTypeParser)
     instance._hooks = Hooks.buildHooks(instance._hooks)
     instance._routePrefix = buildRoutePrefix(instance._routePrefix, opts.prefix)
-    instance._logLevel = opts.logLevel || instance._logLevel
     instance[pluginUtils.registeredPlugins] = Object.create(instance[pluginUtils.registeredPlugins])
 
     if (opts.prefix) {
@@ -443,7 +401,6 @@ function build (options) {
       opts.url = url
       opts.path = url
       opts.prefix = prefix
-      opts.logLevel = opts.logLevel || _fastify._logLevel
 
       // run 'onRoute' hooks
       for (var h of onRouteHooks) {
@@ -462,7 +419,6 @@ function build (options) {
         config,
         _fastify._errorHandler,
         opts.bodyLimit,
-        opts.logLevel,
         _fastify
       )
 
@@ -512,7 +468,7 @@ function build (options) {
     return _fastify
   }
 
-  function Context (schema, handler, Reply, Request, contentTypeParser, config, errorHandler, bodyLimit, logLevel, fastify) {
+  function Context (schema, handler, Reply, Request, contentTypeParser, config, errorHandler, bodyLimit, fastify) {
     this.schema = schema
     this.handler = handler
     this.Reply = Reply
@@ -528,7 +484,6 @@ function build (options) {
       limit: bodyLimit || null
     }
     this._fastify = fastify
-    this.logLevel = logLevel
   }
 
   function inject (opts, cb) {
@@ -598,16 +553,6 @@ function build (options) {
     return this._contentTypeParser.hasParser(contentType)
   }
 
-  function handleClientError (e, socket) {
-    const body = JSON.stringify({
-      error: http.STATUS_CODES['400'],
-      message: 'Client Error',
-      statusCode: 400
-    })
-    log.error(e, 'client error')
-    socket.end(`HTTP/1.1 400 Bad Request\r\nContent-Length: ${body.length}\r\nContent-Type: 'application/json'\r\n\r\n${body}`)
-  }
-
   function defaultRoute (req, res) {
     fourOhFour.lookup(req, res)
   }
@@ -617,24 +562,9 @@ function build (options) {
   }
 
   function fourOhFourFallBack (req, res) {
-    // if this happen, we have a very bad bug
-    // we might want to do some hard debugging
-    // here, let's print out as much info as
-    // we can
-    req.id = genReqId(req)
-    req.log = res.log = log.child({ reqId: req.id })
-    req.originalUrl = req.url
-
-    req.log.info({ req }, 'incoming request')
-
-    res._startTime = now()
-    res.on('finish', onResFinished)
-    res.on('error', onResFinished)
-
-    req.log.warn('the default handler for 404 did not catch this, this is likely a fastify bug, please report it')
-    req.log.warn(fourOhFour.prettyPrint())
-    const request = new Request(null, req, null, req.headers, req.log)
+    const request = new Request(null, req, null, req.headers)
     const reply = new Reply(res, { onSend: [] }, request)
+
     reply.code(404).send(new Error('Not found'))
   }
 
@@ -670,7 +600,6 @@ function build (options) {
       opts.config || {},
       this._errorHandler,
       this._bodyLimit,
-      this._logLevel,
       null
     )
 

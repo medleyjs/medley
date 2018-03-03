@@ -8,23 +8,21 @@ Incoming Request
   │
   └─▶ Routing
         │
-        └─▶ Instance Logger
+  404 ◀─┴─▶ onRequest Hook
              │
-       404 ◀─┴─▶ onRequest Hook
+   4**/5** ◀─┴─▶ Body Parsing
                   │
-        4**/5** ◀─┴─▶ Body Parsing
-                       │
-                 400 ◀─┴─▶ preHandler Hook
-                             │
-                   4**/5** ◀─┴─▶ beforeHandler
-                                   │
-                         4**/5** ◀─┴─▶ Route Handler
-                                         │
-                                         └─▶ Serialize Response Payload
-                                               │
-                                               └─▶ onSend Hook
-                                                      │
-                                            4**/5** ◀─┴─▶ Send Response
-                                                            │
-                                                            └─▶ onResponse Hook
+            400 ◀─┴─▶ preHandler Hook
+                        │
+              4**/5** ◀─┴─▶ beforeHandler
+                              │
+                    4**/5** ◀─┴─▶ Route Handler
+                                    │
+                                    └─▶ Serialize Response Payload
+                                          │
+                                          └─▶ onSend Hook
+                                                 │
+                                       4**/5** ◀─┴─▶ Send Response
+                                                       │
+                                                       └─▶ onResponse Hook
 ```

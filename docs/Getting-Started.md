@@ -25,7 +25,7 @@ fastify.get('/', function (request, reply) {
 // Run the server!
 fastify.listen(3000, function (err) {
   if (err) {
-    fastify.log.error(err)
+    console.error(err)
     process.exit(1)
   }
 })
@@ -44,7 +44,7 @@ const start = async () => {
   try {
     await fastify.listen(3000)
   } catch (err) {
-    fastify.log.error(err)
+    console.error(err)
     process.exit(1)
   }
 }
@@ -61,7 +61,7 @@ Fastify offers an easy platform that helps solve all of problems, and more.
 > ```js
 > fastify.listen(3000, '0.0.0.0', function (err) {
 >   if (err) {
->     fastify.log.error(err)
+>     console.error(err)
 >     process.exit(1)
 >   }
 > })
@@ -83,7 +83,7 @@ fastify.register(require('./our-first-route'))
 
 fastify.listen(3000, function (err) {
   if (err) {
-    fastify.log.error(err)
+    console.error(err)
     process.exit(1)
   }
 })
@@ -121,7 +121,7 @@ fastify.register(require('./our-first-route'))
 
 fastify.listen(3000, function (err) {
   if (err) {
-    fastify.log.error(err)
+    console.error(err)
     process.exit(1)
   }
 })
@@ -159,7 +159,6 @@ async function routes (fastify, options) {
     try {
       return await collection.findOne({ id: request.params.id })
     } catch (err) {
-      reg.log.error(err)
       return new Error('Something went wrong')
     }
   })

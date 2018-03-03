@@ -32,7 +32,7 @@ Starts the server on the given port after all the plugins are loaded, internally
 ```js
 fastify.listen(3000, err => {
   if (err) {
-    fastify.log.error(err)
+    console.error(err)
     process.exit(1)
   }
 })
@@ -43,7 +43,7 @@ Specifying an address is also supported:
 ```js
 fastify.listen(3000, '127.0.0.1', err => {
   if (err) {
-    fastify.log.error(err)
+    console.error(err)
     process.exit(1)
   }
 })
@@ -54,7 +54,7 @@ Specifying a backlog queue size is also supported:
 ```js
 fastify.listen(3000, '127.0.0.1', 511, err => {
   if (err) {
-    fastify.log.error(err)
+    console.error(err)
     process.exit(1)
   }
 })
@@ -87,7 +87,7 @@ When deploying to a Docker, and potentially other, containers, it is advisable t
 ```js
 fastify.listen(3000, '0.0.0.0', (err) => {
   if (err) {
-    fastify.log.error(err)
+    console.error(err)
     process.exit(1)
   }
 })
@@ -115,25 +115,17 @@ A plugin can be a set of routes, a server decorator or whatever, check [here](ht
 Function to add a specific hook in the lifecycle of Fastify, check [here](https://github.com/fastify/fastify/blob/master/docs/Hooks.md).
 
 <a name="base-path"></a>
-#### basepath
-The full path that will be prefixed to a route.
+#### basePath
+The path that will be prefixed to a route.
 
 Example:
 
 ```js
 fastify.register(function (instance, opts, next) {
-  instance.get('/foo', function (request, reply) {
-    // Will log "basePath: /v1"
-    request.log.info('basePath: %s', instance.basePath)
-    reply.send({basePath: instance.basePath})
-  })
+  console.log(instance.basePath) // '/v1'
 
-  instance.register(function (instance, opts, next) {
-    instance.get('/bar', function (request, reply) {
-      // Will log "basePath: /v1/v2"
-      request.log.info('basePath: %s', instance.basePath)
-      reply.send({basePath: instance.basePath})
-    })
+  instance.register(function (innerInstance, opts, next) {
+    console.log(innerInstance.basePath) // '/v1/v2'
 
     next()
   }, { prefix: '/v2' })
@@ -141,10 +133,6 @@ fastify.register(function (instance, opts, next) {
   next()
 }, { prefix: '/v1' })
 ```
-
-<a name="log"></a>
-#### log
-The logger instance, check [here](https://github.com/fastify/fastify/blob/master/docs/Logging.md).
 
 <a name="inject"></a>
 #### inject

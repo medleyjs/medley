@@ -466,8 +466,8 @@ test('reply.send(new NotFound()) should invoke the 404 handler', t => {
   })
 })
 
-test('reply.send(new NotFound()) should log a warning and send a basic response if called inside a 404 handler', t => {
-  t.plan(6)
+test('reply.send(new NotFound()) should send a basic response if called inside a 404 handler', t => {
+  t.plan(5)
 
   const fastify = require('../..')()
 
@@ -476,10 +476,6 @@ test('reply.send(new NotFound()) should log a warning and send a basic response 
   })
 
   fastify.setNotFoundHandler(function (req, reply) {
-    reply.res.log.warn = function mockWarn (message) {
-      t.equal(message, 'Trying to send a NotFound error inside a 404 handler. Sending basic 404 response.')
-    }
-
     reply.send(new NotFound())
   })
 

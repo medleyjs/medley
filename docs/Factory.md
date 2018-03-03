@@ -70,37 +70,3 @@ This can be useful especially if you have some regex based route, protecting you
 Defines the maximum payload, in bytes, the server is allowed to accept.
 
 + Default: `1048576` (1MiB)
-
-<a name="factory-logger"></a>
-### `logger`
-
-Fastify includes built-in logging via the [Pino](https://getpino.io/) logger.
-This property is used to configure the internal logger instance.
-
-The possible values this property may have are:
-
-+ Default: `false`. The logger is disabled. All logging methods will point to a
-null logger [abstract-logging](https://npm.im/abstract-logging) instance.
-
-+ `pinoInstance`: a previously instantiated instance of Pino. The internal
-logger will point to this instance.
-
-+ `object`: a standard Pino [options object](https://github.com/pinojs/pino/blob/c77d8ec5ce/docs/API.md#constructor).
-This will be passed directly to the Pino constructor. If the following properties
-are not present on the object, they will be added accordingly:
-    * `genReqId`: a synchronous function that will be used to generate identifiers
-    for incoming requests. The default function generates sequential identifiers.
-    * `level`: the minimum logging level. If not set, it will be set to `'info'`.
-    * `serializers`: a hash of serialization functions. By default, serializers
-      are added for `req` (incoming request objects), `res` (outgoing repsonse
-      objets), and `err` (standard `Error` objects). When a log method receives
-      and object with any of these properties then the respective serializer will
-      be used for that property. For example:
-        ```js
-        fastify.get('/foo', function (req, res) {
-          req.log.info({req}) // log the serialized request object
-          res.send('foo')
-        })
-        ```
-      Any user supplied serializer will override the default serializer of the
-      corresponding property.

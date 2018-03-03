@@ -3,8 +3,6 @@
 const sget = require('simple-get').concat
 const Fastify = require('..')
 const sleep = require('then-sleep')
-const split = require('split2')
-const pino = require('pino')
 const statusCodes = require('http').STATUS_CODES
 
 const opts = {
@@ -121,36 +119,6 @@ function asyncTest (t) {
         t.deepEqual(payload, JSON.parse(body))
         t.strictEqual(res.statusCode, 200)
       })
-    })
-  })
-
-  test('server logs an error if reply.send is called and a value is returned via async/await', t => {
-    const lines = ['incoming request', 'request completed', 'Reply already sent']
-    t.plan(lines.length + 2)
-
-    const splitStream = split(JSON.parse)
-    splitStream.on('data', (line) => {
-      t.is(line.msg, lines.shift())
-    })
-
-    const logger = pino(splitStream)
-
-    const fastify = Fastify({
-      logger
-    })
-
-    fastify.get('/', async (req, reply) => {
-      reply.send({ hello: 'world' })
-      return { hello: 'world2' }
-    })
-
-    fastify.inject({
-      method: 'GET',
-      url: '/'
-    }, (err, res) => {
-      t.error(err)
-      const payload = JSON.parse(res.payload)
-      t.deepEqual(payload, { hello: 'world' })
     })
   })
 

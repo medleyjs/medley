@@ -189,13 +189,9 @@ fastify.addHook('onClose', (instance, done) => {
 Triggered when a new route is registered. Listeners are passed a `routeOptions` object as the sole parameter. The interface is synchronous, and, as such, the listeners do not get passed a callback.
 ```js
 fastify.addHook('onRoute', (routeOptions) => {
-  // some code
-  routeOptions.method
-  routeOptions.schema
   routeOptions.url
-  routeOptions.jsonBodyLimit
-  routeOptions.logLevel
-  routeOptions.prefix
+  routeOptions.beforeHandler
+  routeOptions.customValuePassedToRoute // For example
 })
 ```
 <a name="scope"></a>
