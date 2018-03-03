@@ -2,15 +2,13 @@
 
 const fastify = require('../fastify')()
 
-const schema = {
-  schema: {
-    response: {
-      200: {
-        type: 'object',
-        properties: {
-          hello: {
-            type: 'string'
-          }
+const options = {
+  responseSchema: {
+    200: {
+      type: 'object',
+      properties: {
+        hello: {
+          type: 'string'
         }
       }
     }
@@ -18,7 +16,7 @@ const schema = {
 }
 
 fastify
-  .get('/', schema, function (request, reply) {
+  .get('/', options, function (request, reply) {
     reply.send({hello: 'world'})
   })
 

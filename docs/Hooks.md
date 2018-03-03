@@ -220,7 +220,6 @@ fastify.addHook('preHandler', (request, reply, done) => {
 fastify.route({
   method: 'GET',
   url: '/',
-  schema: { ... },
   beforeHandler: function (request, reply, done) {
     // your code
     done()
@@ -233,7 +232,6 @@ fastify.route({
 fastify.route({
   method: 'GET',
   url: '/',
-  schema: { ... },
   beforeHandler: [
     function first (request, reply, done) {
       // your code

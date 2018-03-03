@@ -6,19 +6,17 @@ When sending a JSON response, it is serialized with `JSON.stringify()` by defaul
 **Example:**
 
 ```js
-const schema = {
-  response: {
-    200: {
-      type: 'object',
-      properties: {
-        value: { type: 'string' },
-        fast: { type: 'boolean' }
-      }
+const responseSchema = {
+  200: {
+    type: 'object',
+    properties: {
+      value: { type: 'string' },
+      fast: { type: 'boolean' }
     }
   }
 }
 
-fastify.get('/info', { schema }, (request, reply) => {
+fastify.get('/info', { responseSchema }, (request, reply) => {
   reply.send({ value: 'medley', fast: true })
 })
 ```
@@ -28,26 +26,24 @@ The example above shows that the structure of the schema is a mapping of a *stat
 **Example:**
 
 ```js
-const schema = {
-  response: {
-    200: {
-      type: 'object',
-      properties: {
-        value: { type: 'string' },
-        fast: { type: 'boolean' }
-      }
-    },
-    201: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean' },
-        error: { type: ['string', 'null'] }
-      }
+const responseSchema = {
+  200: {
+    type: 'object',
+    properties: {
+      value: { type: 'string' },
+      fast: { type: 'boolean' }
+    }
+  },
+  201: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean' },
+      error: { type: ['string', 'null'] }
     }
   }
 }
 
-fastify.post('/info', { schema }, (request, reply) => {
+fastify.post('/info', { responseSchema }, (request, reply) => {
   if (request.body.createInfo) {
     // Create info ...
     reply.code(201).send({ success: true, error: null })
@@ -62,18 +58,16 @@ fastify.post('/info', { schema }, (request, reply) => {
 **Example:**
 
 ```js
-const schema = {
-  response: {
-    200: {
-      type: 'object',
-      properties: {
-        value: { type: 'string' }
-      }
+const responseSchema = {
+  200: {
+    type: 'object',
+    properties: {
+      value: { type: 'string' }
     }
   }
 }
 
-fastify.get('/mismatch', { schema }, (request, reply) => {
+fastify.get('/mismatch', { responseSchema }, (request, reply) => {
   reply.send({ value: [1, 2, 3] }) // Gets serialized to: '{ "value": [1, 2, 3] }'
 })
 ```

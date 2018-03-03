@@ -6,14 +6,12 @@ const sleep = require('then-sleep')
 const statusCodes = require('http').STATUS_CODES
 
 const opts = {
-  schema: {
-    response: {
-      200: {
-        type: 'object',
-        properties: {
-          hello: {
-            type: 'string'
-          }
+  responseSchema: {
+    200: {
+      type: 'object',
+      properties: {
+        hello: {
+          type: 'string'
         }
       }
     }

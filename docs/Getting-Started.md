@@ -217,18 +217,16 @@ As discussed previously, Fastify offers a solid encapsulation model, to help you
 Medley has first-class support for JSON and can serialize JSON 2-5x faster if a response schema is set. Here's an example:
 
 ```js
-const schema = {
-  response: {
-    200: {
-      type: 'object',
-      properties: {
-        hello: { type: 'string' }
-      }
+const responseSchema = {
+  200: {
+    type: 'object',
+    properties: {
+      hello: { type: 'string' }
     }
   }
 }
 
-fastify.get('/', { schema }, (request, reply) => {
+fastify.get('/', { responseSchema }, (request, reply) => {
   reply.send({ hello: 'world' })
 })
 ```

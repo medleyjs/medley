@@ -32,7 +32,6 @@ test('Should throw on unsupported method', t => {
     fastify.route({
       method: 'TROLL',
       url: '/',
-      schema: {},
       handler: function (req, reply) {}
     })
     t.fail()
@@ -62,7 +61,6 @@ test('Should throw if one method is unsupported', t => {
     fastify.route({
       method: ['GET', 'TROLL'],
       url: '/',
-      schema: {},
       handler: function (req, reply) {}
     })
     t.fail()

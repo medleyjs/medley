@@ -3,14 +3,12 @@
 const fastify = require('../fastify')()
 
 const opts = {
-  schema: {
-    response: {
-      200: {
-        type: 'object',
-        properties: {
-          hello: {
-            type: 'string'
-          }
+  responseSchema: {
+    200: {
+      type: 'object',
+      properties: {
+        hello: {
+          type: 'string'
         }
       }
     }

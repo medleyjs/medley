@@ -5,8 +5,7 @@ const test = t.test
 const sget = require('simple-get').concat
 const Fastify = require('..')
 
-const schema = {
-  schema: { },
+const routeOptions = {
   config: {
     value1: 'foo',
     value2: true
@@ -22,22 +21,19 @@ test('config', t => {
   const fastify = Fastify()
 
   fastify.get('/get', {
-    schema: schema.schema,
-    config: Object.assign({}, schema.config)
+    config: Object.assign({}, routeOptions.config)
   }, handler)
 
   fastify.route({
     method: 'GET',
     url: '/route',
-    schema: schema.schema,
     handler: handler,
-    config: Object.assign({}, schema.config)
+    config: Object.assign({}, routeOptions.config)
   })
 
   fastify.route({
     method: 'GET',
     url: '/no-config',
-    schema: schema.schema,
     handler: handler
   })
 
@@ -52,7 +48,7 @@ test('config', t => {
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
-      t.deepEquals(body, Object.assign({url: '/get'}, schema.config))
+      t.deepEquals(body, Object.assign({url: '/get'}, routeOptions.config))
     })
 
     sget({
@@ -62,7 +58,7 @@ test('config', t => {
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
-      t.deepEquals(body, Object.assign({url: '/route'}, schema.config))
+      t.deepEquals(body, Object.assign({url: '/route'}, routeOptions.config))
     })
 
     sget({

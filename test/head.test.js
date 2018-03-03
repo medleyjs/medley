@@ -5,12 +5,10 @@ const test = t.test
 const sget = require('simple-get').concat
 const fastify = require('..')()
 
-const schema = {
-  schema: {
-    response: {
-      200: {
-        type: 'null'
-      }
+const options = {
+  responseSchema: {
+    200: {
+      type: 'null'
     }
   }
 }
@@ -18,7 +16,7 @@ const schema = {
 test('shorthand - head', t => {
   t.plan(1)
   try {
-    fastify.head('/', schema, function (req, reply) {
+    fastify.head('/', options, function (req, reply) {
       reply.code(200).send(null)
     })
     t.pass()

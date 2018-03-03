@@ -6,14 +6,12 @@ const sget = require('simple-get').concat
 const fastify = require('..')()
 
 const opts = {
-  schema: {
-    response: {
-      200: {
-        type: 'object',
-        properties: {
-          hello: {
-            type: 'string'
-          }
+  responseSchema: {
+    200: {
+      type: 'object',
+      properties: {
+        hello: {
+          type: 'string'
         }
       }
     }

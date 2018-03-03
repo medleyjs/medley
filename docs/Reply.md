@@ -18,7 +18,6 @@ Reply is a core Fastify object that exposes the following functions:
 fastify.get('/', options, function (request, reply) {
   // Your code
   reply
-    .code(200)
     .header('Content-Type', 'application/json')
     .send({ hello: 'world' })
 })
@@ -93,16 +92,14 @@ JSON payloads are serialized with [`compile-json-stringify`](https://www.npmjs.c
 
 ```js
 fastify.get('/json', {
-  schema: {
-    response: {
-      200: {
-        type: 'object',
-        properties: {
-          hello: { type: 'string' },
-        },
-      },
-    },
-  },
+  responseSchema: {
+    200: {
+      type: 'object',
+      properties: {
+        hello: { type: 'string' }
+      }
+    }
+  }
 }, (request, reply) => {
   reply.send({ hello: 'world' })
 })

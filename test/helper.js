@@ -9,25 +9,21 @@ module.exports.payloadMethod = function (method, t) {
   const upMethod = method.toUpperCase()
   const loMethod = method.toLowerCase()
 
-  const schema = {
-    schema: {
-      response: {
-        200: {
-          type: 'object',
-          properties: {
-            hello: {
-              type: 'string'
-            }
-          }
-        }
-      }
-    }
-  }
-
   test(`${upMethod} can be created`, t => {
     t.plan(1)
     try {
-      fastify[loMethod]('/', schema, function (req, reply) {
+      fastify[loMethod]('/', {
+        responseSchema: {
+          200: {
+            type: 'object',
+            properties: {
+              hello: {
+                type: 'string'
+              }
+            }
+          }
+        }
+      }, function (req, reply) {
         reply.code(200).send(req.body)
       })
       t.pass()

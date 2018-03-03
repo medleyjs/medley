@@ -11,14 +11,12 @@ test('route - get', t => {
     fastify.route({
       method: 'GET',
       url: '/',
-      schema: {
-        response: {
-          200: {
-            type: 'object',
-            properties: {
-              hello: {
-                type: 'string'
-              }
+      responseSchema: {
+        200: {
+          type: 'object',
+          properties: {
+            hello: {
+              type: 'string'
             }
           }
         }

@@ -5,26 +5,11 @@ const test = t.test
 const sget = require('simple-get').concat
 const fastify = require('..')()
 
-const schema = {
-  schema: {
-    response: {
-      200: {
-        type: 'object',
-        properties: {
-          hello: {
-            type: 'string'
-          }
-        }
-      }
-    }
-  }
-}
-
 test('shorthand - delete', t => {
   t.plan(1)
   try {
-    fastify.delete('/', schema, function (req, reply) {
-      reply.code(200).send({ hello: 'world' })
+    fastify.delete('/', (request, reply) => {
+      reply.send({ hello: 'world' })
     })
     t.pass()
   } catch (e) {

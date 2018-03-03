@@ -10,8 +10,7 @@ fastify.route(options)
 * `method`: currently it supports `'DELETE'`, `'GET'`, `'HEAD'`, `'PATCH'`, `'POST'`, `'PUT'` and `'OPTIONS'`. It could also be an array of methods.
 
 * `url`: the path of the url to match this route (alias: `path`).
-* `schema`: an object containing the response schema.
-  * `response`: The schema for a JSON response. See the [`Serialization` documentation](Serialization.md).
+* `responseSchema`: The schema for a JSON response. See the [`Serialization` documentation](Serialization.md).
 * `beforeHandler(request, reply, done)`: a [function](https://github.com/fastify/fastify/blob/master/docs/Hooks.md#before-handler) called just before the request handler, useful if you need to perform authentication at route level for example, it could also be and array of functions.
 * `handler(request, reply)`: the function that will handle this request.
 * `jsonBodyLimit`: prevents the default JSON body parser from parsing request bodies larger than this number of bytes. Must be an integer. You may also set this option globally when first creating the Fastify instance with `fastify(options)`. Defaults to `1048576` (1 MiB).
@@ -23,21 +22,16 @@ fastify.route(options)
 
 
 Example:
+
 ```js
 fastify.route({
   method: 'GET',
   url: '/',
-  schema: {
-    querystring: {
-      name: { type: 'string' },
-      excitement: { type: 'integer' }
-    },
-    response: {
-      200: {
-        type: 'object',
-        properties: {
-          hello: { type: 'string' }
-        }
+  responseSchema: {
+    200: {
+      type: 'object',
+      properties: {
+        hello: { type: 'string' }
       }
     }
   },
@@ -59,15 +53,14 @@ The above route declaration is more *Hapi*-like, but if you prefer an *Express/R
 `fastify.patch(path, [options], handler)`
 
 Example:
+
 ```js
 const opts = {
-  schema: {
-    response: {
-      200: {
-        type: 'object',
-        properties: {
-          hello: { type: 'string' }
-        }
+  responseSchema: {
+    200: {
+      type: 'object',
+      properties: {
+        hello: { type: 'string' }
       }
     }
   }

@@ -9,13 +9,14 @@ const lightMyRequest = require('light-my-request')
 const Reply = require('./lib/reply')
 const Request = require('./lib/request')
 const supportedMethods = ['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT', 'OPTIONS']
-const buildSchema = require('./lib/serializer').build
 const handleRequest = require('./lib/handleRequest')
 const decorator = require('./lib/decorate')
 const ContentTypeParser = require('./lib/ContentTypeParser')
 const Hooks = require('./lib/hooks')
 const pluginUtils = require('./lib/pluginUtils')
 const runHooks = require('./lib/hookRunner').hookRunner
+
+const {buildSerializers} = require('./lib/serializer')
 
 const DEFAULT_BODY_LIMIT = 1024 * 1024 // 1 MiB
 const childrenKey = Symbol('fastify.children')
@@ -410,8 +411,16 @@ function build (options) {
       const config = opts.config || {}
       config.url = url
 
+      var serializers
+      try {
+        serializers = buildSerializers(opts.responseSchema)
+      } catch (err) {
+        done(err)
+        return
+      }
+
       const context = new Context(
-        opts.schema,
+        serializers,
         opts.handler.bind(_fastify),
         _fastify._Reply,
         _fastify._Request,
@@ -421,13 +430,6 @@ function build (options) {
         opts.bodyLimit,
         _fastify
       )
-
-      try {
-        buildSchema(context)
-      } catch (error) {
-        done(error)
-        return
-      }
 
       if (opts.beforeHandler) {
         if (Array.isArray(opts.beforeHandler)) {
@@ -468,8 +470,8 @@ function build (options) {
     return _fastify
   }
 
-  function Context (schema, handler, Reply, Request, contentTypeParser, config, errorHandler, bodyLimit, fastify) {
-    this.schema = schema
+  function Context (serializers, handler, Reply, Request, contentTypeParser, config, errorHandler, bodyLimit, fastify) {
+    this._jsonSerializers = serializers
     this.handler = handler
     this.Reply = Reply
     this.Request = Request
@@ -584,15 +586,17 @@ function build (options) {
 
     this._notFoundHandler = handler
 
+    const serializers = buildSerializers(opts.responseSchema)
+
     this.after((notHandledErr, done) => {
-      _setNotFoundHandler.call(this, opts, handler)
+      _setNotFoundHandler.call(this, opts, handler, serializers)
       done(notHandledErr)
     })
   }
 
-  function _setNotFoundHandler (opts, handler) {
+  function _setNotFoundHandler (opts, handler, serializers) {
     const context = new Context(
-      opts.schema,
+      serializers,
       handler,
       this._Reply,
       this._Request,

@@ -5,15 +5,13 @@ const test = t.test
 const sget = require('simple-get').concat
 const fastify = require('..')()
 
-const schema = {
-  schema: {
-    response: {
-      200: {
-        type: 'object',
-        properties: {
-          hello: {
-            type: 'string'
-          }
+const stringSchema = {
+  responseSchema: {
+    200: {
+      type: 'object',
+      properties: {
+        hello: {
+          type: 'string'
         }
       }
     }
@@ -21,24 +19,20 @@ const schema = {
 }
 
 const nullSchema = {
-  schema: {
-    response: {
-      200: {
-        type: 'null'
-      }
+  responseSchema: {
+    200: {
+      type: 'null'
     }
   }
 }
 
 const numberSchema = {
-  schema: {
-    response: {
-      200: {
-        type: 'object',
-        properties: {
-          hello: {
-            type: 'number'
-          }
+  responseSchema: {
+    200: {
+      type: 'object',
+      properties: {
+        hello: {
+          type: 'number'
         }
       }
     }
@@ -48,7 +42,7 @@ const numberSchema = {
 test('shorthand - get', t => {
   t.plan(1)
   try {
-    fastify.get('/', schema, function (req, reply) {
+    fastify.get('/', stringSchema, function (req, reply) {
       reply.code(200).send({ hello: 'world' })
     })
     t.pass()
