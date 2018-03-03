@@ -5,7 +5,7 @@ const test = t.test
 const sget = require('simple-get').concat
 const http = require('http')
 const NotFound = require('http-errors').NotFound
-const Reply = require('../../lib/reply')
+const Reply = require('../../lib/Reply')
 
 test('Once called, Reply should return an object with methods', t => {
   t.plan(9)

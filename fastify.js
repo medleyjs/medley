@@ -6,17 +6,17 @@ const http = require('http')
 const https = require('https')
 const lightMyRequest = require('light-my-request')
 
-const Reply = require('./lib/reply')
-const Request = require('./lib/request')
+const Reply = require('./lib/Reply')
+const Request = require('./lib/Request')
 const supportedMethods = ['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT', 'OPTIONS']
 const handleRequest = require('./lib/handleRequest')
 const decorator = require('./lib/decorate')
 const ContentTypeParser = require('./lib/ContentTypeParser')
-const Hooks = require('./lib/hooks')
+const Hooks = require('./lib/Hooks')
 const pluginUtils = require('./lib/pluginUtils')
 const runHooks = require('./lib/hookRunner').hookRunner
 
-const {buildSerializers} = require('./lib/serializer')
+const {buildSerializers} = require('./lib/Serializer')
 
 const DEFAULT_BODY_LIMIT = 1024 * 1024 // 1 MiB
 const childrenKey = Symbol('fastify.children')

@@ -2,7 +2,7 @@
 
 const t = require('tap')
 const test = t.test
-const Request = require('../../lib/request')
+const Request = require('../../lib/Request')
 const sget = require('simple-get').concat
 
 test('Request object', t => {

@@ -3,7 +3,7 @@
 const t = require('tap')
 const test = t.test
 
-const serializer = require('../../lib/serializer')
+const serializer = require('../../lib/Serializer')
 
 test('build serializers - missing schema', t => {
   t.plan(2)
