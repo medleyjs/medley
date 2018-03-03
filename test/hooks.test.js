@@ -155,18 +155,13 @@ test('onRequest hook should support encapsulation / 2', t => {
 })
 
 test('onRequest hook should support encapsulation / 3', t => {
-  t.plan(20)
+  t.plan(13)
   const fastify = Fastify()
-  fastify.decorate('hello', 'world')
 
   fastify.addHook('onRequest', function (req, res, next) {
-    t.ok(this.hello)
-    t.ok(this.hello2)
     req.first = true
     next()
   })
-
-  fastify.decorate('hello2', 'world')
 
   fastify.get('/first', (request, reply) => {
     t.ok(request.req.first)
@@ -175,12 +170,8 @@ test('onRequest hook should support encapsulation / 3', t => {
   })
 
   fastify.register((instance, opts, next) => {
-    instance.decorate('hello3', 'world')
-    instance.addHook('onRequest', function (request, res, next) {
-      t.ok(this.hello)
-      t.ok(this.hello2)
-      t.ok(this.hello3)
-      request.second = true
+    instance.addHook('onRequest', function (req, res, next) {
+      req.second = true
       next()
     })
 
@@ -220,34 +211,38 @@ test('onRequest hook should support encapsulation / 3', t => {
 })
 
 test('preHandler hook should support encapsulation / 5', t => {
-  t.plan(17)
+  t.plan(19)
   const fastify = Fastify()
-  fastify.decorate('hello', 'world')
 
-  fastify.addHook('preHandler', function (req, res, next) {
-    t.ok(this.hello)
-    req.first = true
+  fastify.decorateRequest('hello', 'world')
+
+  fastify.addHook('preHandler', function (request, reply, next) {
+    t.equal(request.hello, 'world')
+    request.first = true
     next()
   })
 
-  fastify.get('/first', (req, reply) => {
-    t.ok(req.first)
-    t.notOk(req.second)
+  fastify.get('/first', (request, reply) => {
+    t.equal(request.hello, 'world')
+    t.equal(request.hello2, undefined)
+    t.ok(request.first)
+    t.notOk(request.second)
     reply.send({ hello: 'world' })
   })
 
   fastify.register((instance, opts, next) => {
-    instance.decorate('hello2', 'world')
-    instance.addHook('preHandler', function (req, res, next) {
-      t.ok(this.hello)
-      t.ok(this.hello2)
-      req.second = true
+    instance.decorateRequest('hello2', 'world')
+
+    instance.addHook('preHandler', function (request, reply, next) {
+      t.equal(request.hello, 'world')
+      t.equal(request.hello2, 'world')
+      request.second = true
       next()
     })
 
-    instance.get('/second', (req, reply) => {
-      t.ok(req.first)
-      t.ok(req.second)
+    instance.get('/second', (request, reply) => {
+      t.ok(request.first)
+      t.ok(request.second)
       reply.send({ hello: 'world' })
     })
 
@@ -554,12 +549,10 @@ test('onResponse hook should support encapsulation / 2', t => {
 })
 
 test('onResponse hook should support encapsulation / 3', t => {
-  t.plan(16)
+  t.plan(12)
   const fastify = Fastify()
-  fastify.decorate('hello', 'world')
 
   fastify.addHook('onResponse', function (res, next) {
-    t.ok(this.hello)
     t.ok('onResponse called')
     next()
   })
@@ -569,10 +562,7 @@ test('onResponse hook should support encapsulation / 3', t => {
   })
 
   fastify.register((instance, opts, next) => {
-    instance.decorate('hello2', 'world')
     instance.addHook('onResponse', function (res, next) {
-      t.ok(this.hello)
-      t.ok(this.hello2)
       t.ok('onResponse called')
       next()
     })
@@ -631,30 +621,34 @@ test('onSend hook should support encapsulation / 1', t => {
 })
 
 test('onSend hook should support encapsulation / 2', t => {
-  t.plan(16)
+  t.plan(18)
   const fastify = Fastify()
-  fastify.decorate('hello', 'world')
+
+  fastify.decorateRequest('hello', 'world')
 
   fastify.addHook('onSend', function (request, reply, thePayload, next) {
-    t.ok(this.hello)
+    t.equal(request.hello, 'world')
     t.ok('onSend called')
     next()
   })
 
-  fastify.get('/first', (req, reply) => {
+  fastify.get('/first', (request, reply) => {
+    t.equal(request.hello, 'world')
+    t.equal(request.hello2, undefined)
     reply.send({ hello: 'world' })
   })
 
   fastify.register((instance, opts, next) => {
-    instance.decorate('hello2', 'world')
+    instance.decorateRequest('hello2', 'world')
+
     instance.addHook('onSend', function (request, reply, thePayload, next) {
-      t.ok(this.hello)
-      t.ok(this.hello2)
+      t.equal(request.hello, 'world')
+      t.equal(request.hello2, 'world')
       t.ok('onSend called')
       next()
     })
 
-    instance.get('/second', (req, reply) => {
+    instance.get('/second', (request, reply) => {
       reply.send({ hello: 'world' })
     })
 

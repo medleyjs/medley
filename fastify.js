@@ -140,7 +140,7 @@ function build (options) {
   fastify.setNotFoundHandler = setNotFoundHandler
   fastify._notFoundHandler = null
   fastify._404Context = null
-  fastify.setNotFoundHandler() // Set the default 404 handler
+  fastify.setNotFoundHandler(basic404) // Set the default 404 handler
 
   fastify.setErrorHandler = setErrorHandler
 
@@ -375,14 +375,14 @@ function build (options) {
           throw new Error(`${opts.method[i]} method is not supported!`)
         }
       }
-    } else {
-      if (supportedMethods.indexOf(opts.method) === -1) {
-        throw new Error(`${opts.method} method is not supported!`)
-      }
+    } else if (supportedMethods.indexOf(opts.method) === -1) {
+      throw new Error(`${opts.method} method is not supported!`)
     }
 
-    if (!opts.handler) {
-      throw new Error(`Missing handler function for ${opts.method}:${opts.url} route.`)
+    if (typeof opts.handler !== 'function') {
+      throw new Error(
+        `Got '${opts.handler}' as the handler for the ${opts.method}:${opts.url} route. Expected a function.`
+      )
     }
 
     validateBodyLimitOption(opts.bodyLimit)
@@ -421,7 +421,7 @@ function build (options) {
 
       const context = new Context(
         serializers,
-        opts.handler.bind(_fastify),
+        opts.handler,
         _fastify._Reply,
         _fastify._Request,
         _fastify._contentTypeParser,
@@ -430,16 +430,6 @@ function build (options) {
         opts.bodyLimit,
         _fastify
       )
-
-      if (opts.beforeHandler) {
-        if (Array.isArray(opts.beforeHandler)) {
-          opts.beforeHandler.forEach((h, i) => {
-            opts.beforeHandler[i] = h.bind(_fastify)
-          })
-        } else {
-          opts.beforeHandler = opts.beforeHandler.bind(_fastify)
-        }
-      }
 
       try {
         router.on(opts.method, url, routeHandler, context)
@@ -527,7 +517,7 @@ function build (options) {
   }
 
   function _addHook (instance, name, fn) {
-    instance._hooks.add(name, fn.bind(instance))
+    instance._hooks.add(name, fn)
     instance[childrenKey].forEach(child => _addHook(child, name, fn))
   }
 
@@ -577,12 +567,10 @@ function build (options) {
       throw new Error(`Not found handler already set for Fastify instance with prefix: '${this._routePrefix || '/'}'`)
     }
 
-    if (typeof opts === 'function') {
+    if (handler === undefined) {
       handler = opts
-      opts = undefined
+      opts = {}
     }
-    opts = opts || {}
-    handler = handler ? handler.bind(this) : basic404
 
     this._notFoundHandler = handler
 

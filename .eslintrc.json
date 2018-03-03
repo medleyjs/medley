@@ -49,6 +49,7 @@
     "max-len": [2, 100, {
       "ignorePattern": "^import |^const \\w+ = require\\(",
       "ignoreUrls": true,
+      "ignoreTemplateLiterals": true,
       "ignoreRegExpLiterals": true
     }],
     "max-nested-callbacks": [2, 3],
