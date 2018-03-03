@@ -226,24 +226,41 @@ test('Support rejection with values that are not Error instances', t => {
   }
 })
 
-test('should set the status code and the headers from the error object (from route handler)', t => {
-  t.plan(4)
+test('should set the status code from the error object (from route handler)', t => {
+  t.plan(6)
   const fastify = Fastify()
 
-  fastify.get('/', (req, reply) => {
+  fastify.get('/status', (req, reply) => {
     const error = new Error('kaboom')
-    error.headers = { hello: 'world' }
+    error.status = 400
+    reply.send(error)
+  })
+
+  fastify.get('/statusCode', (req, reply) => {
+    const error = new Error('kaboom')
     error.statusCode = 400
     reply.send(error)
   })
 
   fastify.inject({
-    url: '/',
+    url: '/status',
     method: 'GET'
   }, (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 400)
-    t.strictEqual(res.headers.hello, 'world')
+    t.deepEqual(JSON.parse(res.payload), {
+      error: 'Bad Request',
+      message: 'kaboom',
+      statusCode: 400
+    })
+  })
+
+  fastify.inject({
+    url: '/statusCode',
+    method: 'GET'
+  }, (err, res) => {
+    t.error(err)
+    t.strictEqual(res.statusCode, 400)
     t.deepEqual(JSON.parse(res.payload), {
       error: 'Bad Request',
       message: 'kaboom',
@@ -252,8 +269,8 @@ test('should set the status code and the headers from the error object (from rou
   })
 })
 
-test('should set the status code and the headers from the error object (from custom error handler)', t => {
-  t.plan(6)
+test('should set the status code from the error object (from custom error handler)', t => {
+  t.plan(5)
   const fastify = Fastify()
 
   fastify.get('/', (req, reply) => {
@@ -266,7 +283,6 @@ test('should set the status code and the headers from the error object (from cus
     t.is(err.message, 'ouch')
     t.is(reply.res.statusCode, 401)
     const error = new Error('kaboom')
-    error.headers = { hello: 'world' }
     error.statusCode = 400
     reply.send(error)
   })
@@ -277,7 +293,6 @@ test('should set the status code and the headers from the error object (from cus
   }, (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 400)
-    t.strictEqual(res.headers.hello, 'world')
     t.deepEqual(JSON.parse(res.payload), {
       error: 'Bad Request',
       message: 'kaboom',
