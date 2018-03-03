@@ -311,7 +311,7 @@ test('should throw an error if the payload does not get serialized to a valid ty
       reply.send({})
     } catch (err) {
       t.type(err, TypeError)
-      t.strictEqual(err.message, "Attempted to send payload of invalid type 'object'. Expected a string or Buffer.")
+      t.strictEqual(err.message, "Attempted to send payload of invalid type 'object'. Expected a string, Buffer, or stream.")
     }
   })
 

@@ -119,15 +119,12 @@ test('request should respond with an error if an unserialized payload is sent in
     return Promise.resolve(request.headers)
   })
 
-  fastify.inject({
-    method: 'GET',
-    url: '/'
-  }, (err, res) => {
+  fastify.inject('/', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 500)
     t.deepEqual(JSON.parse(res.payload), {
       error: 'Internal Server Error',
-      message: 'Attempted to send payload of invalid type \'object\'. Expected a string or Buffer.',
+      message: "Attempted to send payload of invalid type 'object'. Expected a string, Buffer, or stream.",
       statusCode: 500
     })
   })
