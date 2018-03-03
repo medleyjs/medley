@@ -8,7 +8,7 @@ const NotFound = require('http-errors').NotFound
 const Reply = require('../../lib/reply')
 
 test('Once called, Reply should return an object with methods', t => {
-  t.plan(10)
+  t.plan(9)
   const response = { res: 'res' }
   function context () {}
   function request () {}
@@ -19,7 +19,6 @@ test('Once called, Reply should return an object with methods', t => {
   t.is(typeof reply.send, 'function')
   t.is(typeof reply.code, 'function')
   t.is(typeof reply.header, 'function')
-  t.is(typeof reply.serialize, 'function')
   t.strictEqual(reply.res, response)
   t.strictEqual(reply.context, context)
   t.strictEqual(reply.request, request)
