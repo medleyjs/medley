@@ -11,19 +11,19 @@ const stringSchema = {
       type: 'object',
       properties: {
         hello: {
-          type: 'string'
-        }
-      }
-    }
-  }
+          type: 'string',
+        },
+      },
+    },
+  },
 }
 
 const nullSchema = {
   responseSchema: {
     200: {
-      type: 'null'
-    }
-  }
+      type: 'null',
+    },
+  },
 }
 
 const numberSchema = {
@@ -32,18 +32,18 @@ const numberSchema = {
       type: 'object',
       properties: {
         hello: {
-          type: 'number'
-        }
-      }
-    }
-  }
+          type: 'number',
+        },
+      },
+    },
+  },
 }
 
 test('shorthand - get', t => {
   t.plan(1)
   try {
-    fastify.get('/', stringSchema, function (req, reply) {
-      reply.code(200).send({ hello: 'world' })
+    fastify.get('/', stringSchema, function(req, reply) {
+      reply.code(200).send({hello: 'world'})
     })
     t.pass()
   } catch (e) {
@@ -54,7 +54,7 @@ test('shorthand - get', t => {
 test('shorthand - get (return null)', t => {
   t.plan(1)
   try {
-    fastify.get('/null', nullSchema, function (req, reply) {
+    fastify.get('/null', nullSchema, function(req, reply) {
       reply.code(200).send(null)
     })
     t.pass()
@@ -66,8 +66,8 @@ test('shorthand - get (return null)', t => {
 test('missing schema - get', t => {
   t.plan(1)
   try {
-    fastify.get('/missing', function (req, reply) {
-      reply.code(200).send({ hello: 'world' })
+    fastify.get('/missing', function(req, reply) {
+      reply.code(200).send({hello: 'world'})
     })
     t.pass()
   } catch (e) {
@@ -78,7 +78,7 @@ test('missing schema - get', t => {
 test('empty response', t => {
   t.plan(1)
   try {
-    fastify.get('/empty', function (req, reply) {
+    fastify.get('/empty', function(req, reply) {
       reply.code(200).send()
     })
     t.pass()
@@ -90,7 +90,7 @@ test('empty response', t => {
 test('send a falsy boolean', t => {
   t.plan(1)
   try {
-    fastify.get('/boolean', function (req, reply) {
+    fastify.get('/boolean', function(req, reply) {
       reply.code(200).send(false)
     })
     t.pass()
@@ -107,12 +107,12 @@ fastify.listen(0, err => {
     t.plan(4)
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port
+      url: 'http://localhost:' + fastify.server.address().port,
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
       t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), { hello: 'world' })
+      t.deepEqual(JSON.parse(body), {hello: 'world'})
     })
   })
 
@@ -120,12 +120,12 @@ fastify.listen(0, err => {
     t.plan(4)
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/missing'
+      url: 'http://localhost:' + fastify.server.address().port + '/missing',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
       t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), { hello: 'world' })
+      t.deepEqual(JSON.parse(body), {hello: 'world'})
     })
   })
 
@@ -133,7 +133,7 @@ fastify.listen(0, err => {
     t.plan(4)
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/empty'
+      url: 'http://localhost:' + fastify.server.address().port + '/empty',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -146,7 +146,7 @@ fastify.listen(0, err => {
     t.plan(3)
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/boolean'
+      url: 'http://localhost:' + fastify.server.address().port + '/boolean',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -158,7 +158,7 @@ fastify.listen(0, err => {
     t.plan(3)
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/null'
+      url: 'http://localhost:' + fastify.server.address().port + '/null',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)

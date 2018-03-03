@@ -11,23 +11,23 @@ const opts = {
       type: 'object',
       properties: {
         hello: {
-          type: 'string'
-        }
-      }
-    }
-  }
+          type: 'string',
+        },
+      },
+    },
+  },
 }
 
-function asyncTest (t) {
+function asyncTest(t) {
   const test = t.test
 
-  test('async await', t => {
+  test('async await', (t) => {
     t.plan(11)
     const fastify = Fastify()
     try {
-      fastify.get('/', opts, async function awaitMyFunc (req, reply) {
+      fastify.get('/', opts, async function awaitMyFunc(req, reply) {
         await sleep(200)
-        return { hello: 'world' }
+        return {hello: 'world'}
       })
       t.pass()
     } catch (e) {
@@ -35,47 +35,47 @@ function asyncTest (t) {
     }
 
     try {
-      fastify.get('/no-await', opts, async function (req, reply) {
-        return { hello: 'world' }
+      fastify.get('/no-await', opts, async function(req, reply) {
+        return {hello: 'world'}
       })
       t.pass()
     } catch (e) {
       t.fail()
     }
 
-    fastify.listen(0, err => {
+    fastify.listen(0, (err) => {
       t.error(err)
       fastify.server.unref()
 
       sget({
         method: 'GET',
-        url: 'http://localhost:' + fastify.server.address().port
+        url: 'http://localhost:' + fastify.server.address().port,
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 200)
         t.strictEqual(response.headers['content-length'], '' + body.length)
-        t.deepEqual(JSON.parse(body), { hello: 'world' })
+        t.deepEqual(JSON.parse(body), {hello: 'world'})
       })
 
       sget({
         method: 'GET',
-        url: 'http://localhost:' + fastify.server.address().port + '/no-await'
+        url: 'http://localhost:' + fastify.server.address().port + '/no-await',
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 200)
         t.strictEqual(response.headers['content-length'], '' + body.length)
-        t.deepEqual(JSON.parse(body), { hello: 'world' })
+        t.deepEqual(JSON.parse(body), {hello: 'world'})
       })
     })
   })
 
-  test('ignore the result of the promise if reply.send is called beforehand (undefined)', t => {
+  test('ignore the result of the promise if reply.send is called beforehand (undefined)', (t) => {
     t.plan(4)
 
     const server = Fastify()
-    const payload = { hello: 'world' }
+    const payload = {hello: 'world'}
 
-    server.get('/', async function awaitMyFunc (req, reply) {
+    server.get('/', async function awaitMyFunc(req, reply) {
       reply.send(payload)
     })
 
@@ -85,7 +85,7 @@ function asyncTest (t) {
       t.error(err)
       sget({
         method: 'GET',
-        url: 'http://localhost:' + server.server.address().port + '/'
+        url: 'http://localhost:' + server.server.address().port + '/',
       }, (err, res, body) => {
         t.error(err)
         t.deepEqual(payload, JSON.parse(body))
@@ -94,15 +94,15 @@ function asyncTest (t) {
     })
   })
 
-  test('ignore the result of the promise if reply.send is called beforehand (object)', t => {
+  test('ignore the result of the promise if reply.send is called beforehand (object)', (t) => {
     t.plan(4)
 
     const server = Fastify()
-    const payload = { hello: 'world2' }
+    const payload = {hello: 'world2'}
 
-    server.get('/', async function awaitMyFunc (req, reply) {
+    server.get('/', async function awaitMyFunc(req, reply) {
       reply.send(payload)
-      return { hello: 'world' }
+      return {hello: 'world'}
     })
 
     t.tearDown(server.close.bind(server))
@@ -111,7 +111,7 @@ function asyncTest (t) {
       t.error(err)
       sget({
         method: 'GET',
-        url: 'http://localhost:' + server.server.address().port + '/'
+        url: 'http://localhost:' + server.server.address().port + '/',
       }, (err, res, body) => {
         t.error(err)
         t.deepEqual(payload, JSON.parse(body))
@@ -120,13 +120,13 @@ function asyncTest (t) {
     })
   })
 
-  test('ignore the result of the promise if reply.send is called beforehand (undefined)', t => {
+  test('ignore the result of the promise if reply.send is called beforehand (undefined)', (t) => {
     t.plan(4)
 
     const server = Fastify()
-    const payload = { hello: 'world' }
+    const payload = {hello: 'world'}
 
-    server.get('/', async function awaitMyFunc (req, reply) {
+    server.get('/', async function awaitMyFunc(req, reply) {
       reply.send(payload)
     })
 
@@ -136,7 +136,7 @@ function asyncTest (t) {
       t.error(err)
       sget({
         method: 'GET',
-        url: 'http://localhost:' + server.server.address().port + '/'
+        url: 'http://localhost:' + server.server.address().port + '/',
       }, (err, res, body) => {
         t.error(err)
         t.deepEqual(payload, JSON.parse(body))
@@ -145,15 +145,15 @@ function asyncTest (t) {
     })
   })
 
-  test('ignore the result of the promise if reply.send is called beforehand (object)', t => {
+  test('ignore the result of the promise if reply.send is called beforehand (object)', (t) => {
     t.plan(4)
 
     const server = Fastify()
-    const payload = { hello: 'world2' }
+    const payload = {hello: 'world2'}
 
-    server.get('/', async function awaitMyFunc (req, reply) {
+    server.get('/', async function awaitMyFunc(req, reply) {
       reply.send(payload)
-      return { hello: 'world' }
+      return {hello: 'world'}
     })
 
     t.tearDown(server.close.bind(server))
@@ -162,7 +162,7 @@ function asyncTest (t) {
       t.error(err)
       sget({
         method: 'GET',
-        url: 'http://localhost:' + server.server.address().port + '/'
+        url: 'http://localhost:' + server.server.address().port + '/',
       }, (err, res, body) => {
         t.error(err)
         t.deepEqual(payload, JSON.parse(body))
@@ -171,14 +171,14 @@ function asyncTest (t) {
     })
   })
 
-  test('support reply decorators with await', t => {
+  test('support reply decorators with await', (t) => {
     t.plan(2)
 
     const fastify = Fastify()
 
-    fastify.decorateReply('wow', function () {
+    fastify.decorateReply('wow', function() {
       setImmediate(() => {
-        this.send({ hello: 'world' })
+        this.send({hello: 'world'})
       })
     })
 
@@ -189,15 +189,15 @@ function asyncTest (t) {
 
     fastify.inject({
       method: 'GET',
-      url: '/'
+      url: '/',
     }, (err, res) => {
       t.error(err)
       const payload = JSON.parse(res.payload)
-      t.deepEqual(payload, { hello: 'world' })
+      t.deepEqual(payload, {hello: 'world'})
     })
   })
 
-  test('support 204', t => {
+  test('support 204', (t) => {
     t.plan(2)
 
     const fastify = Fastify()
@@ -208,14 +208,14 @@ function asyncTest (t) {
 
     fastify.inject({
       method: 'GET',
-      url: '/'
+      url: '/',
     }, (err, res) => {
       t.error(err)
       t.equal(res.statusCode, 204)
     })
   })
 
-  test('does not call reply.send() twice if 204 reponse is already sent', t => {
+  test('does not call reply.send() twice if 204 reponse is already sent', (t) => {
     t.plan(2)
 
     const fastify = Fastify()
@@ -229,42 +229,42 @@ function asyncTest (t) {
 
     fastify.inject({
       method: 'GET',
-      url: '/'
+      url: '/',
     }, (err, res) => {
       t.error(err)
       t.equal(res.statusCode, 204)
     })
   })
 
-  test('inject async await', async t => {
+  test('inject async await', async (t) => {
     t.plan(1)
 
     const fastify = Fastify()
 
     fastify.get('/', (req, reply) => {
-      reply.send({ hello: 'world' })
+      reply.send({hello: 'world'})
     })
 
     try {
-      const res = await fastify.inject({ method: 'GET', url: '/' })
-      t.deepEqual({ hello: 'world' }, JSON.parse(res.payload))
+      const res = await fastify.inject({method: 'GET', url: '/'})
+      t.deepEqual({hello: 'world'}, JSON.parse(res.payload))
     } catch (err) {
       t.fail(err)
     }
   })
 
-  test('inject async await - when the server is up', async t => {
+  test('inject async await - when the server is up', async (t) => {
     t.plan(2)
 
     const fastify = Fastify()
 
     fastify.get('/', (req, reply) => {
-      reply.send({ hello: 'world' })
+      reply.send({hello: 'world'})
     })
 
     try {
-      const res = await fastify.inject({ method: 'GET', url: '/' })
-      t.deepEqual({ hello: 'world' }, JSON.parse(res.payload))
+      const res = await fastify.inject({method: 'GET', url: '/'})
+      t.deepEqual({hello: 'world'}, JSON.parse(res.payload))
     } catch (err) {
       t.fail(err)
     }
@@ -272,35 +272,35 @@ function asyncTest (t) {
     await sleep(200)
 
     try {
-      const res2 = await fastify.inject({ method: 'GET', url: '/' })
-      t.deepEqual({ hello: 'world' }, JSON.parse(res2.payload))
+      const res2 = await fastify.inject({method: 'GET', url: '/'})
+      t.deepEqual({hello: 'world'}, JSON.parse(res2.payload))
     } catch (err) {
       t.fail(err)
     }
   })
 
-  test('async await plugin', async t => {
+  test('async await plugin', async (t) => {
     t.plan(1)
 
     const fastify = Fastify()
 
     fastify.register(async (fastify, opts) => {
       fastify.get('/', (req, reply) => {
-        reply.send({ hello: 'world' })
+        reply.send({hello: 'world'})
       })
 
       await sleep(200)
     })
 
     try {
-      const res = await fastify.inject({ method: 'GET', url: '/' })
-      t.deepEqual({ hello: 'world' }, JSON.parse(res.payload))
+      const res = await fastify.inject({method: 'GET', url: '/'})
+      t.deepEqual({hello: 'world'}, JSON.parse(res.payload))
     } catch (err) {
       t.fail(err)
     }
   })
 
-  test('Thrown Error instance sets HTTP status code', t => {
+  test('Thrown Error instance sets HTTP status code', (t) => {
     t.plan(3)
 
     const fastify = Fastify()
@@ -314,7 +314,7 @@ function asyncTest (t) {
 
     fastify.inject({
       method: 'GET',
-      url: '/'
+      url: '/',
     }, (error, res) => {
       t.error(error)
       t.strictEqual(res.statusCode, 418)
@@ -322,14 +322,14 @@ function asyncTest (t) {
         {
           error: statusCodes['418'],
           message: err.message,
-          statusCode: 418
+          statusCode: 418,
         },
         JSON.parse(res.payload)
       )
     })
   })
 
-  test('customErrorHandler support', t => {
+  test('customErrorHandler support', (t) => {
     t.plan(4)
 
     const fastify = Fastify()
@@ -340,7 +340,7 @@ function asyncTest (t) {
       throw error
     })
 
-    fastify.setErrorHandler(async err => {
+    fastify.setErrorHandler(async (err) => {
       t.is(err.message, 'ouch')
       const error = new Error('kaboom')
       error.statusCode = 401
@@ -349,7 +349,7 @@ function asyncTest (t) {
 
     fastify.inject({
       method: 'GET',
-      url: '/'
+      url: '/',
     }, (err, res) => {
       t.error(err)
       t.strictEqual(res.statusCode, 401)
@@ -357,7 +357,7 @@ function asyncTest (t) {
         {
           error: statusCodes['401'],
           message: 'kaboom',
-          statusCode: 401
+          statusCode: 401,
         },
         JSON.parse(res.payload)
       )

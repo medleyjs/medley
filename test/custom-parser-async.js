@@ -5,7 +5,7 @@ const test = t.test
 const sget = require('simple-get').concat
 const Fastify = require('..')
 
-test('contentTypeParser should add a custom async parser', t => {
+test('contentTypeParser should add a custom async parser', (t) => {
   t.plan(3)
   const fastify = Fastify()
 
@@ -17,17 +17,17 @@ test('contentTypeParser should add a custom async parser', t => {
     reply.send(req.body)
   })
 
-  fastify.addContentTypeParser('application/jsoff', async function (req) {
+  fastify.addContentTypeParser('application/jsoff', async function(req) {
     var res = await new Promise((resolve, reject) => resolve(req))
     return res
   })
 
-  fastify.listen(0, err => {
+  fastify.listen(0, (err) => {
     t.error(err)
 
     t.tearDown(() => fastify.close())
 
-    t.test('in POST', t => {
+    t.test('in POST', (t) => {
       t.plan(3)
 
       sget({
@@ -35,16 +35,16 @@ test('contentTypeParser should add a custom async parser', t => {
         url: 'http://localhost:' + fastify.server.address().port,
         body: '{"hello":"world"}',
         headers: {
-          'Content-Type': 'application/jsoff'
-        }
+          'Content-Type': 'application/jsoff',
+        },
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 200)
-        t.deepEqual(body.toString(), JSON.stringify({ hello: 'world' }))
+        t.deepEqual(body.toString(), JSON.stringify({hello: 'world'}))
       })
     })
 
-    t.test('in OPTIONS', t => {
+    t.test('in OPTIONS', (t) => {
       t.plan(3)
 
       sget({
@@ -52,12 +52,12 @@ test('contentTypeParser should add a custom async parser', t => {
         url: 'http://localhost:' + fastify.server.address().port,
         body: '{"hello":"world"}',
         headers: {
-          'Content-Type': 'application/jsoff'
-        }
+          'Content-Type': 'application/jsoff',
+        },
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 200)
-        t.deepEqual(body.toString(), JSON.stringify({ hello: 'world' }))
+        t.deepEqual(body.toString(), JSON.stringify({hello: 'world'}))
       })
     })
   })

@@ -176,8 +176,8 @@
     "semi": [2, "never"],
     "space-before-blocks": 2,
     "space-before-function-paren": [2, {
-      "anonymous": "always",
-      "named": "always",
+      "anonymous": "never",
+      "named": "never",
       "asyncArrow": "always"
     }],
     "space-in-parens": 2,

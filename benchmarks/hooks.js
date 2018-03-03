@@ -8,38 +8,38 @@ const opts = {
       type: 'object',
       properties: {
         hello: {
-          type: 'string'
-        }
-      }
-    }
-  }
+          type: 'string',
+        },
+      },
+    },
+  },
 }
 
 fastify
-  .addHook('onRequest', function (req, res, next) {
+  .addHook('onRequest', function(req, res, next) {
     next()
   })
-  .addHook('onRequest', function (req, res, next) {
+  .addHook('onRequest', function(req, res, next) {
     next()
   })
 
 fastify
-  .addHook('preHandler', function (request, reply, next) {
+  .addHook('preHandler', function(request, reply, next) {
     next()
   })
-  .addHook('preHandler', function (request, reply, next) {
+  .addHook('preHandler', function(request, reply, next) {
     setImmediate(next)
   })
-  .addHook('preHandler', function (request, reply, next) {
+  .addHook('preHandler', function(request, reply, next) {
     next()
   })
 
 fastify
-  .addHook('onSend', function (request, reply, payload, next) {
+  .addHook('onSend', function(request, reply, payload, next) {
     next()
   })
 
-fastify.get('/', opts, function (request, reply) {
+fastify.get('/', opts, function(request, reply) {
   reply.send({hello: 'world'})
 })
 

@@ -16,14 +16,14 @@ test('route - get', t => {
           type: 'object',
           properties: {
             hello: {
-              type: 'string'
-            }
-          }
-        }
+              type: 'string',
+            },
+          },
+        },
       },
-      handler: function (req, reply) {
-        reply.send({ hello: 'world' })
-      }
+      handler(req, reply) {
+        reply.send({hello: 'world'})
+      },
     })
     t.pass()
   } catch (e) {
@@ -37,9 +37,9 @@ test('missing schema - route', t => {
     fastify.route({
       method: 'GET',
       url: '/missing',
-      handler: function (req, reply) {
-        reply.send({ hello: 'world' })
-      }
+      handler(req, reply) {
+        reply.send({hello: 'world'})
+      },
     })
     t.pass()
   } catch (e) {
@@ -53,9 +53,9 @@ test('Multiple methods', t => {
     fastify.route({
       method: ['GET', 'DELETE'],
       url: '/multiple',
-      handler: function (req, reply) {
-        reply.send({ hello: 'world' })
-      }
+      handler(req, reply) {
+        reply.send({hello: 'world'})
+      },
     })
     t.pass()
   } catch (e) {
@@ -66,15 +66,15 @@ test('Multiple methods', t => {
 test('Add multiple methods', t => {
   t.plan(1)
   try {
-    fastify.get('/add-multiple', function (req, reply) {
+    fastify.get('/add-multiple', function(req, reply) {
       reply.send({hello: 'Bob!'})
     })
     fastify.route({
       method: ['PUT', 'DELETE'],
       url: '/add-multiple',
-      handler: function (req, reply) {
-        reply.send({ hello: 'world' })
-      }
+      handler(req, reply) {
+        reply.send({hello: 'world'})
+      },
     })
     t.pass()
   } catch (e) {
@@ -82,7 +82,7 @@ test('Add multiple methods', t => {
   }
 })
 
-fastify.listen(0, function (err) {
+fastify.listen(0, function(err) {
   if (err) t.error(err)
   fastify.server.unref()
 
@@ -92,9 +92,9 @@ fastify.listen(0, function (err) {
       fastify.route({
         method: 'GET',
         url: '/another-get-route',
-        handler: function (req, reply) {
-          reply.send({ hello: 'world' })
-        }
+        handler(req, reply) {
+          reply.send({hello: 'world'})
+        },
       })
       t.fail()
     } catch (e) {
@@ -106,11 +106,11 @@ fastify.listen(0, function (err) {
     t.plan(3)
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port
+      url: 'http://localhost:' + fastify.server.address().port,
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
-      t.deepEqual(JSON.parse(body), { hello: 'world' })
+      t.deepEqual(JSON.parse(body), {hello: 'world'})
     })
   })
 
@@ -118,11 +118,11 @@ fastify.listen(0, function (err) {
     t.plan(3)
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/missing'
+      url: 'http://localhost:' + fastify.server.address().port + '/missing',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
-      t.deepEqual(JSON.parse(body), { hello: 'world' })
+      t.deepEqual(JSON.parse(body), {hello: 'world'})
     })
   })
 
@@ -130,20 +130,20 @@ fastify.listen(0, function (err) {
     t.plan(6)
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/multiple'
+      url: 'http://localhost:' + fastify.server.address().port + '/multiple',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
-      t.deepEqual(JSON.parse(body), { hello: 'world' })
+      t.deepEqual(JSON.parse(body), {hello: 'world'})
     })
 
     sget({
       method: 'DELETE',
-      url: 'http://localhost:' + fastify.server.address().port + '/multiple'
+      url: 'http://localhost:' + fastify.server.address().port + '/multiple',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
-      t.deepEqual(JSON.parse(body), { hello: 'world' })
+      t.deepEqual(JSON.parse(body), {hello: 'world'})
     })
   })
 })
@@ -154,20 +154,20 @@ test('path can be specified in place of uri', t => {
   fastify.route({
     method: 'GET',
     path: '/path',
-    handler: function (req, reply) {
-      reply.send({ hello: 'world' })
-    }
+    handler(req, reply) {
+      reply.send({hello: 'world'})
+    },
   })
 
   const reqOpts = {
     method: 'GET',
-    url: '/path'
+    url: '/path',
   }
 
   fastify.inject(reqOpts, (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 200)
-    t.deepEqual(JSON.parse(res.payload), { hello: 'world' })
+    t.deepEqual(JSON.parse(res.payload), {hello: 'world'})
   })
 })
 
@@ -178,7 +178,7 @@ test('invalid bodyLimit option - route', t => {
     fastify.route({
       bodyLimit: false,
       method: 'PUT',
-      handler: () => null
+      handler: () => null,
     })
     t.fail('bodyLimit must be an integer')
   } catch (err) {
@@ -186,7 +186,7 @@ test('invalid bodyLimit option - route', t => {
   }
 
   try {
-    fastify.post('/url', { bodyLimit: 10000.1 }, () => null)
+    fastify.post('/url', {bodyLimit: 10000.1}, () => null)
     t.fail('bodyLimit must be an integer')
   } catch (err) {
     t.ok(err)

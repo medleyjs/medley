@@ -32,7 +32,7 @@ test('Should throw on unsupported method', t => {
     fastify.route({
       method: 'TROLL',
       url: '/',
-      handler: function (req, reply) {}
+      handler(req, reply) {},
     })
     t.fail()
   } catch (e) {
@@ -46,7 +46,7 @@ test('Should throw on missing handler', t => {
   try {
     fastify.route({
       method: 'GET',
-      url: '/'
+      url: '/',
     })
     t.fail()
   } catch (e) {
@@ -61,7 +61,7 @@ test('Should throw if one method is unsupported', t => {
     fastify.route({
       method: ['GET', 'TROLL'],
       url: '/',
-      handler: function (req, reply) {}
+      handler(req, reply) {},
     })
     t.fail()
   } catch (e) {
@@ -73,7 +73,10 @@ test('Should throw on duplicate content type parser', t => {
   t.plan(1)
 
   const fastify = Fastify()
-  function customParser (req, done) { done(null, '') }
+
+  function customParser(req, done) {
+    done(null, '')
+  }
 
   fastify.addContentTypeParser('application/qq', customParser)
   try {
@@ -107,7 +110,7 @@ test('Should throw on duplicate decorator encapsulation', t => {
 
   fastify.decorate('foo2', foo2Obj)
 
-  fastify.register(function (fastify, opts, next) {
+  fastify.register(function(fastify, opts, next) {
     try {
       fastify.decorate('foo2', foo2Obj)
       t.fail()

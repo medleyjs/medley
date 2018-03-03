@@ -7,7 +7,7 @@ const Fastify = require('../')
 test('Should honor ignoreTrailingSlash option', t => {
   t.plan(4)
   const fastify = Fastify({
-    ignoreTrailingSlash: true
+    ignoreTrailingSlash: true,
   })
 
   fastify.get('/test', (req, res) => {
@@ -36,15 +36,15 @@ test('Should honor ignoreTrailingSlash option', t => {
 
 test('Should honor maxParamLength option', t => {
   t.plan(4)
-  const fastify = Fastify({ maxParamLength: 10 })
+  const fastify = Fastify({maxParamLength: 10})
 
   fastify.get('/test/:id', (req, reply) => {
-    reply.send({ hello: 'world' })
+    reply.send({hello: 'world'})
   })
 
   fastify.inject({
     method: 'GET',
-    url: '/test/123456789'
+    url: '/test/123456789',
   }, (error, res) => {
     t.error(error)
     t.strictEqual(res.statusCode, 200)
@@ -52,7 +52,7 @@ test('Should honor maxParamLength option', t => {
 
   fastify.inject({
     method: 'GET',
-    url: '/test/123456789abcd'
+    url: '/test/123456789abcd',
   }, (error, res) => {
     t.error(error)
     t.strictEqual(res.statusCode, 404)

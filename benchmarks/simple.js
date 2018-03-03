@@ -8,15 +8,15 @@ const options = {
       type: 'object',
       properties: {
         hello: {
-          type: 'string'
-        }
-      }
-    }
-  }
+          type: 'string',
+        },
+      },
+    },
+  },
 }
 
 fastify
-  .get('/', options, function (request, reply) {
+  .get('/', options, function(request, reply) {
     reply.send({hello: 'world'})
   })
 

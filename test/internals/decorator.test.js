@@ -6,10 +6,12 @@ const decorator = require('../../lib/decorate')
 
 test('decorate should add the given method to its instance', t => {
   t.plan(1)
-  function build () {
+
+  function build() {
     server.add = decorator.add
     return server
-    function server () {}
+
+    function server() {}
   }
 
   const server = build()
@@ -19,10 +21,12 @@ test('decorate should add the given method to its instance', t => {
 
 test('decorate is chainable', t => {
   t.plan(3)
-  function build () {
+
+  function build() {
     server.add = decorator.add
     return server
-    function server () {}
+
+    function server() {}
   }
 
   const server = build()
@@ -38,17 +42,19 @@ test('decorate is chainable', t => {
 
 test('checkExistence should check if a property is part of the given instance', t => {
   t.plan(1)
-  const instance = { test: () => {} }
+  const instance = {test: () => {}}
   t.ok(decorator.exist(instance, 'test'))
 })
 
 test('checkExistence should find the instance if not given', t => {
   t.plan(1)
-  function build () {
+
+  function build() {
     server.add = decorator.add
     server.check = decorator.exist
     return server
-    function server () {}
+
+    function server() {}
   }
 
   const server = build()
@@ -58,7 +64,9 @@ test('checkExistence should find the instance if not given', t => {
 
 test('checkExistence should check the prototype as well', t => {
   t.plan(1)
-  function Instance () {}
+
+  function Instance() {}
+
   Instance.prototype.test = () => {}
 
   const instance = new Instance()
@@ -78,10 +86,12 @@ test('checkDependencies should throw if a dependency is not present', t => {
 
 test('decorate should internally call checkDependencies', t => {
   t.plan(1)
-  function build () {
+
+  function build() {
     server.add = decorator.add
     return server
-    function server () {}
+
+    function server() {}
   }
 
   const server = build()

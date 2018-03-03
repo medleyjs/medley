@@ -11,25 +11,25 @@ test('fastify.all should add all the methods to the same url', t => {
   const fastify = Fastify()
 
   fastify.all('/', (request, reply) => {
-    reply.send({ method: request.req.method })
+    reply.send({method: request.req.method})
   })
 
   supportedMethods.forEach(injectRequest)
 
-  function injectRequest (method) {
+  function injectRequest(method) {
     const options = {
       url: '/',
-      method: method
+      method,
     }
 
     if (method === 'POST' || method === 'PUT' || method === 'PATCH') {
-      options.payload = { hello: 'world' }
+      options.payload = {hello: 'world'}
     }
 
     fastify.inject(options, (err, res) => {
       t.error(err)
       var payload = JSON.parse(res.payload)
-      t.deepEqual(payload, { method: method })
+      t.deepEqual(payload, {method})
     })
   }
 })

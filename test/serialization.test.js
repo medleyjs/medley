@@ -11,31 +11,31 @@ const opts = {
       type: 'object',
       properties: {
         hello: {
-          type: 'string'
-        }
-      }
+          type: 'string',
+        },
+      },
     },
     201: {
       type: 'object',
       properties: {
         hello: {
-          type: 'number'
-        }
-      }
-    }
-  }
+          type: 'number',
+        },
+      },
+    },
+  },
 }
 
 fastify.get('/string', opts, (request, reply) => {
-  reply.send({ hello: 'world' })
+  reply.send({hello: 'world'})
 })
 
 fastify.get('/number', opts, (request, reply) => {
-  reply.code(201).send({ hello: 55 })
+  reply.code(201).send({hello: 55})
 })
 
 fastify.get('/wrong-object-for-schema', opts, (request, reply) => {
-  reply.code(201).send({ uno: 1 }) // Will send { }
+  reply.code(201).send({uno: 1}) // Will send { }
 })
 
 // No checks
@@ -44,7 +44,7 @@ fastify.get('/empty', opts, (request, reply) => {
 })
 
 fastify.get('/400', opts, (request, reply) => {
-  reply.code(400).send({ hello: 'DOOM' })
+  reply.code(400).send({hello: 'DOOM'})
 })
 
 fastify.listen(0, err => {
@@ -55,12 +55,12 @@ fastify.listen(0, err => {
     t.plan(4)
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/string'
+      url: 'http://localhost:' + fastify.server.address().port + '/string',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
       t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), { hello: 'world' })
+      t.deepEqual(JSON.parse(body), {hello: 'world'})
     })
   })
 
@@ -68,12 +68,12 @@ fastify.listen(0, err => {
     t.plan(4)
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/number'
+      url: 'http://localhost:' + fastify.server.address().port + '/number',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 201)
       t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), { hello: 55 })
+      t.deepEqual(JSON.parse(body), {hello: 55})
     })
   })
 
@@ -81,7 +81,7 @@ fastify.listen(0, err => {
     t.plan(4)
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/wrong-object-for-schema'
+      url: 'http://localhost:' + fastify.server.address().port + '/wrong-object-for-schema',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 201)
@@ -94,7 +94,7 @@ fastify.listen(0, err => {
     t.plan(2)
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/empty'
+      url: 'http://localhost:' + fastify.server.address().port + '/empty',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 204)
@@ -105,12 +105,12 @@ fastify.listen(0, err => {
     t.plan(4)
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/400'
+      url: 'http://localhost:' + fastify.server.address().port + '/400',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 400)
       t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), { hello: 'DOOM' })
+      t.deepEqual(JSON.parse(body), {hello: 'DOOM'})
     })
   })
 })

@@ -9,14 +9,14 @@ test('405', t => {
 
   const fastify = Fastify()
 
-  fastify.get('/', function (req, reply) {
-    reply.send({ hello: 'world' })
+  fastify.get('/', function(req, reply) {
+    reply.send({hello: 'world'})
   })
 
   const injectOptions = {
     method: 'TRACE',
     url: '/',
-    payload: '{}'
+    payload: '{}',
   }
   fastify.inject(injectOptions)
     .then(response => {

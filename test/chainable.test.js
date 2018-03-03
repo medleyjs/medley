@@ -4,7 +4,7 @@ const t = require('tap')
 const test = t.test
 const fastify = require('..')()
 
-function handler () { }
+function handler() { }
 
 test('chainable - get', t => {
   t.plan(1)

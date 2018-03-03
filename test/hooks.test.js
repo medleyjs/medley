@@ -8,14 +8,14 @@ const Fastify = require('..')
 const fp = require('fastify-plugin')
 const fs = require('fs')
 
-const payload = { hello: 'world' }
+const payload = {hello: 'world'}
 
 test('hooks', t => {
   t.plan(21)
   const fastify = Fastify()
 
   try {
-    fastify.addHook('preHandler', function (request, reply, next) {
+    fastify.addHook('preHandler', function(request, reply, next) {
       request.test = 'the request is coming'
       reply.test = 'the reply has come'
       if (request.req.method === 'HEAD') {
@@ -30,7 +30,7 @@ test('hooks', t => {
   }
 
   try {
-    fastify.addHook('onRequest', function (req, res, next) {
+    fastify.addHook('onRequest', function(req, res, next) {
       req.testVal = 'the request is coming'
       res.testVal = 'the reply has come'
       if (req.method === 'DELETE') {
@@ -44,17 +44,17 @@ test('hooks', t => {
     t.fail()
   }
 
-  fastify.addHook('onResponse', function (res, next) {
+  fastify.addHook('onResponse', function(res, next) {
     t.ok('onResponse called')
     next()
   })
 
-  fastify.addHook('onSend', function (req, reply, thePayload, next) {
+  fastify.addHook('onSend', function(req, reply, thePayload, next) {
     t.ok('onSend called')
     next()
   })
 
-  fastify.get('/', function (req, reply) {
+  fastify.get('/', function(req, reply) {
     t.is(req.req.testVal, 'the request is coming')
     t.is(reply.res.testVal, 'the reply has come')
     t.is(req.test, 'the request is coming')
@@ -62,11 +62,11 @@ test('hooks', t => {
     reply.code(200).send(payload)
   })
 
-  fastify.head('/', function (req, reply) {
+  fastify.head('/', function(req, reply) {
     reply.code(200).send(payload)
   })
 
-  fastify.delete('/', function (req, reply) {
+  fastify.delete('/', function(req, reply) {
     reply.code(200).send(payload)
   })
 
@@ -76,17 +76,17 @@ test('hooks', t => {
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port
+      url: 'http://localhost:' + fastify.server.address().port,
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
       t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), { hello: 'world' })
+      t.deepEqual(JSON.parse(body), {hello: 'world'})
     })
 
     sget({
       method: 'HEAD',
-      url: 'http://localhost:' + fastify.server.address().port
+      url: 'http://localhost:' + fastify.server.address().port,
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 500)
@@ -94,7 +94,7 @@ test('hooks', t => {
 
     sget({
       method: 'DELETE',
-      url: 'http://localhost:' + fastify.server.address().port
+      url: 'http://localhost:' + fastify.server.address().port,
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 500)
@@ -158,7 +158,7 @@ test('onRequest hook should support encapsulation / 3', t => {
   t.plan(13)
   const fastify = Fastify()
 
-  fastify.addHook('onRequest', function (req, res, next) {
+  fastify.addHook('onRequest', function(req, res, next) {
     req.first = true
     next()
   })
@@ -166,11 +166,11 @@ test('onRequest hook should support encapsulation / 3', t => {
   fastify.get('/first', (request, reply) => {
     t.ok(request.req.first)
     t.notOk(request.req.second)
-    reply.send({ hello: 'world' })
+    reply.send({hello: 'world'})
   })
 
   fastify.register((instance, opts, next) => {
-    instance.addHook('onRequest', function (req, res, next) {
+    instance.addHook('onRequest', function(req, res, next) {
       req.second = true
       next()
     })
@@ -178,7 +178,7 @@ test('onRequest hook should support encapsulation / 3', t => {
     instance.get('/second', (request, reply) => {
       t.ok(request.req.first)
       t.ok(request.req.second)
-      reply.send({ hello: 'world' })
+      reply.send({hello: 'world'})
     })
 
     next()
@@ -190,22 +190,22 @@ test('onRequest hook should support encapsulation / 3', t => {
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/first'
+      url: 'http://localhost:' + fastify.server.address().port + '/first',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
       t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), { hello: 'world' })
+      t.deepEqual(JSON.parse(body), {hello: 'world'})
     })
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/second'
+      url: 'http://localhost:' + fastify.server.address().port + '/second',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
       t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), { hello: 'world' })
+      t.deepEqual(JSON.parse(body), {hello: 'world'})
     })
   })
 })
@@ -216,7 +216,7 @@ test('preHandler hook should support encapsulation / 5', t => {
 
   fastify.decorateRequest('hello', 'world')
 
-  fastify.addHook('preHandler', function (request, reply, next) {
+  fastify.addHook('preHandler', function(request, reply, next) {
     t.equal(request.hello, 'world')
     request.first = true
     next()
@@ -227,13 +227,13 @@ test('preHandler hook should support encapsulation / 5', t => {
     t.equal(request.hello2, undefined)
     t.ok(request.first)
     t.notOk(request.second)
-    reply.send({ hello: 'world' })
+    reply.send({hello: 'world'})
   })
 
   fastify.register((instance, opts, next) => {
     instance.decorateRequest('hello2', 'world')
 
-    instance.addHook('preHandler', function (request, reply, next) {
+    instance.addHook('preHandler', function(request, reply, next) {
       t.equal(request.hello, 'world')
       t.equal(request.hello2, 'world')
       request.second = true
@@ -243,7 +243,7 @@ test('preHandler hook should support encapsulation / 5', t => {
     instance.get('/second', (request, reply) => {
       t.ok(request.first)
       t.ok(request.second)
-      reply.send({ hello: 'world' })
+      reply.send({hello: 'world'})
     })
 
     next()
@@ -255,22 +255,22 @@ test('preHandler hook should support encapsulation / 5', t => {
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/first'
+      url: 'http://localhost:' + fastify.server.address().port + '/first',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
       t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), { hello: 'world' })
+      t.deepEqual(JSON.parse(body), {hello: 'world'})
     })
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/second'
+      url: 'http://localhost:' + fastify.server.address().port + '/second',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
       t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), { hello: 'world' })
+      t.deepEqual(JSON.parse(body), {hello: 'world'})
     })
   })
 })
@@ -283,7 +283,7 @@ test('onRoute hook should be called / 1', t => {
     instance.addHook('onRoute', () => {
       t.pass()
     })
-    instance.get('/', opts, function (req, reply) {
+    instance.get('/', opts, function(req, reply) {
       reply.send()
     })
     next()
@@ -309,15 +309,15 @@ test('onRoute hook should be called / 2', t => {
       t.pass()
       secondHandler++
     })
-    instance.get('/', opts, function (req, reply) {
+    instance.get('/', opts, function(req, reply) {
       reply.send()
     })
     next()
   })
-  .after(() => {
-    t.strictEqual(firstHandler, 1)
-    t.strictEqual(secondHandler, 1)
-  })
+    .after(() => {
+      t.strictEqual(firstHandler, 1)
+      t.strictEqual(secondHandler, 1)
+    })
 
   fastify.ready(err => {
     t.error(err)
@@ -328,7 +328,7 @@ test('onRoute hook should be called / 3', t => {
   t.plan(6)
   const fastify = Fastify()
 
-  function handler (req, reply) {
+  function handler(req, reply) {
     reply.send()
   }
 
@@ -343,13 +343,13 @@ test('onRoute hook should be called / 3', t => {
     instance.get('/a', handler)
     next()
   })
-  .after((err, done) => {
-    t.error(err)
-    setTimeout(() => {
-      fastify.get('/b', handler)
-      done()
-    }, 10)
-  })
+    .after((err, done) => {
+      t.error(err)
+      setTimeout(() => {
+        fastify.get('/b', handler)
+        done()
+      }, 10)
+    })
 
   fastify.ready(err => {
     t.error(err)
@@ -364,12 +364,12 @@ test('onRoute should keep the context', t => {
     instance.addHook('onRoute', onRoute)
     t.ok(instance.prototype === fastify.prototype)
 
-    function onRoute (route) {
+    function onRoute(route) {
       t.ok(this.test)
       t.strictEqual(this, instance)
     }
 
-    instance.get('/', opts, function (req, reply) {
+    instance.get('/', opts, function(req, reply) {
       reply.send()
     })
 
@@ -396,7 +396,7 @@ test('onRoute hook should pass correct route', t => {
       t.strictEqual(route.url, '/')
       t.strictEqual(route.path, '/')
     })
-    instance.get('/', opts, function (req, reply) {
+    instance.get('/', opts, function(req, reply) {
       reply.send()
     })
     next()
@@ -410,7 +410,7 @@ test('onRoute hook should pass correct route', t => {
 test('onRoute hook should pass correct route with custom prefix', t => {
   t.plan(9)
   const fastify = Fastify()
-  fastify.addHook('onRoute', function (route) {
+  fastify.addHook('onRoute', function(route) {
     t.strictEqual(route.method, 'GET')
     t.strictEqual(route.url, '/v1/foo')
     t.strictEqual(route.path, '/v1/foo')
@@ -418,17 +418,17 @@ test('onRoute hook should pass correct route with custom prefix', t => {
   })
 
   fastify.register((instance, opts, next) => {
-    instance.addHook('onRoute', function (route) {
+    instance.addHook('onRoute', function(route) {
       t.strictEqual(route.method, 'GET')
       t.strictEqual(route.url, '/v1/foo')
       t.strictEqual(route.path, '/v1/foo')
       t.strictEqual(route.prefix, '/v1')
     })
-    instance.get('/foo', opts, function (req, reply) {
+    instance.get('/foo', opts, function(req, reply) {
       reply.send()
     })
     next()
-  }, { prefix: '/v1' })
+  }, {prefix: '/v1'})
 
   fastify.ready(err => {
     t.error(err)
@@ -459,12 +459,12 @@ test('onRoute hook should receive any route option', t => {
   t.plan(4)
   const fastify = Fastify()
   fastify.register((instance, opts, next) => {
-    instance.addHook('onRoute', function (route) {
+    instance.addHook('onRoute', function(route) {
       t.strictEqual(route.method, 'GET')
       t.strictEqual(route.url, '/foo')
       t.strictEqual(route.auth, 'basic')
     })
-    instance.get('/foo', { auth: 'basic' }, function (req, reply) {
+    instance.get('/foo', {auth: 'basic'}, function(req, reply) {
       reply.send()
     })
     next()
@@ -479,12 +479,12 @@ test('onRoute hook should preserve system route configuration', t => {
   t.plan(4)
   const fastify = Fastify()
   fastify.register((instance, opts, next) => {
-    instance.addHook('onRoute', function (route) {
+    instance.addHook('onRoute', function(route) {
       t.strictEqual(route.method, 'GET')
       t.strictEqual(route.url, '/foo')
       t.strictEqual(route.handler.length, 2)
     })
-    instance.get('/foo', { url: '/bar', method: 'POST', handler: () => {} }, function (req, reply) {
+    instance.get('/foo', {url: '/bar', method: 'POST', handler: () => {}}, function(req, reply) {
       reply.send()
     })
     next()
@@ -552,23 +552,23 @@ test('onResponse hook should support encapsulation / 3', t => {
   t.plan(12)
   const fastify = Fastify()
 
-  fastify.addHook('onResponse', function (res, next) {
+  fastify.addHook('onResponse', function(res, next) {
     t.ok('onResponse called')
     next()
   })
 
   fastify.get('/first', (req, reply) => {
-    reply.send({ hello: 'world' })
+    reply.send({hello: 'world'})
   })
 
   fastify.register((instance, opts, next) => {
-    instance.addHook('onResponse', function (res, next) {
+    instance.addHook('onResponse', function(res, next) {
       t.ok('onResponse called')
       next()
     })
 
     instance.get('/second', (req, reply) => {
-      reply.send({ hello: 'world' })
+      reply.send({hello: 'world'})
     })
 
     next()
@@ -580,22 +580,22 @@ test('onResponse hook should support encapsulation / 3', t => {
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/first'
+      url: 'http://localhost:' + fastify.server.address().port + '/first',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
       t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), { hello: 'world' })
+      t.deepEqual(JSON.parse(body), {hello: 'world'})
     })
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/second'
+      url: 'http://localhost:' + fastify.server.address().port + '/second',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
       t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), { hello: 'world' })
+      t.deepEqual(JSON.parse(body), {hello: 'world'})
     })
   })
 })
@@ -626,7 +626,7 @@ test('onSend hook should support encapsulation / 2', t => {
 
   fastify.decorateRequest('hello', 'world')
 
-  fastify.addHook('onSend', function (request, reply, thePayload, next) {
+  fastify.addHook('onSend', function(request, reply, thePayload, next) {
     t.equal(request.hello, 'world')
     t.ok('onSend called')
     next()
@@ -635,13 +635,13 @@ test('onSend hook should support encapsulation / 2', t => {
   fastify.get('/first', (request, reply) => {
     t.equal(request.hello, 'world')
     t.equal(request.hello2, undefined)
-    reply.send({ hello: 'world' })
+    reply.send({hello: 'world'})
   })
 
   fastify.register((instance, opts, next) => {
     instance.decorateRequest('hello2', 'world')
 
-    instance.addHook('onSend', function (request, reply, thePayload, next) {
+    instance.addHook('onSend', function(request, reply, thePayload, next) {
       t.equal(request.hello, 'world')
       t.equal(request.hello2, 'world')
       t.ok('onSend called')
@@ -649,7 +649,7 @@ test('onSend hook should support encapsulation / 2', t => {
     })
 
     instance.get('/second', (request, reply) => {
-      reply.send({ hello: 'world' })
+      reply.send({hello: 'world'})
     })
 
     next()
@@ -661,22 +661,22 @@ test('onSend hook should support encapsulation / 2', t => {
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/first'
+      url: 'http://localhost:' + fastify.server.address().port + '/first',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
       t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), { hello: 'world' })
+      t.deepEqual(JSON.parse(body), {hello: 'world'})
     })
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/second'
+      url: 'http://localhost:' + fastify.server.address().port + '/second',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
       t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), { hello: 'world' })
+      t.deepEqual(JSON.parse(body), {hello: 'world'})
     })
   })
 })
@@ -686,9 +686,9 @@ test('onSend hook is called after payload is serialized and headers are set', t 
   const fastify = Fastify()
 
   fastify.register((instance, opts, next) => {
-    const thePayload = { hello: 'world' }
+    const thePayload = {hello: 'world'}
 
-    instance.addHook('onSend', function (request, reply, payload, next) {
+    instance.addHook('onSend', function(request, reply, payload, next) {
       t.deepEqual(JSON.parse(payload), thePayload)
       t.strictEqual(reply.res.getHeader('Content-Type'), 'application/json')
       next()
@@ -702,7 +702,7 @@ test('onSend hook is called after payload is serialized and headers are set', t 
   })
 
   fastify.register((instance, opts, next) => {
-    instance.addHook('onSend', function (request, reply, payload, next) {
+    instance.addHook('onSend', function(request, reply, payload, next) {
       t.strictEqual(payload, 'some text')
       t.strictEqual(reply.res.getHeader('Content-Type'), 'text/plain')
       next()
@@ -718,7 +718,7 @@ test('onSend hook is called after payload is serialized and headers are set', t 
   fastify.register((instance, opts, next) => {
     const thePayload = Buffer.from('buffer payload')
 
-    instance.addHook('onSend', function (request, reply, payload, next) {
+    instance.addHook('onSend', function(request, reply, payload, next) {
       t.strictEqual(payload, thePayload)
       t.strictEqual(reply.res.getHeader('Content-Type'), 'application/octet-stream')
       next()
@@ -734,13 +734,13 @@ test('onSend hook is called after payload is serialized and headers are set', t 
   fastify.register((instance, opts, next) => {
     var chunk = 'stream payload'
     const thePayload = new stream.Readable({
-      read () {
+      read() {
         this.push(chunk)
         chunk = null
-      }
+      },
     })
 
-    instance.addHook('onSend', function (request, reply, payload, next) {
+    instance.addHook('onSend', function(request, reply, payload, next) {
       t.strictEqual(payload, thePayload)
       t.strictEqual(reply.res.getHeader('Content-Type'), 'application/octet-stream')
       next()
@@ -755,17 +755,17 @@ test('onSend hook is called after payload is serialized and headers are set', t 
 
   fastify.inject({
     method: 'GET',
-    url: '/json'
+    url: '/json',
   }, (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 200)
-    t.deepEqual(JSON.parse(res.payload), { hello: 'world' })
+    t.deepEqual(JSON.parse(res.payload), {hello: 'world'})
     t.strictEqual(res.headers['content-length'], '17')
   })
 
   fastify.inject({
     method: 'GET',
-    url: '/text'
+    url: '/text',
   }, (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 200)
@@ -775,7 +775,7 @@ test('onSend hook is called after payload is serialized and headers are set', t 
 
   fastify.inject({
     method: 'GET',
-    url: '/buffer'
+    url: '/buffer',
   }, (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 200)
@@ -785,7 +785,7 @@ test('onSend hook is called after payload is serialized and headers are set', t 
 
   fastify.inject({
     method: 'GET',
-    url: '/stream'
+    url: '/stream',
   }, (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 200)
@@ -797,24 +797,24 @@ test('onSend hook is called after payload is serialized and headers are set', t 
 test('modify payload', t => {
   t.plan(10)
   const fastify = Fastify()
-  const payload = { hello: 'world' }
-  const modifiedPayload = { hello: 'modified' }
+  const payload = {hello: 'world'}
+  const modifiedPayload = {hello: 'modified'}
   const anotherPayload = '"winter is coming"'
 
-  fastify.addHook('onSend', function (request, reply, thePayload, next) {
+  fastify.addHook('onSend', function(request, reply, thePayload, next) {
     t.ok('onSend called')
     t.deepEqual(JSON.parse(thePayload), payload)
     thePayload = thePayload.replace('world', 'modified')
     next(null, thePayload)
   })
 
-  fastify.addHook('onSend', function (request, reply, thePayload, next) {
+  fastify.addHook('onSend', function(request, reply, thePayload, next) {
     t.ok('onSend called')
     t.deepEqual(JSON.parse(thePayload), modifiedPayload)
     next(null, anotherPayload)
   })
 
-  fastify.addHook('onSend', function (request, reply, thePayload, next) {
+  fastify.addHook('onSend', function(request, reply, thePayload, next) {
     t.ok('onSend called')
     t.strictEqual(thePayload, anotherPayload)
     next()
@@ -826,7 +826,7 @@ test('modify payload', t => {
 
   fastify.inject({
     method: 'GET',
-    url: '/'
+    url: '/',
   }, (err, res) => {
     t.error(err)
     t.strictEqual(res.payload, anotherPayload)
@@ -839,19 +839,19 @@ test('clear payload', t => {
   t.plan(6)
   const fastify = Fastify()
 
-  fastify.addHook('onSend', function (request, reply, payload, next) {
+  fastify.addHook('onSend', function(request, reply, payload, next) {
     t.ok('onSend called')
     reply.code(304)
     next(null, null)
   })
 
   fastify.get('/', (req, reply) => {
-    reply.send({ hello: 'world' })
+    reply.send({hello: 'world'})
   })
 
   fastify.inject({
     method: 'GET',
-    url: '/'
+    url: '/',
   }, (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 304)
@@ -864,7 +864,7 @@ test('clear payload', t => {
 test('onSend hook throws', t => {
   t.plan(7)
   const fastify = Fastify()
-  fastify.addHook('onSend', function (request, reply, payload, next) {
+  fastify.addHook('onSend', function(request, reply, payload, next) {
     if (request.req.method === 'DELETE') {
       next(new Error('some error'))
       return
@@ -885,16 +885,16 @@ test('onSend hook throws', t => {
     fastify.server.unref()
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port
+      url: 'http://localhost:' + fastify.server.address().port,
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
       t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), { hello: 'world' })
+      t.deepEqual(JSON.parse(body), {hello: 'world'})
     })
     sget({
       method: 'DELETE',
-      url: 'http://localhost:' + fastify.server.address().port
+      url: 'http://localhost:' + fastify.server.address().port,
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 500)
@@ -909,11 +909,11 @@ test('onSend hook should receive valid request and reply objects if onRequest ho
   fastify.decorateRequest('testDecorator', 'testDecoratorVal')
   fastify.decorateReply('testDecorator', 'testDecoratorVal')
 
-  fastify.addHook('onRequest', function (req, res, next) {
+  fastify.addHook('onRequest', function(req, res, next) {
     next(new Error('onRequest hook failed'))
   })
 
-  fastify.addHook('onSend', function (request, reply, payload, next) {
+  fastify.addHook('onSend', function(request, reply, payload, next) {
     t.strictEqual(request.testDecorator, 'testDecoratorVal')
     t.strictEqual(reply.testDecorator, 'testDecoratorVal')
     next()
@@ -925,7 +925,7 @@ test('onSend hook should receive valid request and reply objects if onRequest ho
 
   fastify.inject({
     method: 'GET',
-    url: '/'
+    url: '/',
   }, (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 500)
@@ -939,11 +939,11 @@ test('onSend hook should receive valid request and reply objects if a custom con
   fastify.decorateRequest('testDecorator', 'testDecoratorVal')
   fastify.decorateReply('testDecorator', 'testDecoratorVal')
 
-  fastify.addContentTypeParser('*', function (req, done) {
+  fastify.addContentTypeParser('*', function(req, done) {
     done(new Error('content type parser failed'))
   })
 
-  fastify.addHook('onSend', function (request, reply, payload, next) {
+  fastify.addHook('onSend', function(request, reply, payload, next) {
     t.strictEqual(request.testDecorator, 'testDecoratorVal')
     t.strictEqual(reply.testDecorator, 'testDecoratorVal')
     next()
@@ -956,7 +956,7 @@ test('onSend hook should receive valid request and reply objects if a custom con
   fastify.inject({
     method: 'POST',
     url: '/',
-    payload: 'body'
+    payload: 'body',
   }, (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 500)
@@ -967,8 +967,8 @@ test('cannot add hook after binding', t => {
   t.plan(2)
   const instance = Fastify()
 
-  instance.get('/', function (request, reply) {
-    reply.send({ hello: 'world' })
+  instance.get('/', function(request, reply) {
+    reply.send({hello: 'world'})
   })
 
   instance.listen(0, err => {
@@ -1010,13 +1010,13 @@ test('onRequest hooks should be able to block a request', t => {
     next()
   })
 
-  fastify.get('/', function (request, reply) {
+  fastify.get('/', function(request, reply) {
     t.fail('we should not be here')
   })
 
   fastify.inject({
     url: '/',
-    method: 'GET'
+    method: 'GET',
   }, (err, res) => {
     t.error(err)
     t.is(res.statusCode, 200)
@@ -1047,13 +1047,13 @@ test('preHandler hooks should be able to block a request', t => {
     next()
   })
 
-  fastify.get('/', function (request, reply) {
+  fastify.get('/', function(request, reply) {
     t.fail('we should not be here')
   })
 
   fastify.inject({
     url: '/',
-    method: 'GET'
+    method: 'GET',
   }, (err, res) => {
     t.error(err)
     t.is(res.statusCode, 200)
@@ -1083,13 +1083,13 @@ test('onRequest hooks should be able to block a request (last hook)', t => {
     next()
   })
 
-  fastify.get('/', function (request, reply) {
+  fastify.get('/', function(request, reply) {
     t.fail('we should not be here')
   })
 
   fastify.inject({
     url: '/',
-    method: 'GET'
+    method: 'GET',
   }, (err, res) => {
     t.error(err)
     t.is(res.statusCode, 200)
@@ -1116,13 +1116,13 @@ test('preHandler hooks should be able to block a request (last hook)', t => {
     next()
   })
 
-  fastify.get('/', function (request, reply) {
+  fastify.get('/', function(request, reply) {
     t.fail('we should not be here')
   })
 
   fastify.inject({
     url: '/',
-    method: 'GET'
+    method: 'GET',
   }, (err, res) => {
     t.error(err)
     t.is(res.statusCode, 200)
@@ -1157,13 +1157,13 @@ test('onRequest respond with a stream', t => {
     next()
   })
 
-  fastify.get('/', function (request, reply) {
+  fastify.get('/', function(request, reply) {
     t.fail('we should not be here')
   })
 
   fastify.inject({
     url: '/',
-    method: 'GET'
+    method: 'GET',
   }, (err, res) => {
     t.error(err)
     t.is(res.statusCode, 200)
@@ -1207,13 +1207,13 @@ test('preHandler respond with a stream', t => {
     next()
   })
 
-  fastify.get('/', function (request, reply) {
+  fastify.get('/', function(request, reply) {
     t.fail('we should not be here')
   })
 
   fastify.inject({
     url: '/',
-    method: 'GET'
+    method: 'GET',
   }, (err, res) => {
     t.error(err)
     t.is(res.statusCode, 200)
@@ -1224,26 +1224,26 @@ test('Register an hook after a plugin inside a plugin', t => {
   t.plan(6)
   const fastify = Fastify()
 
-  fastify.register(fp(function (instance, opts, next) {
-    instance.addHook('preHandler', function (req, reply, next) {
+  fastify.register(fp(function(instance, opts, next) {
+    instance.addHook('preHandler', function(req, reply, next) {
       t.ok('called')
       next()
     })
 
-    instance.get('/', function (request, reply) {
-      reply.send({ hello: 'world' })
+    instance.get('/', function(request, reply) {
+      reply.send({hello: 'world'})
     })
 
     next()
   }))
 
-  fastify.register(fp(function (instance, opts, next) {
-    instance.addHook('preHandler', function (req, reply, next) {
+  fastify.register(fp(function(instance, opts, next) {
+    instance.addHook('preHandler', function(req, reply, next) {
       t.ok('called')
       next()
     })
 
-    instance.addHook('preHandler', function (req, reply, next) {
+    instance.addHook('preHandler', function(req, reply, next) {
       t.ok('called')
       next()
     })
@@ -1253,11 +1253,11 @@ test('Register an hook after a plugin inside a plugin', t => {
 
   fastify.inject({
     url: '/',
-    method: 'GET'
+    method: 'GET',
   }, (err, res) => {
     t.error(err)
     t.is(res.statusCode, 200)
-    t.deepEqual(JSON.parse(res.payload), { hello: 'world' })
+    t.deepEqual(JSON.parse(res.payload), {hello: 'world'})
   })
 })
 
@@ -1265,8 +1265,8 @@ test('Register an hook after a plugin inside a plugin (with beforeHandler)', t =
   t.plan(7)
   const fastify = Fastify()
 
-  fastify.register(fp(function (instance, opts, next) {
-    instance.addHook('preHandler', function (req, reply, next) {
+  fastify.register(fp(function(instance, opts, next) {
+    instance.addHook('preHandler', function(req, reply, next) {
       t.ok('called')
       next()
     })
@@ -1275,21 +1275,21 @@ test('Register an hook after a plugin inside a plugin (with beforeHandler)', t =
       beforeHandler: (req, reply, next) => {
         t.ok('called')
         next()
-      }
-    }, function (request, reply) {
-      reply.send({ hello: 'world' })
+      },
+    }, function(request, reply) {
+      reply.send({hello: 'world'})
     })
 
     next()
   }))
 
-  fastify.register(fp(function (instance, opts, next) {
-    instance.addHook('preHandler', function (req, reply, next) {
+  fastify.register(fp(function(instance, opts, next) {
+    instance.addHook('preHandler', function(req, reply, next) {
       t.ok('called')
       next()
     })
 
-    instance.addHook('preHandler', function (req, reply, next) {
+    instance.addHook('preHandler', function(req, reply, next) {
       t.ok('called')
       next()
     })
@@ -1299,11 +1299,11 @@ test('Register an hook after a plugin inside a plugin (with beforeHandler)', t =
 
   fastify.inject({
     url: '/',
-    method: 'GET'
+    method: 'GET',
   }, (err, res) => {
     t.error(err)
     t.is(res.statusCode, 200)
-    t.deepEqual(JSON.parse(res.payload), { hello: 'world' })
+    t.deepEqual(JSON.parse(res.payload), {hello: 'world'})
   })
 })
 
@@ -1311,31 +1311,31 @@ test('Register hooks inside a plugin after an encapsulated plugin', t => {
   t.plan(7)
   const fastify = Fastify()
 
-  fastify.register(function (instance, opts, next) {
-    instance.get('/', function (request, reply) {
-      reply.send({ hello: 'world' })
+  fastify.register(function(instance, opts, next) {
+    instance.get('/', function(request, reply) {
+      reply.send({hello: 'world'})
     })
 
     next()
   })
 
-  fastify.register(fp(function (instance, opts, next) {
-    instance.addHook('onRequest', function (req, res, next) {
+  fastify.register(fp(function(instance, opts, next) {
+    instance.addHook('onRequest', function(req, res, next) {
       t.ok('called')
       next()
     })
 
-    instance.addHook('preHandler', function (request, reply, next) {
+    instance.addHook('preHandler', function(request, reply, next) {
       t.ok('called')
       next()
     })
 
-    instance.addHook('onSend', function (request, reply, payload, next) {
+    instance.addHook('onSend', function(request, reply, payload, next) {
       t.ok('called')
       next()
     })
 
-    instance.addHook('onResponse', function (res, next) {
+    instance.addHook('onResponse', function(res, next) {
       t.ok('called')
       next()
     })
@@ -1346,7 +1346,7 @@ test('Register hooks inside a plugin after an encapsulated plugin', t => {
   fastify.inject('/', (err, res) => {
     t.error(err)
     t.is(res.statusCode, 200)
-    t.deepEqual(JSON.parse(res.payload), { hello: 'world' })
+    t.deepEqual(JSON.parse(res.payload), {hello: 'world'})
   })
 })
 
@@ -1354,20 +1354,20 @@ test('onRequest hooks should run in the order in which they are defined', t => {
   t.plan(9)
   const fastify = Fastify()
 
-  fastify.register(function (instance, opts, next) {
-    instance.addHook('onRequest', function (req, res, next) {
+  fastify.register(function(instance, opts, next) {
+    instance.addHook('onRequest', function(req, res, next) {
       t.strictEqual(req.previous, undefined)
       req.previous = 1
       next()
     })
 
-    instance.get('/', function (request, reply) {
+    instance.get('/', function(request, reply) {
       t.strictEqual(request.req.previous, 5)
-      reply.send({ hello: 'world' })
+      reply.send({hello: 'world'})
     })
 
-    instance.register(fp(function (i, opts, next) {
-      i.addHook('onRequest', function (req, res, next) {
+    instance.register(fp(function(i, opts, next) {
+      i.addHook('onRequest', function(req, res, next) {
         t.strictEqual(req.previous, 1)
         req.previous = 2
         next()
@@ -1378,15 +1378,15 @@ test('onRequest hooks should run in the order in which they are defined', t => {
     next()
   })
 
-  fastify.register(fp(function (instance, opts, next) {
-    instance.addHook('onRequest', function (req, res, next) {
+  fastify.register(fp(function(instance, opts, next) {
+    instance.addHook('onRequest', function(req, res, next) {
       t.strictEqual(req.previous, 2)
       req.previous = 3
       next()
     })
 
-    instance.register(fp(function (i, opts, next) {
-      i.addHook('onRequest', function (req, res, next) {
+    instance.register(fp(function(i, opts, next) {
+      i.addHook('onRequest', function(req, res, next) {
         t.strictEqual(req.previous, 3)
         req.previous = 4
         next()
@@ -1394,7 +1394,7 @@ test('onRequest hooks should run in the order in which they are defined', t => {
       next()
     }))
 
-    instance.addHook('onRequest', function (req, res, next) {
+    instance.addHook('onRequest', function(req, res, next) {
       t.strictEqual(req.previous, 4)
       req.previous = 5
       next()
@@ -1406,7 +1406,7 @@ test('onRequest hooks should run in the order in which they are defined', t => {
   fastify.inject('/', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 200)
-    t.deepEqual(JSON.parse(res.payload), { hello: 'world' })
+    t.deepEqual(JSON.parse(res.payload), {hello: 'world'})
   })
 })
 
@@ -1414,20 +1414,20 @@ test('preHandler hooks should run in the order in which they are defined', t => 
   t.plan(9)
   const fastify = Fastify()
 
-  fastify.register(function (instance, opts, next) {
-    instance.addHook('preHandler', function (request, reply, next) {
+  fastify.register(function(instance, opts, next) {
+    instance.addHook('preHandler', function(request, reply, next) {
       t.strictEqual(request.previous, undefined)
       request.previous = 1
       next()
     })
 
-    instance.get('/', function (request, reply) {
+    instance.get('/', function(request, reply) {
       t.strictEqual(request.previous, 5)
-      reply.send({ hello: 'world' })
+      reply.send({hello: 'world'})
     })
 
-    instance.register(fp(function (i, opts, next) {
-      i.addHook('preHandler', function (request, reply, next) {
+    instance.register(fp(function(i, opts, next) {
+      i.addHook('preHandler', function(request, reply, next) {
         t.strictEqual(request.previous, 1)
         request.previous = 2
         next()
@@ -1438,15 +1438,15 @@ test('preHandler hooks should run in the order in which they are defined', t => 
     next()
   })
 
-  fastify.register(fp(function (instance, opts, next) {
-    instance.addHook('preHandler', function (request, reply, next) {
+  fastify.register(fp(function(instance, opts, next) {
+    instance.addHook('preHandler', function(request, reply, next) {
       t.strictEqual(request.previous, 2)
       request.previous = 3
       next()
     })
 
-    instance.register(fp(function (i, opts, next) {
-      i.addHook('preHandler', function (request, reply, next) {
+    instance.register(fp(function(i, opts, next) {
+      i.addHook('preHandler', function(request, reply, next) {
         t.strictEqual(request.previous, 3)
         request.previous = 4
         next()
@@ -1454,7 +1454,7 @@ test('preHandler hooks should run in the order in which they are defined', t => 
       next()
     }))
 
-    instance.addHook('preHandler', function (request, reply, next) {
+    instance.addHook('preHandler', function(request, reply, next) {
       t.strictEqual(request.previous, 4)
       request.previous = 5
       next()
@@ -1466,7 +1466,7 @@ test('preHandler hooks should run in the order in which they are defined', t => 
   fastify.inject('/', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 200)
-    t.deepEqual(JSON.parse(res.payload), { hello: 'world' })
+    t.deepEqual(JSON.parse(res.payload), {hello: 'world'})
   })
 })
 
@@ -1474,19 +1474,19 @@ test('onSend hooks should run in the order in which they are defined', t => {
   t.plan(8)
   const fastify = Fastify()
 
-  fastify.register(function (instance, opts, next) {
-    instance.addHook('onSend', function (request, reply, payload, next) {
+  fastify.register(function(instance, opts, next) {
+    instance.addHook('onSend', function(request, reply, payload, next) {
       t.strictEqual(request.previous, undefined)
       request.previous = 1
       next()
     })
 
-    instance.get('/', function (request, reply) {
+    instance.get('/', function(request, reply) {
       reply.send({})
     })
 
-    instance.register(fp(function (i, opts, next) {
-      i.addHook('onSend', function (request, reply, payload, next) {
+    instance.register(fp(function(i, opts, next) {
+      i.addHook('onSend', function(request, reply, payload, next) {
         t.strictEqual(request.previous, 1)
         request.previous = 2
         next()
@@ -1497,15 +1497,15 @@ test('onSend hooks should run in the order in which they are defined', t => {
     next()
   })
 
-  fastify.register(fp(function (instance, opts, next) {
-    instance.addHook('onSend', function (request, reply, payload, next) {
+  fastify.register(fp(function(instance, opts, next) {
+    instance.addHook('onSend', function(request, reply, payload, next) {
       t.strictEqual(request.previous, 2)
       request.previous = 3
       next()
     })
 
-    instance.register(fp(function (i, opts, next) {
-      i.addHook('onSend', function (request, reply, payload, next) {
+    instance.register(fp(function(i, opts, next) {
+      i.addHook('onSend', function(request, reply, payload, next) {
         t.strictEqual(request.previous, 3)
         request.previous = 4
         next()
@@ -1513,7 +1513,7 @@ test('onSend hooks should run in the order in which they are defined', t => {
       next()
     }))
 
-    instance.addHook('onSend', function (request, reply, payload, next) {
+    instance.addHook('onSend', function(request, reply, payload, next) {
       t.strictEqual(request.previous, 4)
       next(null, '5')
     })
@@ -1532,19 +1532,19 @@ test('onResponse hooks should run in the order in which they are defined', t => 
   t.plan(8)
   const fastify = Fastify()
 
-  fastify.register(function (instance, opts, next) {
-    instance.addHook('onResponse', function (res, next) {
+  fastify.register(function(instance, opts, next) {
+    instance.addHook('onResponse', function(res, next) {
       t.strictEqual(res.previous, undefined)
       res.previous = 1
       next()
     })
 
-    instance.get('/', function (request, reply) {
-      reply.send({ hello: 'world' })
+    instance.get('/', function(request, reply) {
+      reply.send({hello: 'world'})
     })
 
-    instance.register(fp(function (i, opts, next) {
-      i.addHook('onResponse', function (res, next) {
+    instance.register(fp(function(i, opts, next) {
+      i.addHook('onResponse', function(res, next) {
         t.strictEqual(res.previous, 1)
         res.previous = 2
         next()
@@ -1555,15 +1555,15 @@ test('onResponse hooks should run in the order in which they are defined', t => 
     next()
   })
 
-  fastify.register(fp(function (instance, opts, next) {
-    instance.addHook('onResponse', function (res, next) {
+  fastify.register(fp(function(instance, opts, next) {
+    instance.addHook('onResponse', function(res, next) {
       t.strictEqual(res.previous, 2)
       res.previous = 3
       next()
     })
 
-    instance.register(fp(function (i, opts, next) {
-      i.addHook('onResponse', function (res, next) {
+    instance.register(fp(function(i, opts, next) {
+      i.addHook('onResponse', function(res, next) {
         t.strictEqual(res.previous, 3)
         res.previous = 4
         next()
@@ -1571,7 +1571,7 @@ test('onResponse hooks should run in the order in which they are defined', t => 
       next()
     }))
 
-    instance.addHook('onResponse', function (res, next) {
+    instance.addHook('onResponse', function(res, next) {
       t.strictEqual(res.previous, 4)
       next()
     })
@@ -1582,7 +1582,7 @@ test('onResponse hooks should run in the order in which they are defined', t => 
   fastify.inject('/', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 200)
-    t.deepEqual(JSON.parse(res.payload), { hello: 'world' })
+    t.deepEqual(JSON.parse(res.payload), {hello: 'world'})
   })
 })
 

@@ -35,7 +35,7 @@ test('fastify.register with fastify-plugin should not incapsulate his code', t =
 
     instance.get('/', (req, reply) => {
       t.ok(instance.test)
-      reply.send({ hello: 'world' })
+      reply.send({hello: 'world'})
     })
 
     next()
@@ -51,12 +51,12 @@ test('fastify.register with fastify-plugin should not incapsulate his code', t =
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port
+      url: 'http://localhost:' + fastify.server.address().port,
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
       t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), { hello: 'world' })
+      t.deepEqual(JSON.parse(body), {hello: 'world'})
     })
   })
 })
@@ -65,13 +65,13 @@ test('fastify.register with fastify-plugin registers root level plugins', t => {
   t.plan(15)
   const fastify = Fastify()
 
-  function rootPlugin (instance, opts, next) {
+  function rootPlugin(instance, opts, next) {
     instance.decorate('test', 'first')
     t.ok(instance.test)
     next()
   }
 
-  function innerPlugin (instance, opts, next) {
+  function innerPlugin(instance, opts, next) {
     instance.decorate('test2', 'second')
     next()
   }
@@ -84,7 +84,7 @@ test('fastify.register with fastify-plugin registers root level plugins', t => {
 
     instance.get('/test2', (req, reply) => {
       t.ok(instance.test2)
-      reply.send({ test2: instance.test2 })
+      reply.send({test2: instance.test2})
     })
 
     next()
@@ -97,7 +97,7 @@ test('fastify.register with fastify-plugin registers root level plugins', t => {
 
   fastify.get('/', (req, reply) => {
     t.ok(fastify.test)
-    reply.send({ test: fastify.test })
+    reply.send({test: fastify.test})
   })
 
   fastify.listen(0, err => {
@@ -106,22 +106,22 @@ test('fastify.register with fastify-plugin registers root level plugins', t => {
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port
+      url: 'http://localhost:' + fastify.server.address().port,
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
       t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), { test: 'first' })
+      t.deepEqual(JSON.parse(body), {test: 'first'})
     })
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/test2'
+      url: 'http://localhost:' + fastify.server.address().port + '/test2',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
       t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), { test2: 'second' })
+      t.deepEqual(JSON.parse(body), {test2: 'second'})
     })
   })
 })
@@ -151,7 +151,7 @@ test('check dependencies - should not throw', t => {
     instance.get('/', (req, reply) => {
       t.ok(instance.test)
       t.ok(instance.otherTest)
-      reply.send({ hello: 'world' })
+      reply.send({hello: 'world'})
     })
 
     next()
@@ -168,12 +168,12 @@ test('check dependencies - should not throw', t => {
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port
+      url: 'http://localhost:' + fastify.server.address().port,
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
       t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), { hello: 'world' })
+      t.deepEqual(JSON.parse(body), {hello: 'world'})
     })
   })
 })
@@ -203,7 +203,7 @@ test('check dependencies - should throw', t => {
     instance.get('/', (req, reply) => {
       t.ok(instance.test)
       t.notOk(instance.otherTest)
-      reply.send({ hello: 'world' })
+      reply.send({hello: 'world'})
     })
 
     next()
@@ -219,12 +219,12 @@ test('check dependencies - should throw', t => {
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port
+      url: 'http://localhost:' + fastify.server.address().port,
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
       t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), { hello: 'world' })
+      t.deepEqual(JSON.parse(body), {hello: 'world'})
     })
   })
 })
@@ -240,7 +240,7 @@ test('plugin incapsulation', t => {
     }))
 
     instance.get('/first', (req, reply) => {
-      reply.send({ plugin: instance.test })
+      reply.send({plugin: instance.test})
     })
 
     next()
@@ -253,7 +253,7 @@ test('plugin incapsulation', t => {
     }))
 
     instance.get('/second', (req, reply) => {
-      reply.send({ plugin: instance.test })
+      reply.send({plugin: instance.test})
     })
 
     next()
@@ -269,22 +269,22 @@ test('plugin incapsulation', t => {
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/first'
+      url: 'http://localhost:' + fastify.server.address().port + '/first',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
       t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), { plugin: 'first' })
+      t.deepEqual(JSON.parse(body), {plugin: 'first'})
     })
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/second'
+      url: 'http://localhost:' + fastify.server.address().port + '/second',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
       t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), { plugin: 'second' })
+      t.deepEqual(JSON.parse(body), {plugin: 'second'})
     })
   })
 })
@@ -307,14 +307,15 @@ test('add hooks after route declaration', t => {
   t.plan(3)
   const fastify = Fastify()
 
-  function plugin (instance, opts, next) {
+  function plugin(instance, opts, next) {
     instance.decorateRequest('check', {})
     setImmediate(next)
   }
+
   fastify.register(fp(plugin))
 
   fastify.register((instance, options, next) => {
-    instance.addHook('preHandler', function b (req, res, next) {
+    instance.addHook('preHandler', function b(req, res, next) {
       req.check.hook2 = true
       next()
     })
@@ -323,7 +324,7 @@ test('add hooks after route declaration', t => {
       reply.send(req.check)
     })
 
-    instance.addHook('preHandler', function c (req, res, next) {
+    instance.addHook('preHandler', function c(req, res, next) {
       req.check.hook3 = true
       next()
     })
@@ -331,7 +332,7 @@ test('add hooks after route declaration', t => {
     next()
   })
 
-  fastify.addHook('preHandler', function a (req, res, next) {
+  fastify.addHook('preHandler', function a(req, res, next) {
     req.check.hook1 = true
     next()
   })
@@ -341,10 +342,10 @@ test('add hooks after route declaration', t => {
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port
+      url: 'http://localhost:' + fastify.server.address().port,
     }, (err, response, body) => {
       t.error(err)
-      t.deepEqual(JSON.parse(body), { hook1: true, hook2: true, hook3: true })
+      t.deepEqual(JSON.parse(body), {hook1: true, hook2: true, hook3: true})
       fastify.close()
     })
   })
@@ -357,30 +358,30 @@ test('nested plugins', t => {
 
   t.tearDown(fastify.close.bind(fastify))
 
-  fastify.register(function (fastify, opts, next) {
+  fastify.register(function(fastify, opts, next) {
     fastify.register((fastify, opts, next) => {
-      fastify.get('/', function (req, reply) {
+      fastify.get('/', function(req, reply) {
         reply.send('I am child 1')
       })
       next()
-    }, { prefix: '/child1' })
+    }, {prefix: '/child1'})
 
     fastify.register((fastify, opts, next) => {
-      fastify.get('/', function (req, reply) {
+      fastify.get('/', function(req, reply) {
         reply.send('I am child 2')
       })
       next()
-    }, { prefix: '/child2' })
+    }, {prefix: '/child2'})
 
     next()
-  }, { prefix: '/parent' })
+  }, {prefix: '/parent'})
 
   fastify.listen(0, err => {
     t.error(err)
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/parent/child1'
+      url: 'http://localhost:' + fastify.server.address().port + '/parent/child1',
     }, (err, response, body) => {
       t.error(err)
       t.deepEqual(body.toString(), 'I am child 1')
@@ -388,7 +389,7 @@ test('nested plugins', t => {
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/parent/child2'
+      url: 'http://localhost:' + fastify.server.address().port + '/parent/child2',
     }, (err, response, body) => {
       t.error(err)
       t.deepEqual(body.toString(), 'I am child 2')
@@ -409,8 +410,8 @@ test('plugin metadata - decorators', t => {
     decorators: {
       fastify: ['plugin1'],
       reply: ['plugin1'],
-      request: ['plugin1']
-    }
+      request: ['plugin1'],
+    },
   }
 
   fastify.register(plugin)
@@ -419,7 +420,7 @@ test('plugin metadata - decorators', t => {
     t.ok(fastify.plugin)
   })
 
-  function plugin (instance, opts, next) {
+  function plugin(instance, opts, next) {
     instance.decorate('plugin', true)
     next()
   }
@@ -431,12 +432,12 @@ test('plugin metadata - dependencies', t => {
 
   dependency[Symbol.for('skip-override')] = true
   dependency[Symbol.for('plugin-meta')] = {
-    name: 'plugin'
+    name: 'plugin',
   }
 
   plugin[Symbol.for('skip-override')] = true
   plugin[Symbol.for('plugin-meta')] = {
-    dependencies: ['plugin']
+    dependencies: ['plugin'],
   }
 
   fastify.register(dependency)
@@ -446,11 +447,11 @@ test('plugin metadata - dependencies', t => {
     t.pass('everything right')
   })
 
-  function dependency (instance, opts, next) {
+  function dependency(instance, opts, next) {
     next()
   }
 
-  function plugin (instance, opts, next) {
+  function plugin(instance, opts, next) {
     next()
   }
 })
@@ -461,12 +462,12 @@ test('plugin metadata - dependencies (nested)', t => {
 
   dependency[Symbol.for('skip-override')] = true
   dependency[Symbol.for('plugin-meta')] = {
-    name: 'plugin'
+    name: 'plugin',
   }
 
   nested[Symbol.for('skip-override')] = true
   nested[Symbol.for('plugin-meta')] = {
-    dependencies: ['plugin']
+    dependencies: ['plugin'],
   }
 
   fastify.register(dependency)
@@ -476,16 +477,16 @@ test('plugin metadata - dependencies (nested)', t => {
     t.pass('everything right')
   })
 
-  function dependency (instance, opts, next) {
+  function dependency(instance, opts, next) {
     next()
   }
 
-  function plugin (instance, opts, next) {
+  function plugin(instance, opts, next) {
     instance.register(nested)
     next()
   }
 
-  function nested (instance, opts, next) {
+  function nested(instance, opts, next) {
     next()
   }
 })

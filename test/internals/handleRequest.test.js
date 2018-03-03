@@ -37,8 +37,8 @@ test('request should be defined in onSend Hook on post request with content type
       method: 'POST',
       url: 'http://localhost:' + fastify.server.address().port,
       headers: {
-        'content-type': 'application/json'
-      }
+        'content-type': 'application/json',
+      },
     }, (err, response, body) => {
       t.error(err)
       // a 400 error is expected because of no body
@@ -68,8 +68,8 @@ test('request should be defined in onSend Hook on post request with content type
       method: 'POST',
       url: 'http://localhost:' + fastify.server.address().port,
       headers: {
-        'content-type': 'application/x-www-form-urlencoded'
-      }
+        'content-type': 'application/x-www-form-urlencoded',
+      },
     }, (err, response, body) => {
       t.error(err)
       // a 415 error is expected because of missing content type parser
@@ -99,8 +99,8 @@ test('request should be defined in onSend Hook on options request with content t
       method: 'OPTIONS',
       url: 'http://localhost:' + fastify.server.address().port,
       headers: {
-        'content-type': 'application/x-www-form-urlencoded'
-      }
+        'content-type': 'application/x-www-form-urlencoded',
+      },
     }, (err, response, body) => {
       t.error(err)
       // a 415 error is expected because of missing content type parser
@@ -125,7 +125,7 @@ test('request should respond with an error if an unserialized payload is sent in
     t.deepEqual(JSON.parse(res.payload), {
       error: 'Internal Server Error',
       message: "Attempted to send payload of invalid type 'object'. Expected a string, Buffer, or stream.",
-      statusCode: 500
+      statusCode: 500,
     })
   })
 })

@@ -12,7 +12,7 @@ test('beforeHandler', t => {
     beforeHandler: (req, reply, done) => {
       req.body.beforeHandler = true
       done()
-    }
+    },
   }, (req, reply) => {
     reply.send(req.body)
   })
@@ -20,11 +20,11 @@ test('beforeHandler', t => {
   fastify.inject({
     method: 'POST',
     url: '/',
-    payload: { hello: 'world' }
+    payload: {hello: 'world'},
   }, (err, res) => {
     t.error(err)
     var payload = JSON.parse(res.payload)
-    t.deepEqual(payload, { beforeHandler: true, hello: 'world' })
+    t.deepEqual(payload, {beforeHandler: true, hello: 'world'})
   })
 })
 
@@ -41,7 +41,7 @@ test('beforeHandler should be called after preHandler hook', t => {
     beforeHandler: (req, reply, done) => {
       req.body.check += 'b'
       done()
-    }
+    },
   }, (req, reply) => {
     reply.send(req.body)
   })
@@ -49,11 +49,11 @@ test('beforeHandler should be called after preHandler hook', t => {
   fastify.inject({
     method: 'POST',
     url: '/',
-    payload: { hello: 'world' }
+    payload: {hello: 'world'},
   }, (err, res) => {
     t.error(err)
     var payload = JSON.parse(res.payload)
-    t.deepEqual(payload, { check: 'ab', hello: 'world' })
+    t.deepEqual(payload, {check: 'ab', hello: 'world'})
   })
 })
 
@@ -65,7 +65,7 @@ test('beforeHandler should be unique per route', t => {
     beforeHandler: (req, reply, done) => {
       req.body.hello = 'earth'
       done()
-    }
+    },
   }, (req, reply) => {
     reply.send(req.body)
   })
@@ -77,21 +77,21 @@ test('beforeHandler should be unique per route', t => {
   fastify.inject({
     method: 'POST',
     url: '/',
-    payload: { hello: 'world' }
+    payload: {hello: 'world'},
   }, (err, res) => {
     t.error(err)
     var payload = JSON.parse(res.payload)
-    t.deepEqual(payload, { hello: 'earth' })
+    t.deepEqual(payload, {hello: 'earth'})
   })
 
   fastify.inject({
     method: 'POST',
     url: '/no',
-    payload: { hello: 'world' }
+    payload: {hello: 'world'},
   }, (err, res) => {
     t.error(err)
     var payload = JSON.parse(res.payload)
-    t.deepEqual(payload, { hello: 'world' })
+    t.deepEqual(payload, {hello: 'world'})
   })
 })
 
@@ -102,7 +102,7 @@ test('beforeHandler should handle errors', t => {
   fastify.post('/', {
     beforeHandler: (req, reply, done) => {
       done(new Error('kaboom'))
-    }
+    },
   }, (req, reply) => {
     reply.send(req.body)
   })
@@ -110,7 +110,7 @@ test('beforeHandler should handle errors', t => {
   fastify.inject({
     method: 'POST',
     url: '/',
-    payload: { hello: 'world' }
+    payload: {hello: 'world'},
   }, (err, res) => {
     t.error(err)
     var payload = JSON.parse(res.payload)
@@ -118,7 +118,7 @@ test('beforeHandler should handle errors', t => {
     t.deepEqual(payload, {
       message: 'kaboom',
       error: 'Internal Server Error',
-      statusCode: 500
+      statusCode: 500,
     })
   })
 })
@@ -131,7 +131,7 @@ test('beforeHandler should handle errors with custom status code', t => {
     beforeHandler: (req, reply, done) => {
       reply.code(401)
       done(new Error('go away'))
-    }
+    },
   }, (req, reply) => {
     reply.send(req.body)
   })
@@ -139,7 +139,7 @@ test('beforeHandler should handle errors with custom status code', t => {
   fastify.inject({
     method: 'POST',
     url: '/',
-    payload: { hello: 'world' }
+    payload: {hello: 'world'},
   }, (err, res) => {
     t.error(err)
     var payload = JSON.parse(res.payload)
@@ -147,7 +147,7 @@ test('beforeHandler should handle errors with custom status code', t => {
     t.deepEqual(payload, {
       message: 'go away',
       error: 'Unauthorized',
-      statusCode: 401
+      statusCode: 401,
     })
   })
 })
@@ -160,7 +160,7 @@ test('beforeHandler should handle errors with custom status code in shorthand fo
     beforeHandler: (req, reply, done) => {
       reply.code(401)
       done(new Error('go away'))
-    }
+    },
   }, (req, reply) => {
     reply.send(req.body)
   })
@@ -168,7 +168,7 @@ test('beforeHandler should handle errors with custom status code in shorthand fo
   fastify.inject({
     method: 'POST',
     url: '/',
-    payload: { hello: 'world' }
+    payload: {hello: 'world'},
   }, (err, res) => {
     t.error(err)
     var payload = JSON.parse(res.payload)
@@ -176,7 +176,7 @@ test('beforeHandler should handle errors with custom status code in shorthand fo
     t.deepEqual(payload, {
       message: 'go away',
       error: 'Unauthorized',
-      statusCode: 401
+      statusCode: 401,
     })
   })
 })
@@ -194,8 +194,8 @@ test('beforeHandler could accept an array of functions', t => {
       (req, reply, done) => {
         req.body.beforeHandler += 'b'
         done()
-      }
-    ]
+      },
+    ],
   }, (req, reply) => {
     reply.send(req.body)
   })
@@ -203,11 +203,11 @@ test('beforeHandler could accept an array of functions', t => {
   fastify.inject({
     method: 'POST',
     url: '/',
-    payload: { hello: 'world' }
+    payload: {hello: 'world'},
   }, (err, res) => {
     t.error(err)
     var payload = JSON.parse(res.payload)
-    t.deepEqual(payload, { beforeHandler: 'ab', hello: 'world' })
+    t.deepEqual(payload, {beforeHandler: 'ab', hello: 'world'})
   })
 })
 
@@ -224,7 +224,7 @@ test('beforeHandler does not interfere with preHandler', t => {
     beforeHandler: (req, reply, done) => {
       req.body.check += 'b'
       done()
-    }
+    },
   }, (req, reply) => {
     reply.send(req.body)
   })
@@ -236,20 +236,20 @@ test('beforeHandler does not interfere with preHandler', t => {
   fastify.inject({
     method: 'post',
     url: '/',
-    payload: { hello: 'world' }
+    payload: {hello: 'world'},
   }, (err, res) => {
     t.error(err)
     var payload = JSON.parse(res.payload)
-    t.deepEqual(payload, { check: 'ab', hello: 'world' })
+    t.deepEqual(payload, {check: 'ab', hello: 'world'})
   })
 
   fastify.inject({
     method: 'post',
     url: '/no',
-    payload: { hello: 'world' }
+    payload: {hello: 'world'},
   }, (err, res) => {
     t.error(err)
     var payload = JSON.parse(res.payload)
-    t.deepEqual(payload, { check: 'a', hello: 'world' })
+    t.deepEqual(payload, {check: 'a', hello: 'world'})
   })
 })

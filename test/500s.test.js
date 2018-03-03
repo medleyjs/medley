@@ -9,13 +9,13 @@ test('default 500', t => {
 
   const fastify = Fastify()
 
-  fastify.get('/', function (req, reply) {
+  fastify.get('/', function(req, reply) {
     reply.send(new Error('kaboom'))
   })
 
   fastify.inject({
     method: 'GET',
-    url: '/'
+    url: '/',
   }, (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 500)
@@ -23,7 +23,7 @@ test('default 500', t => {
     t.deepEqual(JSON.parse(res.payload), {
       error: 'Internal Server Error',
       message: 'kaboom',
-      statusCode: 500
+      statusCode: 500,
     })
   })
 })
@@ -33,11 +33,11 @@ test('custom 500', t => {
 
   const fastify = Fastify()
 
-  fastify.get('/', function (req, reply) {
+  fastify.get('/', function(req, reply) {
     reply.send(new Error('kaboom'))
   })
 
-  fastify.setErrorHandler(function (err, request, reply) {
+  fastify.setErrorHandler(function(err, request, reply) {
     t.type(request, 'object')
     t.type(request, fastify._Request)
     reply
@@ -48,7 +48,7 @@ test('custom 500', t => {
 
   fastify.inject({
     method: 'GET',
-    url: '/'
+    url: '/',
   }, (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 500)
@@ -62,16 +62,16 @@ test('encapsulated 500', t => {
 
   const fastify = Fastify()
 
-  fastify.get('/', function (req, reply) {
+  fastify.get('/', function(req, reply) {
     reply.send(new Error('kaboom'))
   })
 
-  fastify.register(function (f, opts, next) {
-    f.get('/', function (req, reply) {
+  fastify.register(function(f, opts, next) {
+    f.get('/', function(req, reply) {
       reply.send(new Error('kaboom'))
     })
 
-    f.setErrorHandler(function (err, request, reply) {
+    f.setErrorHandler(function(err, request, reply) {
       t.type(request, 'object')
       t.type(request, f._Request)
       reply
@@ -81,11 +81,11 @@ test('encapsulated 500', t => {
     })
 
     next()
-  }, { prefix: 'test' })
+  }, {prefix: 'test'})
 
   fastify.inject({
     method: 'GET',
-    url: '/test'
+    url: '/test',
   }, (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 500)
@@ -95,7 +95,7 @@ test('encapsulated 500', t => {
 
   fastify.inject({
     method: 'GET',
-    url: '/'
+    url: '/',
   }, (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 500)
@@ -103,7 +103,7 @@ test('encapsulated 500', t => {
     t.deepEqual(JSON.parse(res.payload), {
       error: 'Internal Server Error',
       message: 'kaboom',
-      statusCode: 500
+      statusCode: 500,
     })
   })
 })
@@ -113,11 +113,11 @@ test('custom 500 with hooks', t => {
 
   const fastify = Fastify()
 
-  fastify.get('/', function (req, reply) {
+  fastify.get('/', function(req, reply) {
     reply.send(new Error('kaboom'))
   })
 
-  fastify.setErrorHandler(function (err, request, reply) {
+  fastify.setErrorHandler(function(err, request, reply) {
     reply
       .code(500)
       .type('text/plain')
@@ -139,7 +139,7 @@ test('custom 500 with hooks', t => {
 
   fastify.inject({
     method: 'GET',
-    url: '/'
+    url: '/',
   }, (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 500)

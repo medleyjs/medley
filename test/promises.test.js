@@ -11,33 +11,33 @@ const opts = {
       type: 'object',
       properties: {
         hello: {
-          type: 'string'
-        }
-      }
-    }
-  }
+          type: 'string',
+        },
+      },
+    },
+  },
 }
 
-fastify.get('/return', opts, function (req, reply) {
+fastify.get('/return', opts, function(req, reply) {
   const promise = new Promise((resolve, reject) => {
-    resolve({ hello: 'world' })
+    resolve({hello: 'world'})
   })
   return promise
 })
 
-fastify.get('/return-error', opts, function (req, reply) {
+fastify.get('/return-error', opts, function(req, reply) {
   const promise = new Promise((resolve, reject) => {
     reject(new Error('some error'))
   })
   return promise
 })
 
-fastify.get('/double', function (req, reply) {
-  setTimeout(function () {
+fastify.get('/double', function(req, reply) {
+  setTimeout(function() {
     // this should not throw
-    reply.send({ hello: 'world' })
+    reply.send({hello: 'world'})
   }, 20)
-  return Promise.resolve({ hello: '42' })
+  return Promise.resolve({hello: '42'})
 })
 
 fastify.listen(0, err => {
@@ -48,12 +48,12 @@ fastify.listen(0, err => {
     t.plan(4)
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/return'
+      url: 'http://localhost:' + fastify.server.address().port + '/return',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
       t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), { hello: 'world' })
+      t.deepEqual(JSON.parse(body), {hello: 'world'})
     })
   })
 
@@ -61,7 +61,7 @@ fastify.listen(0, err => {
     t.plan(2)
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/return-error'
+      url: 'http://localhost:' + fastify.server.address().port + '/return-error',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 500)
@@ -73,11 +73,11 @@ fastify.listen(0, err => {
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/double'
+      url: 'http://localhost:' + fastify.server.address().port + '/double',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
-      t.deepEqual(JSON.parse(body), { hello: '42' })
+      t.deepEqual(JSON.parse(body), {hello: '42'})
     })
   })
 })

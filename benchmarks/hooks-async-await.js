@@ -8,18 +8,18 @@ const opts = {
       type: 'object',
       properties: {
         hello: {
-          type: 'string'
-        }
-      }
-    }
-  }
+          type: 'string',
+        },
+      },
+    },
+  },
 }
 
-function promiseFunction (resolve) {
+function promiseFunction(resolve) {
   setImmediate(resolve)
 }
 
-async function asyncHook () {
+async function asyncHook() {
   await new Promise(promiseFunction)
 }
 
@@ -31,7 +31,7 @@ fastify
   .addHook('preHandler', asyncHook)
   .addHook('onSend', asyncHook)
 
-fastify.get('/', opts, function (request, reply) {
+fastify.get('/', opts, function(request, reply) {
   reply.send({hello: 'world'})
 })
 

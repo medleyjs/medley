@@ -9,17 +9,17 @@ let errored = false
 fastify.route({
   method: 'POST',
   path: '/jsonBody',
-  handler: function (req, reply) {
+  handler(req, reply) {
     throw new Error('kaboom')
-  }
+  },
 })
 
 const reqOpts = {
   method: 'POST',
   url: '/jsonBody',
   payload: {
-    hello: 'world'
-  }
+    hello: 'world',
+  },
 }
 
 process.on('uncaughtException', (err) => {

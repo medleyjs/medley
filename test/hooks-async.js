@@ -5,13 +5,13 @@ const sleep = require('then-sleep')
 const Fastify = require('..')
 const fs = require('fs')
 
-function asyncHookTest (t) {
+function asyncHookTest(t) {
   const test = t.test
-  test('async hooks', t => {
+  test('async hooks', (t) => {
     t.plan(19)
 
     const fastify = Fastify()
-    fastify.addHook('onRequest', async function (req, res) {
+    fastify.addHook('onRequest', async function(req, res) {
       await sleep(1)
       req.testVal = 'the request is coming'
       res.testVal = 'the reply has come'
@@ -20,7 +20,7 @@ function asyncHookTest (t) {
       }
     })
 
-    fastify.addHook('preHandler', async function (request, reply) {
+    fastify.addHook('preHandler', async function(request, reply) {
       await sleep(1)
       request.test = 'the request is coming'
       reply.test = 'the reply has come'
@@ -29,49 +29,49 @@ function asyncHookTest (t) {
       }
     })
 
-    fastify.addHook('onSend', async function (request, reply, payload) {
+    fastify.addHook('onSend', async function(request, reply, payload) {
       await sleep(1)
       t.ok('onSend called')
     })
 
-    fastify.addHook('onResponse', async function (res) {
+    fastify.addHook('onResponse', async function(res) {
       await sleep(1)
       t.ok('onResponse called')
     })
 
-    fastify.get('/', function (request, reply) {
+    fastify.get('/', function(request, reply) {
       t.is(request.req.testVal, 'the request is coming')
       t.is(reply.res.testVal, 'the reply has come')
       t.is(request.test, 'the request is coming')
       t.is(reply.test, 'the reply has come')
-      reply.code(200).send({ hello: 'world' })
+      reply.code(200).send({hello: 'world'})
     })
 
-    fastify.head('/', function (req, reply) {
-      reply.code(200).send({ hello: 'world' })
+    fastify.head('/', function(req, reply) {
+      reply.code(200).send({hello: 'world'})
     })
 
-    fastify.delete('/', function (req, reply) {
-      reply.code(200).send({ hello: 'world' })
+    fastify.delete('/', function(req, reply) {
+      reply.code(200).send({hello: 'world'})
     })
 
-    fastify.listen(0, err => {
+    fastify.listen(0, (err) => {
       t.error(err)
       fastify.server.unref()
 
       sget({
         method: 'GET',
-        url: 'http://localhost:' + fastify.server.address().port
+        url: 'http://localhost:' + fastify.server.address().port,
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 200)
         t.strictEqual(response.headers['content-length'], '' + body.length)
-        t.deepEqual(JSON.parse(body), { hello: 'world' })
+        t.deepEqual(JSON.parse(body), {hello: 'world'})
       })
 
       sget({
         method: 'HEAD',
-        url: 'http://localhost:' + fastify.server.address().port
+        url: 'http://localhost:' + fastify.server.address().port,
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 500)
@@ -79,7 +79,7 @@ function asyncHookTest (t) {
 
       sget({
         method: 'DELETE',
-        url: 'http://localhost:' + fastify.server.address().port
+        url: 'http://localhost:' + fastify.server.address().port,
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 500)
@@ -87,26 +87,26 @@ function asyncHookTest (t) {
     })
   })
 
-  test('modify payload', t => {
+  test('modify payload', (t) => {
     t.plan(10)
     const fastify = Fastify()
-    const payload = { hello: 'world' }
-    const modifiedPayload = { hello: 'modified' }
+    const payload = {hello: 'world'}
+    const modifiedPayload = {hello: 'modified'}
     const anotherPayload = '"winter is coming"'
 
-    fastify.addHook('onSend', async function (request, reply, thePayload) {
+    fastify.addHook('onSend', async function(request, reply, thePayload) {
       t.ok('onSend called')
       t.deepEqual(JSON.parse(thePayload), payload)
       return thePayload.replace('world', 'modified')
     })
 
-    fastify.addHook('onSend', async function (request, reply, thePayload) {
+    fastify.addHook('onSend', async function(request, reply, thePayload) {
       t.ok('onSend called')
       t.deepEqual(JSON.parse(thePayload), modifiedPayload)
       return anotherPayload
     })
 
-    fastify.addHook('onSend', async function (request, reply, thePayload) {
+    fastify.addHook('onSend', async function(request, reply, thePayload) {
       t.ok('onSend called')
       t.strictEqual(thePayload, anotherPayload)
     })
@@ -117,7 +117,7 @@ function asyncHookTest (t) {
 
     fastify.inject({
       method: 'GET',
-      url: '/'
+      url: '/',
     }, (err, res) => {
       t.error(err)
       t.strictEqual(res.payload, anotherPayload)
@@ -126,7 +126,7 @@ function asyncHookTest (t) {
     })
   })
 
-  test('onRequest hooks should be able to block a request', t => {
+  test('onRequest hooks should be able to block a request', (t) => {
     t.plan(4)
     const fastify = Fastify()
 
@@ -150,13 +150,13 @@ function asyncHookTest (t) {
       t.ok('called')
     })
 
-    fastify.get('/', function (request, reply) {
+    fastify.get('/', function(request, reply) {
       t.fail('we should not be here')
     })
 
     fastify.inject({
       url: '/',
-      method: 'GET'
+      method: 'GET',
     }, (err, res) => {
       t.error(err)
       t.is(res.statusCode, 200)
@@ -164,7 +164,7 @@ function asyncHookTest (t) {
     })
   })
 
-  test('preHandler hooks should be able to block a request', t => {
+  test('preHandler hooks should be able to block a request', (t) => {
     t.plan(5)
     const fastify = Fastify()
 
@@ -184,13 +184,13 @@ function asyncHookTest (t) {
       t.ok('called')
     })
 
-    fastify.get('/', function (request, reply) {
+    fastify.get('/', function(request, reply) {
       t.fail('we should not be here')
     })
 
     fastify.inject({
       url: '/',
-      method: 'GET'
+      method: 'GET',
     }, (err, res) => {
       t.error(err)
       t.is(res.statusCode, 200)
@@ -198,7 +198,7 @@ function asyncHookTest (t) {
     })
   })
 
-  test('onRequest hooks should be able to block a request (last hook)', t => {
+  test('onRequest hooks should be able to block a request (last hook)', (t) => {
     t.plan(4)
     const fastify = Fastify()
 
@@ -218,13 +218,13 @@ function asyncHookTest (t) {
       t.ok('called')
     })
 
-    fastify.get('/', function (request, reply) {
+    fastify.get('/', function(request, reply) {
       t.fail('we should not be here')
     })
 
     fastify.inject({
       url: '/',
-      method: 'GET'
+      method: 'GET',
     }, (err, res) => {
       t.error(err)
       t.is(res.statusCode, 200)
@@ -232,7 +232,7 @@ function asyncHookTest (t) {
     })
   })
 
-  test('preHandler hooks should be able to block a request (last hook)', t => {
+  test('preHandler hooks should be able to block a request (last hook)', (t) => {
     t.plan(5)
     const fastify = Fastify()
 
@@ -248,13 +248,13 @@ function asyncHookTest (t) {
       t.ok('called')
     })
 
-    fastify.get('/', function (request, reply) {
+    fastify.get('/', function(request, reply) {
       t.fail('we should not be here')
     })
 
     fastify.inject({
       url: '/',
-      method: 'GET'
+      method: 'GET',
     }, (err, res) => {
       t.error(err)
       t.is(res.statusCode, 200)
@@ -262,7 +262,7 @@ function asyncHookTest (t) {
     })
   })
 
-  test('onRequest respond with a stream', t => {
+  test('onRequest respond with a stream', (t) => {
     t.plan(3)
     const fastify = Fastify()
 
@@ -290,20 +290,20 @@ function asyncHookTest (t) {
       t.ok('called')
     })
 
-    fastify.get('/', function (request, reply) {
+    fastify.get('/', function(request, reply) {
       t.fail('we should not be here')
     })
 
     fastify.inject({
       url: '/',
-      method: 'GET'
+      method: 'GET',
     }, (err, res) => {
       t.error(err)
       t.is(res.statusCode, 200)
     })
   })
 
-  test('preHandler respond with a stream', t => {
+  test('preHandler respond with a stream', (t) => {
     t.plan(7)
     const fastify = Fastify()
 
@@ -339,13 +339,13 @@ function asyncHookTest (t) {
       t.ok('called')
     })
 
-    fastify.get('/', function (request, reply) {
+    fastify.get('/', function(request, reply) {
       t.fail('we should not be here')
     })
 
     fastify.inject({
       url: '/',
-      method: 'GET'
+      method: 'GET',
     }, (err, res) => {
       t.error(err)
       t.is(res.statusCode, 200)

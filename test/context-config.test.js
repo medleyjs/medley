@@ -8,11 +8,11 @@ const Fastify = require('..')
 const routeOptions = {
   config: {
     value1: 'foo',
-    value2: true
-  }
+    value2: true,
+  },
 }
 
-function handler (req, reply) {
+function handler(req, reply) {
   reply.send(reply.context.config)
 }
 
@@ -21,20 +21,20 @@ test('config', t => {
   const fastify = Fastify()
 
   fastify.get('/get', {
-    config: Object.assign({}, routeOptions.config)
+    config: Object.assign({}, routeOptions.config),
   }, handler)
 
   fastify.route({
     method: 'GET',
     url: '/route',
-    handler: handler,
-    config: Object.assign({}, routeOptions.config)
+    handler,
+    config: Object.assign({}, routeOptions.config),
   })
 
   fastify.route({
     method: 'GET',
     url: '/no-config',
-    handler: handler
+    handler,
   })
 
   fastify.listen(0, err => {
@@ -44,7 +44,7 @@ test('config', t => {
     sget({
       method: 'GET',
       url: 'http://localhost:' + fastify.server.address().port + '/get',
-      json: true
+      json: true,
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -54,7 +54,7 @@ test('config', t => {
     sget({
       method: 'GET',
       url: 'http://localhost:' + fastify.server.address().port + '/route',
-      json: true
+      json: true,
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -64,7 +64,7 @@ test('config', t => {
     sget({
       method: 'GET',
       url: 'http://localhost:' + fastify.server.address().port + '/no-config',
-      json: true
+      json: true,
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)

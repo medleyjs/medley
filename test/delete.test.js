@@ -9,7 +9,7 @@ test('shorthand - delete', t => {
   t.plan(1)
   try {
     fastify.delete('/', (request, reply) => {
-      reply.send({ hello: 'world' })
+      reply.send({hello: 'world'})
     })
     t.pass()
   } catch (e) {
@@ -20,8 +20,8 @@ test('shorthand - delete', t => {
 test('missing schema - delete', t => {
   t.plan(1)
   try {
-    fastify.delete('/missing', function (req, reply) {
-      reply.code(200).send({ hello: 'world' })
+    fastify.delete('/missing', function(req, reply) {
+      reply.code(200).send({hello: 'world'})
     })
     t.pass()
   } catch (e) {
@@ -37,12 +37,12 @@ fastify.listen(0, err => {
     t.plan(4)
     sget({
       method: 'DELETE',
-      url: 'http://localhost:' + fastify.server.address().port
+      url: 'http://localhost:' + fastify.server.address().port,
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
       t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), { hello: 'world' })
+      t.deepEqual(JSON.parse(body), {hello: 'world'})
     })
   })
 
@@ -50,12 +50,12 @@ fastify.listen(0, err => {
     t.plan(4)
     sget({
       method: 'DELETE',
-      url: 'http://localhost:' + fastify.server.address().port + '/missing'
+      url: 'http://localhost:' + fastify.server.address().port + '/missing',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
       t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), { hello: 'world' })
+      t.deepEqual(JSON.parse(body), {hello: 'world'})
     })
   })
 })

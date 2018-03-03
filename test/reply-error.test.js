@@ -11,7 +11,7 @@ codes.forEach(code => {
   if (Number(code) >= 400) helper(code)
 })
 
-function helper (code) {
+function helper(code) {
   test('Reply error handling - code: ' + code, t => {
     t.plan(4)
     const fastify = Fastify()
@@ -25,7 +25,7 @@ function helper (code) {
 
     fastify.inject({
       method: 'GET',
-      url: '/'
+      url: '/',
     }, (error, res) => {
       t.error(error)
       t.strictEqual(res.statusCode, Number(code))
@@ -34,7 +34,7 @@ function helper (code) {
         {
           error: statusCodes[code],
           message: err.message,
-          statusCode: Number(code)
+          statusCode: Number(code),
         },
         JSON.parse(res.payload)
       )
@@ -56,7 +56,7 @@ test('preHandler hook error handling with external code', t => {
 
   fastify.inject({
     method: 'GET',
-    url: '/'
+    url: '/',
   }, (error, res) => {
     t.error(error)
     t.strictEqual(res.statusCode, 400)
@@ -64,7 +64,7 @@ test('preHandler hook error handling with external code', t => {
       {
         error: statusCodes['400'],
         message: err.message,
-        statusCode: 400
+        statusCode: 400,
       },
       JSON.parse(res.payload)
     )
@@ -85,7 +85,7 @@ test('onRequest hook error handling with external done', t => {
 
   fastify.inject({
     method: 'GET',
-    url: '/'
+    url: '/',
   }, (error, res) => {
     t.error(error)
     t.strictEqual(res.statusCode, 400)
@@ -93,7 +93,7 @@ test('onRequest hook error handling with external done', t => {
       {
         error: statusCodes['400'],
         message: err.message,
-        statusCode: 400
+        statusCode: 400,
       },
       JSON.parse(res.payload)
     )
@@ -112,7 +112,7 @@ test('Error instance sets HTTP status code', t => {
 
   fastify.inject({
     method: 'GET',
-    url: '/'
+    url: '/',
   }, (error, res) => {
     t.error(error)
     t.strictEqual(res.statusCode, 418)
@@ -120,7 +120,7 @@ test('Error instance sets HTTP status code', t => {
       {
         error: statusCodes['418'],
         message: err.message,
-        statusCode: 418
+        statusCode: 418,
       },
       JSON.parse(res.payload)
     )
@@ -139,7 +139,7 @@ test('Error status code below 400 defaults to 500', t => {
 
   fastify.inject({
     method: 'GET',
-    url: '/'
+    url: '/',
   }, (error, res) => {
     t.error(error)
     t.strictEqual(res.statusCode, 500)
@@ -147,7 +147,7 @@ test('Error status code below 400 defaults to 500', t => {
       {
         error: statusCodes['500'],
         message: err.message,
-        statusCode: 500
+        statusCode: 500,
       },
       JSON.parse(res.payload)
     )
@@ -166,7 +166,7 @@ test('Error.status property support', t => {
 
   fastify.inject({
     method: 'GET',
-    url: '/'
+    url: '/',
   }, (error, res) => {
     t.error(error)
     t.strictEqual(res.statusCode, 418)
@@ -174,7 +174,7 @@ test('Error.status property support', t => {
       {
         error: statusCodes['418'],
         message: err.message,
-        statusCode: 418
+        statusCode: 418,
       },
       JSON.parse(res.payload)
     )
@@ -193,7 +193,7 @@ test('Support rejection with values that are not Error instances', t => {
     'abc',
     new RegExp(),
     new Date(),
-    new Uint8Array()
+    new Uint8Array(),
   ]
   t.plan(objs.length)
   for (const nonErr of objs) {
@@ -216,7 +216,7 @@ test('Support rejection with values that are not Error instances', t => {
 
       fastify.inject({
         method: 'GET',
-        url: '/'
+        url: '/',
       }, (error, res) => {
         t.error(error)
         t.strictEqual(res.statusCode, 500)
@@ -244,27 +244,27 @@ test('should set the status code from the error object (from route handler)', t 
 
   fastify.inject({
     url: '/status',
-    method: 'GET'
+    method: 'GET',
   }, (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 400)
     t.deepEqual(JSON.parse(res.payload), {
       error: 'Bad Request',
       message: 'kaboom',
-      statusCode: 400
+      statusCode: 400,
     })
   })
 
   fastify.inject({
     url: '/statusCode',
-    method: 'GET'
+    method: 'GET',
   }, (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 400)
     t.deepEqual(JSON.parse(res.payload), {
       error: 'Bad Request',
       message: 'kaboom',
-      statusCode: 400
+      statusCode: 400,
     })
   })
 })
@@ -289,14 +289,14 @@ test('should set the status code from the error object (from custom error handle
 
   fastify.inject({
     url: '/',
-    method: 'GET'
+    method: 'GET',
   }, (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 400)
     t.deepEqual(JSON.parse(res.payload), {
       error: 'Bad Request',
       message: 'kaboom',
-      statusCode: 400
+      statusCode: 400,
     })
   })
 })

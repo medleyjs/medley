@@ -28,8 +28,8 @@ test('contentTypeParser should add a custom parser', t => {
     reply.send(req.body)
   })
 
-  fastify.addContentTypeParser('application/jsoff', function (req, done) {
-    jsonParser(req, function (err, body) {
+  fastify.addContentTypeParser('application/jsoff', function(req, done) {
+    jsonParser(req, function(err, body) {
       done(err, body)
     })
   })
@@ -47,12 +47,12 @@ test('contentTypeParser should add a custom parser', t => {
         url: 'http://localhost:' + fastify.server.address().port,
         body: '{"hello":"world"}',
         headers: {
-          'Content-Type': 'application/jsoff'
-        }
+          'Content-Type': 'application/jsoff',
+        },
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 200)
-        t.deepEqual(body.toString(), JSON.stringify({ hello: 'world' }))
+        t.deepEqual(body.toString(), JSON.stringify({hello: 'world'}))
       })
     })
 
@@ -64,12 +64,12 @@ test('contentTypeParser should add a custom parser', t => {
         url: 'http://localhost:' + fastify.server.address().port,
         body: '{"hello":"world"}',
         headers: {
-          'Content-Type': 'application/jsoff'
-        }
+          'Content-Type': 'application/jsoff',
+        },
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 200)
-        t.deepEqual(body.toString(), JSON.stringify({ hello: 'world' }))
+        t.deepEqual(body.toString(), JSON.stringify({hello: 'world'}))
       })
     })
   })
@@ -87,8 +87,8 @@ test('contentTypeParser should handle multiple custom parsers', t => {
     reply.send(req.body)
   })
 
-  function customParser (req, done) {
-    jsonParser(req, function (err, body) {
+  function customParser(req, done) {
+    jsonParser(req, function(err, body) {
       done(err, body)
     })
   }
@@ -105,12 +105,12 @@ test('contentTypeParser should handle multiple custom parsers', t => {
       url: 'http://localhost:' + fastify.server.address().port,
       body: '{"hello":"world"}',
       headers: {
-        'Content-Type': 'application/jsoff'
-      }
+        'Content-Type': 'application/jsoff',
+      },
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
-      t.deepEqual(body.toString(), JSON.stringify({ hello: 'world' }))
+      t.deepEqual(body.toString(), JSON.stringify({hello: 'world'}))
     })
 
     sget({
@@ -118,12 +118,12 @@ test('contentTypeParser should handle multiple custom parsers', t => {
       url: 'http://localhost:' + fastify.server.address().port + '/hello',
       body: '{"hello":"world"}',
       headers: {
-        'Content-Type': 'application/ffosj'
-      }
+        'Content-Type': 'application/ffosj',
+      },
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
-      t.deepEqual(body.toString(), JSON.stringify({ hello: 'world' }))
+      t.deepEqual(body.toString(), JSON.stringify({hello: 'world'}))
     })
   })
 })
@@ -136,7 +136,7 @@ test('contentTypeParser should handle errors', t => {
     reply.send(req.body)
   })
 
-  fastify.addContentTypeParser('application/jsoff', function (req, done) {
+  fastify.addContentTypeParser('application/jsoff', function(req, done) {
     done(new Error('kaboom!'), {})
   })
 
@@ -148,8 +148,8 @@ test('contentTypeParser should handle errors', t => {
       url: 'http://localhost:' + fastify.server.address().port,
       body: '{"hello":"world"}',
       headers: {
-        'Content-Type': 'application/jsoff'
-      }
+        'Content-Type': 'application/jsoff',
+      },
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 500)
@@ -192,8 +192,8 @@ test('contentTypeParser should support encapsulation, second try', t => {
       reply.send(req.body)
     })
 
-    instance.addContentTypeParser('application/jsoff', function (req, done) {
-      jsonParser(req, function (err, body) {
+    instance.addContentTypeParser('application/jsoff', function(req, done) {
+      jsonParser(req, function(err, body) {
         done(err, body)
       })
     })
@@ -209,12 +209,12 @@ test('contentTypeParser should support encapsulation, second try', t => {
       url: 'http://localhost:' + fastify.server.address().port,
       body: '{"hello":"world"}',
       headers: {
-        'Content-Type': 'application/jsoff'
-      }
+        'Content-Type': 'application/jsoff',
+      },
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
-      t.deepEqual(body.toString(), JSON.stringify({ hello: 'world' }))
+      t.deepEqual(body.toString(), JSON.stringify({hello: 'world'}))
       fastify.close()
     })
   })
@@ -228,8 +228,8 @@ test('contentTypeParser shouldn\'t support request with undefined "Content-Type"
     reply.send(req.body)
   })
 
-  fastify.addContentTypeParser('application/jsoff', function (req, done) {
-    jsonParser(req, function (err, body) {
+  fastify.addContentTypeParser('application/jsoff', function(req, done) {
+    jsonParser(req, function(err, body) {
       done(err, body)
     })
   })
@@ -243,7 +243,7 @@ test('contentTypeParser shouldn\'t support request with undefined "Content-Type"
       body: 'unknown content type!',
       headers: {
         // 'Content-Type': undefined
-      }
+      },
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 415)
@@ -296,9 +296,11 @@ test('catch all content type parser', t => {
     reply.send(req.body)
   })
 
-  fastify.addContentTypeParser('*', function (req, done) {
+  fastify.addContentTypeParser('*', function(req, done) {
     var data = ''
-    req.on('data', chunk => { data += chunk })
+    req.on('data', chunk => {
+      data += chunk
+    })
     req.on('end', () => {
       done(null, data)
     })
@@ -312,8 +314,8 @@ test('catch all content type parser', t => {
       url: 'http://localhost:' + fastify.server.address().port,
       body: 'hello',
       headers: {
-        'Content-Type': 'application/jsoff'
-      }
+        'Content-Type': 'application/jsoff',
+      },
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -324,8 +326,8 @@ test('catch all content type parser', t => {
         url: 'http://localhost:' + fastify.server.address().port,
         body: 'hello',
         headers: {
-          'Content-Type': 'very-weird-content-type'
-        }
+          'Content-Type': 'very-weird-content-type',
+        },
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 200)
@@ -344,16 +346,18 @@ test('catch all content type parser should not interfere with other conte type p
     reply.send(req.body)
   })
 
-  fastify.addContentTypeParser('*', function (req, done) {
+  fastify.addContentTypeParser('*', function(req, done) {
     var data = ''
-    req.on('data', chunk => { data += chunk })
+    req.on('data', chunk => {
+      data += chunk
+    })
     req.on('end', () => {
       done(null, data)
     })
   })
 
-  fastify.addContentTypeParser('application/jsoff', function (req, done) {
-    jsonParser(req, function (err, body) {
+  fastify.addContentTypeParser('application/jsoff', function(req, done) {
+    jsonParser(req, function(err, body) {
       done(err, body)
     })
   })
@@ -366,20 +370,20 @@ test('catch all content type parser should not interfere with other conte type p
       url: 'http://localhost:' + fastify.server.address().port,
       body: '{"hello":"world"}',
       headers: {
-        'Content-Type': 'application/jsoff'
-      }
+        'Content-Type': 'application/jsoff',
+      },
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
-      t.deepEqual(body.toString(), JSON.stringify({ hello: 'world' }))
+      t.deepEqual(body.toString(), JSON.stringify({hello: 'world'}))
 
       sget({
         method: 'POST',
         url: 'http://localhost:' + fastify.server.address().port,
         body: 'hello',
         headers: {
-          'Content-Type': 'very-weird-content-type'
-        }
+          'Content-Type': 'very-weird-content-type',
+        },
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 200)
@@ -398,9 +402,11 @@ test('\'*\' catch undefined Content-Type requests', t => {
 
   t.tearDown(fastify.close.bind(fastify))
 
-  fastify.addContentTypeParser('*', function (req, done) {
+  fastify.addContentTypeParser('*', function(req, done) {
     var data = ''
-    req.on('data', chunk => { data += chunk })
+    req.on('data', chunk => {
+      data += chunk
+    })
     req.on('end', () => {
       done(null, data)
     })
@@ -411,7 +417,7 @@ test('\'*\' catch undefined Content-Type requests', t => {
     res.type('text/plain').send(req.body)
   })
 
-  fastify.listen(0, function (err) {
+  fastify.listen(0, function(err) {
     t.error(err)
 
     const fileStream = fs.createReadStream(__filename)
@@ -419,7 +425,7 @@ test('\'*\' catch undefined Content-Type requests', t => {
     sget({
       method: 'POST',
       url: 'http://localhost:' + fastify.server.address().port + '/',
-      body: fileStream
+      body: fileStream,
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -439,7 +445,7 @@ test('cannot add custom parser after binding', t => {
     res.type('text/plain').send(req.body)
   })
 
-  fastify.listen(0, function (err) {
+  fastify.listen(0, function(err) {
     t.error(err)
 
     try {
@@ -459,9 +465,9 @@ test('Can override the default json parser', t => {
     reply.send(req.body)
   })
 
-  fastify.addContentTypeParser('application/json', function (req, done) {
+  fastify.addContentTypeParser('application/json', function(req, done) {
     t.ok('called')
-    jsonParser(req, function (err, body) {
+    jsonParser(req, function(err, body) {
       done(err, body)
     })
   })
@@ -474,8 +480,8 @@ test('Can override the default json parser', t => {
       url: 'http://localhost:' + fastify.server.address().port,
       body: '{"hello":"world"}',
       headers: {
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -489,16 +495,16 @@ test('Can\'t override the json parser multiple times', t => {
   t.plan(1)
   const fastify = Fastify()
 
-  fastify.addContentTypeParser('application/json', function (req, done) {
-    jsonParser(req, function (err, body) {
+  fastify.addContentTypeParser('application/json', function(req, done) {
+    jsonParser(req, function(err, body) {
       done(err, body)
     })
   })
 
   try {
-    fastify.addContentTypeParser('application/json', function (req, done) {
+    fastify.addContentTypeParser('application/json', function(req, done) {
       t.ok('called')
-      jsonParser(req, function (err, body) {
+      jsonParser(req, function(err, body) {
         done(err, body)
       })
     })
@@ -515,7 +521,7 @@ test('Should get the body as string', t => {
     reply.send(req.body)
   })
 
-  fastify.addContentTypeParser('application/json', { parseAs: 'string' }, function (req, body, done) {
+  fastify.addContentTypeParser('application/json', {parseAs: 'string'}, function(req, body, done) {
     t.ok('called')
     t.ok(typeof body === 'string')
     try {
@@ -535,8 +541,8 @@ test('Should get the body as string', t => {
       url: 'http://localhost:' + fastify.server.address().port,
       body: '{"hello":"world"}',
       headers: {
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -554,7 +560,7 @@ test('Should get the body as buffer', t => {
     reply.send(req.body)
   })
 
-  fastify.addContentTypeParser('application/json', { parseAs: 'buffer' }, function (req, body, done) {
+  fastify.addContentTypeParser('application/json', {parseAs: 'buffer'}, function(req, body, done) {
     t.ok('called')
     t.ok(body instanceof Buffer)
     try {
@@ -574,8 +580,8 @@ test('Should get the body as buffer', t => {
       url: 'http://localhost:' + fastify.server.address().port,
       body: '{"hello":"world"}',
       headers: {
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -593,9 +599,9 @@ test('The charset should not interfere with the content type handling', t => {
     reply.send(req.body)
   })
 
-  fastify.addContentTypeParser('application/json', function (req, done) {
+  fastify.addContentTypeParser('application/json', function(req, done) {
     t.ok('called')
-    jsonParser(req, function (err, body) {
+    jsonParser(req, function(err, body) {
       done(err, body)
     })
   })
@@ -608,8 +614,8 @@ test('The charset should not interfere with the content type handling', t => {
       url: 'http://localhost:' + fastify.server.address().port,
       body: '{"hello":"world"}',
       headers: {
-        'Content-Type': 'application/json charset=utf-8'
-      }
+        'Content-Type': 'application/json charset=utf-8',
+      },
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -624,7 +630,7 @@ test('Wrong parseAs parameter', t => {
   const fastify = Fastify()
 
   try {
-    fastify.addContentTypeParser('application/json', { parseAs: 'fireworks' }, () => {})
+    fastify.addContentTypeParser('application/json', {parseAs: 'fireworks'}, () => {})
     t.fail('should throw')
   } catch (err) {
     t.is(err.message, 'The body parser can only parse your data as \'string\' or \'buffer\', you asked \'fireworks\' which is not supported.')
@@ -642,8 +648,8 @@ test('Should allow defining the bodyLimit per parser', t => {
 
   fastify.addContentTypeParser(
     'x/foo',
-    { parseAs: 'string', bodyLimit: 5 },
-    function (req, body, done) {
+    {parseAs: 'string', bodyLimit: 5},
+    function(req, body, done) {
       t.fail('should not be invoked')
       done()
     }
@@ -657,14 +663,14 @@ test('Should allow defining the bodyLimit per parser', t => {
       url: 'http://localhost:' + fastify.server.address().port,
       body: '1234567890',
       headers: {
-        'Content-Type': 'x/foo'
-      }
+        'Content-Type': 'x/foo',
+      },
     }, (err, response, body) => {
       t.error(err)
       t.strictDeepEqual(JSON.parse(body.toString()), {
         statusCode: 413,
         error: 'Payload Too Large',
-        message: 'Request body is too large'
+        message: 'Request body is too large',
       })
       fastify.close()
     })
@@ -676,14 +682,14 @@ test('route bodyLimit should take precedence over a custom parser bodyLimit', t 
   const fastify = Fastify()
   t.tearDown(() => fastify.close())
 
-  fastify.post('/', { bodyLimit: 5 }, (request, reply) => {
+  fastify.post('/', {bodyLimit: 5}, (request, reply) => {
     reply.send(request.body)
   })
 
   fastify.addContentTypeParser(
     'x/foo',
-    { parseAs: 'string', bodyLimit: 100 },
-    function (req, body, done) {
+    {parseAs: 'string', bodyLimit: 100},
+    function(req, body, done) {
       t.fail('should not be invoked')
       done()
     }
@@ -696,13 +702,13 @@ test('route bodyLimit should take precedence over a custom parser bodyLimit', t 
       method: 'POST',
       url: 'http://localhost:' + fastify.server.address().port,
       body: '1234567890',
-      headers: { 'Content-Type': 'x/foo' }
+      headers: {'Content-Type': 'x/foo'},
     }, (err, response, body) => {
       t.error(err)
       t.strictDeepEqual(JSON.parse(body.toString()), {
         statusCode: 413,
         error: 'Payload Too Large',
-        message: 'Request body is too large'
+        message: 'Request body is too large',
       })
       fastify.close()
     })

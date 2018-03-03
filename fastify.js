@@ -21,32 +21,34 @@ const {buildSerializers} = require('./lib/Serializer')
 const DEFAULT_BODY_LIMIT = 1024 * 1024 // 1 MiB
 const childrenKey = Symbol('fastify.children')
 
-function validateBodyLimitOption (bodyLimit) {
-  if (bodyLimit === undefined) return
+function validateBodyLimitOption(bodyLimit) {
+  if (bodyLimit === undefined) {
+    return
+  }
   if (!Number.isInteger(bodyLimit) || bodyLimit <= 0) {
     throw new TypeError(`'bodyLimit' option must be an integer > 0. Got '${bodyLimit}'`)
   }
 }
 
-function build (options) {
+function build(options) {
   options = options || {}
   if (typeof options !== 'object') {
     throw new TypeError('Options must be an object')
   }
 
   const fastify = {
-    [childrenKey]: []
+    [childrenKey]: [],
   }
   const router = FindMyWay({
-    defaultRoute: defaultRoute,
+    defaultRoute,
     ignoreTrailingSlash: options.ignoreTrailingSlash,
-    maxParamLength: options.maxParamLength
+    maxParamLength: options.maxParamLength,
   })
 
   fastify.printRoutes = router.prettyPrint.bind(router)
 
   const app = avvio(fastify, {
-    autostart: false
+    autostart: false,
   })
   // Override to allow the plugin incapsulation
   app.override = override
@@ -58,8 +60,10 @@ function build (options) {
     started = true
   })
 
-  function throwIfAlreadyStarted (msg) {
-    if (started) throw new Error(msg)
+  function throwIfAlreadyStarted(msg) {
+    if (started) {
+      throw new Error(msg)
+    }
   }
 
   var server
@@ -102,9 +106,9 @@ function build (options) {
   fastify._routePrefix = ''
 
   Object.defineProperty(fastify, 'basePath', {
-    get: function () {
+    get() {
       return this._routePrefix
-    }
+    },
   })
 
   // hooks
@@ -136,7 +140,7 @@ function build (options) {
   // fake http injection
   fastify.inject = inject
 
-  var fourOhFour = FindMyWay({ defaultRoute: fourOhFourFallBack })
+  var fourOhFour = FindMyWay({defaultRoute: fourOhFourFallBack})
   fastify.setNotFoundHandler = setNotFoundHandler
   fastify._notFoundHandler = null
   fastify._404Context = null
@@ -146,7 +150,7 @@ function build (options) {
 
   return fastify
 
-  function routeHandler (req, res, params, context) {
+  function routeHandler(req, res, params, context) {
     if (context.onResponse !== null) {
       res._onResponseHooks = context.onResponse
       res.on('finish', runOnResponseHooks)
@@ -165,7 +169,7 @@ function build (options) {
     }
   }
 
-  function runOnResponseHooks () {
+  function runOnResponseHooks() {
     this.removeListener('finish', runOnResponseHooks)
     this.removeListener('error', runOnResponseHooks)
 
@@ -177,15 +181,15 @@ function build (options) {
     )
   }
 
-  function onResponseIterator (fn, res, next) {
+  function onResponseIterator(fn, res, next) {
     return fn(res, next)
   }
 
-  function onResponseCallback () {
+  function onResponseCallback() {
     // noop
   }
 
-  function listen (port, address, backlog, cb) {
+  function listen(port, address, backlog, cb) {
     /* Deal with listen (port, cb) */
     if (typeof address === 'function') {
       cb = address
@@ -201,7 +205,7 @@ function build (options) {
 
     if (cb === undefined) {
       return new Promise((resolve, reject) => {
-        fastify.listen(port, address, err => {
+        fastify.listen(port, address, (err) => {
           if (err) {
             reject(err)
           } else {
@@ -211,8 +215,10 @@ function build (options) {
       })
     }
 
-    fastify.ready(function (err) {
-      if (err) return cb(err)
+    fastify.ready(function(err) {
+      if (err) {
+        return cb(err)
+      }
       if (listening) {
         return cb(new Error('Fastify is already listening'))
       }
@@ -227,7 +233,7 @@ function build (options) {
       listening = true
     })
 
-    function wrap (err) {
+    function wrap(err) {
       if (!err) {
         let address = server.address()
         if (typeof address === 'object') {
@@ -245,19 +251,21 @@ function build (options) {
     }
   }
 
-  function State (req, res, params, context) {
+  function State(req, res, params, context) {
     this.req = req
     this.res = res
     this.params = params
     this.context = context
   }
 
-  function hookIterator (fn, state, next) {
-    if (state.res.finished === true) return undefined
+  function hookIterator(fn, state, next) {
+    if (state.res.finished === true) {
+      return undefined
+    }
     return fn(state.req, state.res, next)
   }
 
-  function onRequestCallback (err, state) {
+  function onRequestCallback(err, state) {
     if (state.res.finished === true) {
       return
     }
@@ -273,7 +281,7 @@ function build (options) {
     handleRequest(state.req, state.res, state.params, state.context)
   }
 
-  function override (old, fn, opts) {
+  function override(old, fn, opts) {
     const shouldSkipOverride = pluginUtils.registerPlugin.call(old, fn)
     if (shouldSkipOverride) {
       return old
@@ -297,7 +305,7 @@ function build (options) {
     return instance
   }
 
-  function buildRoutePrefix (instancePrefix, pluginPrefix) {
+  function buildRoutePrefix(instancePrefix, pluginPrefix) {
     if (!pluginPrefix) {
       return instancePrefix
     }
@@ -316,39 +324,39 @@ function build (options) {
   }
 
   // Shorthand methods
-  function _delete (url, opts, handler) {
+  function _delete(url, opts, handler) {
     return _route(this, 'DELETE', url, opts, handler)
   }
 
-  function _get (url, opts, handler) {
+  function _get(url, opts, handler) {
     return _route(this, 'GET', url, opts, handler)
   }
 
-  function _head (url, opts, handler) {
+  function _head(url, opts, handler) {
     return _route(this, 'HEAD', url, opts, handler)
   }
 
-  function _patch (url, opts, handler) {
+  function _patch(url, opts, handler) {
     return _route(this, 'PATCH', url, opts, handler)
   }
 
-  function _post (url, opts, handler) {
+  function _post(url, opts, handler) {
     return _route(this, 'POST', url, opts, handler)
   }
 
-  function _put (url, opts, handler) {
+  function _put(url, opts, handler) {
     return _route(this, 'PUT', url, opts, handler)
   }
 
-  function _options (url, opts, handler) {
+  function _options(url, opts, handler) {
     return _route(this, 'OPTIONS', url, opts, handler)
   }
 
-  function _all (url, opts, handler) {
+  function _all(url, opts, handler) {
     return _route(this, supportedMethods, url, opts, handler)
   }
 
-  function _route (_fastify, method, url, options, handler) {
+  function _route(_fastify, method, url, options, handler) {
     if (!handler && typeof options === 'function') {
       handler = options
       options = {}
@@ -357,14 +365,14 @@ function build (options) {
     options = Object.assign({}, options, {
       method,
       url,
-      handler
+      handler,
     })
 
     return _fastify.route(options)
   }
 
   // Route management
-  function route (opts) {
+  function route(opts) {
     throwIfAlreadyStarted('Cannot add route when fastify instance is already started!')
 
     const _fastify = this
@@ -387,7 +395,7 @@ function build (options) {
 
     validateBodyLimitOption(opts.bodyLimit)
 
-    _fastify.after(function afterRouteAdded (notHandledErr, done) {
+    _fastify.after(function afterRouteAdded(notHandledErr, done) {
       const prefix = _fastify._routePrefix
       var path = opts.url || opts.path
       if (path === '/' && prefix.length > 0) {
@@ -460,7 +468,7 @@ function build (options) {
     return _fastify
   }
 
-  function Context (serializers, handler, Reply, Request, contentTypeParser, config, errorHandler, bodyLimit, fastify) {
+  function Context(serializers, handler, Reply, Request, contentTypeParser, config, errorHandler, bodyLimit, fastify) {
     this._jsonSerializers = serializers
     this.handler = handler
     this.Reply = Reply
@@ -473,32 +481,37 @@ function build (options) {
     this.config = config
     this.errorHandler = errorHandler
     this._parserOptions = {
-      limit: bodyLimit || null
+      limit: bodyLimit || null,
     }
     this._fastify = fastify
   }
 
-  function inject (opts, cb) {
+  function inject(opts, cb) {
     if (started) {
       return lightMyRequest(httpHandler, opts, cb)
     }
 
     if (cb) {
-      this.ready(err => {
-        if (err) throw err
+      this.ready((err) => {
+        if (err) {
+          throw err
+        }
         return lightMyRequest(httpHandler, opts, cb)
       })
     } else {
       return new Promise((resolve, reject) => {
-        this.ready(err => {
-          if (err) return reject(err)
-          resolve()
+        this.ready((err) => {
+          if (err) {
+            reject(err)
+          } else {
+            resolve()
+          }
         })
       }).then(() => lightMyRequest(httpHandler, opts))
     }
   }
 
-  function addHook (name, fn) {
+  function addHook(name, fn) {
     throwIfAlreadyStarted('Cannot call "addHook" when fastify instance is already started!')
 
     if (name === 'onClose') {
@@ -516,12 +529,12 @@ function build (options) {
     return this
   }
 
-  function _addHook (instance, name, fn) {
+  function _addHook(instance, name, fn) {
     instance._hooks.add(name, fn)
     instance[childrenKey].forEach(child => _addHook(child, name, fn))
   }
 
-  function addContentTypeParser (contentType, opts, parser) {
+  function addContentTypeParser(contentType, opts, parser) {
     throwIfAlreadyStarted('Cannot call "addContentTypeParser" when fastify instance is already started!')
 
     if (typeof opts === 'function') {
@@ -541,26 +554,26 @@ function build (options) {
     return this
   }
 
-  function hasContentTypeParser (contentType, fn) {
+  function hasContentTypeParser(contentType, fn) {
     return this._contentTypeParser.hasParser(contentType)
   }
 
-  function defaultRoute (req, res) {
+  function defaultRoute(req, res) {
     fourOhFour.lookup(req, res)
   }
 
-  function basic404 (req, reply) {
+  function basic404(req, reply) {
     reply.code(404).send(new Error('Not found'))
   }
 
-  function fourOhFourFallBack (req, res) {
+  function fourOhFourFallBack(req, res) {
     const request = new Request(null, req, null, req.headers)
-    const reply = new Reply(res, { onSend: [] }, request)
+    const reply = new Reply(res, {onSend: []}, request)
 
     reply.code(404).send(new Error('Not found'))
   }
 
-  function setNotFoundHandler (opts, handler) {
+  function setNotFoundHandler(opts, handler) {
     throwIfAlreadyStarted('Cannot call "setNotFoundHandler" when fastify instance is already started!')
 
     if (this._notFoundHandler !== null && this._notFoundHandler !== basic404) {
@@ -582,7 +595,7 @@ function build (options) {
     })
   }
 
-  function _setNotFoundHandler (opts, handler, serializers) {
+  function _setNotFoundHandler(opts, handler, serializers) {
     const context = new Context(
       serializers,
       handler,
@@ -622,7 +635,7 @@ function build (options) {
     fourOhFour.all(prefix || '/', routeHandler, context)
   }
 
-  function setErrorHandler (func) {
+  function setErrorHandler(func) {
     throwIfAlreadyStarted('Cannot call "setErrorHandler" when fastify instance is already started!')
 
     this._errorHandler = func
@@ -630,7 +643,7 @@ function build (options) {
   }
 }
 
-function http2 () {
+function http2() {
   try {
     return require('http2')
   } catch (err) {

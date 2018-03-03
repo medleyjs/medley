@@ -8,7 +8,8 @@ test('close callback', t => {
   t.plan(4)
   const fastify = Fastify()
   fastify.addHook('onClose', onClose)
-  function onClose (instance, done) {
+
+  function onClose(instance, done) {
     t.type(fastify, instance)
     done()
   }
@@ -26,9 +27,10 @@ test('close callback', t => {
 test('inside register', t => {
   t.plan(5)
   const fastify = Fastify()
-  fastify.register(function (f, opts, next) {
+  fastify.register(function(f, opts, next) {
     f.addHook('onClose', onClose)
-    function onClose (instance, done) {
+
+    function onClose(instance, done) {
       t.ok(instance.prototype === fastify.prototype)
       t.strictEqual(instance, f)
       done()
@@ -52,7 +54,7 @@ test('close order', t => {
   const fastify = Fastify()
   const order = [1, 2, 3]
 
-  fastify.register(function (f, opts, next) {
+  fastify.register(function(f, opts, next) {
     f.addHook('onClose', (instance, done) => {
       t.is(order.shift(), 1)
       done()
@@ -80,7 +82,8 @@ test('should not throw an error if the server is not listening', t => {
   t.plan(2)
   const fastify = Fastify()
   fastify.addHook('onClose', onClose)
-  function onClose (instance, done) {
+
+  function onClose(instance, done) {
     t.type(fastify, instance)
     done()
   }
@@ -95,12 +98,12 @@ test('onClose should keep the context', t => {
   const fastify = Fastify()
   fastify.register(plugin)
 
-  function plugin (instance, opts, next) {
+  function plugin(instance, opts, next) {
     instance.decorate('test', true)
     instance.addHook('onClose', onClose)
     t.ok(instance.prototype === fastify.prototype)
 
-    function onClose (i, done) {
+    function onClose(i, done) {
       t.ok(i.test)
       t.strictEqual(i, instance)
       done()

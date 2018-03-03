@@ -9,9 +9,12 @@ const Reply = require('../../lib/Reply')
 
 test('Once called, Reply should return an object with methods', t => {
   t.plan(9)
-  const response = { res: 'res' }
-  function context () {}
-  function request () {}
+  const response = {res: 'res'}
+
+  function context() {}
+
+  function request() {}
+
   const reply = new Reply(response, context, request)
   t.is(typeof reply, 'object')
   t.is(typeof reply._isError, 'boolean')
@@ -27,7 +30,7 @@ test('Once called, Reply should return an object with methods', t => {
 test('reply.send throw with circular JSON', t => {
   t.plan(1)
   const request = {}
-  const response = { setHeader: () => {} }
+  const response = {setHeader: () => {}}
   const reply = new Reply(request, response, null)
   t.throws(() => {
     var obj = {}
@@ -40,36 +43,36 @@ test('within an instance', t => {
   const fastify = require('../..')()
   const test = t.test
 
-  fastify.get('/', function (req, reply) {
+  fastify.get('/', function(req, reply) {
     reply.code(200)
     reply.header('Content-Type', 'text/plain')
     reply.send('hello world!')
   })
 
-  fastify.get('/auto-type', function (req, reply) {
+  fastify.get('/auto-type', function(req, reply) {
     reply.code(200)
     reply.type('text/plain')
     reply.send('hello world!')
   })
 
-  fastify.get('/auto-status-code', function (req, reply) {
+  fastify.get('/auto-status-code', function(req, reply) {
     reply.send('hello world!')
   })
 
-  fastify.get('/redirect', function (req, reply) {
+  fastify.get('/redirect', function(req, reply) {
     reply.redirect('/')
   })
 
-  fastify.get('/redirect-code', function (req, reply) {
+  fastify.get('/redirect-code', function(req, reply) {
     reply.redirect(301, '/')
   })
 
-  fastify.register(function (instance, options, next) {
-    fastify.addHook('onSend', function (req, reply, payload, next) {
+  fastify.register(function(instance, options, next) {
+    fastify.addHook('onSend', function(req, reply, payload, next) {
       reply.header('x-onsend', 'yes')
       next()
     })
-    fastify.get('/redirect-onsend', function (req, reply) {
+    fastify.get('/redirect-onsend', function(req, reply) {
       reply.redirect('/')
     })
     next()
@@ -83,7 +86,7 @@ test('within an instance', t => {
       t.plan(4)
       sget({
         method: 'GET',
-        url: 'http://localhost:' + fastify.server.address().port
+        url: 'http://localhost:' + fastify.server.address().port,
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 200)
@@ -96,7 +99,7 @@ test('within an instance', t => {
       t.plan(3)
       sget({
         method: 'GET',
-        url: 'http://localhost:' + fastify.server.address().port + '/auto-status-code'
+        url: 'http://localhost:' + fastify.server.address().port + '/auto-status-code',
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 200)
@@ -108,7 +111,7 @@ test('within an instance', t => {
       t.plan(3)
       sget({
         method: 'GET',
-        url: 'http://localhost:' + fastify.server.address().port + '/auto-type'
+        url: 'http://localhost:' + fastify.server.address().port + '/auto-type',
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.headers['content-type'], 'text/plain')
@@ -119,7 +122,7 @@ test('within an instance', t => {
     test('redirect to `/` - 1', t => {
       t.plan(1)
 
-      http.get('http://localhost:' + fastify.server.address().port + '/redirect', function (response) {
+      http.get('http://localhost:' + fastify.server.address().port + '/redirect', function(response) {
         t.strictEqual(response.statusCode, 302)
       })
     })
@@ -127,7 +130,7 @@ test('within an instance', t => {
     test('redirect to `/` - 2', t => {
       t.plan(1)
 
-      http.get('http://localhost:' + fastify.server.address().port + '/redirect-code', function (response) {
+      http.get('http://localhost:' + fastify.server.address().port + '/redirect-code', function(response) {
         t.strictEqual(response.statusCode, 301)
       })
     })
@@ -136,7 +139,7 @@ test('within an instance', t => {
       t.plan(4)
       sget({
         method: 'GET',
-        url: 'http://localhost:' + fastify.server.address().port + '/redirect'
+        url: 'http://localhost:' + fastify.server.address().port + '/redirect',
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 200)
@@ -149,7 +152,7 @@ test('within an instance', t => {
       t.plan(4)
       sget({
         method: 'GET',
-        url: 'http://localhost:' + fastify.server.address().port + '/redirect-code'
+        url: 'http://localhost:' + fastify.server.address().port + '/redirect-code',
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 200)
@@ -164,7 +167,7 @@ test('within an instance', t => {
       http.get(url, (response) => {
         t.strictEqual(response.headers['x-onsend'], 'yes')
         t.strictEqual(response.headers['content-length'], '0')
-        t.strictEqual(response.headers['location'], '/')
+        t.strictEqual(response.headers.location, '/')
       })
     })
 
@@ -177,7 +180,7 @@ test('buffer without content type should send a application/octet-stream and raw
 
   const fastify = require('../..')()
 
-  fastify.get('/', function (req, reply) {
+  fastify.get('/', function(req, reply) {
     reply.send(Buffer.alloc(1024))
   })
 
@@ -187,7 +190,7 @@ test('buffer without content type should send a application/octet-stream and raw
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port
+      url: 'http://localhost:' + fastify.server.address().port,
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.headers['content-type'], 'application/octet-stream')
@@ -201,7 +204,7 @@ test('buffer with content type should not send application/octet-stream', t => {
 
   const fastify = require('../..')()
 
-  fastify.get('/', function (req, reply) {
+  fastify.get('/', function(req, reply) {
     reply.header('Content-Type', 'text/plain')
     reply.send(Buffer.alloc(1024))
   })
@@ -212,7 +215,7 @@ test('buffer with content type should not send application/octet-stream', t => {
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port
+      url: 'http://localhost:' + fastify.server.address().port,
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.headers['content-type'], 'text/plain')
@@ -226,7 +229,7 @@ test('plain string without content type should send a text/plain', t => {
 
   const fastify = require('../..')()
 
-  fastify.get('/', function (req, reply) {
+  fastify.get('/', function(req, reply) {
     reply.send('hello world!')
   })
 
@@ -236,7 +239,7 @@ test('plain string without content type should send a text/plain', t => {
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port
+      url: 'http://localhost:' + fastify.server.address().port,
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.headers['content-type'], 'text/plain')
@@ -250,7 +253,7 @@ test('plain string with content type should be sent unmodified', t => {
 
   const fastify = require('../..')()
 
-  fastify.get('/', function (req, reply) {
+  fastify.get('/', function(req, reply) {
     reply.type('text/css').send('hello world!')
   })
 
@@ -260,7 +263,7 @@ test('plain string with content type should be sent unmodified', t => {
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port
+      url: 'http://localhost:' + fastify.server.address().port,
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.headers['content-type'], 'text/css')
@@ -274,7 +277,7 @@ test('plain string with content type application/json should be serialized as js
 
   const fastify = require('../..')()
 
-  fastify.get('/', function (req, reply) {
+  fastify.get('/', function(req, reply) {
     reply.type('application/json').send('hello world!')
   })
 
@@ -284,7 +287,7 @@ test('plain string with content type application/json should be serialized as js
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port
+      url: 'http://localhost:' + fastify.server.address().port,
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.headers['content-type'], 'application/json')
@@ -298,19 +301,19 @@ test('error object with a content type that is not application/json should work'
 
   const fastify = require('../..')()
 
-  fastify.get('/text', function (req, reply) {
+  fastify.get('/text', function(req, reply) {
     reply.type('text/plain')
     reply.send(new Error('some application error'))
   })
 
-  fastify.get('/html', function (req, reply) {
+  fastify.get('/html', function(req, reply) {
     reply.type('text/html')
     reply.send(new Error('some application error'))
   })
 
   fastify.inject({
     method: 'GET',
-    url: '/text'
+    url: '/text',
   }, (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 500)
@@ -319,7 +322,7 @@ test('error object with a content type that is not application/json should work'
 
   fastify.inject({
     method: 'GET',
-    url: '/html'
+    url: '/html',
   }, (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 500)
@@ -332,12 +335,12 @@ test('undefined payload should be sent as-is', t => {
 
   const fastify = require('../..')()
 
-  fastify.addHook('onSend', function (request, reply, payload, next) {
+  fastify.addHook('onSend', function(request, reply, payload, next) {
     t.strictEqual(payload, undefined)
     next()
   })
 
-  fastify.get('/', function (req, reply) {
+  fastify.get('/', function(req, reply) {
     reply.code(204).send()
   })
 
@@ -347,7 +350,7 @@ test('undefined payload should be sent as-is', t => {
 
     sget({
       method: 'GET',
-      url: `http://localhost:${fastify.server.address().port}`
+      url: `http://localhost:${fastify.server.address().port}`,
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.headers['content-type'], undefined)
@@ -362,16 +365,16 @@ test('reply.send(new NotFound()) should invoke the 404 handler', t => {
 
   const fastify = require('../..')()
 
-  fastify.get('/not-found', function (req, reply) {
+  fastify.get('/not-found', function(req, reply) {
     reply.send(new NotFound())
   })
 
-  fastify.register(function (instance, options, next) {
-    instance.get('/not-found', function (req, reply) {
+  fastify.register(function(instance, options, next) {
+    instance.get('/not-found', function(req, reply) {
       reply.send(new NotFound())
     })
 
-    instance.setNotFoundHandler(function (req, reply) {
+    instance.setNotFoundHandler(function(req, reply) {
       reply.code(404).send('Custom not found response')
     })
 
@@ -385,7 +388,7 @@ test('reply.send(new NotFound()) should invoke the 404 handler', t => {
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/not-found'
+      url: 'http://localhost:' + fastify.server.address().port + '/not-found',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 404)
@@ -393,13 +396,13 @@ test('reply.send(new NotFound()) should invoke the 404 handler', t => {
       t.deepEqual(JSON.parse(body.toString()), {
         statusCode: 404,
         error: 'Not Found',
-        message: 'Not found'
+        message: 'Not found',
       })
     })
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/prefixed/not-found'
+      url: 'http://localhost:' + fastify.server.address().port + '/prefixed/not-found',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 404)
@@ -414,11 +417,11 @@ test('reply.send(new NotFound()) should send a basic response if called inside a
 
   const fastify = require('../..')()
 
-  fastify.get('/not-found', function (req, reply) {
+  fastify.get('/not-found', function(req, reply) {
     reply.send(new NotFound())
   })
 
-  fastify.setNotFoundHandler(function (req, reply) {
+  fastify.setNotFoundHandler(function(req, reply) {
     reply.send(new NotFound())
   })
 
@@ -429,7 +432,7 @@ test('reply.send(new NotFound()) should send a basic response if called inside a
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/not-found'
+      url: 'http://localhost:' + fastify.server.address().port + '/not-found',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 404)
