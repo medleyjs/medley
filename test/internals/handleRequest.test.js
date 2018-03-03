@@ -6,12 +6,11 @@ const Request = require('../../lib/request')
 const sget = require('simple-get').concat
 
 test('Request object', t => {
-  t.plan(7)
+  t.plan(6)
   const req = new Request('params', 'req', 'query', 'headers')
   t.type(req, Request)
   t.equal(req.params, 'params')
-  t.deepEqual(req.raw, 'req')
-  t.deepEqual(req.req, req.raw)
+  t.equal(req.req, 'req')
   t.equal(req.query, 'query')
   t.equal(req.headers, 'headers')
   t.equal(req.body, null)
@@ -23,7 +22,7 @@ test('request should be defined in onSend Hook on post request with content type
 
   fastify.addHook('onSend', (request, reply, payload, done) => {
     t.ok(request)
-    t.ok(request.raw)
+    t.ok(request.req)
     t.ok(request.params)
     t.ok(request.query)
     done()
@@ -54,7 +53,7 @@ test('request should be defined in onSend Hook on post request with content type
 
   fastify.addHook('onSend', (request, reply, payload, done) => {
     t.ok(request)
-    t.ok(request.raw)
+    t.ok(request.req)
     t.ok(request.params)
     t.ok(request.query)
     done()
@@ -85,7 +84,7 @@ test('request should be defined in onSend Hook on options request with content t
 
   fastify.addHook('onSend', (request, reply, payload, done) => {
     t.ok(request)
-    t.ok(request.raw)
+    t.ok(request.req)
     t.ok(request.params)
     t.ok(request.query)
     done()

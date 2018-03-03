@@ -18,7 +18,7 @@ test('hooks', t => {
     fastify.addHook('preHandler', function (request, reply, next) {
       request.test = 'the request is coming'
       reply.test = 'the reply has come'
-      if (request.raw.method === 'HEAD') {
+      if (request.req.method === 'HEAD') {
         next(new Error('some error'))
       } else {
         next()
@@ -31,8 +31,8 @@ test('hooks', t => {
 
   try {
     fastify.addHook('onRequest', function (req, res, next) {
-      req.raw = 'the request is coming'
-      res.raw = 'the reply has come'
+      req.testVal = 'the request is coming'
+      res.testVal = 'the reply has come'
       if (req.method === 'DELETE') {
         next(new Error('some error'))
       } else {
@@ -55,8 +55,8 @@ test('hooks', t => {
   })
 
   fastify.get('/', function (req, reply) {
-    t.is(req.raw.raw, 'the request is coming')
-    t.is(reply.res.raw, 'the reply has come')
+    t.is(req.req.testVal, 'the request is coming')
+    t.is(reply.res.testVal, 'the reply has come')
     t.is(req.test, 'the request is coming')
     t.is(reply.test, 'the reply has come')
     reply.code(200).send(payload)
@@ -168,25 +168,25 @@ test('onRequest hook should support encapsulation / 3', t => {
 
   fastify.decorate('hello2', 'world')
 
-  fastify.get('/first', (req, reply) => {
-    t.ok(req.raw.first)
-    t.notOk(req.raw.second)
+  fastify.get('/first', (request, reply) => {
+    t.ok(request.req.first)
+    t.notOk(request.req.second)
     reply.send({ hello: 'world' })
   })
 
   fastify.register((instance, opts, next) => {
     instance.decorate('hello3', 'world')
-    instance.addHook('onRequest', function (req, res, next) {
+    instance.addHook('onRequest', function (request, res, next) {
       t.ok(this.hello)
       t.ok(this.hello2)
       t.ok(this.hello3)
-      req.second = true
+      request.second = true
       next()
     })
 
-    instance.get('/second', (req, reply) => {
-      t.ok(req.raw.first)
-      t.ok(req.raw.second)
+    instance.get('/second', (request, reply) => {
+      t.ok(request.req.first)
+      t.ok(request.req.second)
       reply.send({ hello: 'world' })
     })
 
@@ -900,7 +900,7 @@ test('onSend hook throws', t => {
   t.plan(7)
   const fastify = Fastify()
   fastify.addHook('onSend', function (request, reply, payload, next) {
-    if (request.raw.method === 'DELETE') {
+    if (request.req.method === 'DELETE') {
       next(new Error('some error'))
       return
     }

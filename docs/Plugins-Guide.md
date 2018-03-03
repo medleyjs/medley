@@ -141,12 +141,12 @@ fastify.get('/html', (request, reply) => {
 
 And in the same way you can do this for the `request` object:
 ```js
-fastify.decorate('getHeader', (req, header) => {
-  return req.headers[header]
+fastify.decorate('getHeader', (request, header) => {
+  return request.headers[header]
 })
 
 fastify.addHook('preHandler', (request, reply, done) => {
-  request.isHappy = fastify.getHeader(request.raw, 'happy')
+  request.isHappy = fastify.getHeader(request, 'happy')
   done()
 })
 

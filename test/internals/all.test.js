@@ -10,8 +10,8 @@ test('fastify.all should add all the methods to the same url', t => {
 
   const fastify = Fastify()
 
-  fastify.all('/', (req, reply) => {
-    reply.send({ method: req.raw.method })
+  fastify.all('/', (request, reply) => {
+    reply.send({ method: request.req.method })
   })
 
   supportedMethods.forEach(injectRequest)

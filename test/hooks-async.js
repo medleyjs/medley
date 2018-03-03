@@ -13,8 +13,8 @@ function asyncHookTest (t) {
     const fastify = Fastify()
     fastify.addHook('onRequest', async function (req, res) {
       await sleep(1)
-      req.raw = 'the request is coming'
-      res.raw = 'the reply has come'
+      req.testVal = 'the request is coming'
+      res.testVal = 'the reply has come'
       if (req.method === 'DELETE') {
         throw new Error('some error')
       }
@@ -24,7 +24,7 @@ function asyncHookTest (t) {
       await sleep(1)
       request.test = 'the request is coming'
       reply.test = 'the reply has come'
-      if (request.raw.method === 'HEAD') {
+      if (request.req.method === 'HEAD') {
         throw new Error('some error')
       }
     })
@@ -40,8 +40,8 @@ function asyncHookTest (t) {
     })
 
     fastify.get('/', function (request, reply) {
-      t.is(request.raw.raw, 'the request is coming')
-      t.is(reply.res.raw, 'the reply has come')
+      t.is(request.req.testVal, 'the request is coming')
+      t.is(reply.res.testVal, 'the reply has come')
       t.is(request.test, 'the request is coming')
       t.is(reply.test, 'the reply has come')
       reply.code(200).send({ hello: 'world' })
