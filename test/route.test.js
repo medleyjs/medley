@@ -171,7 +171,7 @@ test('path can be specified in place of uri', t => {
   })
 })
 
-test('invalid jsonBodyLimit option - route', t => {
+test('invalid bodyLimit option - route', t => {
   t.plan(2)
 
   try {
@@ -180,7 +180,7 @@ test('invalid jsonBodyLimit option - route', t => {
       method: 'PUT',
       handler: () => null
     })
-    t.fail('jsonBodyLimit must be an integer')
+    t.fail('bodyLimit must be an integer')
   } catch (err) {
     t.ok(err)
   }
