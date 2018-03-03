@@ -13,7 +13,7 @@ test('route - get', t => {
       url: '/',
       schema: {
         response: {
-          '2xx': {
+          200: {
             type: 'object',
             properties: {
               hello: {
@@ -178,7 +178,7 @@ test('invalid jsonBodyLimit option - route', t => {
 
   try {
     fastify.route({
-      jsonBodyLimit: false,
+      bodyLimit: false,
       method: 'PUT',
       handler: () => null
     })
@@ -188,8 +188,8 @@ test('invalid jsonBodyLimit option - route', t => {
   }
 
   try {
-    fastify.post('/url', { jsonBodyLimit: 10000.1 }, () => null)
-    t.fail('jsonBodyLimit must be an integer')
+    fastify.post('/url', { bodyLimit: 10000.1 }, () => null)
+    t.fail('bodyLimit must be an integer')
   } catch (err) {
     t.ok(err)
   }

@@ -12,7 +12,7 @@ module.exports.payloadMethod = function (method, t) {
   const schema = {
     schema: {
       response: {
-        '2xx': {
+        200: {
           type: 'object',
           properties: {
             hello: {

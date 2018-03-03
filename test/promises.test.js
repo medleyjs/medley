@@ -8,7 +8,7 @@ const fastify = require('..')()
 const opts = {
   schema: {
     response: {
-      '2xx': {
+      200: {
         type: 'object',
         properties: {
           hello: {

@@ -8,7 +8,7 @@ const fastify = require('..')()
 const schema = {
   schema: {
     response: {
-      '2xx': {
+      200: {
         type: 'object',
         properties: {
           hello: {
@@ -23,7 +23,7 @@ const schema = {
 const nullSchema = {
   schema: {
     response: {
-      '2xx': {
+      200: {
         type: 'null'
       }
     }
@@ -33,7 +33,7 @@ const nullSchema = {
 const numberSchema = {
   schema: {
     response: {
-      '2xx': {
+      200: {
         type: 'object',
         properties: {
           hello: {

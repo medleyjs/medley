@@ -16,7 +16,7 @@ const opts = {
           }
         }
       },
-      '2xx': {
+      201: {
         type: 'object',
         properties: {
           hello: {
@@ -28,66 +28,25 @@ const opts = {
   }
 }
 
-test('shorthand - output string', t => {
-  t.plan(1)
-  try {
-    fastify.get('/string', opts, function (req, reply) {
-      reply.code(200).send({ hello: 'world' })
-    })
-    t.pass()
-  } catch (e) {
-    t.fail()
-  }
+fastify.get('/string', opts, (request, reply) => {
+  reply.send({ hello: 'world' })
 })
 
-test('shorthand - output number', t => {
-  t.plan(1)
-  try {
-    fastify.get('/number', opts, function (req, reply) {
-      reply.code(201).send({ hello: 55 })
-    })
-    t.pass()
-  } catch (e) {
-    t.fail()
-  }
+fastify.get('/number', opts, (request, reply) => {
+  reply.code(201).send({ hello: 55 })
 })
 
-test('wrong object for schema - output', t => {
-  t.plan(1)
-  try {
-    fastify.get('/wrong-object-for-schema', opts, function (req, reply) {
-      // will send { }
-      reply.code(201).send({ uno: 1 })
-    })
-    t.pass()
-  } catch (e) {
-    t.fail()
-  }
+fastify.get('/wrong-object-for-schema', opts, (request, reply) => {
+  reply.code(201).send({ uno: 1 }) // Will send { }
 })
 
-test('empty response', t => {
-  t.plan(1)
-  try {
-    // no checks
-    fastify.get('/empty', opts, function (req, reply) {
-      reply.code(204).send()
-    })
-    t.pass()
-  } catch (e) {
-    t.fail()
-  }
+// No checks
+fastify.get('/empty', opts, (request, reply) => {
+  reply.code(204).send()
 })
 
-test('unlisted response code', t => {
-  t.plan(1)
-  try {
-    fastify.get('/400', opts, function (req, reply) {
-      reply.code(400).send({ hello: 'DOOM' })
-    })
-    t.pass()
-  } catch (e) {
-    t.fail()
-  }
+fastify.get('/400', opts, (request, reply) => {
+  reply.code(400).send({ hello: 'DOOM' })
 })
 
 fastify.listen(0, err => {

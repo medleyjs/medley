@@ -8,7 +8,7 @@ const statusCodes = require('http').STATUS_CODES
 const opts = {
   schema: {
     response: {
-      '2xx': {
+      200: {
         type: 'object',
         properties: {
           hello: {

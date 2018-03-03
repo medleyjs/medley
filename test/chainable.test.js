@@ -4,38 +4,23 @@ const t = require('tap')
 const test = t.test
 const fastify = require('..')()
 
-const noop = () => {}
-const opts = {
-  schema: {
-    response: {
-      '2xx': {
-        type: 'object',
-        properties: {
-          hello: {
-            type: 'string'
-          }
-        }
-      }
-    }
-  }
-}
+function handler () { }
 
 test('chainable - get', t => {
   t.plan(1)
-  t.type(fastify.get('/', opts, noop), fastify)
+  t.equal(fastify.get('/', handler), fastify)
 })
 
 test('chainable - post', t => {
   t.plan(1)
-  t.type(fastify.post('/', opts, noop), fastify)
+  t.equal(fastify.post('/', {}, handler), fastify)
 })
 
 test('chainable - route', t => {
   t.plan(1)
-  t.type(fastify.route({
-    method: 'GET',
+  t.equal(fastify.route({
+    method: 'PUT',
     url: '/other',
-    schema: opts.schema,
-    handler: noop
+    handler,
   }), fastify)
 })

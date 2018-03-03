@@ -3,7 +3,7 @@
 
 When sending a JSON response, it is serialized with `JSON.stringify()` by default. However, a response schema can be set to enable the payload to be serialized with [`compile-json-stringify`](https://www.npmjs.com/package/compile-json-stringify) instead. `compile-json-stringify` will stringify the payload 2-8x faster than `JSON.stringify()` and it will exclude any properties that are not included in the schema (which can prevent accidental disclosure of sensitive information, although it is not recommended to use this as the primary method of preventing data leaks).
 
-Example:
+**Example:**
 
 ```js
 const schema = {
@@ -23,18 +23,48 @@ fastify.get('/info', { schema }, (request, reply) => {
 })
 ```
 
-As you can see, the response schema is based on the status code. If you want to use the same schema for multiple status codes, you can use `'2xx'`, for example:
+The example above shows that the structure of the schema is a mapping of a *status code* to a *`compile-json-stringify` schema*. Different schemas can be set for different status codes.
+
+**Example:**
+
 ```js
 const schema = {
   response: {
-    '2xx': {
+    200: {
       type: 'object',
       properties: {
         value: { type: 'string' },
-        otherValue: { type: 'boolean' }
+        fast: { type: 'boolean' }
       }
     },
     201: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        error: { type: ['string', 'null'] }
+      }
+    }
+  }
+}
+
+fastify.post('/info', { schema }, (request, reply) => {
+  if (request.body.createInfo) {
+    // Create info ...
+    reply.code(201).send({ success: true, error: null })
+  } else {
+    reply.send({ value: 'medley', fast: true })
+  }
+})
+```
+
+`compile-json-stringify` works just like `JSON.stringify()` ([mostly](https://github.com/nwoltman/compile-json-stringify#differences-from-jsonstringify)). If a part of the payload being sent doesn't match the schema, it will still be serialized.
+
+**Example:**
+
+```js
+const schema = {
+  response: {
+    200: {
       type: 'object',
       properties: {
         value: { type: 'string' }
@@ -43,9 +73,9 @@ const schema = {
   }
 }
 
-fastify.post('/the/url', { schema }, handler)
+fastify.get('/mismatch', { schema }, (request, reply) => {
+  reply.send({ value: [1, 2, 3] }) // Gets serialized to: '{ "value": [1, 2, 3] }'
+})
 ```
-
-*If you need a custom serializer in a very specific part of your code, you can set one with `reply.serializer(...)`.*
 
 For more information on how to define a response schema, see the [`compile-json-stringify` documentation](https://github.com/nwoltman/compile-json-stringify).
