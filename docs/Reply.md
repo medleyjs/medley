@@ -8,8 +8,6 @@ Reply is a core Fastify object that exposes the following functions:
 - `.header(name, value)` - Sets a response header.
 - `.type(value)` - Sets the header `Content-Type`.
 - `.redirect([code,] url)` - Redirect to the specified url, the status code is optional (default to `302`).
-- `.serialize(payload)` - Serializes the specified payload using the default json serializer and returns the serialized payload.
-- `.serializer(function)` - Sets a custom serializer for the payload.
 - `.send([payload])` - Sends the response payload for the request.
 - `.sent` - A boolean value that you can use if you need to know if `send` has already been called.
 - `.res` - The [`http.ServerResponse`](https://nodejs.org/dist/latest/docs/api/http.html#http_class_http_serverresponse) from Node core.
@@ -57,26 +55,6 @@ This is a shortcut for `reply.header('Content-Type', 'the/type')`.
 reply.type('text/html')
 ```
 
-<a name="serializer"></a>
-### Serializer
-`.send()` will by default JSON-serialize any value that is not one of: `Buffer`, `stream`, `string`, `undefined`, `Error`. If you need to replace the default serializer with a custom serializer for a particular request, you can do so with the `.serializer()` utility. Be aware that if you are using a custom serializer, you must set a custom `'Content-Type'` header.
-
-```js
-reply
-  .header('Content-Type', 'application/x-protobuf')
-  .serializer(protoBuf.serialize)
-```
-
-Note that you don't need to use this utility inside a `handler` because Buffers, streams, and strings (unless a serializer is set) are considered to already be serialized.
-
-```js
-reply
-  .header('Content-Type', 'application/x-protobuf')
-  .send(protoBuf.serialize(data))
-```
-
-See [`.send()`](#send) for more information on sending different types of values.
-
 <a name="send"></a>
 ### `.send([payload])`
 
@@ -112,7 +90,7 @@ fastify.get('/json-string', (request, reply) => {
 
 <a name="send-string"></a>
 #### Strings
-If you pass a string to `send` without a `Content-Type`, it will be sent as plain text. If you set the `Content-Type` header and pass a string to `send`, it will be serialized with the custom serializer if one is set, otherwise it will be sent unmodified (unless the `Content-Type` header is set to `application/json`, in which case it will be JSON-serialized like an object — see the section above).
+If you pass a string to `send` without a `Content-Type`, it will be sent as plain text. If you set the `Content-Type` header and pass a string to `send`, it will be sent unmodified (unless the `Content-Type` header is set to `application/json`, in which case it will be JSON-serialized like an object — see the section above).
 ```js
 fastify.get('/json', options, function (request, reply) {
   reply.send('plain string')

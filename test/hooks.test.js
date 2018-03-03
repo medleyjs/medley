@@ -688,7 +688,7 @@ test('onSend hook should support encapsulation / 2', t => {
 })
 
 test('onSend hook is called after payload is serialized and headers are set', t => {
-  t.plan(30)
+  t.plan(24)
   const fastify = Fastify()
 
   fastify.register((instance, opts, next) => {
@@ -759,25 +759,6 @@ test('onSend hook is called after payload is serialized and headers are set', t 
     next()
   })
 
-  fastify.register((instance, opts, next) => {
-    const serializedPayload = 'serialized'
-
-    instance.addHook('onSend', function (request, reply, payload, next) {
-      t.strictEqual(payload, serializedPayload)
-      t.strictEqual(reply.res.getHeader('Content-Type'), 'text/custom')
-      next()
-    })
-
-    instance.get('/custom-serializer', (request, reply) => {
-      reply
-        .serializer(() => serializedPayload)
-        .type('text/custom')
-        .send('needs to be serialized')
-    })
-
-    next()
-  })
-
   fastify.inject({
     method: 'GET',
     url: '/json'
@@ -816,16 +797,6 @@ test('onSend hook is called after payload is serialized and headers are set', t 
     t.strictEqual(res.statusCode, 200)
     t.deepEqual(res.payload, 'stream payload')
     t.strictEqual(res.headers['transfer-encoding'], 'chunked')
-  })
-
-  fastify.inject({
-    method: 'GET',
-    url: '/custom-serializer'
-  }, (err, res) => {
-    t.error(err)
-    t.strictEqual(res.statusCode, 200)
-    t.deepEqual(res.payload, 'serialized')
-    t.strictEqual(res.headers['content-type'], 'text/custom')
   })
 })
 

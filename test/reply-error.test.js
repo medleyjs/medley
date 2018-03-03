@@ -286,12 +286,11 @@ test('should set the status code and the headers from the error object (from cus
   })
 })
 
-// Issue 595 https://github.com/fastify/fastify/issues/595
-test('\'*\' should throw an error due to serializer can not handle the payload type', t => {
+test('should throw an error if the payload does not get serialized to a valid type', t => {
   t.plan(2)
   const fastify = Fastify()
 
-  fastify.get('/', (req, reply) => {
+  fastify.get('/', (request, reply) => {
     reply.type('text/html')
     try {
       reply.send({})
@@ -301,34 +300,7 @@ test('\'*\' should throw an error due to serializer can not handle the payload t
     }
   })
 
-  fastify.inject({
-    url: '/',
-    method: 'GET'
-  }, (e, res) => {
-    t.fail('should not be called')
-  })
-})
-
-test('should throw an error if the custom serializer does not serialize the payload to a valid type', t => {
-  t.plan(2)
-  const fastify = Fastify()
-
-  fastify.get('/', (req, reply) => {
-    try {
-      reply
-      .type('text/html')
-      .serializer(payload => payload)
-      .send({})
-    } catch (err) {
-      t.type(err, TypeError)
-      t.strictEqual(err.message, "Attempted to send payload of invalid type 'object'. Expected a string or Buffer.")
-    }
-  })
-
-  fastify.inject({
-    url: '/',
-    method: 'GET'
-  }, (e, res) => {
+  fastify.inject('/', () => {
     t.fail('should not be called')
   })
 })
