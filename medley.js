@@ -388,7 +388,12 @@ function build(options) {
 
     validateBodyLimitOption(opts.bodyLimit)
 
-    _medley.after(function afterRouteAdded(notHandledErr, done) {
+    _medley.after((err, done) => {
+      if (err) {
+        done(err)
+        return
+      }
+
       const prefix = _medley._routePrefix
       var url = opts.url || opts.path
       if (url === '/' && prefix.length > 0) {
@@ -450,7 +455,7 @@ function build(options) {
         context.onResponse = onResponse.length ? onResponse : null
       })
 
-      done(notHandledErr)
+      done()
     })
 
     // chainable api
@@ -513,8 +518,12 @@ function build(options) {
       onRouteHooks.push(fn)
     } else {
       this.after((err, done) => {
+        if (err) {
+          done(err)
+          return
+        }
         _addHook(this, name, fn)
-        done(err)
+        done()
       })
     }
     return this
@@ -582,9 +591,13 @@ function build(options) {
 
     const serializers = buildSerializers(opts.responseSchema)
 
-    this.after((notHandledErr, done) => {
+    this.after((err, done) => {
+      if (err) {
+        done(err)
+        return
+      }
       _setNotFoundHandler.call(this, opts, handler, serializers)
-      done(notHandledErr)
+      done()
     })
   }
 
