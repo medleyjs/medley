@@ -50,7 +50,7 @@ try {
 
 **app.js**
 ```js
-const medley = require('medley')
+const medley = require('@medley/medley')
 
 function buildMedley () {
   const app = medley()

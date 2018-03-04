@@ -135,7 +135,7 @@ Medley offers you a fast and smart way to create different version of the same a
 
 ```js
 // server.js
-const app = require('medley')()
+const app = require('@medley/medley')()
 
 app.register(require('./routes/v1/users'), { prefix: '/v1' })
 app.register(require('./routes/v2/users'), { prefix: '/v2' })

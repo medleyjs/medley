@@ -36,7 +36,7 @@ instance.
 + Default: `false`
 
 ```js
-const app = require('medley')({
+const app = require('@medley/medley')({
   ignoreTrailingSlash: true
 })
 

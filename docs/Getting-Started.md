@@ -13,7 +13,7 @@ npm i @medley/medley --save
 Let's write our first server:
 ```js
 // Require the framework and instantiate it
-const app = require('medley')()
+const app = require('@medley/medley')()
 
 // Declare a route
 app.get('/', function (request, reply) {
@@ -32,7 +32,7 @@ app.listen(3000, function (err) {
 Do you prefer to use `async/await`? Medley supports it out-of-the-box.<br>
 *(we also suggest using [make-promises-safe](https://github.com/mcollina/make-promises-safe) to avoid file descriptor and memory leaks)*
 ```js
-const app = require('medley')()
+const app = require('@medley/medley')()
 
 app.get('/', async (request, reply) => {
   return { hello: 'world' }
@@ -75,7 +75,7 @@ As with JavaScript everything is an object, with Medley everything is a plugin.<
 Before digging into it, let's see how it works!<br>
 Let's declare our basic server, but instead of declaring the route inside the entry point, we'll declare it in an external file (check out the [route declaration](Routes.md) docs).
 ```js
-const app = require('medley')()
+const app = require('@medley/medley')()
 
 app.register(require('./our-first-route'))
 
@@ -109,7 +109,7 @@ Let's rewrite the above example with a database connection.
 
 **server.js**
 ```js
-const app = require('medley')()
+const app = require('@medley/medley')()
 
 app.register(require('./our-db-connector'), {
   url: 'mongodb://localhost:27017/'
