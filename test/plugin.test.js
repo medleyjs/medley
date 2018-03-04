@@ -6,15 +6,6 @@ const medley = require('..')
 const sget = require('simple-get').concat
 const fp = require('fastify-plugin')
 
-test('require a plugin', (t) => {
-  t.plan(1)
-  const app = medley()
-  app.register(require('./plugin.helper'))
-  app.ready(() => {
-    t.ok(app.test)
-  })
-})
-
 test('app.register with fastify-plugin should not incapsulate his code', (t) => {
   t.plan(10)
   const app = medley()
