@@ -127,7 +127,7 @@ test('setting a custom 404 handler multiple times is an error', (t) => {
       t.fail('setting multiple 404 handlers at the same prefix encapsulation level should throw')
     } catch (err) {
       t.type(err, Error)
-      t.strictEqual(err.message, 'Not found handler already set for sub app with prefix: \'/\'')
+      t.strictEqual(err.message, 'Not found handler already set for app instance with prefix: \'/\'')
     }
   })
 
@@ -144,7 +144,7 @@ test('setting a custom 404 handler multiple times is an error', (t) => {
         t.fail('setting multiple 404 handlers at the same prefix encapsulation level should throw')
       } catch (err) {
         t.type(err, Error)
-        t.strictEqual(err.message, 'Not found handler already set for sub app with prefix: \'/prefix\'')
+        t.strictEqual(err.message, 'Not found handler already set for app instance with prefix: \'/prefix\'')
       }
 
       next()
@@ -167,7 +167,7 @@ test('setting a custom 404 handler multiple times is an error', (t) => {
         t.fail('setting multiple 404 handlers at the same prefix encapsulation level should throw')
       } catch (err) {
         t.type(err, Error)
-        t.strictEqual(err.message, 'Not found handler already set for sub app with prefix: \'/\'')
+        t.strictEqual(err.message, 'Not found handler already set for app instance with prefix: \'/\'')
       }
       next()
     })
@@ -194,7 +194,7 @@ test('setting a custom 404 handler multiple times is an error', (t) => {
           t.fail('setting multiple 404 handlers at the same prefix encapsulation level should throw')
         } catch (err) {
           t.type(err, Error)
-          t.strictEqual(err.message, 'Not found handler already set for sub app with prefix: \'/prefix\'')
+          t.strictEqual(err.message, 'Not found handler already set for app instance with prefix: \'/prefix\'')
         }
         next()
       })

@@ -554,7 +554,7 @@ function build(options) {
     fourOhFour.lookup(req, res)
   }
 
-  function basic404(req, reply) {
+  function basic404(request, reply) {
     reply.code(404).send(new Error('Not found'))
   }
 
@@ -570,7 +570,7 @@ function build(options) {
 
     if (this._notFoundHandler !== null && this._notFoundHandler !== basic404) {
       throw new Error(
-        `Not found handler already set for sub app with prefix: '${this._routePrefix || '/'}'`
+        `Not found handler already set for app instance with prefix: '${this._routePrefix || '/'}'`
       )
     }
 
