@@ -136,7 +136,7 @@ app.register((subApp, opts, next) => {
 #### inject
 Fake http injection (for testing purposes) [here](Testing.md#inject).
 
-<a name="set-not-found-handler"></a>
+<a name="not-found-handler"></a>
 #### setNotFoundHandler
 
 `app.setNotFoundHandler(handler(request, reply))`: set the 404 handler. This call is encapsulated by prefix, so different plugins can set different not found handlers if a different [`prefix` option](Plugins.md#route-prefixing-option) is passed to `app.register()`. The handler is treated like a regular route handler so requests will go through the full [Medley lifecycle](Lifecycle.md#lifecycle).
