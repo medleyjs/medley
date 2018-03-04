@@ -62,7 +62,8 @@
     "x-xss-protection": "^1.0.0"
   },
   "scripts": {
-    "lint": "eslint .",
-    "test": "tap -j4 test/**/*.test.js"
+    "lint": "eslint --cache --cache-location node_modules/.cache/.eslintcache .",
+    "test": "tap -j4 test/**/*.test.js",
+    "ci": "npm run lint && npm run test"
   }
 }
