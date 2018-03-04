@@ -150,35 +150,6 @@ function build(options) {
 
   return medley
 
-  function routeHandler(req, res, params, context) {
-    if (context.onResponse !== null) {
-      res._onResponseHooks = context.onResponse
-      res.on('finish', runOnResponseHooks)
-      res.on('error', runOnResponseHooks)
-    }
-
-    if (context.onRequest === null) {
-      onRequestCallback(null, new State(req, res, params, context))
-    } else {
-      runHooks(
-        context.onRequest,
-        hookIterator,
-        new State(req, res, params, context),
-        onRequestCallback
-      )
-    }
-  }
-
-  function runOnResponseHooks() {
-    this.removeListener('finish', runOnResponseHooks)
-    this.removeListener('error', runOnResponseHooks)
-
-    const onResponseHooks = this._onResponseHooks
-    for (var i = 0; i < onResponseHooks.length; i++) {
-      onResponseHooks[i](this)
-    }
-  }
-
   function listen(port, host, backlog, cb) {
     /* Deal with listen (port, cb) */
     if (typeof host === 'function') {
@@ -233,6 +204,25 @@ function build(options) {
     return undefined
   }
 
+  function routeHandler(req, res, params, context) {
+    if (context.onResponse !== null) {
+      res._onResponseHooks = context.onResponse
+      res.on('finish', runOnResponseHooks)
+      res.on('error', runOnResponseHooks)
+    }
+
+    if (context.onRequest === null) {
+      onRequestCallback(null, new State(req, res, params, context))
+    } else {
+      runHooks(
+        context.onRequest,
+        hookIterator,
+        new State(req, res, params, context),
+        onRequestCallback
+      )
+    }
+  }
+
   function State(req, res, params, context) {
     this.req = req
     this.res = res
@@ -258,6 +248,16 @@ function build(options) {
     }
 
     handleRequest(state.req, state.res, state.params, state.context)
+  }
+
+  function runOnResponseHooks() {
+    this.removeListener('finish', runOnResponseHooks)
+    this.removeListener('error', runOnResponseHooks)
+
+    const onResponseHooks = this._onResponseHooks
+    for (var i = 0; i < onResponseHooks.length; i++) {
+      onResponseHooks[i](this)
+    }
   }
 
   function override(parentApp, fn, opts) {
