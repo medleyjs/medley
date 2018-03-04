@@ -52,7 +52,7 @@ fastify.decorateRequest('utility', function () {
 
 <a name="sync-async"></a>
 #### Sync and Async
-`decorate` is a *synchronous* API. If you need to add a decorator that has an *asynchronous* bootstrap, Fastify could boot up before your decorator is ready. To avoid this issue, you must use the `register` API in combination with `fastify-plugin`. To learn more, check out the [Plugins](https://github.com/fastify/fastify/blob/master/docs/Plugins.md) documentation as well.
+`decorate` is a *synchronous* API. If you need to add a decorator that has an *asynchronous* bootstrap, Fastify could boot up before your decorator is ready. To avoid this issue, you must use the `register` API in combination with `fastify-plugin`. To learn more, check out the [Plugins](Plugins.md) documentation as well.
 
 <a name="dependencies"></a>
 #### Dependencies

@@ -159,7 +159,7 @@ fastify.get('/', function (request, reply) {
 
 <a name="payload-type"></a>
 #### Type of the final payload
-The type of the sent payload (after serialization and going through any [`onSend` hooks](https://github.com/fastify/fastify/blob/master/docs/Hooks.md#the-onsend-hook)) must be one of the following types, otherwise an error will be thrown:
+The type of the sent payload (after serialization and going through any [`onSend` hooks](Hooks.md#the-onsend-hook)) must be one of the following types, otherwise an error will be thrown:
 
 - `string`
 - `Buffer`
@@ -197,4 +197,4 @@ fastify.get('/teapot', async function (request, reply) => {
 })
 ```
 
-If you want to know more please review [Routes#async-await](https://github.com/fastify/fastify/blob/master/docs/Routes.md#async-await).
+If you want to know more please review [Routes#async-await](Routes.md#async-await).

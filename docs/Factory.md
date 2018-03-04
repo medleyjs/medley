@@ -24,10 +24,7 @@ are the same as the Node.js core
 [`createServer` method](https://nodejs.org/dist/latest-v8.x/docs/api/https.html#https_https_createserver_options_requestlistener).
 When this property is `null`, the socket will not be configured for TLS.
 
-This option also applies when the
-<a href="https://github.com/fastify/fastify/blob/master/docs/Factory.md#factory-http2">
-<code><b>http2</b></code>
-</a> option is set.
+This option also applies when the [`http2`](Factory.md#factory-http2) option is set.
 
 + Default: `null`
 
