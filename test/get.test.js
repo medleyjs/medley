@@ -30,7 +30,7 @@ test('shorthand - get', (t) => {
   t.plan(1)
   try {
     app.get('/', stringSchema, function(req, reply) {
-      reply.code(200).send({hello: 'world'})
+      reply.send({hello: 'world'})
     })
     t.pass()
   } catch (e) {
@@ -42,7 +42,7 @@ test('shorthand - get (return null)', (t) => {
   t.plan(1)
   try {
     app.get('/null', nullSchema, function(req, reply) {
-      reply.code(200).send(null)
+      reply.send(null)
     })
     t.pass()
   } catch (e) {
@@ -54,7 +54,7 @@ test('missing schema - get', (t) => {
   t.plan(1)
   try {
     app.get('/missing', function(req, reply) {
-      reply.code(200).send({hello: 'world'})
+      reply.send({hello: 'world'})
     })
     t.pass()
   } catch (e) {
@@ -66,7 +66,7 @@ test('empty response', (t) => {
   t.plan(1)
   try {
     app.get('/empty', function(req, reply) {
-      reply.code(200).send()
+      reply.send()
     })
     t.pass()
   } catch (e) {
@@ -78,7 +78,7 @@ test('send a falsy boolean', (t) => {
   t.plan(1)
   try {
     app.get('/boolean', function(req, reply) {
-      reply.code(200).send(false)
+      reply.send(false)
     })
     t.pass()
   } catch (e) {

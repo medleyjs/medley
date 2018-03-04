@@ -19,12 +19,12 @@ test('should respond with a stream', (t) => {
 
   app.get('/', function(req, reply) {
     const stream = fs.createReadStream(__filename, 'utf8')
-    reply.code(200).send(stream)
+    reply.send(stream)
   })
 
   app.get('/error', function(req, reply) {
     const stream = fs.createReadStream('not-existing-file', 'utf8')
-    reply.code(200).send(stream)
+    reply.send(stream)
   })
 
   app.listen(0, (err) => {
@@ -176,9 +176,9 @@ test('should respond with a stream1', (t) => {
   t.plan(5)
   const app = medley()
 
-  app.get('/', function(req, reply) {
+  app.get('/', function(request, reply) {
     const stream = JSONStream.stringify()
-    reply.code(200).type('application/json').send(stream)
+    reply.type('application/json').send(stream)
     stream.write({hello: 'world'})
     stream.end({a: 42})
   })
@@ -235,12 +235,12 @@ test('should support send module 200 and 404', (t) => {
 
   app.get('/', function(req, reply) {
     const stream = send(req.req, __filename)
-    reply.code(200).send(stream)
+    reply.send(stream)
   })
 
   app.get('/error', function(req, reply) {
     const stream = send(req.req, 'non-existing-file')
-    reply.code(200).send(stream)
+    reply.send(stream)
   })
 
   app.listen(0, (err) => {

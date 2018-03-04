@@ -15,7 +15,7 @@ var app = medley({
 })
 
 app.get('/', function(request, reply) {
-  reply.code(200).send({hello: 'world'})
+  reply.send({hello: 'world'})
 })
 
 app.listen(0, (err) => {

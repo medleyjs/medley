@@ -25,11 +25,11 @@ try {
 }
 
 app.get('/', function(req, reply) {
-  reply.code(200).send(msg)
+  reply.send(msg)
 })
 
 app.post('/', function(req, reply) {
-  reply.code(200).send(req.body)
+  reply.send(req.body)
 })
 
 app.get('/error', async function() {

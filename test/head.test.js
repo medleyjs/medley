@@ -17,7 +17,7 @@ test('shorthand - head', (t) => {
   t.plan(1)
   try {
     app.head('/', options, function(req, reply) {
-      reply.code(200).send(null)
+      reply.send(null)
     })
     t.pass()
   } catch (e) {
@@ -29,7 +29,7 @@ test('missing schema - head', (t) => {
   t.plan(1)
   try {
     app.head('/missing', function(req, reply) {
-      reply.code(200).send(null)
+      reply.send(null)
     })
     t.pass()
   } catch (e) {

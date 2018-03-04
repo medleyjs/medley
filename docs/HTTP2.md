@@ -29,7 +29,7 @@ const fastify = require('fastify')({
 })
 
 fastify.get('/', function (request, reply) {
-  reply.code(200).send({ hello: 'world' })
+  reply.send({ hello: 'world' })
 })
 
 fastify.listen(3000)
@@ -56,7 +56,7 @@ const fastify = require('fastify')({
 
 // this route can be accessed through both protocols
 fastify.get('/', function (request, reply) {
-  reply.code(200).send({ hello: 'world' })
+  reply.send({ hello: 'world' })
 })
 
 fastify.listen(3000)
@@ -81,7 +81,7 @@ const fastify = require('fastify')({
 })
 
 fastify.get('/', function (request, reply) {
-  reply.code(200).send({ hello: 'world' })
+  reply.send({ hello: 'world' })
 })
 
 fastify.listen(3000)

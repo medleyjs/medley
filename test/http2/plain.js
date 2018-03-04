@@ -17,7 +17,7 @@ try {
 }
 
 app.get('/', function(req, reply) {
-  reply.code(200).send(msg)
+  reply.send(msg)
 })
 
 app.listen(0, (err) => {

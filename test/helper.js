@@ -21,16 +21,16 @@ module.exports.payloadMethod = function(method, t) {
       },
     },
   }, function(req, reply) {
-    reply.code(200).send(req.body)
+    reply.send(req.body)
   })
 
   app[loMethod]('/missing', function(req, reply) {
-    reply.code(200).send(req.body)
+    reply.send(req.body)
   })
 
   app[loMethod]('/with-query', function(request, reply) {
     request.body.hello += request.query.foo
-    reply.code(200).send(request.body)
+    reply.send(request.body)
   })
 
   app[loMethod]('/with-limit', {bodyLimit: 1}, function(req, reply) {

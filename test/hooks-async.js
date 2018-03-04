@@ -45,15 +45,15 @@ function asyncHookTest(t) {
       t.is(reply.res.testVal, 'the reply has come')
       t.is(request.test, 'the request is coming')
       t.is(reply.test, 'the reply has come')
-      reply.code(200).send({hello: 'world'})
+      reply.send({hello: 'world'})
     })
 
     app.head('/', function(req, reply) {
-      reply.code(200).send({hello: 'world'})
+      reply.send({hello: 'world'})
     })
 
     app.delete('/', function(req, reply) {
-      reply.code(200).send({hello: 'world'})
+      reply.send({hello: 'world'})
     })
 
     app.listen(0, (err) => {

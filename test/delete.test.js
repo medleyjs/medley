@@ -21,7 +21,7 @@ test('missing schema - delete', (t) => {
   t.plan(1)
   try {
     app.delete('/missing', function(req, reply) {
-      reply.code(200).send({hello: 'world'})
+      reply.send({hello: 'world'})
     })
     t.pass()
   } catch (e) {

@@ -43,13 +43,11 @@ test('within a sub app', (t) => {
   const app = require('../..')()
 
   app.get('/', function(req, reply) {
-    reply.code(200)
     reply.header('Content-Type', 'text/plain')
     reply.send('hello world!')
   })
 
   app.get('/auto-type', function(req, reply) {
-    reply.code(200)
     reply.type('text/plain')
     reply.send('hello world!')
   })
