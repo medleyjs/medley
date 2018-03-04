@@ -2,19 +2,7 @@
 
 const t = require('tap')
 const test = t.test
-const Request = require('../../lib/Request')
 const sget = require('simple-get').concat
-
-test('Request object', (t) => {
-  t.plan(6)
-  const req = new Request('params', 'req', 'query', 'headers')
-  t.type(req, Request)
-  t.equal(req.params, 'params')
-  t.equal(req.req, 'req')
-  t.equal(req.query, 'query')
-  t.equal(req.headers, 'headers')
-  t.equal(req.body, null)
-})
 
 test('request should be defined in onSend Hook on post request with content type application/json', (t) => {
   t.plan(7)

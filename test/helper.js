@@ -20,12 +20,12 @@ module.exports.payloadMethod = function(method, t) {
         },
       },
     },
-  }, function(req, reply) {
-    reply.send(req.body)
+  }, function(request, reply) {
+    reply.send(request.body)
   })
 
-  app[loMethod]('/missing', function(req, reply) {
-    reply.send(req.body)
+  app[loMethod]('/no-schema', function(request, reply) {
+    reply.send(request.body)
   })
 
   app[loMethod]('/with-query', function(request, reply) {
@@ -33,8 +33,8 @@ module.exports.payloadMethod = function(method, t) {
     reply.send(request.body)
   })
 
-  app[loMethod]('/with-limit', {bodyLimit: 1}, function(req, reply) {
-    reply.send(req.body)
+  app[loMethod]('/with-limit', {bodyLimit: 1}, function(request, reply) {
+    reply.send(request.body)
   })
 
   app.listen(0, function(err) {
@@ -96,7 +96,7 @@ module.exports.payloadMethod = function(method, t) {
       t.plan(3)
       sget({
         method: upMethod,
-        url: 'http://localhost:' + app.server.address().port + '/missing',
+        url: 'http://localhost:' + app.server.address().port + '/no-schema',
         body: {
           hello: 'world',
         },
@@ -129,23 +129,23 @@ module.exports.payloadMethod = function(method, t) {
 
       sget({
         method: upMethod,
-        url: 'http://localhost:' + app.server.address().port + '/missing',
+        url: 'http://localhost:' + app.server.address().port + '/no-schema',
         headers: {'Content-Length': '0'},
         timeout: 500,
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 200)
-        t.strictEqual(JSON.parse(body.toString()), null)
+        t.strictEqual(body.toString(), '')
       })
 
       // Must use inject to make a request without a Content-Length header
       app.inject({
         method: upMethod,
-        url: '/missing',
+        url: '/no-schema',
       }, (err, res) => {
         t.error(err)
         t.strictEqual(res.statusCode, 200)
-        t.strictEqual(JSON.parse(res.payload), null)
+        t.strictEqual(res.payload, '')
       })
     })
 
@@ -153,7 +153,7 @@ module.exports.payloadMethod = function(method, t) {
       t.plan(2)
       sget({
         method: upMethod,
-        url: 'http://localhost:' + app.server.address().port + '/missing',
+        url: 'http://localhost:' + app.server.address().port + '/no-schema',
         body: 'hello world',
         timeout: 500,
       }, (err, response) => {
@@ -171,7 +171,7 @@ module.exports.payloadMethod = function(method, t) {
         t.plan(2)
         sget({
           method: upMethod,
-          url: 'http://localhost:' + app.server.address().port + '/missing',
+          url: 'http://localhost:' + app.server.address().port + '/no-schema',
           body: 'hello world',
           headers: {
             'Content-Type': 'text/plain',
