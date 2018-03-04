@@ -4,7 +4,6 @@ const t = require('tap')
 const test = t.test
 const sget = require('simple-get').concat
 const fs = require('fs')
-const resolve = require('path').resolve
 const zlib = require('zlib')
 const pump = require('pump')
 const medley = require('..')
