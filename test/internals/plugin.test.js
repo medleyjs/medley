@@ -30,7 +30,7 @@ test('getMeta should return the object stored with the \'plugin-meta\' symbol', 
   function fn() {}
 })
 
-test('checkDecorators should check if the given decorator is present in the instance', t => {
+test('checkDecorators should check if the given decorator is present in the subApp', t => {
   t.plan(1)
 
   fn[Symbol.for('plugin-meta')] = {
@@ -57,7 +57,7 @@ test('checkDecorators should check if the given decorator is present in the inst
   function fn() {}
 })
 
-test('checkDecorators should check if the given decorator is present in the instance (errored)', t => {
+test('checkDecorators should check if the given decorator is present in the subApp (errored)', t => {
   t.plan(1)
 
   fn[Symbol.for('plugin-meta')] = {
@@ -84,7 +84,7 @@ test('checkDecorators should check if the given decorator is present in the inst
   function fn() {}
 })
 
-test('checkDependencies should check if the given dependency is present in the instance', t => {
+test('checkDependencies should check if the given dependency is present in the subApp', t => {
   t.plan(1)
 
   fn[Symbol.for('plugin-meta')] = {
@@ -105,7 +105,7 @@ test('checkDependencies should check if the given dependency is present in the i
   function fn() {}
 })
 
-test('checkDependencies should check if the given dependency is present in the instance (errored)', t => {
+test('checkDependencies should check if the given dependency is present in the subApp (errored)', t => {
   t.plan(1)
 
   fn[Symbol.for('plugin-meta')] = {

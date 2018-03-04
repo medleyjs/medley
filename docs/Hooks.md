@@ -176,10 +176,10 @@ You are able to hook into the application-lifecycle as well. It's important to n
 
 <a name="on-close"></a>
 **'onClose'**<br>
-Triggered when `fastify.close()` is invoked to stop the server. It is useful when [plugins](https://github.com/fastify/fastify/blob/master/docs/Plugins.md) need a "shutdown" event, such as a connection to a database.<br>
-The first argument is the Fastify instance, the second one the `done` callback.
+Triggered when `app.close()` is invoked to stop the server. It is useful when [plugins](https://github.com/fastify/fastify/blob/master/docs/Plugins.md) need a "shutdown" event, such as a connection to a database.<br>
+The first argument is the app instance, the second one the `done` callback.
 ```js
-fastify.addHook('onClose', (instance, done) => {
+app.addHook('onClose', (app, done) => {
   // some code
   done()
 })
@@ -188,7 +188,7 @@ fastify.addHook('onClose', (instance, done) => {
 **'onRoute'**<br>
 Triggered when a new route is registered. Listeners are passed a `routeOptions` object as the sole parameter. The interface is synchronous, and, as such, the listeners do not get passed a callback.
 ```js
-fastify.addHook('onRoute', (routeOptions) => {
+app.addHook('onRoute', (routeOptions) => {
   routeOptions.url
   routeOptions.beforeHandler
   routeOptions.customValuePassedToRoute // For example
@@ -204,7 +204,6 @@ fastify.addHook('onRequest', function (req, res, next) {
   next()
 })
 ```
-Note: using an arrow function will break the binding of this to the Fastify instance.
 
 <a name="before-handler"></a>
 ### beforeHandler

@@ -39,7 +39,7 @@ test('reply.send throw with circular JSON', t => {
   })
 })
 
-test('within an instance', t => {
+test('within a sub app', t => {
   const app = require('../..')()
   const test = t.test
 
@@ -67,7 +67,7 @@ test('within an instance', t => {
     reply.redirect(301, '/')
   })
 
-  app.register(function(instance, options, next) {
+  app.register(function(subApp, options, next) {
     app.addHook('onSend', function(req, reply, payload, next) {
       reply.header('x-onsend', 'yes')
       next()
@@ -369,12 +369,12 @@ test('reply.send(new NotFound()) should invoke the 404 handler', t => {
     reply.send(new NotFound())
   })
 
-  app.register(function(instance, options, next) {
-    instance.get('/not-found', function(req, reply) {
+  app.register(function(subApp, options, next) {
+    subApp.get('/not-found', function(req, reply) {
       reply.send(new NotFound())
     })
 
-    instance.setNotFoundHandler(function(req, reply) {
+    subApp.setNotFoundHandler(function(req, reply) {
       reply.code(404).send('Custom not found response')
     })
 

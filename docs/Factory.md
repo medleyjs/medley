@@ -3,9 +3,8 @@
 <a name="factory"></a>
 ## Factory
 
-The Fastify module exports a factory function that is used to create new
-<a href="https://github.com/fastify/fastify/blob/master/docs/Server-Methods.md"><code><b>Fastify server</b></code></a>
-instances. This factory function accepts an options object which is used to
+The Fastify module exports a factory function that is used to create new [**`Medley app`**](Server-Methods.md)
+instance. This factory function accepts an options object which is used to
 customize the resulting instance. This document describes the properties
 available in that options object.
 
@@ -37,7 +36,7 @@ This option also applies when the
 
 Fastify uses [find-my-way](https://github.com/delvedor/find-my-way) to handle
 routing. This option may be set to `true` to ignore trailing slashes in routes.
-This option applies to *all* route registrations for the resulting server
+This option applies to *all* route registrations for the resulting app
 instance.
 
 + Default: `false`

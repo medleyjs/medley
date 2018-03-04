@@ -13,7 +13,7 @@ fastify.route(options)
 * `responseSchema`: The schema for a JSON response. See the [`Serialization` documentation](Serialization.md).
 * `beforeHandler(request, reply, done)`: a [function](https://github.com/fastify/fastify/blob/master/docs/Hooks.md#before-handler) called just before the request handler, useful if you need to perform authentication at route level for example, it could also be and array of functions.
 * `handler(request, reply)`: the function that will handle this request.
-* `bodyLimit`: prevents the default JSON body parser from parsing request bodies larger than this number of bytes. Must be an integer. You may also set this option globally when first creating the Fastify instance with `fastify(options)`. Defaults to `1048576` (1 MiB).
+* `bodyLimit`: prevents the default JSON body parser from parsing request bodies larger than this number of bytes. Must be an integer. You may also set this option globally when first creating the Medley app with `medley(options)`. Defaults to `1048576` (1 MiB).
 * `config`: object used to store custom configuration.
 
   `request` is defined in [Request](https://github.com/fastify/fastify/blob/master/docs/Request.md).

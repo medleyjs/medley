@@ -100,7 +100,7 @@ test('onRequest hook error handling with external done', t => {
   })
 })
 
-test('Error instance sets HTTP status code', t => {
+test('Error subApp sets HTTP status code', t => {
   t.plan(3)
   const app = medley()
   const err = new Error('winter is coming')

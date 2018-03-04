@@ -162,14 +162,14 @@ test('contentTypeParser should support encapsulation', t => {
   t.plan(6)
   const app = medley()
 
-  app.register((instance, opts, next) => {
-    instance.addContentTypeParser('application/jsoff', () => {})
-    t.ok(instance.hasContentTypeParser('application/jsoff'))
+  app.register((subApp, opts, next) => {
+    subApp.addContentTypeParser('application/jsoff', () => {})
+    t.ok(subApp.hasContentTypeParser('application/jsoff'))
 
-    instance.register((instance, opts, next) => {
-      instance.addContentTypeParser('application/ffosj', () => {})
-      t.ok(instance.hasContentTypeParser('application/jsoff'))
-      t.ok(instance.hasContentTypeParser('application/ffosj'))
+    subApp.register((subApp, opts, next) => {
+      subApp.addContentTypeParser('application/ffosj', () => {})
+      t.ok(subApp.hasContentTypeParser('application/jsoff'))
+      t.ok(subApp.hasContentTypeParser('application/ffosj'))
       next()
     })
 
@@ -187,12 +187,12 @@ test('contentTypeParser should support encapsulation, second try', t => {
   t.plan(4)
   const app = medley()
 
-  app.register((instance, opts, next) => {
-    instance.post('/', (req, reply) => {
+  app.register((subApp, opts, next) => {
+    subApp.post('/', (req, reply) => {
       reply.send(req.body)
     })
 
-    instance.addContentTypeParser('application/jsoff', function(req, done) {
+    subApp.addContentTypeParser('application/jsoff', function(req, done) {
       jsonParser(req, function(err, body) {
         done(err, body)
       })

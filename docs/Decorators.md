@@ -2,9 +2,7 @@
 
 ## Decorators
 
-If you need to add functionality to the Fastify instance, the `decorate` API is what you need.
-
-The API allows you to add new properties to the Fastify instance. A value is not restricted to a function and could also be an object or a string, for example.
+The API allows you to add new properties to the Medley `app` instance. A value is not restricted to a function and could also be an object or a string, for example.
 
 <a name="usage"></a>
 ### Usage
@@ -12,24 +10,24 @@ The API allows you to add new properties to the Fastify instance. A value is not
 **decorate**
 Just call the `decorate` API and pass the name of the new property and its value.
 ```js
-fastify.decorate('utility', () => {
+app.decorate('utility', () => {
   // something very useful
 })
 ```
 
-As said above, you can also decorate the instance with non-function values:
+As said above, you can also decorate the app with non-function values:
 ```js
-fastify.decorate('conf', {
+app.decorate('conf', {
   db: 'some.db',
   port: 3000
 })
 ```
 
-Once you decorate the instance, you can access the value by using the name you passed as a parameter:
+Once you decorate the app, you can access the value by using the name you passed as a parameter:
 ```js
-fastify.utility()
+app.utility()
 
-console.log(fastify.conf.db)
+console.log(app.conf.db)
 ```
 
 Decorators are not *overwritable*. If you try to declare a decorator that was previously declared *(in other words, use the same name)*, `decorate` will throw an exception.
@@ -38,12 +36,10 @@ Decorators are not *overwritable*. If you try to declare a decorator that was pr
 **decorateReply**
 As the name suggests, this API is needed if you want to add new methods to the `Reply` core object. Just call the `decorateReply` API and pass the name of the new property and its value:
 ```js
-fastify.decorateReply('utility', function () {
+app.decorateReply('utility', function () {
   // something very useful
 })
 ```
-
-Note: using an arrow function will break the binding of `this` to the Fastify `reply` instance.
 
 <a name="decorate-request"></a>
 **decorateRequest**
@@ -53,8 +49,6 @@ fastify.decorateRequest('utility', function () {
   // something very useful
 })
 ```
-
-Note: using an arrow function will break the binding of `this` to the Fastify `request` instance.
 
 <a name="sync-async"></a>
 #### Sync and Async

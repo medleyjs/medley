@@ -4,7 +4,7 @@ const t = require('tap')
 const test = t.test
 const decorator = require('../../lib/decorate')
 
-test('decorate should add the given method to its instance', t => {
+test('decorate should add the given method to its subApp', t => {
   t.plan(1)
 
   function build() {
@@ -40,13 +40,13 @@ test('decorate is chainable', t => {
   t.ok(server.test3)
 })
 
-test('checkExistence should check if a property is part of the given instance', t => {
+test('checkExistence should check if a property is part of the given subApp', t => {
   t.plan(1)
-  const instance = {test: () => {}}
-  t.ok(decorator.exist(instance, 'test'))
+  const subApp = {test: () => {}}
+  t.ok(decorator.exist(subApp, 'test'))
 })
 
-test('checkExistence should find the instance if not given', t => {
+test('checkExistence should find the subApp if not given', t => {
   t.plan(1)
 
   function build() {
@@ -69,15 +69,15 @@ test('checkExistence should check the prototype as well', t => {
 
   Instance.prototype.test = () => {}
 
-  const instance = new Instance()
-  t.ok(decorator.exist(instance, 'test'))
+  const subApp = new Instance()
+  t.ok(decorator.exist(subApp, 'test'))
 })
 
 test('checkDependencies should throw if a dependency is not present', t => {
   t.plan(1)
-  const instance = {}
+  const subApp = {}
   try {
-    decorator.dependencies(instance, ['test'])
+    decorator.dependencies(subApp, ['test'])
     t.fail()
   } catch (e) {
     t.is(e.message, 'medley decorator: missing dependency: \'test\'.')

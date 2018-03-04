@@ -106,13 +106,13 @@ test('onRequest hook should support encapsulation / 1', t => {
   t.plan(5)
   const app = medley()
 
-  app.register((instance, opts, next) => {
-    instance.addHook('onRequest', (req, res, next) => {
+  app.register((subApp, opts, next) => {
+    subApp.addHook('onRequest', (req, res, next) => {
       t.strictEqual(req.url, '/plugin')
       next()
     })
 
-    instance.get('/plugin', (request, reply) => {
+    subApp.get('/plugin', (request, reply) => {
       reply.send()
     })
 
@@ -141,9 +141,9 @@ test('onRequest hook should support encapsulation / 2', t => {
 
   app.addHook('onRequest', () => {})
 
-  app.register((instance, opts, next) => {
-    instance.addHook('onRequest', () => {})
-    pluginInstance = instance
+  app.register((subApp, opts, next) => {
+    subApp.addHook('onRequest', () => {})
+    pluginInstance = subApp
     next()
   })
 
@@ -169,13 +169,13 @@ test('onRequest hook should support encapsulation / 3', t => {
     reply.send({hello: 'world'})
   })
 
-  app.register((instance, opts, next) => {
-    instance.addHook('onRequest', function(req, res, next) {
+  app.register((subApp, opts, next) => {
+    subApp.addHook('onRequest', function(req, res, next) {
       req.second = true
       next()
     })
 
-    instance.get('/second', (request, reply) => {
+    subApp.get('/second', (request, reply) => {
       t.ok(request.req.first)
       t.ok(request.req.second)
       reply.send({hello: 'world'})
@@ -230,17 +230,17 @@ test('preHandler hook should support encapsulation / 5', t => {
     reply.send({hello: 'world'})
   })
 
-  app.register((instance, opts, next) => {
-    instance.decorateRequest('hello2', 'world')
+  app.register((subApp, opts, next) => {
+    subApp.decorateRequest('hello2', 'world')
 
-    instance.addHook('preHandler', function(request, reply, next) {
+    subApp.addHook('preHandler', function(request, reply, next) {
       t.equal(request.hello, 'world')
       t.equal(request.hello2, 'world')
       request.second = true
       next()
     })
 
-    instance.get('/second', (request, reply) => {
+    subApp.get('/second', (request, reply) => {
       t.ok(request.first)
       t.ok(request.second)
       reply.send({hello: 'world'})
@@ -279,11 +279,11 @@ test('onRoute hook should be called / 1', t => {
   t.plan(2)
   const app = medley()
 
-  app.register((instance, opts, next) => {
-    instance.addHook('onRoute', () => {
+  app.register((subApp, opts, next) => {
+    subApp.addHook('onRoute', () => {
       t.pass()
     })
-    instance.get('/', opts, function(req, reply) {
+    subApp.get('/', opts, function(req, reply) {
       reply.send()
     })
     next()
@@ -304,12 +304,12 @@ test('onRoute hook should be called / 2', t => {
     firstHandler++
   })
 
-  app.register((instance, opts, next) => {
-    instance.addHook('onRoute', (route) => {
+  app.register((subApp, opts, next) => {
+    subApp.addHook('onRoute', (route) => {
       t.pass()
       secondHandler++
     })
-    instance.get('/', opts, function(req, reply) {
+    subApp.get('/', opts, function(req, reply) {
       reply.send()
     })
     next()
@@ -336,11 +336,11 @@ test('onRoute hook should be called / 3', t => {
     t.pass()
   })
 
-  app.register((instance, opts, next) => {
-    instance.addHook('onRoute', (route) => {
+  app.register((subApp, opts, next) => {
+    subApp.addHook('onRoute', (route) => {
       t.pass()
     })
-    instance.get('/a', handler)
+    subApp.get('/a', handler)
     next()
   })
     .after((err, done) => {
@@ -359,17 +359,17 @@ test('onRoute hook should be called / 3', t => {
 test('onRoute should keep the context', t => {
   t.plan(4)
   const app = medley()
-  app.register((instance, opts, next) => {
-    instance.decorate('test', true)
-    instance.addHook('onRoute', onRoute)
-    t.ok(instance.prototype === app.prototype)
+  app.register((subApp, opts, next) => {
+    subApp.decorate('test', true)
+    subApp.addHook('onRoute', onRoute)
+    t.ok(subApp.prototype === app.prototype)
 
     function onRoute(route) {
       t.ok(this.test)
-      t.strictEqual(this, instance)
+      t.strictEqual(this, subApp)
     }
 
-    instance.get('/', opts, function(req, reply) {
+    subApp.get('/', opts, function(req, reply) {
       reply.send()
     })
 
@@ -390,13 +390,13 @@ test('onRoute hook should pass correct route', t => {
     t.strictEqual(route.path, '/')
   })
 
-  app.register((instance, opts, next) => {
-    instance.addHook('onRoute', (route) => {
+  app.register((subApp, opts, next) => {
+    subApp.addHook('onRoute', (route) => {
       t.strictEqual(route.method, 'GET')
       t.strictEqual(route.url, '/')
       t.strictEqual(route.path, '/')
     })
-    instance.get('/', opts, function(req, reply) {
+    subApp.get('/', opts, function(req, reply) {
       reply.send()
     })
     next()
@@ -417,14 +417,14 @@ test('onRoute hook should pass correct route with custom prefix', t => {
     t.strictEqual(route.prefix, '/v1')
   })
 
-  app.register((instance, opts, next) => {
-    instance.addHook('onRoute', function(route) {
+  app.register((subApp, opts, next) => {
+    subApp.addHook('onRoute', function(route) {
       t.strictEqual(route.method, 'GET')
       t.strictEqual(route.url, '/v1/foo')
       t.strictEqual(route.path, '/v1/foo')
       t.strictEqual(route.prefix, '/v1')
     })
-    instance.get('/foo', opts, function(req, reply) {
+    subApp.get('/foo', opts, function(req, reply) {
       reply.send()
     })
     next()
@@ -438,13 +438,13 @@ test('onRoute hook should pass correct route with custom prefix', t => {
 test('onRoute hook should pass correct route with custom options', t => {
   t.plan(4)
   const app = medley()
-  app.register((instance, opts, next) => {
-    instance.addHook('onRoute', (route) => {
+  app.register((subApp, opts, next) => {
+    subApp.addHook('onRoute', (route) => {
       t.strictEqual(route.method, 'GET')
       t.strictEqual(route.url, '/foo')
       t.strictEqual(route.bodyLimit, 100)
     })
-    instance.get('/foo', {bodyLimit: 100}, (request, reply) => {
+    subApp.get('/foo', {bodyLimit: 100}, (request, reply) => {
       reply.send()
     })
     next()
@@ -458,13 +458,13 @@ test('onRoute hook should pass correct route with custom options', t => {
 test('onRoute hook should receive any route option', t => {
   t.plan(4)
   const app = medley()
-  app.register((instance, opts, next) => {
-    instance.addHook('onRoute', function(route) {
+  app.register((subApp, opts, next) => {
+    subApp.addHook('onRoute', function(route) {
       t.strictEqual(route.method, 'GET')
       t.strictEqual(route.url, '/foo')
       t.strictEqual(route.auth, 'basic')
     })
-    instance.get('/foo', {auth: 'basic'}, function(req, reply) {
+    subApp.get('/foo', {auth: 'basic'}, function(req, reply) {
       reply.send()
     })
     next()
@@ -478,13 +478,13 @@ test('onRoute hook should receive any route option', t => {
 test('onRoute hook should preserve system route configuration', t => {
   t.plan(4)
   const app = medley()
-  app.register((instance, opts, next) => {
-    instance.addHook('onRoute', function(route) {
+  app.register((subApp, opts, next) => {
+    subApp.addHook('onRoute', function(route) {
       t.strictEqual(route.method, 'GET')
       t.strictEqual(route.url, '/foo')
       t.strictEqual(route.handler.length, 2)
     })
-    instance.get('/foo', {url: '/bar', method: 'POST', handler: () => {}}, function(req, reply) {
+    subApp.get('/foo', {url: '/bar', method: 'POST', handler: () => {}}, function(req, reply) {
       reply.send()
     })
     next()
@@ -499,13 +499,13 @@ test('onResponse hook should support encapsulation / 1', t => {
   t.plan(5)
   const app = medley()
 
-  app.register((instance, opts, next) => {
-    instance.addHook('onResponse', (res, next) => {
+  app.register((subApp, opts, next) => {
+    subApp.addHook('onResponse', (res, next) => {
       t.strictEqual(res.plugin, true)
       next()
     })
 
-    instance.get('/plugin', (request, reply) => {
+    subApp.get('/plugin', (request, reply) => {
       reply.res.plugin = true
       reply.send()
     })
@@ -535,9 +535,9 @@ test('onResponse hook should support encapsulation / 2', t => {
 
   app.addHook('onResponse', () => {})
 
-  app.register((instance, opts, next) => {
-    instance.addHook('onResponse', () => {})
-    pluginInstance = instance
+  app.register((subApp, opts, next) => {
+    subApp.addHook('onResponse', () => {})
+    pluginInstance = subApp
     next()
   })
 
@@ -561,13 +561,13 @@ test('onResponse hook should support encapsulation / 3', t => {
     reply.send({hello: 'world'})
   })
 
-  app.register((instance, opts, next) => {
-    instance.addHook('onResponse', function(res, next) {
+  app.register((subApp, opts, next) => {
+    subApp.addHook('onResponse', function(res, next) {
       t.ok('onResponse called')
       next()
     })
 
-    instance.get('/second', (req, reply) => {
+    subApp.get('/second', (req, reply) => {
       reply.send({hello: 'world'})
     })
 
@@ -607,9 +607,9 @@ test('onSend hook should support encapsulation / 1', t => {
 
   app.addHook('onSend', () => {})
 
-  app.register((instance, opts, next) => {
-    instance.addHook('onSend', () => {})
-    pluginInstance = instance
+  app.register((subApp, opts, next) => {
+    subApp.addHook('onSend', () => {})
+    pluginInstance = subApp
     next()
   })
 
@@ -638,17 +638,17 @@ test('onSend hook should support encapsulation / 2', t => {
     reply.send({hello: 'world'})
   })
 
-  app.register((instance, opts, next) => {
-    instance.decorateRequest('hello2', 'world')
+  app.register((subApp, opts, next) => {
+    subApp.decorateRequest('hello2', 'world')
 
-    instance.addHook('onSend', function(request, reply, thePayload, next) {
+    subApp.addHook('onSend', function(request, reply, thePayload, next) {
       t.equal(request.hello, 'world')
       t.equal(request.hello2, 'world')
       t.ok('onSend called')
       next()
     })
 
-    instance.get('/second', (request, reply) => {
+    subApp.get('/second', (request, reply) => {
       reply.send({hello: 'world'})
     })
 
@@ -685,53 +685,53 @@ test('onSend hook is called after payload is serialized and headers are set', t 
   t.plan(24)
   const app = medley()
 
-  app.register((instance, opts, next) => {
+  app.register((subApp, opts, next) => {
     const thePayload = {hello: 'world'}
 
-    instance.addHook('onSend', function(request, reply, payload, next) {
+    subApp.addHook('onSend', function(request, reply, payload, next) {
       t.deepEqual(JSON.parse(payload), thePayload)
       t.strictEqual(reply.res.getHeader('Content-Type'), 'application/json')
       next()
     })
 
-    instance.get('/json', (request, reply) => {
+    subApp.get('/json', (request, reply) => {
       reply.send(thePayload)
     })
 
     next()
   })
 
-  app.register((instance, opts, next) => {
-    instance.addHook('onSend', function(request, reply, payload, next) {
+  app.register((subApp, opts, next) => {
+    subApp.addHook('onSend', function(request, reply, payload, next) {
       t.strictEqual(payload, 'some text')
       t.strictEqual(reply.res.getHeader('Content-Type'), 'text/plain')
       next()
     })
 
-    instance.get('/text', (request, reply) => {
+    subApp.get('/text', (request, reply) => {
       reply.send('some text')
     })
 
     next()
   })
 
-  app.register((instance, opts, next) => {
+  app.register((subApp, opts, next) => {
     const thePayload = Buffer.from('buffer payload')
 
-    instance.addHook('onSend', function(request, reply, payload, next) {
+    subApp.addHook('onSend', function(request, reply, payload, next) {
       t.strictEqual(payload, thePayload)
       t.strictEqual(reply.res.getHeader('Content-Type'), 'application/octet-stream')
       next()
     })
 
-    instance.get('/buffer', (request, reply) => {
+    subApp.get('/buffer', (request, reply) => {
       reply.send(thePayload)
     })
 
     next()
   })
 
-  app.register((instance, opts, next) => {
+  app.register((subApp, opts, next) => {
     var chunk = 'stream payload'
     const thePayload = new stream.Readable({
       read() {
@@ -740,13 +740,13 @@ test('onSend hook is called after payload is serialized and headers are set', t 
       },
     })
 
-    instance.addHook('onSend', function(request, reply, payload, next) {
+    subApp.addHook('onSend', function(request, reply, payload, next) {
       t.strictEqual(payload, thePayload)
       t.strictEqual(reply.res.getHeader('Content-Type'), 'application/octet-stream')
       next()
     })
 
-    instance.get('/stream', (request, reply) => {
+    subApp.get('/stream', (request, reply) => {
       reply.send(thePayload)
     })
 
@@ -963,20 +963,20 @@ test('onSend hook should receive valid request and reply objects if a custom con
   })
 })
 
-test('cannot add hook after binding', t => {
+test('cannot add hook after listening', t => {
   t.plan(2)
-  const instance = medley()
+  const app = medley()
 
-  instance.get('/', function(request, reply) {
+  app.get('/', function(request, reply) {
     reply.send({hello: 'world'})
   })
 
-  instance.listen(0, err => {
+  app.listen(0, err => {
     t.error(err)
-    t.tearDown(instance.server.close.bind(instance.server))
+    t.tearDown(app.server.close.bind(app.server))
 
     try {
-      instance.addHook('onRequest', () => {})
+      app.addHook('onRequest', () => {})
       t.fail()
     } catch (e) {
       t.pass()
@@ -1224,26 +1224,26 @@ test('Register an hook after a plugin inside a plugin', t => {
   t.plan(6)
   const app = medley()
 
-  app.register(fp(function(instance, opts, next) {
-    instance.addHook('preHandler', function(req, reply, next) {
+  app.register(fp(function(subApp, opts, next) {
+    subApp.addHook('preHandler', function(req, reply, next) {
       t.ok('called')
       next()
     })
 
-    instance.get('/', function(request, reply) {
+    subApp.get('/', function(request, reply) {
       reply.send({hello: 'world'})
     })
 
     next()
   }))
 
-  app.register(fp(function(instance, opts, next) {
-    instance.addHook('preHandler', function(req, reply, next) {
+  app.register(fp(function(subApp, opts, next) {
+    subApp.addHook('preHandler', function(req, reply, next) {
       t.ok('called')
       next()
     })
 
-    instance.addHook('preHandler', function(req, reply, next) {
+    subApp.addHook('preHandler', function(req, reply, next) {
       t.ok('called')
       next()
     })
@@ -1265,13 +1265,13 @@ test('Register an hook after a plugin inside a plugin (with beforeHandler)', t =
   t.plan(7)
   const app = medley()
 
-  app.register(fp(function(instance, opts, next) {
-    instance.addHook('preHandler', function(req, reply, next) {
+  app.register(fp(function(subApp, opts, next) {
+    subApp.addHook('preHandler', function(req, reply, next) {
       t.ok('called')
       next()
     })
 
-    instance.get('/', {
+    subApp.get('/', {
       beforeHandler: (req, reply, next) => {
         t.ok('called')
         next()
@@ -1283,13 +1283,13 @@ test('Register an hook after a plugin inside a plugin (with beforeHandler)', t =
     next()
   }))
 
-  app.register(fp(function(instance, opts, next) {
-    instance.addHook('preHandler', function(req, reply, next) {
+  app.register(fp(function(subApp, opts, next) {
+    subApp.addHook('preHandler', function(req, reply, next) {
       t.ok('called')
       next()
     })
 
-    instance.addHook('preHandler', function(req, reply, next) {
+    subApp.addHook('preHandler', function(req, reply, next) {
       t.ok('called')
       next()
     })
@@ -1311,31 +1311,31 @@ test('Register hooks inside a plugin after an encapsulated plugin', t => {
   t.plan(7)
   const app = medley()
 
-  app.register(function(instance, opts, next) {
-    instance.get('/', function(request, reply) {
+  app.register(function(subApp, opts, next) {
+    subApp.get('/', function(request, reply) {
       reply.send({hello: 'world'})
     })
 
     next()
   })
 
-  app.register(fp(function(instance, opts, next) {
-    instance.addHook('onRequest', function(req, res, next) {
+  app.register(fp(function(subApp, opts, next) {
+    subApp.addHook('onRequest', function(req, res, next) {
       t.ok('called')
       next()
     })
 
-    instance.addHook('preHandler', function(request, reply, next) {
+    subApp.addHook('preHandler', function(request, reply, next) {
       t.ok('called')
       next()
     })
 
-    instance.addHook('onSend', function(request, reply, payload, next) {
+    subApp.addHook('onSend', function(request, reply, payload, next) {
       t.ok('called')
       next()
     })
 
-    instance.addHook('onResponse', function(res, next) {
+    subApp.addHook('onResponse', function(res, next) {
       t.ok('called')
       next()
     })
@@ -1354,19 +1354,19 @@ test('onRequest hooks should run in the order in which they are defined', t => {
   t.plan(9)
   const app = medley()
 
-  app.register(function(instance, opts, next) {
-    instance.addHook('onRequest', function(req, res, next) {
+  app.register(function(subApp, opts, next) {
+    subApp.addHook('onRequest', function(req, res, next) {
       t.strictEqual(req.previous, undefined)
       req.previous = 1
       next()
     })
 
-    instance.get('/', function(request, reply) {
+    subApp.get('/', function(request, reply) {
       t.strictEqual(request.req.previous, 5)
       reply.send({hello: 'world'})
     })
 
-    instance.register(fp(function(i, opts, next) {
+    subApp.register(fp(function(i, opts, next) {
       i.addHook('onRequest', function(req, res, next) {
         t.strictEqual(req.previous, 1)
         req.previous = 2
@@ -1378,14 +1378,14 @@ test('onRequest hooks should run in the order in which they are defined', t => {
     next()
   })
 
-  app.register(fp(function(instance, opts, next) {
-    instance.addHook('onRequest', function(req, res, next) {
+  app.register(fp(function(subApp, opts, next) {
+    subApp.addHook('onRequest', function(req, res, next) {
       t.strictEqual(req.previous, 2)
       req.previous = 3
       next()
     })
 
-    instance.register(fp(function(i, opts, next) {
+    subApp.register(fp(function(i, opts, next) {
       i.addHook('onRequest', function(req, res, next) {
         t.strictEqual(req.previous, 3)
         req.previous = 4
@@ -1394,7 +1394,7 @@ test('onRequest hooks should run in the order in which they are defined', t => {
       next()
     }))
 
-    instance.addHook('onRequest', function(req, res, next) {
+    subApp.addHook('onRequest', function(req, res, next) {
       t.strictEqual(req.previous, 4)
       req.previous = 5
       next()
@@ -1414,19 +1414,19 @@ test('preHandler hooks should run in the order in which they are defined', t => 
   t.plan(9)
   const app = medley()
 
-  app.register(function(instance, opts, next) {
-    instance.addHook('preHandler', function(request, reply, next) {
+  app.register(function(subApp, opts, next) {
+    subApp.addHook('preHandler', function(request, reply, next) {
       t.strictEqual(request.previous, undefined)
       request.previous = 1
       next()
     })
 
-    instance.get('/', function(request, reply) {
+    subApp.get('/', function(request, reply) {
       t.strictEqual(request.previous, 5)
       reply.send({hello: 'world'})
     })
 
-    instance.register(fp(function(i, opts, next) {
+    subApp.register(fp(function(i, opts, next) {
       i.addHook('preHandler', function(request, reply, next) {
         t.strictEqual(request.previous, 1)
         request.previous = 2
@@ -1438,14 +1438,14 @@ test('preHandler hooks should run in the order in which they are defined', t => 
     next()
   })
 
-  app.register(fp(function(instance, opts, next) {
-    instance.addHook('preHandler', function(request, reply, next) {
+  app.register(fp(function(subApp, opts, next) {
+    subApp.addHook('preHandler', function(request, reply, next) {
       t.strictEqual(request.previous, 2)
       request.previous = 3
       next()
     })
 
-    instance.register(fp(function(i, opts, next) {
+    subApp.register(fp(function(i, opts, next) {
       i.addHook('preHandler', function(request, reply, next) {
         t.strictEqual(request.previous, 3)
         request.previous = 4
@@ -1454,7 +1454,7 @@ test('preHandler hooks should run in the order in which they are defined', t => 
       next()
     }))
 
-    instance.addHook('preHandler', function(request, reply, next) {
+    subApp.addHook('preHandler', function(request, reply, next) {
       t.strictEqual(request.previous, 4)
       request.previous = 5
       next()
@@ -1474,18 +1474,18 @@ test('onSend hooks should run in the order in which they are defined', t => {
   t.plan(8)
   const app = medley()
 
-  app.register(function(instance, opts, next) {
-    instance.addHook('onSend', function(request, reply, payload, next) {
+  app.register(function(subApp, opts, next) {
+    subApp.addHook('onSend', function(request, reply, payload, next) {
       t.strictEqual(request.previous, undefined)
       request.previous = 1
       next()
     })
 
-    instance.get('/', function(request, reply) {
+    subApp.get('/', function(request, reply) {
       reply.send({})
     })
 
-    instance.register(fp(function(i, opts, next) {
+    subApp.register(fp(function(i, opts, next) {
       i.addHook('onSend', function(request, reply, payload, next) {
         t.strictEqual(request.previous, 1)
         request.previous = 2
@@ -1497,14 +1497,14 @@ test('onSend hooks should run in the order in which they are defined', t => {
     next()
   })
 
-  app.register(fp(function(instance, opts, next) {
-    instance.addHook('onSend', function(request, reply, payload, next) {
+  app.register(fp(function(subApp, opts, next) {
+    subApp.addHook('onSend', function(request, reply, payload, next) {
       t.strictEqual(request.previous, 2)
       request.previous = 3
       next()
     })
 
-    instance.register(fp(function(i, opts, next) {
+    subApp.register(fp(function(i, opts, next) {
       i.addHook('onSend', function(request, reply, payload, next) {
         t.strictEqual(request.previous, 3)
         request.previous = 4
@@ -1513,7 +1513,7 @@ test('onSend hooks should run in the order in which they are defined', t => {
       next()
     }))
 
-    instance.addHook('onSend', function(request, reply, payload, next) {
+    subApp.addHook('onSend', function(request, reply, payload, next) {
       t.strictEqual(request.previous, 4)
       next(null, '5')
     })
@@ -1532,18 +1532,18 @@ test('onResponse hooks should run in the order in which they are defined', t => 
   t.plan(8)
   const app = medley()
 
-  app.register(function(instance, opts, next) {
-    instance.addHook('onResponse', function(res, next) {
+  app.register(function(subApp, opts, next) {
+    subApp.addHook('onResponse', function(res, next) {
       t.strictEqual(res.previous, undefined)
       res.previous = 1
       next()
     })
 
-    instance.get('/', function(request, reply) {
+    subApp.get('/', function(request, reply) {
       reply.send({hello: 'world'})
     })
 
-    instance.register(fp(function(i, opts, next) {
+    subApp.register(fp(function(i, opts, next) {
       i.addHook('onResponse', function(res, next) {
         t.strictEqual(res.previous, 1)
         res.previous = 2
@@ -1555,14 +1555,14 @@ test('onResponse hooks should run in the order in which they are defined', t => 
     next()
   })
 
-  app.register(fp(function(instance, opts, next) {
-    instance.addHook('onResponse', function(res, next) {
+  app.register(fp(function(subApp, opts, next) {
+    subApp.addHook('onResponse', function(res, next) {
       t.strictEqual(res.previous, 2)
       res.previous = 3
       next()
     })
 
-    instance.register(fp(function(i, opts, next) {
+    subApp.register(fp(function(i, opts, next) {
       i.addHook('onResponse', function(res, next) {
         t.strictEqual(res.previous, 3)
         res.previous = 4
@@ -1571,7 +1571,7 @@ test('onResponse hooks should run in the order in which they are defined', t => 
       next()
     }))
 
-    instance.addHook('onResponse', function(res, next) {
+    subApp.addHook('onResponse', function(res, next) {
       t.strictEqual(res.previous, 4)
       next()
     })

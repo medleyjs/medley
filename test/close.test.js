@@ -9,8 +9,8 @@ test('close callback', t => {
   const app = medley()
   app.addHook('onClose', onClose)
 
-  function onClose(instance, done) {
-    t.type(app, instance)
+  function onClose(subApp, done) {
+    t.type(app, subApp)
     done()
   }
 
@@ -30,9 +30,9 @@ test('inside register', t => {
   app.register(function(f, opts, next) {
     f.addHook('onClose', onClose)
 
-    function onClose(instance, done) {
-      t.ok(instance.prototype === app.prototype)
-      t.strictEqual(instance, f)
+    function onClose(subApp, done) {
+      t.ok(subApp.prototype === app.prototype)
+      t.strictEqual(subApp, f)
       done()
     }
 
@@ -55,7 +55,7 @@ test('close order', t => {
   const order = [1, 2, 3]
 
   app.register(function(f, opts, next) {
-    f.addHook('onClose', (instance, done) => {
+    f.addHook('onClose', (subApp, done) => {
       t.is(order.shift(), 1)
       done()
     })
@@ -63,7 +63,7 @@ test('close order', t => {
     next()
   })
 
-  app.addHook('onClose', (instance, done) => {
+  app.addHook('onClose', (subApp, done) => {
     t.is(order.shift(), 2)
     done()
   })
@@ -83,8 +83,8 @@ test('should not throw an error if the server is not listening', t => {
   const app = medley()
   app.addHook('onClose', onClose)
 
-  function onClose(instance, done) {
-    t.type(app, instance)
+  function onClose(subApp, done) {
+    t.type(app, subApp)
     done()
   }
 
@@ -98,14 +98,14 @@ test('onClose should keep the context', t => {
   const app = medley()
   app.register(plugin)
 
-  function plugin(instance, opts, next) {
-    instance.decorate('test', true)
-    instance.addHook('onClose', onClose)
-    t.ok(instance.prototype === app.prototype)
+  function plugin(subApp, opts, next) {
+    subApp.decorate('test', true)
+    subApp.addHook('onClose', onClose)
+    t.ok(subApp.prototype === app.prototype)
 
     function onClose(i, done) {
       t.ok(i.test)
-      t.strictEqual(i, instance)
+      t.strictEqual(i, subApp)
       done()
     }
 

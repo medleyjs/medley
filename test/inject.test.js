@@ -18,8 +18,8 @@ test('should wait for the ready event', t => {
   const app = medley()
   const payload = {hello: 'world'}
 
-  app.register((instance, opts, next) => {
-    instance.get('/', (req, reply) => {
+  app.register((subApp, opts, next) => {
+    subApp.get('/', (req, reply) => {
       reply.send(payload)
     })
 
@@ -310,7 +310,7 @@ test('should reject in error case', t => {
   const app = medley()
 
   const error = new Error('DOOM!')
-  app.register((instance, opts, next) => {
+  app.register((subApp, opts, next) => {
     setTimeout(next, 500, error)
   })
 

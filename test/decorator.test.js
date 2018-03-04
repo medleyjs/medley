@@ -17,9 +17,9 @@ test('server methods should be incapsulated via .register', t => {
   t.plan(2)
   const app = medley()
 
-  app.register((instance, opts, next) => {
-    instance.decorate('test', () => {})
-    t.ok(instance.test)
+  app.register((subApp, opts, next) => {
+    subApp.decorate('test', () => {})
+    t.ok(subApp.test)
     next()
   })
 
@@ -32,9 +32,9 @@ test('hasServerMethod should check if the given method already exist', t => {
   t.plan(2)
   const app = medley()
 
-  app.register((instance, opts, next) => {
-    instance.decorate('test', () => {})
-    t.ok(instance.hasDecorator('test'))
+  app.register((subApp, opts, next) => {
+    subApp.decorate('test', () => {})
+    t.ok(subApp.hasDecorator('test'))
     next()
   })
 
@@ -47,9 +47,9 @@ test('decorate should throw if a declared dependency is not present', t => {
   t.plan(2)
   const app = medley()
 
-  app.register((instance, opts, next) => {
+  app.register((subApp, opts, next) => {
     try {
-      instance.decorate('test', () => {}, ['dependency'])
+      subApp.decorate('test', () => {}, ['dependency'])
       t.fail()
     } catch (e) {
       t.is(e.message, 'medley decorator: missing dependency: \'dependency\'.')
@@ -65,7 +65,7 @@ test('should pass error for missing request decorator', t => {
   t.plan(2)
   const app = medley()
 
-  const plugin = fp(function(instance, opts, next) {
+  const plugin = fp(function(subApp, opts, next) {
     next()
   }, {
     decorators: {
@@ -84,11 +84,11 @@ test('decorateReply inside register', t => {
   t.plan(12)
   const app = medley()
 
-  app.register((instance, opts, next) => {
-    instance.decorateReply('test', 'test')
-    t.ok(instance._Reply.prototype.test)
+  app.register((subApp, opts, next) => {
+    subApp.decorateReply('test', 'test')
+    t.ok(subApp._Reply.prototype.test)
 
-    instance.get('/yes', (req, reply) => {
+    subApp.get('/yes', (req, reply) => {
       t.ok(reply.test, 'test exists')
       reply.send({hello: 'world'})
     })
@@ -131,12 +131,12 @@ test('decorateReply as plugin (inside .after)', t => {
   t.plan(11)
   const app = medley()
 
-  app.register((instance, opts, next) => {
-    instance.register(fp((i, o, n) => {
-      instance.decorateReply('test', 'test')
+  app.register((subApp, opts, next) => {
+    subApp.register(fp((i, o, n) => {
+      subApp.decorateReply('test', 'test')
       n()
     })).after(() => {
-      instance.get('/yes', (req, reply) => {
+      subApp.get('/yes', (req, reply) => {
         t.ok(reply.test)
         reply.send({hello: 'world'})
       })
@@ -179,13 +179,13 @@ test('decorateReply as plugin (outside .after)', t => {
   t.plan(11)
   const app = medley()
 
-  app.register((instance, opts, next) => {
-    instance.register(fp((i, o, n) => {
-      instance.decorateReply('test', 'test')
+  app.register((subApp, opts, next) => {
+    subApp.register(fp((i, o, n) => {
+      subApp.decorateReply('test', 'test')
       n()
     }))
 
-    instance.get('/yes', (req, reply) => {
+    subApp.get('/yes', (req, reply) => {
       t.ok(reply.test)
       reply.send({hello: 'world'})
     })
@@ -227,11 +227,11 @@ test('decorateRequest inside register', t => {
   t.plan(12)
   const app = medley()
 
-  app.register((instance, opts, next) => {
-    instance.decorateRequest('test', 'test')
-    t.ok(instance._Request.prototype.test)
+  app.register((subApp, opts, next) => {
+    subApp.decorateRequest('test', 'test')
+    t.ok(subApp._Request.prototype.test)
 
-    instance.get('/yes', (req, reply) => {
+    subApp.get('/yes', (req, reply) => {
       t.ok(req.test, 'test exists')
       reply.send({hello: 'world'})
     })
@@ -274,12 +274,12 @@ test('decorateRequest as plugin (inside .after)', t => {
   t.plan(11)
   const app = medley()
 
-  app.register((instance, opts, next) => {
-    instance.register(fp((i, o, n) => {
-      instance.decorateRequest('test', 'test')
+  app.register((subApp, opts, next) => {
+    subApp.register(fp((i, o, n) => {
+      subApp.decorateRequest('test', 'test')
       n()
     })).after(() => {
-      instance.get('/yes', (req, reply) => {
+      subApp.get('/yes', (req, reply) => {
         t.ok(req.test)
         reply.send({hello: 'world'})
       })
@@ -322,13 +322,13 @@ test('decorateRequest as plugin (outside .after)', t => {
   t.plan(11)
   const app = medley()
 
-  app.register((instance, opts, next) => {
-    instance.register(fp((i, o, n) => {
-      instance.decorateRequest('test', 'test')
+  app.register((subApp, opts, next) => {
+    subApp.register(fp((i, o, n) => {
+      subApp.decorateRequest('test', 'test')
       n()
     }))
 
-    instance.get('/yes', (req, reply) => {
+    subApp.get('/yes', (req, reply) => {
       t.ok(req.test)
       reply.send({hello: 'world'})
     })
@@ -366,7 +366,7 @@ test('decorateRequest as plugin (outside .after)', t => {
   })
 })
 
-test('decorators should be instance separated', t => {
+test('decorators should be subApp separated', t => {
   t.plan(1)
 
   const app1 = medley()

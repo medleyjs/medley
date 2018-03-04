@@ -47,16 +47,16 @@ function build(options) {
     printRoutes: router.prettyPrint.bind(router),
   }
 
-  const app = avvio(medley, {
+  const appLoader = avvio(medley, {
     autostart: false,
   })
   // Override to allow the plugin incapsulation
-  app.override = override
+  appLoader.override = override
 
-  var listening = false
-  // true when medley is ready to go
-  var started = false
-  app.on('start', () => {
+  var listening = false // true when server is listening
+  var started = false // true when plugins and sub apps have loaded
+
+  appLoader.on('start', () => {
     started = true
   })
 
@@ -80,9 +80,9 @@ function build(options) {
     server = http.createServer(httpHandler)
   }
 
-  medley.onClose((instance, done) => {
+  medley.onClose((app, done) => {
     if (listening) {
-      instance.server.close(done)
+      app.server.close(done)
     } else {
       done(null)
     }
@@ -273,38 +273,38 @@ function build(options) {
     handleRequest(state.req, state.res, state.params, state.context)
   }
 
-  function override(old, fn, opts) {
-    const shouldSkipOverride = pluginUtils.registerPlugin.call(old, fn)
+  function override(parentApp, fn, opts) {
+    const shouldSkipOverride = pluginUtils.registerPlugin.call(parentApp, fn)
     if (shouldSkipOverride) {
-      return old
+      return parentApp
     }
 
-    const instance = Object.create(old)
-    old._children.push(instance)
-    instance._children = []
-    instance._Reply = Reply.buildReply(instance._Reply)
-    instance._Request = Request.buildRequest(instance._Request)
-    instance._contentTypeParser =
-      ContentTypeParser.buildContentTypeParser(instance._contentTypeParser)
-    instance._hooks = Hooks.buildHooks(instance._hooks)
-    instance._routePrefix = buildRoutePrefix(instance._routePrefix, opts.prefix)
-    instance[pluginUtils.registeredPlugins] = Object.create(instance[pluginUtils.registeredPlugins])
+    const subApp = Object.create(parentApp)
+    parentApp._children.push(subApp)
+    subApp._children = []
+    subApp._Reply = Reply.buildReply(subApp._Reply)
+    subApp._Request = Request.buildRequest(subApp._Request)
+    subApp._contentTypeParser =
+      ContentTypeParser.buildContentTypeParser(subApp._contentTypeParser)
+    subApp._hooks = Hooks.buildHooks(subApp._hooks)
+    subApp._routePrefix = buildRoutePrefix(subApp._routePrefix, opts.prefix)
+    subApp[pluginUtils.registeredPlugins] = Object.create(subApp[pluginUtils.registeredPlugins])
 
     if (opts.prefix) {
-      instance._notFoundHandler = null
-      instance._404Context = null
+      subApp._notFoundHandler = null
+      subApp._404Context = null
     }
 
-    return instance
+    return subApp
   }
 
-  function buildRoutePrefix(instancePrefix, pluginPrefix) {
+  function buildRoutePrefix(basePrefix, pluginPrefix) {
     if (!pluginPrefix) {
-      return instancePrefix
+      return basePrefix
     }
 
     // Ensure that there is a '/' between the prefixes
-    if (instancePrefix.endsWith('/')) {
+    if (basePrefix.endsWith('/')) {
       if (pluginPrefix[0] === '/') {
         // Remove the extra '/' to avoid: '/first//second'
         pluginPrefix = pluginPrefix.slice(1)
@@ -313,7 +313,7 @@ function build(options) {
       pluginPrefix = '/' + pluginPrefix
     }
 
-    return instancePrefix + pluginPrefix
+    return basePrefix + pluginPrefix
   }
 
   // Shorthand methods
@@ -439,7 +439,7 @@ function build(options) {
       // It can happen that a user register a plugin with some hooks *after* the route registration.
       // To be sure to load also that hoooks, we must listen for the avvio's 'preReady' event and
       // update the context object accordingly.
-      app.once('preReady', () => {
+      appLoader.once('preReady', () => {
         const onRequest = _medley._hooks.onRequest
         const onResponse = _medley._hooks.onResponse
         const onSend = _medley._hooks.onSend
@@ -458,22 +458,22 @@ function build(options) {
     return _medley
   }
 
-  function Context(appInstance, serializers, handler, config, bodyLimit, storeApp) {
+  function Context(app, serializers, handler, config, bodyLimit, storeApp) {
     this._jsonSerializers = serializers
     this.handler = handler
     this.config = config
     this._parserOptions = {
       limit: bodyLimit || null,
     }
-    this.Reply = appInstance._Reply
-    this.Request = appInstance._Request
-    this.contentTypeParser = appInstance._contentTypeParser
-    this.errorHandler = appInstance._errorHandler
+    this.Reply = app._Reply
+    this.Request = app._Request
+    this.contentTypeParser = app._contentTypeParser
+    this.errorHandler = app._errorHandler
     this.onRequest = null
     this.preHandler = null
     this.onSend = null
     this.onResponse = null
-    this._appInstance = storeApp ? appInstance : null
+    this._appInstance = storeApp ? app : null
   }
 
   function inject(opts, cb) {
@@ -521,9 +521,9 @@ function build(options) {
     return this
   }
 
-  function _addHook(instance, name, fn) {
-    instance._hooks.add(name, fn)
-    instance._children.forEach(child => _addHook(child, name, fn))
+  function _addHook(app, name, fn) {
+    app._hooks.add(name, fn)
+    app._children.forEach(child => _addHook(child, name, fn))
   }
 
   function addContentTypeParser(contentType, opts, parser) {
@@ -599,7 +599,7 @@ function build(options) {
       false
     )
 
-    app.once('preReady', () => {
+    appLoader.once('preReady', () => {
       const context404 = this._404Context
 
       const onRequest = this._hooks.onRequest

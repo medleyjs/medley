@@ -19,22 +19,22 @@ test('app.register with fastify-plugin should not incapsulate his code', t => {
   t.plan(10)
   const app = medley()
 
-  app.register((instance, opts, next) => {
-    instance.register(fp((i, o, n) => {
+  app.register((subApp, opts, next) => {
+    subApp.register(fp((i, o, n) => {
       i.decorate('test', () => {})
       t.ok(i.test)
       n()
     }))
 
-    t.notOk(instance.test)
+    t.notOk(subApp.test)
 
     // the decoration is added at the end
-    instance.after(() => {
-      t.ok(instance.test)
+    subApp.after(() => {
+      t.ok(subApp.test)
     })
 
-    instance.get('/', (req, reply) => {
-      t.ok(instance.test)
+    subApp.get('/', (req, reply) => {
+      t.ok(subApp.test)
       reply.send({hello: 'world'})
     })
 
@@ -65,26 +65,26 @@ test('app.register with fastify-plugin registers root level plugins', t => {
   t.plan(15)
   const app = medley()
 
-  function rootPlugin(instance, opts, next) {
-    instance.decorate('test', 'first')
-    t.ok(instance.test)
+  function rootPlugin(subApp, opts, next) {
+    subApp.decorate('test', 'first')
+    t.ok(subApp.test)
     next()
   }
 
-  function innerPlugin(instance, opts, next) {
-    instance.decorate('test2', 'second')
+  function innerPlugin(subApp, opts, next) {
+    subApp.decorate('test2', 'second')
     next()
   }
 
   app.register(fp(rootPlugin))
 
-  app.register((instance, opts, next) => {
-    t.ok(instance.test)
-    instance.register(fp(innerPlugin))
+  app.register((subApp, opts, next) => {
+    t.ok(subApp.test)
+    subApp.register(fp(innerPlugin))
 
-    instance.get('/test2', (req, reply) => {
-      t.ok(instance.test2)
-      reply.send({test2: instance.test2})
+    subApp.get('/test2', (req, reply) => {
+      t.ok(subApp.test2)
+      reply.send({test2: subApp.test2})
     })
 
     next()
@@ -130,14 +130,14 @@ test('check dependencies - should not throw', t => {
   t.plan(12)
   const app = medley()
 
-  app.register((instance, opts, next) => {
-    instance.register(fp((i, o, n) => {
+  app.register((subApp, opts, next) => {
+    subApp.register(fp((i, o, n) => {
       i.decorate('test', () => {})
       t.ok(i.test)
       n()
     }))
 
-    instance.register(fp((i, o, n) => {
+    subApp.register(fp((i, o, n) => {
       try {
         i.decorate('otherTest', () => {}, ['test'])
         t.ok(i.test)
@@ -148,9 +148,9 @@ test('check dependencies - should not throw', t => {
       }
     }))
 
-    instance.get('/', (req, reply) => {
-      t.ok(instance.test)
-      t.ok(instance.otherTest)
+    subApp.get('/', (req, reply) => {
+      t.ok(subApp.test)
+      t.ok(subApp.otherTest)
       reply.send({hello: 'world'})
     })
 
@@ -182,8 +182,8 @@ test('check dependencies - should throw', t => {
   t.plan(11)
   const app = medley()
 
-  app.register((instance, opts, next) => {
-    instance.register(fp((i, o, n) => {
+  app.register((subApp, opts, next) => {
+    subApp.register(fp((i, o, n) => {
       try {
         i.decorate('otherTest', () => {}, ['test'])
         t.fail()
@@ -193,16 +193,16 @@ test('check dependencies - should throw', t => {
       n()
     }))
 
-    instance.register(fp((i, o, n) => {
+    subApp.register(fp((i, o, n) => {
       i.decorate('test', () => {})
       t.ok(i.test)
       t.notOk(i.otherTest)
       n()
     }))
 
-    instance.get('/', (req, reply) => {
-      t.ok(instance.test)
-      t.notOk(instance.otherTest)
+    subApp.get('/', (req, reply) => {
+      t.ok(subApp.test)
+      t.notOk(subApp.otherTest)
       reply.send({hello: 'world'})
     })
 
@@ -233,27 +233,27 @@ test('plugin incapsulation', t => {
   t.plan(10)
   const app = medley()
 
-  app.register((instance, opts, next) => {
-    instance.register(fp((i, o, n) => {
+  app.register((subApp, opts, next) => {
+    subApp.register(fp((i, o, n) => {
       i.decorate('test', 'first')
       n()
     }))
 
-    instance.get('/first', (req, reply) => {
-      reply.send({plugin: instance.test})
+    subApp.get('/first', (req, reply) => {
+      reply.send({plugin: subApp.test})
     })
 
     next()
   })
 
-  app.register((instance, opts, next) => {
-    instance.register(fp((i, o, n) => {
+  app.register((subApp, opts, next) => {
+    subApp.register(fp((i, o, n) => {
       i.decorate('test', 'second')
       n()
     }))
 
-    instance.get('/second', (req, reply) => {
-      reply.send({plugin: instance.test})
+    subApp.get('/second', (req, reply) => {
+      reply.send({plugin: subApp.test})
     })
 
     next()
@@ -293,7 +293,7 @@ test('if a plugin raises an error and there is not a callback to handle it, the 
   t.plan(2)
   const app = medley()
 
-  app.register((instance, opts, next) => {
+  app.register((subApp, opts, next) => {
     next(new Error('err'))
   })
 
@@ -307,24 +307,24 @@ test('add hooks after route declaration', t => {
   t.plan(3)
   const app = medley()
 
-  function plugin(instance, opts, next) {
-    instance.decorateRequest('check', {})
+  function plugin(subApp, opts, next) {
+    subApp.decorateRequest('check', {})
     setImmediate(next)
   }
 
   app.register(fp(plugin))
 
-  app.register((instance, options, next) => {
-    instance.addHook('preHandler', function b(req, res, next) {
+  app.register((subApp, options, next) => {
+    subApp.addHook('preHandler', function b(req, res, next) {
       req.check.hook2 = true
       next()
     })
 
-    instance.get('/', (req, reply) => {
+    subApp.get('/', (req, reply) => {
       reply.send(req.check)
     })
 
-    instance.addHook('preHandler', function c(req, res, next) {
+    subApp.addHook('preHandler', function c(req, res, next) {
       req.check.hook3 = true
       next()
     })
@@ -420,8 +420,8 @@ test('plugin metadata - decorators', t => {
     t.ok(app.plugin)
   })
 
-  function plugin(instance, opts, next) {
-    instance.decorate('plugin', true)
+  function plugin(subApp, opts, next) {
+    subApp.decorate('plugin', true)
     next()
   }
 })
@@ -447,11 +447,11 @@ test('plugin metadata - dependencies', t => {
     t.pass('everything right')
   })
 
-  function dependency(instance, opts, next) {
+  function dependency(subApp, opts, next) {
     next()
   }
 
-  function plugin(instance, opts, next) {
+  function plugin(subApp, opts, next) {
     next()
   }
 })
@@ -477,16 +477,16 @@ test('plugin metadata - dependencies (nested)', t => {
     t.pass('everything right')
   })
 
-  function dependency(instance, opts, next) {
+  function dependency(subApp, opts, next) {
     next()
   }
 
-  function plugin(instance, opts, next) {
-    instance.register(nested)
+  function plugin(subApp, opts, next) {
+    subApp.register(nested)
     next()
   }
 
-  function nested(instance, opts, next) {
+  function nested(subApp, opts, next) {
     next()
   }
 })

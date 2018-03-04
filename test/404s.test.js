@@ -138,11 +138,11 @@ test('setting a custom 404 handler multiple times is an error', t => {
 
     const app = medley()
 
-    app.register((instance, options, next) => {
-      instance.setNotFoundHandler(() => {})
+    app.register((subApp, options, next) => {
+      subApp.setNotFoundHandler(() => {})
 
       try {
-        instance.setNotFoundHandler(() => {})
+        subApp.setNotFoundHandler(() => {})
         t.fail('setting multiple 404 handlers at the same prefix encapsulation level should throw')
       } catch (err) {
         t.type(err, Error)
@@ -163,9 +163,9 @@ test('setting a custom 404 handler multiple times is an error', t => {
 
     const app = medley()
 
-    app.register((instance, options, next) => {
+    app.register((subApp, options, next) => {
       try {
-        instance.setNotFoundHandler(() => {})
+        subApp.setNotFoundHandler(() => {})
         t.fail('setting multiple 404 handlers at the same prefix encapsulation level should throw')
       } catch (err) {
         t.type(err, Error)
@@ -187,12 +187,12 @@ test('setting a custom 404 handler multiple times is an error', t => {
 
     const app = medley()
 
-    app.register((instance, options, next) => {
-      instance.setNotFoundHandler(() => {})
+    app.register((subApp, options, next) => {
+      subApp.setNotFoundHandler(() => {})
 
-      instance.register((instance2, options, next) => {
+      subApp.register((subApp2, options2, next) => {
         try {
-          instance2.setNotFoundHandler(() => {})
+          subApp2.setNotFoundHandler(() => {})
           t.fail('setting multiple 404 handlers at the same prefix encapsulation level should throw')
         } catch (err) {
           t.type(err, Error)
@@ -410,23 +410,23 @@ test('run non-encapsulated plugin hooks on default 404', t => {
 
   const app = medley()
 
-  app.register(fp(function(instance, options, next) {
-    instance.addHook('onRequest', function(req, res, next) {
+  app.register(fp(function(subApp, options, next) {
+    subApp.addHook('onRequest', function(req, res, next) {
       t.pass('onRequest called')
       next()
     })
 
-    instance.addHook('preHandler', function(request, reply, next) {
+    subApp.addHook('preHandler', function(request, reply, next) {
       t.pass('preHandler called')
       next()
     })
 
-    instance.addHook('onSend', function(request, reply, payload, next) {
+    subApp.addHook('onSend', function(request, reply, payload, next) {
       t.pass('onSend called')
       next()
     })
 
-    instance.addHook('onResponse', function(res, next) {
+    subApp.addHook('onResponse', function(res, next) {
       t.pass('onResponse called')
       next()
     })
@@ -453,23 +453,23 @@ test('run non-encapsulated plugin hooks on custom 404', t => {
 
   const app = medley()
 
-  const plugin = fp((instance, opts, next) => {
-    instance.addHook('onRequest', function(req, res, next) {
+  const plugin = fp((subApp, opts, next) => {
+    subApp.addHook('onRequest', function(req, res, next) {
       t.pass('onRequest called')
       next()
     })
 
-    instance.addHook('preHandler', function(request, reply, next) {
+    subApp.addHook('preHandler', function(request, reply, next) {
       t.pass('preHandler called')
       next()
     })
 
-    instance.addHook('onSend', function(request, reply, payload, next) {
+    subApp.addHook('onSend', function(request, reply, payload, next) {
       t.pass('onSend called')
       next()
     })
 
-    instance.addHook('onResponse', function(res, next) {
+    subApp.addHook('onResponse', function(res, next) {
       t.pass('onResponse called')
       next()
     })

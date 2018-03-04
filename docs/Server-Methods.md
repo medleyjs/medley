@@ -99,11 +99,11 @@ Method to add routes to the server, it also have shorthands functions, check [he
 
 <a name="close"></a>
 #### close
-`fastify.close(callback)`: call this function to close the server instance and run the [`'onClose'`](https://github.com/fastify/fastify/blob/master/docs/Hooks.md#on-close) hook.
+`app.close(callback)`: This function shuts down the app by closing the server and running the [`'onClose'`](https://github.com/fastify/fastify/blob/master/docs/Hooks.md#on-close) hooks.
 
 <a name="decorate"></a>
 #### decorate*
-Function useful if you need to decorate the fastify instance, Reply or Request, check [here](https://github.com/fastify/fastify/blob/master/docs/Decorators.md).
+Function useful if you need to decorate the app, Reply or Request, check [here](https://github.com/fastify/fastify/blob/master/docs/Decorators.md).
 
 <a name="register"></a>
 #### register
@@ -121,11 +121,11 @@ The path that will be prefixed to a route.
 Example:
 
 ```js
-fastify.register(function (instance, opts, next) {
-  console.log(instance.basePath) // '/v1'
+app.register((subApp, opts, next) => {
+  console.log(subApp.basePath) // '/v1'
 
-  instance.register(function (innerInstance, opts, next) {
-    console.log(innerInstance.basePath) // '/v1/v2'
+  subApp.register((subSubApp, opts, next) => {
+    console.log(subSubApp.basePath) // '/v1/v2'
 
     next()
   }, { prefix: '/v2' })
@@ -144,12 +144,12 @@ Fake http injection (for testing purposes) [here](https://github.com/fastify/fas
 `fastify.setNotFoundHandler(handler(request, reply))`: set the 404 handler. This call is encapsulated by prefix, so different plugins can set different not found handlers if a different [`prefix` option](https://github.com/fastify/fastify/blob/master/docs/Plugins.md#route-prefixing-option) is passed to `fastify.register()`. The handler is treated like a regular route handler so requests will go through the full [Fastify lifecycle](https://github.com/fastify/fastify/blob/master/docs/Lifecycle.md#lifecycle).
 
 ```js
-fastify.setNotFoundHandler(function (request, reply) {
+fastify.setNotFoundHandler((request, reply) => {
   // Default not found handler
 })
 
-fastify.register(function (instance, options, next) {
-  instance.setNotFoundHandler(function (request, reply) {
+fastify.register((subApp, options, next) => {
+  subApp.setNotFoundHandler(function (request, reply) {
     // Handle not found request to URLs that begin with '/v1'
   })
   next()

@@ -261,8 +261,8 @@ test('Different register - encapsulation check', t => {
     reply.send({route: '/first'})
   })
 
-  app.register(function(instance, opts, next) {
-    instance.register(function(f, opts, next) {
+  app.register(function(subApp, opts, next) {
+    subApp.register(function(f, opts, next) {
       f.get('/', (req, reply) => {
         reply.send({route: '/v1/v2'})
       })
@@ -271,8 +271,8 @@ test('Different register - encapsulation check', t => {
     next()
   }, {prefix: '/v1'})
 
-  app.register(function(instance, opts, next) {
-    instance.register(function(f, opts, next) {
+  app.register(function(subApp, opts, next) {
+    subApp.register(function(f, opts, next) {
       f.get('/', (req, reply) => {
         reply.send({route: '/v3/v4'})
       })
@@ -298,18 +298,18 @@ test('Different register - encapsulation check', t => {
   })
 })
 
-test('Can retrieve basePath within encapsulated instances', t => {
+test('Can retrieve basePath within an encapsulated app instance', t => {
   t.plan(4)
   const app = medley()
 
-  app.register(function(instance, opts, next) {
-    instance.get('/one', function(req, reply) {
-      reply.send(instance.basePath)
+  app.register(function(subApp, opts, next) {
+    subApp.get('/one', function(req, reply) {
+      reply.send(subApp.basePath)
     })
 
-    instance.register(function(instance, opts, next) {
-      instance.get('/two', function(req, reply) {
-        reply.send(instance.basePath)
+    subApp.register(function(subApp2, opts, next) {
+      subApp2.get('/two', function(req, reply) {
+        reply.send(subApp2.basePath)
       })
       next()
     }, {prefix: '/v2'})
