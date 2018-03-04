@@ -1,6 +1,6 @@
 'use strict'
 
-const medley = require('../fastify')
+const medley = require('..')
 const app = medley()
 
 const responseSchema = {

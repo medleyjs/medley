@@ -1,6 +1,6 @@
 'use strict'
 
-const app = require('../fastify')()
+const app = require('..')()
 
 app
   .addHook('onRequest', (req, res, next) => {

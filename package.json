@@ -2,7 +2,7 @@
   "name": "@medley/medley",
   "version": "0.0.0",
   "description": "Fast and extendable web framework for Node.js",
-  "main": "fastify.js",
+  "main": "medley.js",
   "files": {
     "lib": "lib",
     "medley": "medley"
