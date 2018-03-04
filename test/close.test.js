@@ -4,7 +4,7 @@ const t = require('tap')
 const test = t.test
 const medley = require('..')
 
-test('close callback', t => {
+test('close callback', (t) => {
   t.plan(4)
   const app = medley()
   app.addHook('onClose', onClose)
@@ -14,7 +14,7 @@ test('close callback', t => {
     done()
   }
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
     app.close((err) => {
@@ -24,7 +24,7 @@ test('close callback', t => {
   })
 })
 
-test('inside register', t => {
+test('inside register', (t) => {
   t.plan(5)
   const app = medley()
   app.register(function(f, opts, next) {
@@ -39,7 +39,7 @@ test('inside register', t => {
     next()
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
     app.close((err) => {
@@ -49,7 +49,7 @@ test('inside register', t => {
   })
 })
 
-test('close order', t => {
+test('close order', (t) => {
   t.plan(5)
   const app = medley()
   const order = [1, 2, 3]
@@ -68,7 +68,7 @@ test('close order', t => {
     done()
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
     app.close((err) => {
@@ -78,7 +78,7 @@ test('close order', t => {
   })
 })
 
-test('should not throw an error if the server is not listening', t => {
+test('should not throw an error if the server is not listening', (t) => {
   t.plan(2)
   const app = medley()
   app.addHook('onClose', onClose)
@@ -93,7 +93,7 @@ test('should not throw an error if the server is not listening', t => {
   })
 })
 
-test('onClose should keep the context', t => {
+test('onClose should keep the context', (t) => {
   t.plan(4)
   const app = medley()
   app.register(plugin)

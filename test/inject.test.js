@@ -6,14 +6,14 @@ const Stream = require('stream')
 const util = require('util')
 const medley = require('..')
 
-test('inject should exist', t => {
+test('inject should exist', (t) => {
   t.plan(2)
   const app = medley()
   t.ok(app.inject)
   t.is(typeof app.inject, 'function')
 })
 
-test('should wait for the ready event', t => {
+test('should wait for the ready event', (t) => {
   t.plan(4)
   const app = medley()
   const payload = {hello: 'world'}
@@ -37,7 +37,7 @@ test('should wait for the ready event', t => {
   })
 })
 
-test('inject get request', t => {
+test('inject get request', (t) => {
   t.plan(4)
   const app = medley()
   const payload = {hello: 'world'}
@@ -57,7 +57,7 @@ test('inject get request', t => {
   })
 })
 
-test('inject get request - code check', t => {
+test('inject get request - code check', (t) => {
   t.plan(4)
   const app = medley()
   const payload = {hello: 'world'}
@@ -77,7 +77,7 @@ test('inject get request - code check', t => {
   })
 })
 
-test('inject get request - headers check', t => {
+test('inject get request - headers check', (t) => {
   t.plan(4)
   const app = medley()
 
@@ -96,7 +96,7 @@ test('inject get request - headers check', t => {
   })
 })
 
-test('inject get request - querystring', t => {
+test('inject get request - querystring', (t) => {
   t.plan(4)
   const app = medley()
 
@@ -115,7 +115,7 @@ test('inject get request - querystring', t => {
   })
 })
 
-test('inject get request - params', t => {
+test('inject get request - params', (t) => {
   t.plan(4)
   const app = medley()
 
@@ -134,7 +134,7 @@ test('inject get request - params', t => {
   })
 })
 
-test('inject get request - wildcard', t => {
+test('inject get request - wildcard', (t) => {
   t.plan(4)
   const app = medley()
 
@@ -153,7 +153,7 @@ test('inject get request - wildcard', t => {
   })
 })
 
-test('inject get request - headers', t => {
+test('inject get request - headers', (t) => {
   t.plan(4)
   const app = medley()
 
@@ -173,7 +173,7 @@ test('inject get request - headers', t => {
   })
 })
 
-test('inject post request', t => {
+test('inject post request', (t) => {
   t.plan(4)
   const app = medley()
   const payload = {hello: 'world'}
@@ -194,7 +194,7 @@ test('inject post request', t => {
   })
 })
 
-test('inject post request - send stream', t => {
+test('inject post request - send stream', (t) => {
   t.plan(4)
   const app = medley()
 
@@ -215,7 +215,7 @@ test('inject post request - send stream', t => {
   })
 })
 
-test('inject get request - reply stream', t => {
+test('inject get request - reply stream', (t) => {
   t.plan(3)
   const app = medley()
 
@@ -233,7 +233,7 @@ test('inject get request - reply stream', t => {
   })
 })
 
-test('inject promisify - waiting for ready event', t => {
+test('inject promisify - waiting for ready event', (t) => {
   t.plan(1)
   const app = medley()
   const payload = {hello: 'world'}
@@ -247,13 +247,13 @@ test('inject promisify - waiting for ready event', t => {
     url: '/',
   }
   app.inject(injectParams)
-    .then(res => {
+    .then((res) => {
       t.strictEqual(res.statusCode, 200)
     })
     .catch(t.fail)
 })
 
-test('inject promisify - after the ready event', t => {
+test('inject promisify - after the ready event', (t) => {
   t.plan(2)
   const app = medley()
   const payload = {hello: 'world'}
@@ -262,7 +262,7 @@ test('inject promisify - after the ready event', t => {
     reply.send(payload)
   })
 
-  app.ready(err => {
+  app.ready((err) => {
     t.error(err)
 
     const injectParams = {
@@ -270,14 +270,14 @@ test('inject promisify - after the ready event', t => {
       url: '/',
     }
     app.inject(injectParams)
-      .then(res => {
+      .then((res) => {
         t.strictEqual(res.statusCode, 200)
       })
       .catch(t.fail)
   })
 })
 
-test('inject promisify - when the server is up', t => {
+test('inject promisify - when the server is up', (t) => {
   t.plan(2)
   const app = medley()
   const payload = {hello: 'world'}
@@ -286,7 +286,7 @@ test('inject promisify - when the server is up', t => {
     reply.send(payload)
   })
 
-  app.ready(err => {
+  app.ready((err) => {
     t.error(err)
 
     // setTimeout because the ready event don't set "started" flag
@@ -297,7 +297,7 @@ test('inject promisify - when the server is up', t => {
         url: '/',
       }
       app.inject(injectParams)
-        .then(res => {
+        .then((res) => {
           t.strictEqual(res.statusCode, 200)
         })
         .catch(t.fail)
@@ -305,7 +305,7 @@ test('inject promisify - when the server is up', t => {
   })
 })
 
-test('should reject in error case', t => {
+test('should reject in error case', (t) => {
   t.plan(1)
   const app = medley()
 
@@ -318,7 +318,7 @@ test('should reject in error case', t => {
     method: 'GET',
     url: '/',
   })
-    .catch(e => {
+    .catch((e) => {
       t.strictEqual(e, error)
     })
 })

@@ -13,7 +13,7 @@ const JSONStream = require('JSONStream')
 const send = require('send')
 const Readable = require('stream').Readable
 
-test('should respond with a stream', t => {
+test('should respond with a stream', (t) => {
   t.plan(8)
   const app = medley()
 
@@ -27,7 +27,7 @@ test('should respond with a stream', t => {
     reply.code(200).send(stream)
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
@@ -49,7 +49,7 @@ test('should respond with a stream', t => {
   })
 })
 
-test('should trigger the onSend hook', t => {
+test('should trigger the onSend hook', (t) => {
   t.plan(4)
   const app = medley()
 
@@ -73,7 +73,7 @@ test('should trigger the onSend hook', t => {
   })
 })
 
-test('should trigger the onSend hook only once if pumping the stream fails', t => {
+test('should trigger the onSend hook only once if pumping the stream fails', (t) => {
   t.plan(4)
   const app = medley()
 
@@ -86,7 +86,7 @@ test('should trigger the onSend hook only once if pumping the stream fails', t =
     next()
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
     app.server.unref()
@@ -98,7 +98,7 @@ test('should trigger the onSend hook only once if pumping the stream fails', t =
   })
 })
 
-test('onSend hook stream', t => {
+test('onSend hook stream', (t) => {
   t.plan(4)
   const app = medley()
 
@@ -131,7 +131,7 @@ test('onSend hook stream', t => {
   })
 })
 
-test('Destroying streams prematurely', t => {
+test('Destroying streams prematurely', (t) => {
   t.plan(3)
 
   const app = medley()
@@ -154,7 +154,7 @@ test('Destroying streams prematurely', t => {
     reply.send(reallyLongStream)
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
@@ -172,7 +172,7 @@ test('Destroying streams prematurely', t => {
   })
 })
 
-test('should respond with a stream1', t => {
+test('should respond with a stream1', (t) => {
   t.plan(5)
   const app = medley()
 
@@ -183,7 +183,7 @@ test('should respond with a stream1', t => {
     stream.end({a: 42})
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
@@ -196,7 +196,7 @@ test('should respond with a stream1', t => {
   })
 })
 
-test('return a 404 if the stream emits a 404 error', t => {
+test('return a 404 if the stream emits a 404 error', (t) => {
   t.plan(5)
 
   const app = medley()
@@ -215,7 +215,7 @@ test('return a 404 if the stream emits a 404 error', t => {
     reply.send(reallyLongStream)
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
@@ -229,7 +229,7 @@ test('return a 404 if the stream emits a 404 error', t => {
   })
 })
 
-test('should support send module 200 and 404', t => {
+test('should support send module 200 and 404', (t) => {
   t.plan(8)
   const app = medley()
 
@@ -243,7 +243,7 @@ test('should support send module 200 and 404', t => {
     reply.code(200).send(stream)
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 

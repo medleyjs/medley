@@ -16,7 +16,7 @@ function handler(req, reply) {
   reply.send(reply.context.config)
 }
 
-test('config', t => {
+test('config', (t) => {
   t.plan(10)
   const app = medley()
 
@@ -37,7 +37,7 @@ test('config', t => {
     handler,
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 

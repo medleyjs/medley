@@ -5,7 +5,7 @@ const test = t.test
 const medley = require('../..')
 const supportedMethods = ['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT', 'OPTIONS']
 
-test('app.all should add all the methods to the same URL', t => {
+test('app.all should add all the methods to the same URL', (t) => {
   t.plan(supportedMethods.length * 2)
 
   const app = medley()

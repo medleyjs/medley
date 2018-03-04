@@ -4,7 +4,7 @@ const t = require('tap')
 const test = t.test
 const medley = require('..')
 
-test('beforeHandler', t => {
+test('beforeHandler', (t) => {
   t.plan(2)
   const app = medley()
 
@@ -28,7 +28,7 @@ test('beforeHandler', t => {
   })
 })
 
-test('beforeHandler should be called after preHandler hook', t => {
+test('beforeHandler should be called after preHandler hook', (t) => {
   t.plan(2)
   const app = medley()
 
@@ -57,7 +57,7 @@ test('beforeHandler should be called after preHandler hook', t => {
   })
 })
 
-test('beforeHandler should be unique per route', t => {
+test('beforeHandler should be unique per route', (t) => {
   t.plan(4)
   const app = medley()
 
@@ -95,7 +95,7 @@ test('beforeHandler should be unique per route', t => {
   })
 })
 
-test('beforeHandler should handle errors', t => {
+test('beforeHandler should handle errors', (t) => {
   t.plan(3)
   const app = medley()
 
@@ -123,7 +123,7 @@ test('beforeHandler should handle errors', t => {
   })
 })
 
-test('beforeHandler should handle errors with custom status code', t => {
+test('beforeHandler should handle errors with custom status code', (t) => {
   t.plan(3)
   const app = medley()
 
@@ -152,7 +152,7 @@ test('beforeHandler should handle errors with custom status code', t => {
   })
 })
 
-test('beforeHandler should handle errors with custom status code in shorthand form', t => {
+test('beforeHandler should handle errors with custom status code in shorthand form', (t) => {
   t.plan(3)
   const app = medley()
 
@@ -181,7 +181,7 @@ test('beforeHandler should handle errors with custom status code in shorthand fo
   })
 })
 
-test('beforeHandler could accept an array of functions', t => {
+test('beforeHandler could accept an array of functions', (t) => {
   t.plan(2)
   const app = medley()
 
@@ -211,7 +211,7 @@ test('beforeHandler could accept an array of functions', t => {
   })
 })
 
-test('beforeHandler does not interfere with preHandler', t => {
+test('beforeHandler does not interfere with preHandler', (t) => {
   t.plan(4)
   const app = medley()
 

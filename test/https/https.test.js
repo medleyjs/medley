@@ -19,7 +19,7 @@ try {
   t.fail('Key/cert loading failed', e)
 }
 
-test('https get', t => {
+test('https get', (t) => {
   t.plan(1)
   try {
     app.get('/', function(req, reply) {
@@ -31,11 +31,11 @@ test('https get', t => {
   }
 })
 
-app.listen(0, err => {
+app.listen(0, (err) => {
   t.error(err)
   app.server.unref()
 
-  test('https get request', t => {
+  test('https get request', (t) => {
     t.plan(4)
     sget({
       method: 'GET',

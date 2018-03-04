@@ -4,7 +4,7 @@ const t = require('tap')
 const test = t.test
 const decorator = require('../../lib/decorate')
 
-test('decorate should add the given method to its subApp', t => {
+test('decorate should add the given method to its subApp', (t) => {
   t.plan(1)
 
   function build() {
@@ -19,7 +19,7 @@ test('decorate should add the given method to its subApp', t => {
   t.ok(server.test)
 })
 
-test('decorate is chainable', t => {
+test('decorate is chainable', (t) => {
   t.plan(3)
 
   function build() {
@@ -40,13 +40,13 @@ test('decorate is chainable', t => {
   t.ok(server.test3)
 })
 
-test('checkExistence should check if a property is part of the given subApp', t => {
+test('checkExistence should check if a property is part of the given subApp', (t) => {
   t.plan(1)
   const subApp = {test: () => {}}
   t.ok(decorator.exist(subApp, 'test'))
 })
 
-test('checkExistence should find the subApp if not given', t => {
+test('checkExistence should find the subApp if not given', (t) => {
   t.plan(1)
 
   function build() {
@@ -62,7 +62,7 @@ test('checkExistence should find the subApp if not given', t => {
   t.ok(server.check('test'))
 })
 
-test('checkExistence should check the prototype as well', t => {
+test('checkExistence should check the prototype as well', (t) => {
   t.plan(1)
 
   function Instance() {}
@@ -73,7 +73,7 @@ test('checkExistence should check the prototype as well', t => {
   t.ok(decorator.exist(subApp, 'test'))
 })
 
-test('checkDependencies should throw if a dependency is not present', t => {
+test('checkDependencies should throw if a dependency is not present', (t) => {
   t.plan(1)
   const subApp = {}
   try {
@@ -84,7 +84,7 @@ test('checkDependencies should throw if a dependency is not present', t => {
   }
 })
 
-test('decorate should internally call checkDependencies', t => {
+test('decorate should internally call checkDependencies', (t) => {
   t.plan(1)
 
   function build() {

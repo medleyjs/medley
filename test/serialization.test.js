@@ -47,11 +47,11 @@ app.get('/400', opts, (request, reply) => {
   reply.code(400).send({hello: 'DOOM'})
 })
 
-app.listen(0, err => {
+app.listen(0, (err) => {
   t.error(err)
   app.server.unref()
 
-  test('shorthand - string get ok', t => {
+  test('shorthand - string get ok', (t) => {
     t.plan(4)
     sget({
       method: 'GET',
@@ -64,7 +64,7 @@ app.listen(0, err => {
     })
   })
 
-  test('shorthand - number get ok', t => {
+  test('shorthand - number get ok', (t) => {
     t.plan(4)
     sget({
       method: 'GET',
@@ -77,7 +77,7 @@ app.listen(0, err => {
     })
   })
 
-  test('shorthand - wrong-object-for-schema', t => {
+  test('shorthand - wrong-object-for-schema', (t) => {
     t.plan(4)
     sget({
       method: 'GET',
@@ -90,7 +90,7 @@ app.listen(0, err => {
     })
   })
 
-  test('shorthand - empty', t => {
+  test('shorthand - empty', (t) => {
     t.plan(2)
     sget({
       method: 'GET',
@@ -101,7 +101,7 @@ app.listen(0, err => {
     })
   })
 
-  test('shorthand - 400', t => {
+  test('shorthand - 400', (t) => {
     t.plan(4)
     sget({
       method: 'GET',

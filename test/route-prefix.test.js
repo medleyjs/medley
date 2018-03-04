@@ -4,7 +4,7 @@ const t = require('tap')
 const test = t.test
 const medley = require('..')
 
-test('Prefix options should add a prefix for all the routes inside a register / 1', t => {
+test('Prefix options should add a prefix for all the routes inside a register / 1', (t) => {
   t.plan(6)
   const app = medley()
 
@@ -52,7 +52,7 @@ test('Prefix options should add a prefix for all the routes inside a register / 
   })
 })
 
-test('Prefix options should add a prefix for all the routes inside a register / 2', t => {
+test('Prefix options should add a prefix for all the routes inside a register / 2', (t) => {
   t.plan(4)
   const app = medley()
 
@@ -84,7 +84,7 @@ test('Prefix options should add a prefix for all the routes inside a register / 
   })
 })
 
-test('Prefix options should add a prefix for all the chained routes inside a register / 3', t => {
+test('Prefix options should add a prefix for all the chained routes inside a register / 3', (t) => {
   t.plan(4)
 
   const app = medley()
@@ -117,7 +117,7 @@ test('Prefix options should add a prefix for all the chained routes inside a reg
   })
 })
 
-test('Prefix should support parameters as well', t => {
+test('Prefix should support parameters as well', (t) => {
   t.plan(2)
   const app = medley()
 
@@ -137,7 +137,7 @@ test('Prefix should support parameters as well', t => {
   })
 })
 
-test('Prefix should support /', t => {
+test('Prefix should support /', (t) => {
   t.plan(2)
   const app = medley()
 
@@ -157,7 +157,7 @@ test('Prefix should support /', t => {
   })
 })
 
-test('Prefix without /', t => {
+test('Prefix without /', (t) => {
   t.plan(2)
   const app = medley()
 
@@ -177,7 +177,7 @@ test('Prefix without /', t => {
   })
 })
 
-test('Prefix with trailing /', t => {
+test('Prefix with trailing /', (t) => {
   t.plan(6)
   const app = medley()
 
@@ -224,7 +224,7 @@ test('Prefix with trailing /', t => {
   })
 })
 
-test('Prefix works multiple levels deep', t => {
+test('Prefix works multiple levels deep', (t) => {
   t.plan(2)
   const app = medley()
 
@@ -253,7 +253,7 @@ test('Prefix works multiple levels deep', t => {
   })
 })
 
-test('Different register - encapsulation check', t => {
+test('Different register - encapsulation check', (t) => {
   t.plan(4)
   const app = medley()
 
@@ -298,7 +298,7 @@ test('Different register - encapsulation check', t => {
   })
 })
 
-test('Can retrieve basePath within an encapsulated app instance', t => {
+test('Can retrieve basePath within an encapsulated app instance', (t) => {
   t.plan(4)
   const app = medley()
 

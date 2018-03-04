@@ -4,7 +4,7 @@ const test = require('tap').test
 const sget = require('simple-get')
 const medley = require('../')
 
-test('Should honor ignoreTrailingSlash option', t => {
+test('Should honor ignoreTrailingSlash option', (t) => {
   t.plan(4)
   const app = medley({
     ignoreTrailingSlash: true,
@@ -34,7 +34,7 @@ test('Should honor ignoreTrailingSlash option', t => {
   })
 })
 
-test('Should honor maxParamLength option', t => {
+test('Should honor maxParamLength option', (t) => {
   t.plan(4)
   const app = medley({maxParamLength: 10})
 

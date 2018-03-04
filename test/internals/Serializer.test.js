@@ -5,20 +5,20 @@ const test = t.test
 
 const serializer = require('../../lib/Serializer')
 
-test('build serializers - missing schema', t => {
+test('build serializers - missing schema', (t) => {
   t.plan(2)
 
   t.equal(serializer.buildSerializers(), null)
   t.equal(serializer.buildSerializers(null), null)
 })
 
-test('build serializers -empty schema', t => {
+test('build serializers -empty schema', (t) => {
   t.plan(1)
 
   t.deepEqual(serializer.buildSerializers({}), {})
 })
 
-test('build serializers - output schema', t => {
+test('build serializers - output schema', (t) => {
   t.plan(2)
 
   const serializers = serializer.buildSerializers({

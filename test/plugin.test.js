@@ -6,7 +6,7 @@ const medley = require('..')
 const sget = require('simple-get').concat
 const fp = require('fastify-plugin')
 
-test('require a plugin', t => {
+test('require a plugin', (t) => {
   t.plan(1)
   const app = medley()
   app.register(require('./plugin.helper'))
@@ -15,7 +15,7 @@ test('require a plugin', t => {
   })
 })
 
-test('app.register with fastify-plugin should not incapsulate his code', t => {
+test('app.register with fastify-plugin should not incapsulate his code', (t) => {
   t.plan(10)
   const app = medley()
 
@@ -45,7 +45,7 @@ test('app.register with fastify-plugin should not incapsulate his code', t => {
     t.notOk(app.test)
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
@@ -61,7 +61,7 @@ test('app.register with fastify-plugin should not incapsulate his code', t => {
   })
 })
 
-test('app.register with fastify-plugin registers root level plugins', t => {
+test('app.register with fastify-plugin registers root level plugins', (t) => {
   t.plan(15)
   const app = medley()
 
@@ -100,7 +100,7 @@ test('app.register with fastify-plugin registers root level plugins', t => {
     reply.send({test: app.test})
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
@@ -126,7 +126,7 @@ test('app.register with fastify-plugin registers root level plugins', t => {
   })
 })
 
-test('check dependencies - should not throw', t => {
+test('check dependencies - should not throw', (t) => {
   t.plan(12)
   const app = medley()
 
@@ -162,7 +162,7 @@ test('check dependencies - should not throw', t => {
     t.notOk(app.otherTest)
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
@@ -178,7 +178,7 @@ test('check dependencies - should not throw', t => {
   })
 })
 
-test('check dependencies - should throw', t => {
+test('check dependencies - should throw', (t) => {
   t.plan(11)
   const app = medley()
 
@@ -213,7 +213,7 @@ test('check dependencies - should throw', t => {
     t.notOk(app.test)
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
@@ -229,7 +229,7 @@ test('check dependencies - should throw', t => {
   })
 })
 
-test('plugin incapsulation', t => {
+test('plugin incapsulation', (t) => {
   t.plan(10)
   const app = medley()
 
@@ -263,7 +263,7 @@ test('plugin incapsulation', t => {
     t.notOk(app.test)
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
@@ -289,7 +289,7 @@ test('plugin incapsulation', t => {
   })
 })
 
-test('if a plugin raises an error and there is not a callback to handle it, the server must not start', t => {
+test('if a plugin raises an error and there is not a callback to handle it, the server must not start', (t) => {
   t.plan(2)
   const app = medley()
 
@@ -297,13 +297,13 @@ test('if a plugin raises an error and there is not a callback to handle it, the 
     next(new Error('err'))
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.ok(err instanceof Error)
     t.is(err.message, 'err')
   })
 })
 
-test('add hooks after route declaration', t => {
+test('add hooks after route declaration', (t) => {
   t.plan(3)
   const app = medley()
 
@@ -337,7 +337,7 @@ test('add hooks after route declaration', t => {
     next()
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
     sget({
@@ -351,7 +351,7 @@ test('add hooks after route declaration', t => {
   })
 })
 
-test('nested plugins', t => {
+test('nested plugins', (t) => {
   t.plan(5)
 
   const app = medley()
@@ -376,7 +376,7 @@ test('nested plugins', t => {
     next()
   }, {prefix: '/parent'})
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
     sget({
@@ -397,7 +397,7 @@ test('nested plugins', t => {
   })
 })
 
-test('plugin metadata - decorators', t => {
+test('plugin metadata - decorators', (t) => {
   t.plan(1)
   const app = medley()
 
@@ -426,7 +426,7 @@ test('plugin metadata - decorators', t => {
   }
 })
 
-test('plugin metadata - dependencies', t => {
+test('plugin metadata - dependencies', (t) => {
   t.plan(1)
   const app = medley()
 
@@ -456,7 +456,7 @@ test('plugin metadata - dependencies', t => {
   }
 })
 
-test('plugin metadata - dependencies (nested)', t => {
+test('plugin metadata - dependencies (nested)', (t) => {
   t.plan(1)
   const app = medley()
 

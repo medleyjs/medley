@@ -3,7 +3,7 @@
 const test = require('tap').test
 const medley = require('..')
 
-test('medley should throw on wrong options', t => {
+test('medley should throw on wrong options', (t) => {
   t.plan(2)
   try {
     require('..')('lol')
@@ -14,18 +14,18 @@ test('medley should throw on wrong options', t => {
   }
 })
 
-test('medley should throw on multiple assignment to the same route', t => {
+test('medley should throw on multiple assignment to the same route', (t) => {
   t.plan(1)
   const app = medley()
   app.get('/', () => {})
   app.get('/', () => {})
 
-  app.ready(err => {
+  app.ready((err) => {
     t.is(err.message, "Method 'GET' already declared for route '/'")
   })
 })
 
-test('Should throw on unsupported method', t => {
+test('Should throw on unsupported method', (t) => {
   t.plan(1)
   const app = medley()
   try {
@@ -40,7 +40,7 @@ test('Should throw on unsupported method', t => {
   }
 })
 
-test('Should throw on missing handler', t => {
+test('Should throw on missing handler', (t) => {
   t.plan(1)
   const app = medley()
   try {
@@ -54,7 +54,7 @@ test('Should throw on missing handler', t => {
   }
 })
 
-test('Should throw if one method is unsupported', t => {
+test('Should throw if one method is unsupported', (t) => {
   const app = medley()
   t.plan(1)
   try {
@@ -69,7 +69,7 @@ test('Should throw if one method is unsupported', t => {
   }
 })
 
-test('Should throw on duplicate content type parser', t => {
+test('Should throw on duplicate content type parser', (t) => {
   t.plan(1)
 
   const app = medley()
@@ -87,7 +87,7 @@ test('Should throw on duplicate content type parser', t => {
   }
 })
 
-test('Should throw on duplicate decorator', t => {
+test('Should throw on duplicate decorator', (t) => {
   t.plan(1)
 
   const app = medley()
@@ -102,7 +102,7 @@ test('Should throw on duplicate decorator', t => {
   }
 })
 
-test('Should throw on duplicate decorator encapsulation', t => {
+test('Should throw on duplicate decorator encapsulation', (t) => {
   t.plan(1)
 
   const app = medley()
@@ -123,7 +123,7 @@ test('Should throw on duplicate decorator encapsulation', t => {
   app.ready()
 })
 
-test('Should throw on duplicate request decorator', t => {
+test('Should throw on duplicate request decorator', (t) => {
   t.plan(1)
 
   const fooObj = {}
@@ -138,7 +138,7 @@ test('Should throw on duplicate request decorator', t => {
   }
 })
 
-test('Should throw if request decorator dependencies are not met', t => {
+test('Should throw if request decorator dependencies are not met', (t) => {
   t.plan(1)
 
   const app = medley()
@@ -152,7 +152,7 @@ test('Should throw if request decorator dependencies are not met', t => {
   }
 })
 
-test('Should throw on duplicate reply decorator', t => {
+test('Should throw on duplicate reply decorator', (t) => {
   t.plan(1)
 
   const app = medley()
@@ -167,7 +167,7 @@ test('Should throw on duplicate reply decorator', t => {
   }
 })
 
-test('Should throw if reply decorator dependencies are not met', t => {
+test('Should throw if reply decorator dependencies are not met', (t) => {
   t.plan(1)
 
   const app = medley()

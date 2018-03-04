@@ -13,7 +13,7 @@ const options = {
   },
 }
 
-test('shorthand - head', t => {
+test('shorthand - head', (t) => {
   t.plan(1)
   try {
     app.head('/', options, function(req, reply) {
@@ -25,7 +25,7 @@ test('shorthand - head', t => {
   }
 })
 
-test('missing schema - head', t => {
+test('missing schema - head', (t) => {
   t.plan(1)
   try {
     app.head('/missing', function(req, reply) {
@@ -37,11 +37,11 @@ test('missing schema - head', t => {
   }
 })
 
-app.listen(0, err => {
+app.listen(0, (err) => {
   t.error(err)
   app.server.unref()
 
-  test('shorthand - request head', t => {
+  test('shorthand - request head', (t) => {
     t.plan(2)
     sget({
       method: 'HEAD',
@@ -52,7 +52,7 @@ app.listen(0, err => {
     })
   })
 
-  test('shorthand - request head missing schema', t => {
+  test('shorthand - request head missing schema', (t) => {
     t.plan(2)
     sget({
       method: 'HEAD',

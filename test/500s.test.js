@@ -4,7 +4,7 @@ const t = require('tap')
 const test = t.test
 const medley = require('..')
 
-test('default 500', t => {
+test('default 500', (t) => {
   t.plan(4)
 
   const app = medley()
@@ -28,7 +28,7 @@ test('default 500', t => {
   })
 })
 
-test('custom 500', t => {
+test('custom 500', (t) => {
   t.plan(6)
 
   const app = medley()
@@ -57,7 +57,7 @@ test('custom 500', t => {
   })
 })
 
-test('encapsulated 500', t => {
+test('encapsulated 500', (t) => {
   t.plan(10)
 
   const app = medley()
@@ -108,7 +108,7 @@ test('encapsulated 500', t => {
   })
 })
 
-test('custom 500 with hooks', t => {
+test('custom 500 with hooks', (t) => {
   t.plan(7)
 
   const app = medley()
@@ -148,13 +148,13 @@ test('custom 500 with hooks', t => {
   })
 })
 
-test('cannot set errorHandler after binding', t => {
+test('cannot set errorHandler after binding', (t) => {
   t.plan(2)
 
   const app = medley()
   t.tearDown(app.close.bind(app))
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
     try {

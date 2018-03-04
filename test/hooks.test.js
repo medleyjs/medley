@@ -10,7 +10,7 @@ const fs = require('fs')
 
 const payload = {hello: 'world'}
 
-test('hooks', t => {
+test('hooks', (t) => {
   t.plan(21)
   const app = medley()
 
@@ -70,7 +70,7 @@ test('hooks', t => {
     reply.code(200).send(payload)
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
@@ -102,7 +102,7 @@ test('hooks', t => {
   })
 })
 
-test('onRequest hook should support encapsulation / 1', t => {
+test('onRequest hook should support encapsulation / 1', (t) => {
   t.plan(5)
   const app = medley()
 
@@ -134,7 +134,7 @@ test('onRequest hook should support encapsulation / 1', t => {
   })
 })
 
-test('onRequest hook should support encapsulation / 2', t => {
+test('onRequest hook should support encapsulation / 2', (t) => {
   t.plan(3)
   const app = medley()
   var pluginInstance
@@ -147,14 +147,14 @@ test('onRequest hook should support encapsulation / 2', t => {
     next()
   })
 
-  app.ready(err => {
+  app.ready((err) => {
     t.error(err)
     t.is(app._hooks.onRequest.length, 1)
     t.is(pluginInstance._hooks.onRequest.length, 2)
   })
 })
 
-test('onRequest hook should support encapsulation / 3', t => {
+test('onRequest hook should support encapsulation / 3', (t) => {
   t.plan(13)
   const app = medley()
 
@@ -184,7 +184,7 @@ test('onRequest hook should support encapsulation / 3', t => {
     next()
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
@@ -210,7 +210,7 @@ test('onRequest hook should support encapsulation / 3', t => {
   })
 })
 
-test('preHandler hook should support encapsulation / 5', t => {
+test('preHandler hook should support encapsulation / 5', (t) => {
   t.plan(19)
   const app = medley()
 
@@ -249,7 +249,7 @@ test('preHandler hook should support encapsulation / 5', t => {
     next()
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
@@ -275,7 +275,7 @@ test('preHandler hook should support encapsulation / 5', t => {
   })
 })
 
-test('onRoute hook should be called / 1', t => {
+test('onRoute hook should be called / 1', (t) => {
   t.plan(2)
   const app = medley()
 
@@ -289,12 +289,12 @@ test('onRoute hook should be called / 1', t => {
     next()
   })
 
-  app.ready(err => {
+  app.ready((err) => {
     t.error(err)
   })
 })
 
-test('onRoute hook should be called / 2', t => {
+test('onRoute hook should be called / 2', (t) => {
   t.plan(5)
   let firstHandler = 0
   let secondHandler = 0
@@ -319,12 +319,12 @@ test('onRoute hook should be called / 2', t => {
       t.strictEqual(secondHandler, 1)
     })
 
-  app.ready(err => {
+  app.ready((err) => {
     t.error(err)
   })
 })
 
-test('onRoute hook should be called / 3', t => {
+test('onRoute hook should be called / 3', (t) => {
   t.plan(6)
   const app = medley()
 
@@ -351,12 +351,12 @@ test('onRoute hook should be called / 3', t => {
       }, 10)
     })
 
-  app.ready(err => {
+  app.ready((err) => {
     t.error(err)
   })
 })
 
-test('onRoute should keep the context', t => {
+test('onRoute should keep the context', (t) => {
   t.plan(4)
   const app = medley()
   app.register((subApp, opts, next) => {
@@ -381,7 +381,7 @@ test('onRoute should keep the context', t => {
   })
 })
 
-test('onRoute hook should pass correct route', t => {
+test('onRoute hook should pass correct route', (t) => {
   t.plan(7)
   const app = medley()
   app.addHook('onRoute', (route) => {
@@ -402,12 +402,12 @@ test('onRoute hook should pass correct route', t => {
     next()
   })
 
-  app.ready(err => {
+  app.ready((err) => {
     t.error(err)
   })
 })
 
-test('onRoute hook should pass correct route with custom prefix', t => {
+test('onRoute hook should pass correct route with custom prefix', (t) => {
   t.plan(9)
   const app = medley()
   app.addHook('onRoute', function(route) {
@@ -430,12 +430,12 @@ test('onRoute hook should pass correct route with custom prefix', t => {
     next()
   }, {prefix: '/v1'})
 
-  app.ready(err => {
+  app.ready((err) => {
     t.error(err)
   })
 })
 
-test('onRoute hook should pass correct route with custom options', t => {
+test('onRoute hook should pass correct route with custom options', (t) => {
   t.plan(4)
   const app = medley()
   app.register((subApp, opts, next) => {
@@ -450,12 +450,12 @@ test('onRoute hook should pass correct route with custom options', t => {
     next()
   })
 
-  app.ready(err => {
+  app.ready((err) => {
     t.error(err)
   })
 })
 
-test('onRoute hook should receive any route option', t => {
+test('onRoute hook should receive any route option', (t) => {
   t.plan(4)
   const app = medley()
   app.register((subApp, opts, next) => {
@@ -470,12 +470,12 @@ test('onRoute hook should receive any route option', t => {
     next()
   })
 
-  app.ready(err => {
+  app.ready((err) => {
     t.error(err)
   })
 })
 
-test('onRoute hook should preserve system route configuration', t => {
+test('onRoute hook should preserve system route configuration', (t) => {
   t.plan(4)
   const app = medley()
   app.register((subApp, opts, next) => {
@@ -490,12 +490,12 @@ test('onRoute hook should preserve system route configuration', t => {
     next()
   })
 
-  app.ready(err => {
+  app.ready((err) => {
     t.error(err)
   })
 })
 
-test('onResponse hook should support encapsulation / 1', t => {
+test('onResponse hook should support encapsulation / 1', (t) => {
   t.plan(5)
   const app = medley()
 
@@ -528,7 +528,7 @@ test('onResponse hook should support encapsulation / 1', t => {
   })
 })
 
-test('onResponse hook should support encapsulation / 2', t => {
+test('onResponse hook should support encapsulation / 2', (t) => {
   t.plan(3)
   const app = medley()
   var pluginInstance
@@ -541,14 +541,14 @@ test('onResponse hook should support encapsulation / 2', t => {
     next()
   })
 
-  app.ready(err => {
+  app.ready((err) => {
     t.error(err)
     t.is(app._hooks.onResponse.length, 1)
     t.is(pluginInstance._hooks.onResponse.length, 2)
   })
 })
 
-test('onResponse hook should support encapsulation / 3', t => {
+test('onResponse hook should support encapsulation / 3', (t) => {
   t.plan(12)
   const app = medley()
 
@@ -574,7 +574,7 @@ test('onResponse hook should support encapsulation / 3', t => {
     next()
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
@@ -600,7 +600,7 @@ test('onResponse hook should support encapsulation / 3', t => {
   })
 })
 
-test('onSend hook should support encapsulation / 1', t => {
+test('onSend hook should support encapsulation / 1', (t) => {
   t.plan(3)
   const app = medley()
   var pluginInstance
@@ -613,14 +613,14 @@ test('onSend hook should support encapsulation / 1', t => {
     next()
   })
 
-  app.ready(err => {
+  app.ready((err) => {
     t.error(err)
     t.is(app._hooks.onSend.length, 1)
     t.is(pluginInstance._hooks.onSend.length, 2)
   })
 })
 
-test('onSend hook should support encapsulation / 2', t => {
+test('onSend hook should support encapsulation / 2', (t) => {
   t.plan(18)
   const app = medley()
 
@@ -655,7 +655,7 @@ test('onSend hook should support encapsulation / 2', t => {
     next()
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
@@ -681,7 +681,7 @@ test('onSend hook should support encapsulation / 2', t => {
   })
 })
 
-test('onSend hook is called after payload is serialized and headers are set', t => {
+test('onSend hook is called after payload is serialized and headers are set', (t) => {
   t.plan(24)
   const app = medley()
 
@@ -794,7 +794,7 @@ test('onSend hook is called after payload is serialized and headers are set', t 
   })
 })
 
-test('modify payload', t => {
+test('modify payload', (t) => {
   t.plan(10)
   const app = medley()
   const payload = {hello: 'world'}
@@ -835,7 +835,7 @@ test('modify payload', t => {
   })
 })
 
-test('clear payload', t => {
+test('clear payload', (t) => {
   t.plan(6)
   const app = medley()
 
@@ -861,7 +861,7 @@ test('clear payload', t => {
   })
 })
 
-test('onSend hook throws', t => {
+test('onSend hook throws', (t) => {
   t.plan(7)
   const app = medley()
   app.addHook('onSend', function(request, reply, payload, next) {
@@ -880,7 +880,7 @@ test('onSend hook throws', t => {
     reply.send({hello: 'world'})
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
     sget({
@@ -902,7 +902,7 @@ test('onSend hook throws', t => {
   })
 })
 
-test('onSend hook should receive valid request and reply objects if onRequest hook fails', t => {
+test('onSend hook should receive valid request and reply objects if onRequest hook fails', (t) => {
   t.plan(4)
   const app = medley()
 
@@ -932,7 +932,7 @@ test('onSend hook should receive valid request and reply objects if onRequest ho
   })
 })
 
-test('onSend hook should receive valid request and reply objects if a custom content type parser fails', t => {
+test('onSend hook should receive valid request and reply objects if a custom content type parser fails', (t) => {
   t.plan(4)
   const app = medley()
 
@@ -963,7 +963,7 @@ test('onSend hook should receive valid request and reply objects if a custom con
   })
 })
 
-test('cannot add hook after listening', t => {
+test('cannot add hook after listening', (t) => {
   t.plan(2)
   const app = medley()
 
@@ -971,7 +971,7 @@ test('cannot add hook after listening', t => {
     reply.send({hello: 'world'})
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     t.tearDown(app.server.close.bind(app.server))
 
@@ -984,7 +984,7 @@ test('cannot add hook after listening', t => {
   })
 })
 
-test('onRequest hooks should be able to block a request', t => {
+test('onRequest hooks should be able to block a request', (t) => {
   t.plan(4)
   const app = medley()
 
@@ -1024,7 +1024,7 @@ test('onRequest hooks should be able to block a request', t => {
   })
 })
 
-test('preHandler hooks should be able to block a request', t => {
+test('preHandler hooks should be able to block a request', (t) => {
   t.plan(5)
   const app = medley()
 
@@ -1061,7 +1061,7 @@ test('preHandler hooks should be able to block a request', t => {
   })
 })
 
-test('onRequest hooks should be able to block a request (last hook)', t => {
+test('onRequest hooks should be able to block a request (last hook)', (t) => {
   t.plan(4)
   const app = medley()
 
@@ -1097,7 +1097,7 @@ test('onRequest hooks should be able to block a request (last hook)', t => {
   })
 })
 
-test('preHandler hooks should be able to block a request (last hook)', t => {
+test('preHandler hooks should be able to block a request (last hook)', (t) => {
   t.plan(5)
   const app = medley()
 
@@ -1130,7 +1130,7 @@ test('preHandler hooks should be able to block a request (last hook)', t => {
   })
 })
 
-test('onRequest respond with a stream', t => {
+test('onRequest respond with a stream', (t) => {
   t.plan(3)
   const app = medley()
 
@@ -1170,7 +1170,7 @@ test('onRequest respond with a stream', t => {
   })
 })
 
-test('preHandler respond with a stream', t => {
+test('preHandler respond with a stream', (t) => {
   t.plan(7)
   const app = medley()
 
@@ -1220,7 +1220,7 @@ test('preHandler respond with a stream', t => {
   })
 })
 
-test('Register an hook after a plugin inside a plugin', t => {
+test('Register an hook after a plugin inside a plugin', (t) => {
   t.plan(6)
   const app = medley()
 
@@ -1261,7 +1261,7 @@ test('Register an hook after a plugin inside a plugin', t => {
   })
 })
 
-test('Register an hook after a plugin inside a plugin (with beforeHandler)', t => {
+test('Register an hook after a plugin inside a plugin (with beforeHandler)', (t) => {
   t.plan(7)
   const app = medley()
 
@@ -1307,7 +1307,7 @@ test('Register an hook after a plugin inside a plugin (with beforeHandler)', t =
   })
 })
 
-test('Register hooks inside a plugin after an encapsulated plugin', t => {
+test('Register hooks inside a plugin after an encapsulated plugin', (t) => {
   t.plan(7)
   const app = medley()
 
@@ -1350,7 +1350,7 @@ test('Register hooks inside a plugin after an encapsulated plugin', t => {
   })
 })
 
-test('onRequest hooks should run in the order in which they are defined', t => {
+test('onRequest hooks should run in the order in which they are defined', (t) => {
   t.plan(9)
   const app = medley()
 
@@ -1410,7 +1410,7 @@ test('onRequest hooks should run in the order in which they are defined', t => {
   })
 })
 
-test('preHandler hooks should run in the order in which they are defined', t => {
+test('preHandler hooks should run in the order in which they are defined', (t) => {
   t.plan(9)
   const app = medley()
 
@@ -1470,7 +1470,7 @@ test('preHandler hooks should run in the order in which they are defined', t => 
   })
 })
 
-test('onSend hooks should run in the order in which they are defined', t => {
+test('onSend hooks should run in the order in which they are defined', (t) => {
   t.plan(8)
   const app = medley()
 
@@ -1528,7 +1528,7 @@ test('onSend hooks should run in the order in which they are defined', t => {
   })
 })
 
-test('onResponse hooks should run in the order in which they are defined', t => {
+test('onResponse hooks should run in the order in which they are defined', (t) => {
   t.plan(8)
   const app = medley()
 
@@ -1586,7 +1586,7 @@ test('onResponse hooks should run in the order in which they are defined', t => 
   })
 })
 
-test('onRequest, preHandler, and onResponse hooks that resolve to a value do not cause an error', t => {
+test('onRequest, preHandler, and onResponse hooks that resolve to a value do not cause an error', (t) => {
   t.plan(3)
   const app = medley()
 

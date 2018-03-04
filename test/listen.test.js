@@ -6,7 +6,7 @@ const fs = require('fs')
 const test = require('tap').test
 const medley = require('..')
 
-test('listen accepts a port and a callback', t => {
+test('listen accepts a port and a callback', (t) => {
   t.plan(3)
   const app = medley()
   app.listen(0, (err) => {
@@ -18,7 +18,7 @@ test('listen accepts a port and a callback', t => {
   })
 })
 
-test('listen accepts a port, address, and callback', t => {
+test('listen accepts a port, address, and callback', (t) => {
   t.plan(2)
   const app = medley()
   app.listen(0, '127.0.0.1', (err) => {
@@ -29,7 +29,7 @@ test('listen accepts a port, address, and callback', t => {
   })
 })
 
-test('listen accepts a port, address, backlog and callback', t => {
+test('listen accepts a port, address, backlog and callback', (t) => {
   t.plan(2)
   const app = medley()
   app.listen(0, '127.0.0.1', 511, (err) => {
@@ -40,7 +40,7 @@ test('listen accepts a port, address, backlog and callback', t => {
   })
 })
 
-test('listen after Promise.resolve()', t => {
+test('listen after Promise.resolve()', (t) => {
   t.plan(2)
   const f = medley()
   Promise.resolve()
@@ -54,7 +54,7 @@ test('listen after Promise.resolve()', t => {
     })
 })
 
-test('register after listen using Promise.resolve()', t => {
+test('register after listen using Promise.resolve()', (t) => {
   t.plan(1)
   const f = medley()
 
@@ -72,7 +72,7 @@ test('register after listen using Promise.resolve()', t => {
     .then(() => t.pass('resolved'))
 })
 
-test('double listen errors', t => {
+test('double listen errors', (t) => {
   t.plan(2)
   const app = medley()
   app.listen(0, (err) => {
@@ -84,7 +84,7 @@ test('double listen errors', t => {
   })
 })
 
-test('listen twice on the same port', t => {
+test('listen twice on the same port', (t) => {
   t.plan(2)
   const app = medley()
   app.listen(0, (err) => {
@@ -99,7 +99,7 @@ test('listen twice on the same port', t => {
 
 // https://nodejs.org/api/net.html#net_ipc_support
 if (os.platform() !== 'win32') {
-  test('listen on socket', t => {
+  test('listen on socket', (t) => {
     t.plan(2)
     const app = medley()
     const sockFile = path.join(os.tmpdir(), 'server.sock')
@@ -114,7 +114,7 @@ if (os.platform() !== 'win32') {
   })
 }
 
-test('listen without callback', t => {
+test('listen without callback', (t) => {
   t.plan(1)
   const app = medley()
   app.listen(0)
@@ -125,7 +125,7 @@ test('listen without callback', t => {
     })
 })
 
-test('double listen without callback rejects', t => {
+test('double listen without callback rejects', (t) => {
   t.plan(1)
   const app = medley()
   app.listen(0)
@@ -135,7 +135,7 @@ test('double listen without callback rejects', t => {
           t.error(new Error('second call to app.listen resolved'))
           app.close()
         })
-        .catch(err => {
+        .catch((err) => {
           t.ok(err)
           app.close()
         })
@@ -143,7 +143,7 @@ test('double listen without callback rejects', t => {
     .catch(err => t.error(err))
 })
 
-test('listen twice on the same port without callback rejects', t => {
+test('listen twice on the same port without callback rejects', (t) => {
   t.plan(1)
   const app = medley()
 
@@ -156,7 +156,7 @@ test('listen twice on the same port without callback rejects', t => {
           app.close()
           s2.close()
         })
-        .catch(err => {
+        .catch((err) => {
           t.ok(err)
           app.close()
           s2.close()

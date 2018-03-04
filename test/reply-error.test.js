@@ -7,12 +7,12 @@ const medley = require('..')
 const statusCodes = require('http').STATUS_CODES
 
 const codes = Object.keys(statusCodes)
-codes.forEach(code => {
+codes.forEach((code) => {
   if (Number(code) >= 400) helper(code)
 })
 
 function helper(code) {
-  test('Reply error handling - code: ' + code, t => {
+  test('Reply error handling - code: ' + code, (t) => {
     t.plan(4)
     const app = medley()
     const err = new Error('winter is coming')
@@ -42,7 +42,7 @@ function helper(code) {
   })
 }
 
-test('preHandler hook error handling with external code', t => {
+test('preHandler hook error handling with external code', (t) => {
   t.plan(3)
   const app = medley()
   const err = new Error('winter is coming')
@@ -71,7 +71,7 @@ test('preHandler hook error handling with external code', t => {
   })
 })
 
-test('onRequest hook error handling with external done', t => {
+test('onRequest hook error handling with external done', (t) => {
   t.plan(3)
   const app = medley()
   const err = new Error('winter is coming')
@@ -100,7 +100,7 @@ test('onRequest hook error handling with external done', t => {
   })
 })
 
-test('Error subApp sets HTTP status code', t => {
+test('Error subApp sets HTTP status code', (t) => {
   t.plan(3)
   const app = medley()
   const err = new Error('winter is coming')
@@ -127,7 +127,7 @@ test('Error subApp sets HTTP status code', t => {
   })
 })
 
-test('Error status code below 400 defaults to 500', t => {
+test('Error status code below 400 defaults to 500', (t) => {
   t.plan(3)
   const app = medley()
   const err = new Error('winter is coming')
@@ -154,7 +154,7 @@ test('Error status code below 400 defaults to 500', t => {
   })
 })
 
-test('Error.status property support', t => {
+test('Error.status property support', (t) => {
   t.plan(3)
   const app = medley()
   const err = new Error('winter is coming')
@@ -181,7 +181,7 @@ test('Error.status property support', t => {
   })
 })
 
-test('Support rejection with values that are not Error instances', t => {
+test('Support rejection with values that are not Error instances', (t) => {
   const objs = [
     0,
     '',
@@ -197,7 +197,7 @@ test('Support rejection with values that are not Error instances', t => {
   ]
   t.plan(objs.length)
   for (const nonErr of objs) {
-    t.test('Type: ' + typeof nonErr, t => {
+    t.test('Type: ' + typeof nonErr, (t) => {
       t.plan(4)
       const app = medley()
 
@@ -226,7 +226,7 @@ test('Support rejection with values that are not Error instances', t => {
   }
 })
 
-test('should set the status code from the error object (from route handler)', t => {
+test('should set the status code from the error object (from route handler)', (t) => {
   t.plan(6)
   const app = medley()
 
@@ -269,7 +269,7 @@ test('should set the status code from the error object (from route handler)', t 
   })
 })
 
-test('should set the status code from the error object (from custom error handler)', t => {
+test('should set the status code from the error object (from custom error handler)', (t) => {
   t.plan(5)
   const app = medley()
 
@@ -301,7 +301,7 @@ test('should set the status code from the error object (from custom error handle
   })
 })
 
-test('should throw an error if the payload does not get serialized to a valid type', t => {
+test('should throw an error if the payload does not get serialized to a valid type', (t) => {
   t.plan(2)
   const app = medley()
 

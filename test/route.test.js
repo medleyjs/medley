@@ -5,7 +5,7 @@ const test = t.test
 const sget = require('simple-get').concat
 const app = require('..')()
 
-test('route - get', t => {
+test('route - get', (t) => {
   t.plan(1)
   try {
     app.route({
@@ -31,7 +31,7 @@ test('route - get', t => {
   }
 })
 
-test('missing schema - route', t => {
+test('missing schema - route', (t) => {
   t.plan(1)
   try {
     app.route({
@@ -47,7 +47,7 @@ test('missing schema - route', t => {
   }
 })
 
-test('Multiple methods', t => {
+test('Multiple methods', (t) => {
   t.plan(1)
   try {
     app.route({
@@ -63,7 +63,7 @@ test('Multiple methods', t => {
   }
 })
 
-test('Add multiple methods', t => {
+test('Add multiple methods', (t) => {
   t.plan(1)
   try {
     app.get('/add-multiple', function(req, reply) {
@@ -86,7 +86,7 @@ app.listen(0, function(err) {
   if (err) t.error(err)
   app.server.unref()
 
-  test('cannot add another route after binding', t => {
+  test('cannot add another route after binding', (t) => {
     t.plan(1)
     try {
       app.route({
@@ -102,7 +102,7 @@ app.listen(0, function(err) {
     }
   })
 
-  test('route - get', t => {
+  test('route - get', (t) => {
     t.plan(3)
     sget({
       method: 'GET',
@@ -114,7 +114,7 @@ app.listen(0, function(err) {
     })
   })
 
-  test('route - missing schema', t => {
+  test('route - missing schema', (t) => {
     t.plan(3)
     sget({
       method: 'GET',
@@ -126,7 +126,7 @@ app.listen(0, function(err) {
     })
   })
 
-  test('route - multiple methods', t => {
+  test('route - multiple methods', (t) => {
     t.plan(6)
     sget({
       method: 'GET',
@@ -148,7 +148,7 @@ app.listen(0, function(err) {
   })
 })
 
-test('path can be specified in place of uri', t => {
+test('path can be specified in place of uri', (t) => {
   t.plan(3)
 
   app.route({
@@ -171,7 +171,7 @@ test('path can be specified in place of uri', t => {
   })
 })
 
-test('invalid bodyLimit option - route', t => {
+test('invalid bodyLimit option - route', (t) => {
   t.plan(2)
 
   try {

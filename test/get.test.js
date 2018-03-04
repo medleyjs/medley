@@ -39,7 +39,7 @@ const numberSchema = {
   },
 }
 
-test('shorthand - get', t => {
+test('shorthand - get', (t) => {
   t.plan(1)
   try {
     app.get('/', stringSchema, function(req, reply) {
@@ -51,7 +51,7 @@ test('shorthand - get', t => {
   }
 })
 
-test('shorthand - get (return null)', t => {
+test('shorthand - get (return null)', (t) => {
   t.plan(1)
   try {
     app.get('/null', nullSchema, function(req, reply) {
@@ -63,7 +63,7 @@ test('shorthand - get (return null)', t => {
   }
 })
 
-test('missing schema - get', t => {
+test('missing schema - get', (t) => {
   t.plan(1)
   try {
     app.get('/missing', function(req, reply) {
@@ -75,7 +75,7 @@ test('missing schema - get', t => {
   }
 })
 
-test('empty response', t => {
+test('empty response', (t) => {
   t.plan(1)
   try {
     app.get('/empty', function(req, reply) {
@@ -87,7 +87,7 @@ test('empty response', t => {
   }
 })
 
-test('send a falsy boolean', t => {
+test('send a falsy boolean', (t) => {
   t.plan(1)
   try {
     app.get('/boolean', function(req, reply) {
@@ -99,11 +99,11 @@ test('send a falsy boolean', t => {
   }
 })
 
-app.listen(0, err => {
+app.listen(0, (err) => {
   t.error(err)
   app.server.unref()
 
-  test('shorthand - request get', t => {
+  test('shorthand - request get', (t) => {
     t.plan(4)
     sget({
       method: 'GET',
@@ -116,7 +116,7 @@ app.listen(0, err => {
     })
   })
 
-  test('shorthand - request get missing schema', t => {
+  test('shorthand - request get missing schema', (t) => {
     t.plan(4)
     sget({
       method: 'GET',
@@ -129,7 +129,7 @@ app.listen(0, err => {
     })
   })
 
-  test('shorthand - empty response', t => {
+  test('shorthand - empty response', (t) => {
     t.plan(4)
     sget({
       method: 'GET',
@@ -142,7 +142,7 @@ app.listen(0, err => {
     })
   })
 
-  test('shorthand - send a falsy boolean', t => {
+  test('shorthand - send a falsy boolean', (t) => {
     t.plan(3)
     sget({
       method: 'GET',
@@ -154,7 +154,7 @@ app.listen(0, err => {
     })
   })
 
-  test('shorthand - send null value', t => {
+  test('shorthand - send null value', (t) => {
     t.plan(3)
     sget({
       method: 'GET',

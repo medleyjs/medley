@@ -198,7 +198,6 @@
     {
       "files": ["*.test.js"],
       "rules": {
-        "arrow-parens": 0,
         "curly": [2, "multi-line", "consistent"],
         "max-nested-callbacks": 0,
         "max-len": 0,

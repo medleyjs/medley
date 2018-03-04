@@ -10,13 +10,13 @@ const jsonParser = require('fast-json-body')
 if (semver.gt(process.versions.node, '8.0.0')) {
   require('./custom-parser-async')
 }
-test('contentTypeParser method should exist', t => {
+test('contentTypeParser method should exist', (t) => {
   t.plan(1)
   const app = medley()
   t.ok(app.addContentTypeParser)
 })
 
-test('contentTypeParser should add a custom parser', t => {
+test('contentTypeParser should add a custom parser', (t) => {
   t.plan(3)
   const app = medley()
 
@@ -34,12 +34,12 @@ test('contentTypeParser should add a custom parser', t => {
     })
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
     t.tearDown(() => app.close())
 
-    t.test('in POST', t => {
+    t.test('in POST', (t) => {
       t.plan(3)
 
       sget({
@@ -56,7 +56,7 @@ test('contentTypeParser should add a custom parser', t => {
       })
     })
 
-    t.test('in OPTIONS', t => {
+    t.test('in OPTIONS', (t) => {
       t.plan(3)
 
       sget({
@@ -75,7 +75,7 @@ test('contentTypeParser should add a custom parser', t => {
   })
 })
 
-test('contentTypeParser should handle multiple custom parsers', t => {
+test('contentTypeParser should handle multiple custom parsers', (t) => {
   t.plan(7)
   const app = medley()
 
@@ -96,7 +96,7 @@ test('contentTypeParser should handle multiple custom parsers', t => {
   app.addContentTypeParser('application/jsoff', customParser)
   app.addContentTypeParser('application/ffosj', customParser)
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
@@ -128,7 +128,7 @@ test('contentTypeParser should handle multiple custom parsers', t => {
   })
 })
 
-test('contentTypeParser should handle errors', t => {
+test('contentTypeParser should handle errors', (t) => {
   t.plan(3)
   const app = medley()
 
@@ -140,7 +140,7 @@ test('contentTypeParser should handle errors', t => {
     done(new Error('kaboom!'), {})
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
     sget({
@@ -158,7 +158,7 @@ test('contentTypeParser should handle errors', t => {
   })
 })
 
-test('contentTypeParser should support encapsulation', t => {
+test('contentTypeParser should support encapsulation', (t) => {
   t.plan(6)
   const app = medley()
 
@@ -176,14 +176,14 @@ test('contentTypeParser should support encapsulation', t => {
     next()
   })
 
-  app.ready(err => {
+  app.ready((err) => {
     t.error(err)
     t.notOk(app.hasContentTypeParser('application/jsoff'))
     t.notOk(app.hasContentTypeParser('application/ffosj'))
   })
 })
 
-test('contentTypeParser should support encapsulation, second try', t => {
+test('contentTypeParser should support encapsulation, second try', (t) => {
   t.plan(4)
   const app = medley()
 
@@ -201,7 +201,7 @@ test('contentTypeParser should support encapsulation, second try', t => {
     next()
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
     sget({
@@ -220,7 +220,7 @@ test('contentTypeParser should support encapsulation, second try', t => {
   })
 })
 
-test('contentTypeParser shouldn\'t support request with undefined "Content-Type"', t => {
+test('contentTypeParser shouldn\'t support request with undefined "Content-Type"', (t) => {
   t.plan(3)
   const app = medley()
 
@@ -234,7 +234,7 @@ test('contentTypeParser shouldn\'t support request with undefined "Content-Type"
     })
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
     sget({
@@ -252,7 +252,7 @@ test('contentTypeParser shouldn\'t support request with undefined "Content-Type"
   })
 })
 
-test('the content type should be a string', t => {
+test('the content type should be a string', (t) => {
   t.plan(1)
   const app = medley()
 
@@ -264,7 +264,7 @@ test('the content type should be a string', t => {
   }
 })
 
-test('the content type cannot be an empty string', t => {
+test('the content type cannot be an empty string', (t) => {
   t.plan(1)
   const app = medley()
 
@@ -276,7 +276,7 @@ test('the content type cannot be an empty string', t => {
   }
 })
 
-test('the content type handler should be a function', t => {
+test('the content type handler should be a function', (t) => {
   t.plan(1)
   const app = medley()
 
@@ -288,7 +288,7 @@ test('the content type handler should be a function', t => {
   }
 })
 
-test('catch all content type parser', t => {
+test('catch all content type parser', (t) => {
   t.plan(7)
   const app = medley()
 
@@ -298,7 +298,7 @@ test('catch all content type parser', t => {
 
   app.addContentTypeParser('*', function(req, done) {
     var data = ''
-    req.on('data', chunk => {
+    req.on('data', (chunk) => {
       data += chunk
     })
     req.on('end', () => {
@@ -306,7 +306,7 @@ test('catch all content type parser', t => {
     })
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
     sget({
@@ -338,7 +338,7 @@ test('catch all content type parser', t => {
   })
 })
 
-test('catch all content type parser should not interfere with other conte type parsers', t => {
+test('catch all content type parser should not interfere with other conte type parsers', (t) => {
   t.plan(7)
   const app = medley()
 
@@ -348,7 +348,7 @@ test('catch all content type parser should not interfere with other conte type p
 
   app.addContentTypeParser('*', function(req, done) {
     var data = ''
-    req.on('data', chunk => {
+    req.on('data', (chunk) => {
       data += chunk
     })
     req.on('end', () => {
@@ -362,7 +362,7 @@ test('catch all content type parser should not interfere with other conte type p
     })
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
     sget({
@@ -395,7 +395,7 @@ test('catch all content type parser should not interfere with other conte type p
 })
 
 // Issue 492 https://github.com/app/app/issues/492
-test('\'*\' catch undefined Content-Type requests', t => {
+test('\'*\' catch undefined Content-Type requests', (t) => {
   t.plan(4)
 
   const app = medley()
@@ -404,7 +404,7 @@ test('\'*\' catch undefined Content-Type requests', t => {
 
   app.addContentTypeParser('*', function(req, done) {
     var data = ''
-    req.on('data', chunk => {
+    req.on('data', (chunk) => {
       data += chunk
     })
     req.on('end', () => {
@@ -434,7 +434,7 @@ test('\'*\' catch undefined Content-Type requests', t => {
   })
 })
 
-test('cannot add custom parser after binding', t => {
+test('cannot add custom parser after binding', (t) => {
   t.plan(2)
 
   const app = medley()
@@ -457,7 +457,7 @@ test('cannot add custom parser after binding', t => {
   })
 })
 
-test('Can override the default json parser', t => {
+test('Can override the default json parser', (t) => {
   t.plan(5)
   const app = medley()
 
@@ -472,7 +472,7 @@ test('Can override the default json parser', t => {
     })
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
     sget({
@@ -491,7 +491,7 @@ test('Can override the default json parser', t => {
   })
 })
 
-test('Can\'t override the json parser multiple times', t => {
+test('Can\'t override the json parser multiple times', (t) => {
   t.plan(1)
   const app = medley()
 
@@ -513,7 +513,7 @@ test('Can\'t override the json parser multiple times', t => {
   }
 })
 
-test('Should get the body as string', t => {
+test('Should get the body as string', (t) => {
   t.plan(6)
   const app = medley()
 
@@ -533,7 +533,7 @@ test('Should get the body as string', t => {
     }
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
     sget({
@@ -552,7 +552,7 @@ test('Should get the body as string', t => {
   })
 })
 
-test('Should get the body as buffer', t => {
+test('Should get the body as buffer', (t) => {
   t.plan(6)
   const app = medley()
 
@@ -572,7 +572,7 @@ test('Should get the body as buffer', t => {
     }
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
     sget({
@@ -591,7 +591,7 @@ test('Should get the body as buffer', t => {
   })
 })
 
-test('The charset should not interfere with the content type handling', t => {
+test('The charset should not interfere with the content type handling', (t) => {
   t.plan(5)
   const app = medley()
 
@@ -606,7 +606,7 @@ test('The charset should not interfere with the content type handling', t => {
     })
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
     sget({
@@ -625,7 +625,7 @@ test('The charset should not interfere with the content type handling', t => {
   })
 })
 
-test('Wrong parseAs parameter', t => {
+test('Wrong parseAs parameter', (t) => {
   t.plan(1)
   const app = medley()
 
@@ -637,7 +637,7 @@ test('Wrong parseAs parameter', t => {
   }
 })
 
-test('Should allow defining the bodyLimit per parser', t => {
+test('Should allow defining the bodyLimit per parser', (t) => {
   t.plan(3)
   const app = medley()
   t.tearDown(() => app.close())
@@ -655,7 +655,7 @@ test('Should allow defining the bodyLimit per parser', t => {
     }
   )
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
     sget({
@@ -677,7 +677,7 @@ test('Should allow defining the bodyLimit per parser', t => {
   })
 })
 
-test('route bodyLimit should take precedence over a custom parser bodyLimit', t => {
+test('route bodyLimit should take precedence over a custom parser bodyLimit', (t) => {
   t.plan(3)
   const app = medley()
   t.tearDown(() => app.close())
@@ -695,7 +695,7 @@ test('route bodyLimit should take precedence over a custom parser bodyLimit', t 
     }
   )
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
     sget({

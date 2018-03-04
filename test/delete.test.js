@@ -5,7 +5,7 @@ const test = t.test
 const sget = require('simple-get').concat
 const app = require('..')()
 
-test('shorthand - delete', t => {
+test('shorthand - delete', (t) => {
   t.plan(1)
   try {
     app.delete('/', (request, reply) => {
@@ -17,7 +17,7 @@ test('shorthand - delete', t => {
   }
 })
 
-test('missing schema - delete', t => {
+test('missing schema - delete', (t) => {
   t.plan(1)
   try {
     app.delete('/missing', function(req, reply) {
@@ -29,11 +29,11 @@ test('missing schema - delete', t => {
   }
 })
 
-app.listen(0, err => {
+app.listen(0, (err) => {
   t.error(err)
   app.server.unref()
 
-  test('shorthand - request delete', t => {
+  test('shorthand - request delete', (t) => {
     t.plan(4)
     sget({
       method: 'DELETE',
@@ -46,7 +46,7 @@ app.listen(0, err => {
     })
   })
 
-  test('shorthand - request delete missing schema', t => {
+  test('shorthand - request delete missing schema', (t) => {
     t.plan(4)
     sget({
       method: 'DELETE',

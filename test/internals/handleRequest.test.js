@@ -5,7 +5,7 @@ const test = t.test
 const Request = require('../../lib/Request')
 const sget = require('simple-get').concat
 
-test('Request object', t => {
+test('Request object', (t) => {
   t.plan(6)
   const req = new Request('params', 'req', 'query', 'headers')
   t.type(req, Request)
@@ -16,7 +16,7 @@ test('Request object', t => {
   t.equal(req.body, null)
 })
 
-test('request should be defined in onSend Hook on post request with content type application/json', t => {
+test('request should be defined in onSend Hook on post request with content type application/json', (t) => {
   t.plan(7)
   const app = require('../..')()
 
@@ -30,7 +30,7 @@ test('request should be defined in onSend Hook on post request with content type
   app.post('/', (request, reply) => {
     reply.send(200)
   })
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     app.server.unref()
     t.error(err)
     sget({
@@ -47,7 +47,7 @@ test('request should be defined in onSend Hook on post request with content type
   })
 })
 
-test('request should be defined in onSend Hook on post request with content type application/x-www-form-urlencoded', t => {
+test('request should be defined in onSend Hook on post request with content type application/x-www-form-urlencoded', (t) => {
   t.plan(7)
   const app = require('../..')()
 
@@ -61,7 +61,7 @@ test('request should be defined in onSend Hook on post request with content type
   app.post('/', (request, reply) => {
     reply.send(200)
   })
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     app.server.unref()
     t.error(err)
     sget({
@@ -78,7 +78,7 @@ test('request should be defined in onSend Hook on post request with content type
   })
 })
 
-test('request should be defined in onSend Hook on options request with content type application/x-www-form-urlencoded', t => {
+test('request should be defined in onSend Hook on options request with content type application/x-www-form-urlencoded', (t) => {
   t.plan(7)
   const app = require('../..')()
 
@@ -92,7 +92,7 @@ test('request should be defined in onSend Hook on options request with content t
   app.options('/', (request, reply) => {
     reply.send(200)
   })
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     app.server.unref()
     t.error(err)
     sget({
@@ -109,7 +109,7 @@ test('request should be defined in onSend Hook on options request with content t
   })
 })
 
-test('request should respond with an error if an unserialized payload is sent inside an an async handler', t => {
+test('request should respond with an error if an unserialized payload is sent inside an an async handler', (t) => {
   t.plan(3)
 
   const app = require('../..')()

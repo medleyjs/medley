@@ -40,11 +40,11 @@ app.get('/double', function(req, reply) {
   return Promise.resolve({hello: '42'})
 })
 
-app.listen(0, err => {
+app.listen(0, (err) => {
   t.error(err)
   app.server.unref()
 
-  test('shorthand - sget return promise es6 get', t => {
+  test('shorthand - sget return promise es6 get', (t) => {
     t.plan(4)
     sget({
       method: 'GET',
@@ -57,7 +57,7 @@ app.listen(0, err => {
     })
   })
 
-  test('shorthand - sget promise es6 get return error', t => {
+  test('shorthand - sget promise es6 get return error', (t) => {
     t.plan(2)
     sget({
       method: 'GET',
@@ -68,7 +68,7 @@ app.listen(0, err => {
     })
   })
 
-  test('sget promise double send', t => {
+  test('sget promise double send', (t) => {
     t.plan(3)
 
     sget({

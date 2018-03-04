@@ -6,7 +6,7 @@ const test = t.test
 const pluginUtilsPublic = require('../../lib/pluginUtils.js')
 const pluginUtils = require('../../lib/pluginUtils')[Symbol.for('internals')]
 
-test('shouldSkipOverride should check the \'skip-override\' symbol', t => {
+test('shouldSkipOverride should check the \'skip-override\' symbol', (t) => {
   t.plan(2)
 
   yes[Symbol.for('skip-override')] = true
@@ -19,7 +19,7 @@ test('shouldSkipOverride should check the \'skip-override\' symbol', t => {
   function no() {}
 })
 
-test('getMeta should return the object stored with the \'plugin-meta\' symbol', t => {
+test('getMeta should return the object stored with the \'plugin-meta\' symbol', (t) => {
   t.plan(1)
 
   const meta = {hello: 'world'}
@@ -30,7 +30,7 @@ test('getMeta should return the object stored with the \'plugin-meta\' symbol', 
   function fn() {}
 })
 
-test('checkDecorators should check if the given decorator is present in the subApp', t => {
+test('checkDecorators should check if the given decorator is present in the subApp', (t) => {
   t.plan(1)
 
   fn[Symbol.for('plugin-meta')] = {
@@ -57,7 +57,7 @@ test('checkDecorators should check if the given decorator is present in the subA
   function fn() {}
 })
 
-test('checkDecorators should check if the given decorator is present in the subApp (errored)', t => {
+test('checkDecorators should check if the given decorator is present in the subApp (errored)', (t) => {
   t.plan(1)
 
   fn[Symbol.for('plugin-meta')] = {
@@ -84,7 +84,7 @@ test('checkDecorators should check if the given decorator is present in the subA
   function fn() {}
 })
 
-test('checkDependencies should check if the given dependency is present in the subApp', t => {
+test('checkDependencies should check if the given dependency is present in the subApp', (t) => {
   t.plan(1)
 
   fn[Symbol.for('plugin-meta')] = {
@@ -105,7 +105,7 @@ test('checkDependencies should check if the given dependency is present in the s
   function fn() {}
 })
 
-test('checkDependencies should check if the given dependency is present in the subApp (errored)', t => {
+test('checkDependencies should check if the given dependency is present in the subApp (errored)', (t) => {
   t.plan(1)
 
   fn[Symbol.for('plugin-meta')] = {

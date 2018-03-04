@@ -6,7 +6,7 @@ const test = t.test
 const Hooks = require('../../lib/Hooks')
 const noop = () => {}
 
-test('hooks should have 4 array with the registered hooks', t => {
+test('hooks should have 4 array with the registered hooks', (t) => {
   t.plan(5)
   const hooks = new Hooks()
   t.is(typeof hooks, 'object')
@@ -16,7 +16,7 @@ test('hooks should have 4 array with the registered hooks', t => {
   t.ok(Array.isArray(hooks.onResponse))
 })
 
-test('hooks.add should add a hook to the given hook', t => {
+test('hooks.add should add a hook to the given hook', (t) => {
   t.plan(8)
   const hooks = new Hooks()
   hooks.add('onRequest', noop)
@@ -36,7 +36,7 @@ test('hooks.add should add a hook to the given hook', t => {
   t.is(typeof hooks.onSend[0], 'function')
 })
 
-test('hooks should throw on unexisting handler', t => {
+test('hooks should throw on unexisting handler', (t) => {
   t.plan(1)
   const hooks = new Hooks()
   try {
@@ -47,7 +47,7 @@ test('hooks should throw on unexisting handler', t => {
   }
 })
 
-test('should throw on wrong parameters', t => {
+test('should throw on wrong parameters', (t) => {
   const hooks = new Hooks()
   t.plan(2)
   try {

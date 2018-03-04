@@ -7,7 +7,7 @@ const http = require('http')
 const NotFound = require('http-errors').NotFound
 const Reply = require('../../lib/Reply')
 
-test('Once called, Reply should return an object with methods', t => {
+test('Once called, Reply should return an object with methods', (t) => {
   t.plan(9)
   const response = {res: 'res'}
 
@@ -27,7 +27,7 @@ test('Once called, Reply should return an object with methods', t => {
   t.strictEqual(reply.request, request)
 })
 
-test('reply.send throw with circular JSON', t => {
+test('reply.send throw with circular JSON', (t) => {
   t.plan(1)
   const request = {}
   const response = {setHeader: () => {}}
@@ -39,7 +39,7 @@ test('reply.send throw with circular JSON', t => {
   })
 })
 
-test('within a sub app', t => {
+test('within a sub app', (t) => {
   const app = require('../..')()
   const test = t.test
 
@@ -78,11 +78,11 @@ test('within a sub app', t => {
     next()
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
-    test('status code and content-type should be correct', t => {
+    test('status code and content-type should be correct', (t) => {
       t.plan(4)
       sget({
         method: 'GET',
@@ -95,7 +95,7 @@ test('within a sub app', t => {
       })
     })
 
-    test('auto status code shoud be 200', t => {
+    test('auto status code shoud be 200', (t) => {
       t.plan(3)
       sget({
         method: 'GET',
@@ -107,7 +107,7 @@ test('within a sub app', t => {
       })
     })
 
-    test('auto type shoud be text/plain', t => {
+    test('auto type shoud be text/plain', (t) => {
       t.plan(3)
       sget({
         method: 'GET',
@@ -119,7 +119,7 @@ test('within a sub app', t => {
       })
     })
 
-    test('redirect to `/` - 1', t => {
+    test('redirect to `/` - 1', (t) => {
       t.plan(1)
 
       http.get('http://localhost:' + app.server.address().port + '/redirect', function(response) {
@@ -127,7 +127,7 @@ test('within a sub app', t => {
       })
     })
 
-    test('redirect to `/` - 2', t => {
+    test('redirect to `/` - 2', (t) => {
       t.plan(1)
 
       http.get('http://localhost:' + app.server.address().port + '/redirect-code', function(response) {
@@ -135,7 +135,7 @@ test('within a sub app', t => {
       })
     })
 
-    test('redirect to `/` - 3', t => {
+    test('redirect to `/` - 3', (t) => {
       t.plan(4)
       sget({
         method: 'GET',
@@ -148,7 +148,7 @@ test('within a sub app', t => {
       })
     })
 
-    test('redirect to `/` - 4', t => {
+    test('redirect to `/` - 4', (t) => {
       t.plan(4)
       sget({
         method: 'GET',
@@ -161,7 +161,7 @@ test('within a sub app', t => {
       })
     })
 
-    test('redirect to `/` - 5', t => {
+    test('redirect to `/` - 5', (t) => {
       t.plan(3)
       const url = 'http://localhost:' + app.server.address().port + '/redirect-onsend'
       http.get(url, (response) => {
@@ -175,7 +175,7 @@ test('within a sub app', t => {
   })
 })
 
-test('buffer without content type should send a application/octet-stream and raw buffer', t => {
+test('buffer without content type should send a application/octet-stream and raw buffer', (t) => {
   t.plan(4)
 
   const app = require('../..')()
@@ -184,7 +184,7 @@ test('buffer without content type should send a application/octet-stream and raw
     reply.send(Buffer.alloc(1024))
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
@@ -199,7 +199,7 @@ test('buffer without content type should send a application/octet-stream and raw
   })
 })
 
-test('buffer with content type should not send application/octet-stream', t => {
+test('buffer with content type should not send application/octet-stream', (t) => {
   t.plan(4)
 
   const app = require('../..')()
@@ -209,7 +209,7 @@ test('buffer with content type should not send application/octet-stream', t => {
     reply.send(Buffer.alloc(1024))
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
@@ -224,7 +224,7 @@ test('buffer with content type should not send application/octet-stream', t => {
   })
 })
 
-test('plain string without content type should send a text/plain', t => {
+test('plain string without content type should send a text/plain', (t) => {
   t.plan(4)
 
   const app = require('../..')()
@@ -233,7 +233,7 @@ test('plain string without content type should send a text/plain', t => {
     reply.send('hello world!')
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
@@ -248,7 +248,7 @@ test('plain string without content type should send a text/plain', t => {
   })
 })
 
-test('plain string with content type should be sent unmodified', t => {
+test('plain string with content type should be sent unmodified', (t) => {
   t.plan(4)
 
   const app = require('../..')()
@@ -257,7 +257,7 @@ test('plain string with content type should be sent unmodified', t => {
     reply.type('text/css').send('hello world!')
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
@@ -272,7 +272,7 @@ test('plain string with content type should be sent unmodified', t => {
   })
 })
 
-test('plain string with content type application/json should be serialized as json', t => {
+test('plain string with content type application/json should be serialized as json', (t) => {
   t.plan(4)
 
   const app = require('../..')()
@@ -281,7 +281,7 @@ test('plain string with content type application/json should be serialized as js
     reply.type('application/json').send('hello world!')
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
@@ -296,7 +296,7 @@ test('plain string with content type application/json should be serialized as js
   })
 })
 
-test('error object with a content type that is not application/json should work', t => {
+test('error object with a content type that is not application/json should work', (t) => {
   t.plan(6)
 
   const app = require('../..')()
@@ -330,7 +330,7 @@ test('error object with a content type that is not application/json should work'
   })
 })
 
-test('undefined payload should be sent as-is', t => {
+test('undefined payload should be sent as-is', (t) => {
   t.plan(6)
 
   const app = require('../..')()
@@ -344,7 +344,7 @@ test('undefined payload should be sent as-is', t => {
     reply.code(204).send()
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
@@ -360,7 +360,7 @@ test('undefined payload should be sent as-is', t => {
   })
 })
 
-test('reply.send(new NotFound()) should invoke the 404 handler', t => {
+test('reply.send(new NotFound()) should invoke the 404 handler', (t) => {
   t.plan(9)
 
   const app = require('../..')()
@@ -381,7 +381,7 @@ test('reply.send(new NotFound()) should invoke the 404 handler', t => {
     next()
   }, {prefix: '/prefixed'})
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
     app.server.unref()
@@ -412,7 +412,7 @@ test('reply.send(new NotFound()) should invoke the 404 handler', t => {
   })
 })
 
-test('reply.send(new NotFound()) should send a basic response if called inside a 404 handler', t => {
+test('reply.send(new NotFound()) should send a basic response if called inside a 404 handler', (t) => {
   t.plan(5)
 
   const app = require('../..')()
@@ -425,7 +425,7 @@ test('reply.send(new NotFound()) should send a basic response if called inside a
     reply.send(new NotFound())
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
     app.server.unref()

@@ -6,14 +6,14 @@ const medley = require('..')
 const fp = require('fastify-plugin')
 const sget = require('simple-get').concat
 
-test('server methods should exist', t => {
+test('server methods should exist', (t) => {
   t.plan(2)
   const app = medley()
   t.ok(app.decorate)
   t.ok(app.hasDecorator)
 })
 
-test('server methods should be incapsulated via .register', t => {
+test('server methods should be incapsulated via .register', (t) => {
   t.plan(2)
   const app = medley()
 
@@ -28,7 +28,7 @@ test('server methods should be incapsulated via .register', t => {
   })
 })
 
-test('hasServerMethod should check if the given method already exist', t => {
+test('hasServerMethod should check if the given method already exist', (t) => {
   t.plan(2)
   const app = medley()
 
@@ -43,7 +43,7 @@ test('hasServerMethod should check if the given method already exist', t => {
   })
 })
 
-test('decorate should throw if a declared dependency is not present', t => {
+test('decorate should throw if a declared dependency is not present', (t) => {
   t.plan(2)
   const app = medley()
 
@@ -61,7 +61,7 @@ test('decorate should throw if a declared dependency is not present', t => {
 })
 
 // issue #777
-test('should pass error for missing request decorator', t => {
+test('should pass error for missing request decorator', (t) => {
   t.plan(2)
   const app = medley()
 
@@ -80,7 +80,7 @@ test('should pass error for missing request decorator', t => {
     })
 })
 
-test('decorateReply inside register', t => {
+test('decorateReply inside register', (t) => {
   t.plan(12)
   const app = medley()
 
@@ -101,7 +101,7 @@ test('decorateReply inside register', t => {
     reply.send({hello: 'world'})
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
@@ -127,7 +127,7 @@ test('decorateReply inside register', t => {
   })
 })
 
-test('decorateReply as plugin (inside .after)', t => {
+test('decorateReply as plugin (inside .after)', (t) => {
   t.plan(11)
   const app = medley()
 
@@ -149,7 +149,7 @@ test('decorateReply as plugin (inside .after)', t => {
     reply.send({hello: 'world'})
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
@@ -175,7 +175,7 @@ test('decorateReply as plugin (inside .after)', t => {
   })
 })
 
-test('decorateReply as plugin (outside .after)', t => {
+test('decorateReply as plugin (outside .after)', (t) => {
   t.plan(11)
   const app = medley()
 
@@ -197,7 +197,7 @@ test('decorateReply as plugin (outside .after)', t => {
     reply.send({hello: 'world'})
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
@@ -223,7 +223,7 @@ test('decorateReply as plugin (outside .after)', t => {
   })
 })
 
-test('decorateRequest inside register', t => {
+test('decorateRequest inside register', (t) => {
   t.plan(12)
   const app = medley()
 
@@ -244,7 +244,7 @@ test('decorateRequest inside register', t => {
     reply.send({hello: 'world'})
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
@@ -270,7 +270,7 @@ test('decorateRequest inside register', t => {
   })
 })
 
-test('decorateRequest as plugin (inside .after)', t => {
+test('decorateRequest as plugin (inside .after)', (t) => {
   t.plan(11)
   const app = medley()
 
@@ -292,7 +292,7 @@ test('decorateRequest as plugin (inside .after)', t => {
     reply.send({hello: 'world'})
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
@@ -318,7 +318,7 @@ test('decorateRequest as plugin (inside .after)', t => {
   })
 })
 
-test('decorateRequest as plugin (outside .after)', t => {
+test('decorateRequest as plugin (outside .after)', (t) => {
   t.plan(11)
   const app = medley()
 
@@ -340,7 +340,7 @@ test('decorateRequest as plugin (outside .after)', t => {
     reply.send({hello: 'world'})
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
@@ -366,7 +366,7 @@ test('decorateRequest as plugin (outside .after)', t => {
   })
 })
 
-test('decorators should be subApp separated', t => {
+test('decorators should be subApp separated', (t) => {
   t.plan(1)
 
   const app1 = medley()

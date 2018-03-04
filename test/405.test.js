@@ -4,7 +4,7 @@ const t = require('tap')
 const test = t.test
 const medley = require('..')
 
-test('405', t => {
+test('405', (t) => {
   t.plan(1)
 
   const app = medley()
@@ -19,7 +19,7 @@ test('405', t => {
     payload: '{}',
   }
   app.inject(injectOptions)
-    .then(response => {
+    .then((response) => {
       t.strictEqual(response.statusCode, 405)
     })
     .catch(t.fail)

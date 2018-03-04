@@ -8,7 +8,7 @@ const sget = require('simple-get').concat
 const errors = require('http-errors')
 const medley = require('..')
 
-test('default 404', t => {
+test('default 404', (t) => {
   t.plan(3)
 
   const test = t.test
@@ -20,10 +20,10 @@ test('default 404', t => {
 
   t.tearDown(app.close.bind(app))
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
-    test('unsupported method', t => {
+    test('unsupported method', (t) => {
       t.plan(2)
       sget({
         method: 'PUT',
@@ -36,7 +36,7 @@ test('default 404', t => {
       })
     })
 
-    test('unsupported route', t => {
+    test('unsupported route', (t) => {
       t.plan(2)
       sget({
         method: 'GET',
@@ -51,7 +51,7 @@ test('default 404', t => {
   })
 })
 
-test('customized 404', t => {
+test('customized 404', (t) => {
   t.plan(4)
 
   const test = t.test
@@ -71,10 +71,10 @@ test('customized 404', t => {
 
   t.tearDown(app.close.bind(app))
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
-    test('unsupported method', t => {
+    test('unsupported method', (t) => {
       t.plan(3)
       sget({
         method: 'PUT',
@@ -88,7 +88,7 @@ test('customized 404', t => {
       })
     })
 
-    test('unsupported route', t => {
+    test('unsupported route', (t) => {
       t.plan(3)
       sget({
         method: 'GET',
@@ -100,7 +100,7 @@ test('customized 404', t => {
       })
     })
 
-    test('with error object', t => {
+    test('with error object', (t) => {
       t.plan(3)
       sget({
         method: 'GET',
@@ -114,10 +114,10 @@ test('customized 404', t => {
   })
 })
 
-test('setting a custom 404 handler multiple times is an error', t => {
+test('setting a custom 404 handler multiple times is an error', (t) => {
   t.plan(4)
 
-  t.test('at the root level', t => {
+  t.test('at the root level', (t) => {
     t.plan(2)
 
     const app = medley()
@@ -133,7 +133,7 @@ test('setting a custom 404 handler multiple times is an error', t => {
     }
   })
 
-  t.test('at the plugin level', t => {
+  t.test('at the plugin level', (t) => {
     t.plan(3)
 
     const app = medley()
@@ -152,13 +152,13 @@ test('setting a custom 404 handler multiple times is an error', t => {
       next()
     }, {prefix: '/prefix'})
 
-    app.listen(0, err => {
+    app.listen(0, (err) => {
       t.error(err)
       app.close()
     })
   })
 
-  t.test('at multiple levels', t => {
+  t.test('at multiple levels', (t) => {
     t.plan(3)
 
     const app = medley()
@@ -176,13 +176,13 @@ test('setting a custom 404 handler multiple times is an error', t => {
 
     app.setNotFoundHandler(() => {})
 
-    app.listen(0, err => {
+    app.listen(0, (err) => {
       t.error(err)
       app.close()
     })
   })
 
-  t.test('at multiple levels / 2', t => {
+  t.test('at multiple levels / 2', (t) => {
     t.plan(3)
 
     const app = medley()
@@ -206,14 +206,14 @@ test('setting a custom 404 handler multiple times is an error', t => {
 
     app.setNotFoundHandler(() => {})
 
-    app.listen(0, err => {
+    app.listen(0, (err) => {
       t.error(err)
       app.close()
     })
   })
 })
 
-test('encapsulated 404', t => {
+test('encapsulated 404', (t) => {
   t.plan(9)
 
   const test = t.test
@@ -250,10 +250,10 @@ test('encapsulated 404', t => {
 
   t.tearDown(app.close.bind(app))
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
-    test('root unsupported method', t => {
+    test('root unsupported method', (t) => {
       t.plan(3)
       sget({
         method: 'PUT',
@@ -267,7 +267,7 @@ test('encapsulated 404', t => {
       })
     })
 
-    test('root insupported route', t => {
+    test('root insupported route', (t) => {
       t.plan(3)
       sget({
         method: 'GET',
@@ -279,7 +279,7 @@ test('encapsulated 404', t => {
       })
     })
 
-    test('unsupported method', t => {
+    test('unsupported method', (t) => {
       t.plan(3)
       sget({
         method: 'PUT',
@@ -293,7 +293,7 @@ test('encapsulated 404', t => {
       })
     })
 
-    test('unsupported route', t => {
+    test('unsupported route', (t) => {
       t.plan(3)
       sget({
         method: 'GET',
@@ -305,7 +305,7 @@ test('encapsulated 404', t => {
       })
     })
 
-    test('unsupported method bis', t => {
+    test('unsupported method bis', (t) => {
       t.plan(3)
       sget({
         method: 'PUT',
@@ -319,7 +319,7 @@ test('encapsulated 404', t => {
       })
     })
 
-    test('unsupported route bis', t => {
+    test('unsupported route bis', (t) => {
       t.plan(3)
       sget({
         method: 'GET',
@@ -331,7 +331,7 @@ test('encapsulated 404', t => {
       })
     })
 
-    test('unsupported method 3', t => {
+    test('unsupported method 3', (t) => {
       t.plan(3)
       sget({
         method: 'PUT',
@@ -345,7 +345,7 @@ test('encapsulated 404', t => {
       })
     })
 
-    test('unsupported route 3', t => {
+    test('unsupported route 3', (t) => {
       t.plan(3)
       sget({
         method: 'GET',
@@ -359,7 +359,7 @@ test('encapsulated 404', t => {
   })
 })
 
-test('run hooks on default 404', t => {
+test('run hooks on default 404', (t) => {
   t.plan(7)
 
   const app = medley()
@@ -390,7 +390,7 @@ test('run hooks on default 404', t => {
 
   t.tearDown(app.close.bind(app))
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
     sget({
@@ -405,7 +405,7 @@ test('run hooks on default 404', t => {
   })
 })
 
-test('run non-encapsulated plugin hooks on default 404', t => {
+test('run non-encapsulated plugin hooks on default 404', (t) => {
   t.plan(6)
 
   const app = medley()
@@ -448,7 +448,7 @@ test('run non-encapsulated plugin hooks on default 404', t => {
   })
 })
 
-test('run non-encapsulated plugin hooks on custom 404', t => {
+test('run non-encapsulated plugin hooks on custom 404', (t) => {
   t.plan(11)
 
   const app = medley()
@@ -496,7 +496,7 @@ test('run non-encapsulated plugin hooks on custom 404', t => {
   })
 })
 
-test('run hooks with encapsulated 404', t => {
+test('run hooks with encapsulated 404', (t) => {
   t.plan(11)
 
   const app = medley()
@@ -551,7 +551,7 @@ test('run hooks with encapsulated 404', t => {
 
   t.tearDown(app.close.bind(app))
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
     sget({
@@ -566,7 +566,7 @@ test('run hooks with encapsulated 404', t => {
   })
 })
 
-test('hooks check 404', t => {
+test('hooks check 404', (t) => {
   t.plan(13)
 
   const app = medley()
@@ -591,7 +591,7 @@ test('hooks check 404', t => {
 
   t.tearDown(app.close.bind(app))
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
     sget({
@@ -614,7 +614,7 @@ test('hooks check 404', t => {
   })
 })
 
-test('setNotFoundHandler should not suppress duplicated routes checking', t => {
+test('setNotFoundHandler should not suppress duplicated routes checking', (t) => {
   t.plan(1)
 
   const app = medley()
@@ -631,12 +631,12 @@ test('setNotFoundHandler should not suppress duplicated routes checking', t => {
     reply.code(404).send('this was not found')
   })
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.ok(err)
   })
 })
 
-test('Unsupported method', t => {
+test('Unsupported method', (t) => {
   t.plan(5)
 
   const app = medley()
@@ -647,7 +647,7 @@ test('Unsupported method', t => {
 
   t.tearDown(app.close.bind(app))
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
     app.inject({
@@ -668,7 +668,7 @@ test('Unsupported method', t => {
   })
 })
 
-test('recognizes errors from the http-errors module', t => {
+test('recognizes errors from the http-errors module', (t) => {
   t.plan(5)
 
   const app = medley()
@@ -679,7 +679,7 @@ test('recognizes errors from the http-errors module', t => {
 
   t.tearDown(app.close.bind(app))
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
     app.inject({
@@ -702,13 +702,13 @@ test('recognizes errors from the http-errors module', t => {
   })
 })
 
-test('cannot set notFoundHandler after binding', t => {
+test('cannot set notFoundHandler after binding', (t) => {
   t.plan(2)
 
   const app = medley()
   t.tearDown(app.close.bind(app))
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
     try {
@@ -720,7 +720,7 @@ test('cannot set notFoundHandler after binding', t => {
   })
 })
 
-test('404 inside onSend', t => {
+test('404 inside onSend', (t) => {
   t.plan(3)
 
   const app = medley()
@@ -742,7 +742,7 @@ test('404 inside onSend', t => {
 
   t.tearDown(app.close.bind(app))
 
-  app.listen(0, err => {
+  app.listen(0, (err) => {
     t.error(err)
 
     sget({
