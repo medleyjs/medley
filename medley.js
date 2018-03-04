@@ -5,6 +5,7 @@ const avvio = require('avvio')
 const http = require('http')
 const https = require('https')
 const lightMyRequest = require('light-my-request')
+const parseURL = require('url').parse
 
 const Reply = require('./lib/Reply')
 const Request = require('./lib/Request')
@@ -239,15 +240,15 @@ function build(options) {
       return
     }
 
-    if (err) {
-      const req = state.req
-      const request = new state.context.Request(state.params, req, null, req.headers)
-      const reply = new state.context.Reply(state.res, state.context, request)
-      reply.send(err)
-      return
-    }
+    var {context, req} = state
+    var request = new context.Request(state.params, req, parseURL(req.url, true).query, req.headers)
+    var reply = new context.Reply(state.res, context, request)
 
-    handleRequest(state.req, state.res, state.params, state.context)
+    if (err) {
+      reply.send(err)
+    } else {
+      handleRequest(reply, context)
+    }
   }
 
   function runOnResponseHooks() {
