@@ -241,14 +241,11 @@ function build(options) {
   }
 
   function hookIterator(fn, state, next) {
-    if (state.res.finished === true) {
-      return undefined
-    }
-    return fn(state.req, state.res, next)
+    return state.res.finished ? undefined : fn(state.req, state.res, next)
   }
 
   function onRequestCallback(err, state) {
-    if (state.res.finished === true) {
+    if (state.res.finished) {
       return
     }
 
