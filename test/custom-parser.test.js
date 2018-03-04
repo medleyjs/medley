@@ -7,8 +7,6 @@ const sget = require('simple-get').concat
 const medley = require('..')
 const jsonParser = require('fast-json-body')
 
-require('./custom-parser-async')
-
 test('contentTypeParser method should exist', (t) => {
   t.plan(1)
   const app = medley()

@@ -111,7 +111,7 @@ test('onSend hook stream', (t) => {
 
     reply.header('Content-Encoding', 'gzip')
     pump(
-      fs.createReadStream(resolve(process.cwd() + '/test/stream.test.js'), 'utf8'),
+      fs.createReadStream(__filename, 'utf8'),
       gzStream,
       t.error
     )
@@ -124,7 +124,7 @@ test('onSend hook stream', (t) => {
   }, (err, res) => {
     t.error(err)
     t.strictEqual(res.headers['content-encoding'], 'gzip')
-    const file = fs.readFileSync(resolve(process.cwd() + '/test/stream.test.js'), 'utf8')
+    const file = fs.readFileSync(__filename, 'utf8')
     const payload = zlib.gunzipSync(res.rawPayload)
     t.strictEqual(payload.toString('utf-8'), file)
     app.close()

@@ -1573,10 +1573,3 @@ test('onRequest, preHandler, and onResponse hooks that resolve to a value do not
     t.strictEqual(res.payload, 'hello')
   })
 })
-
-if (Number(process.versions.node[0]) >= 8) {
-  require('./hooks-async')(t)
-} else {
-  t.pass('Skip because Node version < 8')
-  t.end()
-}
