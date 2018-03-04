@@ -47,12 +47,14 @@
     "fastify-plugin": "^0.2.1",
     "h2url": "^0.1.2",
     "http-errors": "^1.6.2",
+    "pre-commit": "^1.2.2",
     "pump": "^3.0.0",
     "send": "^0.16.1",
     "simple-get": "^2.7.0",
     "tap": "^11.1.0",
     "then-sleep": "^1.0.1"
   },
+  "pre-commit": ["lint"],
   "scripts": {
     "lint": "eslint --cache --cache-location node_modules/.cache/.eslintcache .",
     "test": "tap -j4 test/**/*.test.js",
