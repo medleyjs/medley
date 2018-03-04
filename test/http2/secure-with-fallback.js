@@ -32,7 +32,8 @@ app.post('/', function(req, reply) {
   reply.code(200).send(req.body)
 })
 
-app.get('/error', async function(req, reply) {
+app.get('/error', async function() {
+  await Promise.resolve()
   throw new Error('kaboom')
 })
 
@@ -97,7 +98,7 @@ app.listen(0, (err) => {
       method: 'GET',
       url: 'https://localhost:' + app.server.address().port + '/error',
       rejectUnauthorized: false,
-    }, (err, response, body) => {
+    }, (err, response) => {
       t.error(err)
       t.strictEqual(response.statusCode, 500)
     })

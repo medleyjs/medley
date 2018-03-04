@@ -91,13 +91,14 @@ app.listen(0, (err) => {
   })
 
   test('shorthand - empty', (t) => {
-    t.plan(2)
+    t.plan(3)
     sget({
       method: 'GET',
       url: 'http://localhost:' + app.server.address().port + '/empty',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 204)
+      t.strictEqual(body.toString(), '')
     })
   })
 

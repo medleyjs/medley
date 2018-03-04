@@ -9,7 +9,7 @@ let errored = false
 app.route({
   method: 'POST',
   path: '/jsonBody',
-  handler(req, reply) {
+  handler() {
     throw new Error('kaboom')
   },
 })
@@ -27,7 +27,7 @@ process.on('uncaughtException', (err) => {
   t.equal(err.message, 'kaboom')
 })
 
-app.inject(reqOpts, (e, res) => {
+app.inject(reqOpts, () => {
   t.fail('should not be called')
 })
 

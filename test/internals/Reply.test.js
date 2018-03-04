@@ -41,7 +41,6 @@ test('reply.send throw with circular JSON', (t) => {
 
 test('within a sub app', (t) => {
   const app = require('../..')()
-  const test = t.test
 
   app.get('/', function(req, reply) {
     reply.code(200)
@@ -82,7 +81,7 @@ test('within a sub app', (t) => {
     t.error(err)
     app.server.unref()
 
-    test('status code and content-type should be correct', (t) => {
+    t.test('status code and content-type should be correct', (t) => {
       t.plan(4)
       sget({
         method: 'GET',
@@ -95,7 +94,7 @@ test('within a sub app', (t) => {
       })
     })
 
-    test('auto status code shoud be 200', (t) => {
+    t.test('auto status code shoud be 200', (t) => {
       t.plan(3)
       sget({
         method: 'GET',
@@ -107,7 +106,7 @@ test('within a sub app', (t) => {
       })
     })
 
-    test('auto type shoud be text/plain', (t) => {
+    t.test('auto type shoud be text/plain', (t) => {
       t.plan(3)
       sget({
         method: 'GET',
@@ -119,7 +118,7 @@ test('within a sub app', (t) => {
       })
     })
 
-    test('redirect to `/` - 1', (t) => {
+    t.test('redirect to `/` - 1', (t) => {
       t.plan(1)
 
       http.get('http://localhost:' + app.server.address().port + '/redirect', function(response) {
@@ -127,7 +126,7 @@ test('within a sub app', (t) => {
       })
     })
 
-    test('redirect to `/` - 2', (t) => {
+    t.test('redirect to `/` - 2', (t) => {
       t.plan(1)
 
       http.get('http://localhost:' + app.server.address().port + '/redirect-code', function(response) {
@@ -135,7 +134,7 @@ test('within a sub app', (t) => {
       })
     })
 
-    test('redirect to `/` - 3', (t) => {
+    t.test('redirect to `/` - 3', (t) => {
       t.plan(4)
       sget({
         method: 'GET',
@@ -148,7 +147,7 @@ test('within a sub app', (t) => {
       })
     })
 
-    test('redirect to `/` - 4', (t) => {
+    t.test('redirect to `/` - 4', (t) => {
       t.plan(4)
       sget({
         method: 'GET',
@@ -161,7 +160,7 @@ test('within a sub app', (t) => {
       })
     })
 
-    test('redirect to `/` - 5', (t) => {
+    t.test('redirect to `/` - 5', (t) => {
       t.plan(3)
       const url = 'http://localhost:' + app.server.address().port + '/redirect-onsend'
       http.get(url, (response) => {

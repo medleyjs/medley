@@ -18,19 +18,9 @@ const opts = {
   },
 }
 
-app.get('/return', opts, function(req, reply) {
-  const promise = new Promise((resolve, reject) => {
-    resolve({hello: 'world'})
-  })
-  return promise
-})
+app.get('/return', opts, () => Promise.resolve({hello: 'world'}))
 
-app.get('/return-error', opts, function(req, reply) {
-  const promise = new Promise((resolve, reject) => {
-    reject(new Error('some error'))
-  })
-  return promise
-})
+app.get('/return-error', opts, () => Promise.reject(new Error('some error')))
 
 app.get('/double', function(req, reply) {
   setTimeout(function() {
@@ -62,7 +52,7 @@ app.listen(0, (err) => {
     sget({
       method: 'GET',
       url: 'http://localhost:' + app.server.address().port + '/return-error',
-    }, (err, response, body) => {
+    }, (err, response) => {
       t.error(err)
       t.strictEqual(response.statusCode, 500)
     })

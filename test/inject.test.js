@@ -325,14 +325,16 @@ test('should reject in error case', (t) => {
 
 // https://github.com/hapijs/shot/blob/master/test/index.js#L836
 function getStream() {
-  const Read = function() {
+  function Read() {
     Stream.Readable.call(this)
   }
+
   util.inherits(Read, Stream.Readable)
+
   const word = '{"hello":"world"}'
   var i = 0
 
-  Read.prototype._read = function(size) {
+  Read.prototype._read = function() {
     this.push(word[i] ? word[i++] : null)
   }
 

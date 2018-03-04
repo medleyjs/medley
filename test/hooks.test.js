@@ -8,41 +8,31 @@ const medley = require('..')
 const fp = require('fastify-plugin')
 const fs = require('fs')
 
-const payload = {hello: 'world'}
-
 test('hooks', (t) => {
-  t.plan(21)
+  t.plan(19)
+
+  const payload = {hello: 'world'}
   const app = medley()
 
-  try {
-    app.addHook('preHandler', function(request, reply, next) {
-      request.test = 'the request is coming'
-      reply.test = 'the reply has come'
-      if (request.req.method === 'HEAD') {
-        next(new Error('some error'))
-      } else {
-        next()
-      }
-    })
-    t.pass()
-  } catch (e) {
-    t.fail()
-  }
+  app.addHook('preHandler', function(request, reply, next) {
+    request.test = 'the request is coming'
+    reply.test = 'the reply has come'
+    if (request.req.method === 'HEAD') {
+      next(new Error('some error'))
+    } else {
+      next()
+    }
+  })
 
-  try {
-    app.addHook('onRequest', function(req, res, next) {
-      req.testVal = 'the request is coming'
-      res.testVal = 'the reply has come'
-      if (req.method === 'DELETE') {
-        next(new Error('some error'))
-      } else {
-        next()
-      }
-    })
-    t.pass()
-  } catch (e) {
-    t.fail()
-  }
+  app.addHook('onRequest', function(req, res, next) {
+    req.testVal = 'the request is coming'
+    res.testVal = 'the reply has come'
+    if (req.method === 'DELETE') {
+      next(new Error('some error'))
+    } else {
+      next()
+    }
+  })
 
   app.addHook('onResponse', function(res, next) {
     t.ok('onResponse called')
@@ -59,15 +49,15 @@ test('hooks', (t) => {
     t.is(reply.res.testVal, 'the reply has come')
     t.is(req.test, 'the request is coming')
     t.is(reply.test, 'the reply has come')
-    reply.code(200).send(payload)
+    reply.send(payload)
   })
 
   app.head('/', function(req, reply) {
-    reply.code(200).send(payload)
+    reply.send(payload)
   })
 
   app.delete('/', function(req, reply) {
-    reply.code(200).send(payload)
+    reply.send(payload)
   })
 
   app.listen(0, (err) => {
@@ -87,7 +77,7 @@ test('hooks', (t) => {
     sget({
       method: 'HEAD',
       url: 'http://localhost:' + app.server.address().port,
-    }, (err, response, body) => {
+    }, (err, response) => {
       t.error(err)
       t.strictEqual(response.statusCode, 500)
     })
@@ -95,7 +85,7 @@ test('hooks', (t) => {
     sget({
       method: 'DELETE',
       url: 'http://localhost:' + app.server.address().port,
-    }, (err, response, body) => {
+    }, (err, response) => {
       t.error(err)
       t.strictEqual(response.statusCode, 500)
     })
@@ -299,13 +289,13 @@ test('onRoute hook should be called / 2', (t) => {
   let firstHandler = 0
   let secondHandler = 0
   const app = medley()
-  app.addHook('onRoute', (route) => {
+  app.addHook('onRoute', () => {
     t.pass()
     firstHandler++
   })
 
   app.register((subApp, opts, next) => {
-    subApp.addHook('onRoute', (route) => {
+    subApp.addHook('onRoute', () => {
       t.pass()
       secondHandler++
     })
@@ -332,12 +322,12 @@ test('onRoute hook should be called / 3', (t) => {
     reply.send()
   }
 
-  app.addHook('onRoute', (route) => {
+  app.addHook('onRoute', () => {
     t.pass()
   })
 
   app.register((subApp, opts, next) => {
-    subApp.addHook('onRoute', (route) => {
+    subApp.addHook('onRoute', () => {
       t.pass()
     })
     subApp.get('/a', handler)
@@ -352,31 +342,6 @@ test('onRoute hook should be called / 3', (t) => {
     })
 
   app.ready((err) => {
-    t.error(err)
-  })
-})
-
-test('onRoute should keep the context', (t) => {
-  t.plan(4)
-  const app = medley()
-  app.register((subApp, opts, next) => {
-    subApp.decorate('test', true)
-    subApp.addHook('onRoute', onRoute)
-    t.ok(subApp.prototype === app.prototype)
-
-    function onRoute(route) {
-      t.ok(this.test)
-      t.strictEqual(this, subApp)
-    }
-
-    subApp.get('/', opts, function(req, reply) {
-      reply.send()
-    })
-
-    next()
-  })
-
-  app.close((err) => {
     t.error(err)
   })
 })
@@ -895,7 +860,7 @@ test('onSend hook throws', (t) => {
     sget({
       method: 'DELETE',
       url: 'http://localhost:' + app.server.address().port,
-    }, (err, response, body) => {
+    }, (err, response) => {
       t.error(err)
       t.strictEqual(response.statusCode, 500)
     })
@@ -993,15 +958,15 @@ test('onRequest hooks should be able to block a request', (t) => {
     next()
   })
 
-  app.addHook('onRequest', (req, res, next) => {
+  app.addHook('onRequest', () => {
     t.fail('this should not be called')
   })
 
-  app.addHook('preHandler', (req, reply, next) => {
+  app.addHook('preHandler', () => {
     t.fail('this should not be called')
   })
 
-  app.addHook('onSend', (req, reply, payload, next) => {
+  app.addHook('onSend', () => {
     t.fail('this should not be called')
   })
 
@@ -1010,8 +975,8 @@ test('onRequest hooks should be able to block a request', (t) => {
     next()
   })
 
-  app.get('/', function(request, reply) {
-    t.fail('we should not be here')
+  app.get('/', function() {
+    t.fail('this should not be called')
   })
 
   app.inject({
@@ -1033,7 +998,7 @@ test('preHandler hooks should be able to block a request', (t) => {
     next()
   })
 
-  app.addHook('preHandler', (req, reply, next) => {
+  app.addHook('preHandler', () => {
     t.fail('this should not be called')
   })
 
@@ -1047,8 +1012,8 @@ test('preHandler hooks should be able to block a request', (t) => {
     next()
   })
 
-  app.get('/', function(request, reply) {
-    t.fail('we should not be here')
+  app.get('/', function() {
+    t.fail('this should not be called')
   })
 
   app.inject({
@@ -1070,11 +1035,11 @@ test('onRequest hooks should be able to block a request (last hook)', (t) => {
     next()
   })
 
-  app.addHook('preHandler', (req, reply, next) => {
+  app.addHook('preHandler', () => {
     t.fail('this should not be called')
   })
 
-  app.addHook('onSend', (req, reply, payload, next) => {
+  app.addHook('onSend', () => {
     t.fail('this should not be called')
   })
 
@@ -1083,8 +1048,8 @@ test('onRequest hooks should be able to block a request (last hook)', (t) => {
     next()
   })
 
-  app.get('/', function(request, reply) {
-    t.fail('we should not be here')
+  app.get('/', function() {
+    t.fail('this should not be called')
   })
 
   app.inject({
@@ -1116,8 +1081,8 @@ test('preHandler hooks should be able to block a request (last hook)', (t) => {
     next()
   })
 
-  app.get('/', function(request, reply) {
-    t.fail('we should not be here')
+  app.get('/', function() {
+    t.fail('this should not be called')
   })
 
   app.inject({
@@ -1135,20 +1100,20 @@ test('onRequest respond with a stream', (t) => {
   const app = medley()
 
   app.addHook('onRequest', (req, res, next) => {
-    const stream = fs.createReadStream(process.cwd() + '/test/stream.test.js', 'utf8')
-    stream.pipe(res)
+    fs.createReadStream(process.cwd() + '/test/stream.test.js', 'utf8')
+      .pipe(res)
     res.once('finish', next)
   })
 
-  app.addHook('onRequest', (req, res, next) => {
+  app.addHook('onRequest', () => {
     t.fail('this should not be called')
   })
 
-  app.addHook('preHandler', (req, reply, next) => {
+  app.addHook('preHandler', () => {
     t.fail('this should not be called')
   })
 
-  app.addHook('onSend', (req, reply, payload, next) => {
+  app.addHook('onSend', () => {
     t.fail('this should not be called')
   })
 
@@ -1157,8 +1122,8 @@ test('onRequest respond with a stream', (t) => {
     next()
   })
 
-  app.get('/', function(request, reply) {
-    t.fail('we should not be here')
+  app.get('/', function() {
+    t.fail('this should not be called')
   })
 
   app.inject({
@@ -1184,15 +1149,15 @@ test('preHandler respond with a stream', (t) => {
   const order = [1, 2]
 
   app.addHook('preHandler', (req, reply, next) => {
-    const stream = fs.createReadStream(process.cwd() + '/test/stream.test.js', 'utf8')
-    reply.send(stream)
+    const readStream = fs.createReadStream(process.cwd() + '/test/stream.test.js', 'utf8')
+    reply.send(readStream)
     reply.res.once('finish', () => {
       t.is(order.shift(), 2)
       next()
     })
   })
 
-  app.addHook('preHandler', (req, reply, next) => {
+  app.addHook('preHandler', () => {
     t.fail('this should not be called')
   })
 
@@ -1207,8 +1172,8 @@ test('preHandler respond with a stream', (t) => {
     next()
   })
 
-  app.get('/', function(request, reply) {
-    t.fail('we should not be here')
+  app.get('/', function() {
+    t.fail('this should not be called')
   })
 
   app.inject({

@@ -8,17 +8,17 @@ test('Prefix options should add a prefix for all the routes inside a register / 
   t.plan(6)
   const app = medley()
 
-  app.get('/first', (req, reply) => {
+  app.get('/first', (request, reply) => {
     reply.send({route: '/first'})
   })
 
-  app.register(function(app, opts, next) {
-    app.get('/first', (req, reply) => {
+  app.register(function(subApp, opts, next) {
+    subApp.get('/first', (request, reply) => {
       reply.send({route: '/v1/first'})
     })
 
-    app.register(function(app, opts, next) {
-      app.get('/first', (req, reply) => {
+    subApp.register(function(subApp2, opts, next) {
+      subApp2.get('/first', (request, reply) => {
         reply.send({route: '/v1/v2/first'})
       })
       next()
@@ -56,12 +56,12 @@ test('Prefix options should add a prefix for all the routes inside a register / 
   t.plan(4)
   const app = medley()
 
-  app.register(function(app, opts, next) {
-    app.get('/first', (req, reply) => {
+  app.register(function(subApp, opts, next) {
+    subApp.get('/first', (request, reply) => {
       reply.send({route: '/v1/first'})
     })
 
-    app.get('/second', (req, reply) => {
+    subApp.get('/second', (request, reply) => {
       reply.send({route: '/v1/second'})
     })
     next()
@@ -89,12 +89,12 @@ test('Prefix options should add a prefix for all the chained routes inside a reg
 
   const app = medley()
 
-  app.register(function(app, opts, next) {
-    app
-      .get('/first', (req, reply) => {
+  app.register(function(subApp, opts, next) {
+    subApp
+      .get('/first', (request, reply) => {
         reply.send({route: '/v1/first'})
       })
-      .get('/second', (req, reply) => {
+      .get('/second', (request, reply) => {
         reply.send({route: '/v1/second'})
       })
     next()
@@ -121,9 +121,9 @@ test('Prefix should support parameters as well', (t) => {
   t.plan(2)
   const app = medley()
 
-  app.register(function(app, opts, next) {
-    app.get('/hello', (req, reply) => {
-      reply.send({id: req.params.id})
+  app.register(function(subApp, opts, next) {
+    subApp.get('/hello', (request, reply) => {
+      reply.send({id: request.params.id})
     })
     next()
   }, {prefix: '/v1/:id'})
@@ -141,8 +141,8 @@ test('Prefix should support /', (t) => {
   t.plan(2)
   const app = medley()
 
-  app.register(function(app, opts, next) {
-    app.get('/', (req, reply) => {
+  app.register(function(subApp, opts, next) {
+    subApp.get('/', (request, reply) => {
       reply.send({hello: 'world'})
     })
     next()
@@ -161,8 +161,8 @@ test('Prefix without /', (t) => {
   t.plan(2)
   const app = medley()
 
-  app.register(function(app, opts, next) {
-    app.get('/', (req, reply) => {
+  app.register(function(subApp, opts, next) {
+    subApp.get('/', (request, reply) => {
       reply.send({hello: 'world'})
     })
     next()
@@ -181,16 +181,16 @@ test('Prefix with trailing /', (t) => {
   t.plan(6)
   const app = medley()
 
-  app.register(function(app, opts, next) {
-    app.get('/route1', (req, reply) => {
+  app.register(function(subApp, opts, next) {
+    subApp.get('/route1', (request, reply) => {
       reply.send({hello: 'world1'})
     })
-    app.get('route2', (req, reply) => {
+    subApp.get('route2', (request, reply) => {
       reply.send({hello: 'world2'})
     })
 
-    app.register(function(app, opts, next) {
-      app.get('/route3', (req, reply) => {
+    subApp.register(function(subApp2, opts, next) {
+      subApp2.get('/route3', (request, reply) => {
         reply.send({hello: 'world3'})
       })
       next()
@@ -228,11 +228,11 @@ test('Prefix works multiple levels deep', (t) => {
   t.plan(2)
   const app = medley()
 
-  app.register(function(app, opts, next) {
-    app.register(function(app, opts, next) {
-      app.register(function(app, opts, next) {
-        app.register(function(app, opts, next) {
-          app.get('/', (req, reply) => {
+  app.register(function(subApp, opts, next) {
+    subApp.register(function(subApp2, opts, next) {
+      subApp2.register(function(subApp3, opts, next) {
+        subApp3.register(function(subApp4, opts, next) {
+          subApp4.get('/', (request, reply) => {
             reply.send({hello: 'world'})
           })
           next()
@@ -257,13 +257,13 @@ test('Different register - encapsulation check', (t) => {
   t.plan(4)
   const app = medley()
 
-  app.get('/first', (req, reply) => {
+  app.get('/first', (request, reply) => {
     reply.send({route: '/first'})
   })
 
   app.register(function(subApp, opts, next) {
     subApp.register(function(f, opts, next) {
-      f.get('/', (req, reply) => {
+      f.get('/', (request, reply) => {
         reply.send({route: '/v1/v2'})
       })
       next()
@@ -273,7 +273,7 @@ test('Different register - encapsulation check', (t) => {
 
   app.register(function(subApp, opts, next) {
     subApp.register(function(f, opts, next) {
-      f.get('/', (req, reply) => {
+      f.get('/', (request, reply) => {
         reply.send({route: '/v3/v4'})
       })
       next()
@@ -303,12 +303,12 @@ test('Can retrieve basePath within an encapsulated app instance', (t) => {
   const app = medley()
 
   app.register(function(subApp, opts, next) {
-    subApp.get('/one', function(req, reply) {
+    subApp.get('/one', function(request, reply) {
       reply.send(subApp.basePath)
     })
 
     subApp.register(function(subApp2, opts, next) {
-      subApp2.get('/two', function(req, reply) {
+      subApp2.get('/two', function(request, reply) {
         reply.send(subApp2.basePath)
       })
       next()

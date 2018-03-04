@@ -9,64 +9,32 @@ module.exports.payloadMethod = function(method, t) {
   const upMethod = method.toUpperCase()
   const loMethod = method.toLowerCase()
 
-  test(`${upMethod} can be created`, (t) => {
-    t.plan(1)
-    try {
-      app[loMethod]('/', {
-        responseSchema: {
-          200: {
-            type: 'object',
-            properties: {
-              hello: {
-                type: 'string',
-              },
-            },
+  app[loMethod]('/', {
+    responseSchema: {
+      200: {
+        type: 'object',
+        properties: {
+          hello: {
+            type: 'string',
           },
         },
-      }, function(req, reply) {
-        reply.code(200).send(req.body)
-      })
-      t.pass()
-    } catch (e) {
-      t.fail()
-    }
+      },
+    },
+  }, function(req, reply) {
+    reply.code(200).send(req.body)
   })
 
-  test(`${upMethod} without schema can be created`, (t) => {
-    t.plan(1)
-    try {
-      app[loMethod]('/missing', function(req, reply) {
-        reply.code(200).send(req.body)
-      })
-      t.pass()
-    } catch (e) {
-      t.fail()
-    }
+  app[loMethod]('/missing', function(req, reply) {
+    reply.code(200).send(req.body)
   })
 
-  test(`${upMethod} with body and querystring`, (t) => {
-    t.plan(1)
-    try {
-      app[loMethod]('/with-query', function(req, reply) {
-        req.body.hello = req.body.hello + req.query.foo
-        reply.code(200).send(req.body)
-      })
-      t.pass()
-    } catch (e) {
-      t.fail()
-    }
+  app[loMethod]('/with-query', function(request, reply) {
+    request.body.hello += request.query.foo
+    reply.code(200).send(request.body)
   })
 
-  test(`${upMethod} with bodyLimit option`, (t) => {
-    t.plan(1)
-    try {
-      app[loMethod]('/with-limit', {bodyLimit: 1}, function(req, reply) {
-        reply.send(req.body)
-      })
-      t.pass()
-    } catch (e) {
-      t.fail()
-    }
+  app[loMethod]('/with-limit', {bodyLimit: 1}, function(req, reply) {
+    reply.send(req.body)
   })
 
   app.listen(0, function(err) {
@@ -188,7 +156,7 @@ module.exports.payloadMethod = function(method, t) {
         url: 'http://localhost:' + app.server.address().port + '/missing',
         body: 'hello world',
         timeout: 500,
-      }, (err, response, body) => {
+      }, (err, response) => {
         t.error(err)
         if (upMethod === 'OPTIONS') {
           t.strictEqual(response.statusCode, 200)
@@ -209,7 +177,7 @@ module.exports.payloadMethod = function(method, t) {
             'Content-Type': 'text/plain',
           },
           timeout: 500,
-        }, (err, response, body) => {
+        }, (err, response) => {
           t.error(err)
           t.strictEqual(response.statusCode, 415)
         })
@@ -227,7 +195,7 @@ module.exports.payloadMethod = function(method, t) {
           'Content-Type': 'application/json',
         },
         timeout: 500,
-      }, (err, response, body) => {
+      }, (err, response) => {
         t.error(err)
         t.strictEqual(response.statusCode, 400)
       })
@@ -238,7 +206,7 @@ module.exports.payloadMethod = function(method, t) {
         body: '',
         headers: {'Content-Type': 'application/json'},
         timeout: 500,
-      }, (err, response, body) => {
+      }, (err, response) => {
         t.error(err)
         t.strictEqual(response.statusCode, 400)
       })
@@ -254,7 +222,7 @@ module.exports.payloadMethod = function(method, t) {
           'Content-Type': 'application/json',
           'Content-Length': 1024 * 1024 + 1,
         },
-      }, (err, response, body) => {
+      }, (err, response) => {
         t.error(err)
         t.strictEqual(response.statusCode, 413)
       })
@@ -274,7 +242,7 @@ module.exports.payloadMethod = function(method, t) {
           headers: {'Content-Type': 'application/json'},
           body: largeStream,
           timeout: 500,
-        }, (err, response, body) => {
+        }, (err, response) => {
           t.error(err)
           t.strictEqual(response.statusCode, 413)
         })
@@ -286,7 +254,7 @@ module.exports.payloadMethod = function(method, t) {
         headers: {'Content-Type': 'application/json'},
         body: {},
         json: true,
-      }, (err, response, body) => {
+      }, (err, response) => {
         t.error(err)
         t.strictEqual(response.statusCode, 413)
       })

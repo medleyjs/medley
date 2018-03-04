@@ -196,7 +196,7 @@
   },
   "overrides": [
     {
-      "files": ["*.test.js"],
+      "files": ["test/**/*.js"],
       "rules": {
         "curly": [2, "multi-line", "consistent"],
         "max-nested-callbacks": 0,

@@ -3,13 +3,12 @@
 const fs = require('fs')
 const t = require('tap')
 const test = t.test
-const semver = require('semver')
 const sget = require('simple-get').concat
 const medley = require('..')
 const jsonParser = require('fast-json-body')
-if (semver.gt(process.versions.node, '8.0.0')) {
-  require('./custom-parser-async')
-}
+
+require('./custom-parser-async')
+
 test('contentTypeParser method should exist', (t) => {
   t.plan(1)
   const app = medley()
@@ -150,7 +149,7 @@ test('contentTypeParser should handle errors', (t) => {
       headers: {
         'Content-Type': 'application/jsoff',
       },
-    }, (err, response, body) => {
+    }, (err, response) => {
       t.error(err)
       t.strictEqual(response.statusCode, 500)
       app.close()
@@ -166,10 +165,10 @@ test('contentTypeParser should support encapsulation', (t) => {
     subApp.addContentTypeParser('application/jsoff', () => {})
     t.ok(subApp.hasContentTypeParser('application/jsoff'))
 
-    subApp.register((subApp, opts, next) => {
-      subApp.addContentTypeParser('application/ffosj', () => {})
-      t.ok(subApp.hasContentTypeParser('application/jsoff'))
-      t.ok(subApp.hasContentTypeParser('application/ffosj'))
+    subApp.register((subApp2, opts, next) => {
+      subApp2.addContentTypeParser('application/ffosj', () => {})
+      t.ok(subApp2.hasContentTypeParser('application/jsoff'))
+      t.ok(subApp2.hasContentTypeParser('application/ffosj'))
       next()
     })
 
@@ -244,7 +243,7 @@ test('contentTypeParser shouldn\'t support request with undefined "Content-Type"
       headers: {
         // 'Content-Type': undefined
       },
-    }, (err, response, body) => {
+    }, (err, response) => {
       t.error(err)
       t.strictEqual(response.statusCode, 415)
       app.close()
@@ -328,10 +327,10 @@ test('catch all content type parser', (t) => {
         headers: {
           'Content-Type': 'very-weird-content-type',
         },
-      }, (err, response, body) => {
+      }, (err, response2, body2) => {
         t.error(err)
-        t.strictEqual(response.statusCode, 200)
-        t.deepEqual(body.toString(), 'hello')
+        t.strictEqual(response2.statusCode, 200)
+        t.deepEqual(body2.toString(), 'hello')
         app.close()
       })
     })
@@ -384,10 +383,10 @@ test('catch all content type parser should not interfere with other conte type p
         headers: {
           'Content-Type': 'very-weird-content-type',
         },
-      }, (err, response, body) => {
+      }, (err, response2, body2) => {
         t.error(err)
-        t.strictEqual(response.statusCode, 200)
-        t.deepEqual(body.toString(), 'hello')
+        t.strictEqual(response2.statusCode, 200)
+        t.deepEqual(body2.toString(), 'hello')
         app.close()
       })
     })

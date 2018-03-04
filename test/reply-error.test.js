@@ -2,7 +2,6 @@
 
 const t = require('tap')
 const test = t.test
-const net = require('net')
 const medley = require('..')
 const statusCodes = require('http').STATUS_CODES
 

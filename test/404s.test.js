@@ -11,7 +11,6 @@ const medley = require('..')
 test('default 404', (t) => {
   t.plan(3)
 
-  const test = t.test
   const app = medley()
 
   app.get('/', function(req, reply) {
@@ -23,27 +22,27 @@ test('default 404', (t) => {
   app.listen(0, (err) => {
     t.error(err)
 
-    test('unsupported method', (t) => {
+    t.test('unsupported method', (t) => {
       t.plan(2)
       sget({
         method: 'PUT',
         url: 'http://localhost:' + app.server.address().port,
         body: {},
         json: true,
-      }, (err, response, body) => {
+      }, (err, response) => {
         t.error(err)
         t.strictEqual(response.statusCode, 404)
       })
     })
 
-    test('unsupported route', (t) => {
+    t.test('unsupported route', (t) => {
       t.plan(2)
       sget({
         method: 'GET',
         url: 'http://localhost:' + app.server.address().port + '/notSupported',
         body: {},
         json: true,
-      }, (err, response, body) => {
+      }, (err, response) => {
         t.error(err)
         t.strictEqual(response.statusCode, 404)
       })
@@ -54,7 +53,6 @@ test('default 404', (t) => {
 test('customized 404', (t) => {
   t.plan(4)
 
-  const test = t.test
   const app = medley()
 
   app.get('/', function(req, reply) {
@@ -74,7 +72,7 @@ test('customized 404', (t) => {
   app.listen(0, (err) => {
     t.error(err)
 
-    test('unsupported method', (t) => {
+    t.test('unsupported method', (t) => {
       t.plan(3)
       sget({
         method: 'PUT',
@@ -88,7 +86,7 @@ test('customized 404', (t) => {
       })
     })
 
-    test('unsupported route', (t) => {
+    t.test('unsupported route', (t) => {
       t.plan(3)
       sget({
         method: 'GET',
@@ -100,7 +98,7 @@ test('customized 404', (t) => {
       })
     })
 
-    test('with error object', (t) => {
+    t.test('with error object', (t) => {
       t.plan(3)
       sget({
         method: 'GET',
@@ -216,7 +214,6 @@ test('setting a custom 404 handler multiple times is an error', (t) => {
 test('encapsulated 404', (t) => {
   t.plan(9)
 
-  const test = t.test
   const app = medley()
 
   app.get('/', function(req, reply) {
@@ -253,7 +250,7 @@ test('encapsulated 404', (t) => {
   app.listen(0, (err) => {
     t.error(err)
 
-    test('root unsupported method', (t) => {
+    t.test('root unsupported method', (t) => {
       t.plan(3)
       sget({
         method: 'PUT',
@@ -267,7 +264,7 @@ test('encapsulated 404', (t) => {
       })
     })
 
-    test('root insupported route', (t) => {
+    t.test('root insupported route', (t) => {
       t.plan(3)
       sget({
         method: 'GET',
@@ -279,7 +276,7 @@ test('encapsulated 404', (t) => {
       })
     })
 
-    test('unsupported method', (t) => {
+    t.test('unsupported method', (t) => {
       t.plan(3)
       sget({
         method: 'PUT',
@@ -293,7 +290,7 @@ test('encapsulated 404', (t) => {
       })
     })
 
-    test('unsupported route', (t) => {
+    t.test('unsupported route', (t) => {
       t.plan(3)
       sget({
         method: 'GET',
@@ -305,7 +302,7 @@ test('encapsulated 404', (t) => {
       })
     })
 
-    test('unsupported method bis', (t) => {
+    t.test('unsupported method bis', (t) => {
       t.plan(3)
       sget({
         method: 'PUT',
@@ -319,7 +316,7 @@ test('encapsulated 404', (t) => {
       })
     })
 
-    test('unsupported route bis', (t) => {
+    t.test('unsupported route bis', (t) => {
       t.plan(3)
       sget({
         method: 'GET',
@@ -331,7 +328,7 @@ test('encapsulated 404', (t) => {
       })
     })
 
-    test('unsupported method 3', (t) => {
+    t.test('unsupported method 3', (t) => {
       t.plan(3)
       sget({
         method: 'PUT',
@@ -345,7 +342,7 @@ test('encapsulated 404', (t) => {
       })
     })
 
-    test('unsupported route 3', (t) => {
+    t.test('unsupported route 3', (t) => {
       t.plan(3)
       sget({
         method: 'GET',
@@ -398,7 +395,7 @@ test('run hooks on default 404', (t) => {
       url: 'http://localhost:' + app.server.address().port,
       body: JSON.stringify({hello: 'world'}),
       headers: {'Content-Type': 'application/json'},
-    }, (err, response, body) => {
+    }, (err, response) => {
       t.error(err)
       t.strictEqual(response.statusCode, 404)
     })
@@ -559,7 +556,7 @@ test('run hooks with encapsulated 404', (t) => {
       url: 'http://localhost:' + app.server.address().port + '/test',
       body: JSON.stringify({hello: 'world'}),
       headers: {'Content-Type': 'application/json'},
-    }, (err, response, body) => {
+    }, (err, response) => {
       t.error(err)
       t.strictEqual(response.statusCode, 404)
     })
@@ -599,7 +596,7 @@ test('hooks check 404', (t) => {
       url: 'http://localhost:' + app.server.address().port + '?foo=asd',
       body: JSON.stringify({hello: 'world'}),
       headers: {'Content-Type': 'application/json'},
-    }, (err, response, body) => {
+    }, (err, response) => {
       t.error(err)
       t.strictEqual(response.statusCode, 404)
     })
@@ -607,7 +604,7 @@ test('hooks check 404', (t) => {
     sget({
       method: 'GET',
       url: 'http://localhost:' + app.server.address().port + '/notSupported?foo=asd',
-    }, (err, response, body) => {
+    }, (err, response) => {
       t.error(err)
       t.strictEqual(response.statusCode, 404)
     })
@@ -619,15 +616,15 @@ test('setNotFoundHandler should not suppress duplicated routes checking', (t) =>
 
   const app = medley()
 
-  app.get('/', function(req, reply) {
+  app.get('/', function(request, reply) {
     reply.send({hello: 'world'})
   })
 
-  app.get('/', function(req, reply) {
+  app.get('/', function(request, reply) {
     reply.send({hello: 'world'})
   })
 
-  app.setNotFoundHandler(function(req, reply) {
+  app.setNotFoundHandler(function(request, reply) {
     reply.code(404).send('this was not found')
   })
 
@@ -641,7 +638,7 @@ test('Unsupported method', (t) => {
 
   const app = medley()
 
-  app.get('/', function(req, reply) {
+  app.get('/', function(request, reply) {
     reply.send({hello: 'world'})
   })
 
@@ -660,7 +657,7 @@ test('Unsupported method', (t) => {
       sget({
         method: 'PROPFIND',
         url: 'http://localhost:' + app.server.address().port,
-      }, (err, response, body) => {
+      }, (err, response) => {
         t.error(err)
         t.strictEqual(response.statusCode, 404)
       })
@@ -673,7 +670,7 @@ test('recognizes errors from the http-errors module', (t) => {
 
   const app = medley()
 
-  app.get('/', function(req, reply) {
+  app.get('/', function(request, reply) {
     reply.send(httpErrors.NotFound())
   })
 
@@ -727,16 +724,16 @@ test('404 inside onSend', (t) => {
 
   var called = false
 
-  app.get('/', function(req, reply) {
+  app.get('/', function(request, reply) {
     reply.send({hello: 'world'})
   })
 
   app.addHook('onSend', function(request, reply, payload, next) {
-    if (!called) {
+    if (called) {
+      next()
+    } else {
       called = true
       next(new errors.NotFound())
-    } else {
-      next()
     }
   })
 
@@ -748,7 +745,7 @@ test('404 inside onSend', (t) => {
     sget({
       method: 'GET',
       url: 'http://localhost:' + app.server.address().port,
-    }, (err, response, body) => {
+    }, (err, response) => {
       t.error(err)
       t.strictEqual(response.statusCode, 404)
     })

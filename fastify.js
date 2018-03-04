@@ -404,9 +404,9 @@ function build(options) {
       opts.path = url
       opts.prefix = prefix
 
-      // run 'onRoute' hooks
-      for (var h of onRouteHooks) {
-        h.call(_medley, opts)
+      // Run 'onRoute' hooks
+      for (const hook of onRouteHooks) {
+        hook(opts)
       }
 
       const config = opts.config || {}

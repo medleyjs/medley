@@ -1,3 +1,4 @@
+/* eslint-disable require-await */
 'use strict'
 
 const sget = require('simple-get').concat
@@ -29,12 +30,12 @@ function asyncHookTest(t) {
       }
     })
 
-    app.addHook('onSend', async function(request, reply, payload) {
+    app.addHook('onSend', async function() {
       await sleep(1)
       t.ok('onSend called')
     })
 
-    app.addHook('onResponse', async function(res) {
+    app.addHook('onResponse', async function() {
       await sleep(1)
       t.ok('onResponse called')
     })
@@ -72,7 +73,7 @@ function asyncHookTest(t) {
       sget({
         method: 'HEAD',
         url: 'http://localhost:' + app.server.address().port,
-      }, (err, response, body) => {
+      }, (err, response) => {
         t.error(err)
         t.strictEqual(response.statusCode, 500)
       })
@@ -80,7 +81,7 @@ function asyncHookTest(t) {
       sget({
         method: 'DELETE',
         url: 'http://localhost:' + app.server.address().port,
-      }, (err, response, body) => {
+      }, (err, response) => {
         t.error(err)
         t.strictEqual(response.statusCode, 500)
       })
@@ -134,24 +135,24 @@ function asyncHookTest(t) {
       res.end('hello')
     })
 
-    app.addHook('onRequest', async (req, res) => {
+    app.addHook('onRequest', async () => {
       t.fail('this should not be called')
     })
 
-    app.addHook('preHandler', async (req, reply) => {
+    app.addHook('preHandler', async () => {
       t.fail('this should not be called')
     })
 
-    app.addHook('onSend', async (req, reply, payload) => {
+    app.addHook('onSend', async () => {
       t.fail('this should not be called')
     })
 
-    app.addHook('onResponse', async (res) => {
+    app.addHook('onResponse', async () => {
       t.ok('called')
     })
 
-    app.get('/', function(request, reply) {
-      t.fail('we should not be here')
+    app.get('/', () => {
+      t.fail('this should not be called')
     })
 
     app.inject({
@@ -172,7 +173,7 @@ function asyncHookTest(t) {
       reply.send('hello')
     })
 
-    app.addHook('preHandler', async (req, reply) => {
+    app.addHook('preHandler', async () => {
       t.fail('this should not be called')
     })
 
@@ -180,12 +181,12 @@ function asyncHookTest(t) {
       t.equal(payload, 'hello')
     })
 
-    app.addHook('onResponse', async (res) => {
+    app.addHook('onResponse', async () => {
       t.ok('called')
     })
 
-    app.get('/', function(request, reply) {
-      t.fail('we should not be here')
+    app.get('/', function() {
+      t.fail('this should not be called')
     })
 
     app.inject({
@@ -206,20 +207,20 @@ function asyncHookTest(t) {
       res.end('hello')
     })
 
-    app.addHook('preHandler', async (req, reply) => {
+    app.addHook('preHandler', async () => {
       t.fail('this should not be called')
     })
 
-    app.addHook('onSend', async (req, reply, payload) => {
+    app.addHook('onSend', async () => {
       t.fail('this should not be called')
     })
 
-    app.addHook('onResponse', async (res) => {
+    app.addHook('onResponse', async () => {
       t.ok('called')
     })
 
-    app.get('/', function(request, reply) {
-      t.fail('we should not be here')
+    app.get('/', function() {
+      t.fail('this should not be called')
     })
 
     app.inject({
@@ -244,12 +245,12 @@ function asyncHookTest(t) {
       t.equal(payload, 'hello')
     })
 
-    app.addHook('onResponse', async (res) => {
+    app.addHook('onResponse', async () => {
       t.ok('called')
     })
 
-    app.get('/', function(request, reply) {
-      t.fail('we should not be here')
+    app.get('/', function() {
+      t.fail('this should not be called')
     })
 
     app.inject({
@@ -270,28 +271,29 @@ function asyncHookTest(t) {
       return new Promise((resolve, reject) => {
         const stream = fs.createReadStream(process.cwd() + '/test/stream.test.js', 'utf8')
         stream.pipe(res)
+        res.once('error', reject)
         res.once('finish', resolve)
       })
     })
 
-    app.addHook('onRequest', async (req, res) => {
+    app.addHook('onRequest', async () => {
       t.fail('this should not be called')
     })
 
-    app.addHook('preHandler', async (req, reply) => {
+    app.addHook('preHandler', async () => {
       t.fail('this should not be called')
     })
 
-    app.addHook('onSend', async (req, reply, payload) => {
+    app.addHook('onSend', async () => {
       t.fail('this should not be called')
     })
 
-    app.addHook('onResponse', async (res) => {
+    app.addHook('onResponse', async () => {
       t.ok('called')
     })
 
-    app.get('/', function(request, reply) {
-      t.fail('we should not be here')
+    app.get('/', function() {
+      t.fail('this should not be called')
     })
 
     app.inject({
@@ -307,7 +309,7 @@ function asyncHookTest(t) {
     t.plan(7)
     const app = medley()
 
-    app.addHook('onRequest', async (req, res) => {
+    app.addHook('onRequest', async () => {
       t.ok('called')
     })
 
@@ -319,6 +321,7 @@ function asyncHookTest(t) {
       return new Promise((resolve, reject) => {
         const stream = fs.createReadStream(process.cwd() + '/test/stream.test.js', 'utf8')
         reply.send(stream)
+        reply.res.once('error', reject)
         reply.res.once('finish', () => {
           t.is(order.shift(), 2)
           resolve()
@@ -326,7 +329,7 @@ function asyncHookTest(t) {
       })
     })
 
-    app.addHook('preHandler', async (req, reply) => {
+    app.addHook('preHandler', async () => {
       t.fail('this should not be called')
     })
 
@@ -335,12 +338,12 @@ function asyncHookTest(t) {
       t.is(typeof payload.pipe, 'function')
     })
 
-    app.addHook('onResponse', async (res) => {
+    app.addHook('onResponse', async () => {
       t.ok('called')
     })
 
-    app.get('/', function(request, reply) {
-      t.fail('we should not be here')
+    app.get('/', function() {
+      t.fail('this should not be called')
     })
 
     app.inject({

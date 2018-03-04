@@ -18,8 +18,8 @@ test('contentTypeParser should add a custom async parser', (t) => {
   })
 
   app.addContentTypeParser('application/jsoff', async function(req) {
-    var res = await new Promise((resolve, reject) => resolve(req))
-    return res
+    const ret = await Promise.resolve(req)
+    return ret
   })
 
   app.listen(0, (err) => {

@@ -186,17 +186,17 @@ test('hookRunner - Promises that resolve to a value do not change the state', (t
     return fn(state, next)
   }
 
-  function fn1(state, next) {
+  function fn1(state) {
     t.strictEqual(state, originalState)
     return Promise.resolve(null)
   }
 
-  function fn2(state, next) {
+  function fn2(state) {
     t.strictEqual(state, originalState)
     return Promise.resolve('string')
   }
 
-  function fn3(state, next) {
+  function fn3(state) {
     t.strictEqual(state, originalState)
     return Promise.resolve({object: true})
   }

@@ -26,19 +26,6 @@ const nullSchema = {
   },
 }
 
-const numberSchema = {
-  responseSchema: {
-    200: {
-      type: 'object',
-      properties: {
-        hello: {
-          type: 'number',
-        },
-      },
-    },
-  },
-}
-
 test('shorthand - get', (t) => {
   t.plan(1)
   try {

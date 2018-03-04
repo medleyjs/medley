@@ -358,16 +358,16 @@ test('nested plugins', (t) => {
 
   t.tearDown(app.close.bind(app))
 
-  app.register(function(app, opts, next) {
-    app.register((app, opts, next) => {
-      app.get('/', function(req, reply) {
+  app.register(function(subApp, opts, next) {
+    subApp.register((subApp2, opts, next) => {
+      subApp2.get('/', function(req, reply) {
         reply.send('I am child 1')
       })
       next()
     }, {prefix: '/child1'})
 
-    app.register((app, opts, next) => {
-      app.get('/', function(req, reply) {
+    subApp.register((subApp3, opts, next) => {
+      subApp3.get('/', function(req, reply) {
         reply.send('I am child 2')
       })
       next()

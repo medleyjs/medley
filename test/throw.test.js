@@ -32,7 +32,7 @@ test('Should throw on unsupported method', (t) => {
     app.route({
       method: 'TROLL',
       url: '/',
-      handler(req, reply) {},
+      handler() { },
     })
     t.fail()
   } catch (e) {
@@ -61,7 +61,7 @@ test('Should throw if one method is unsupported', (t) => {
     app.route({
       method: ['GET', 'TROLL'],
       url: '/',
-      handler(req, reply) {},
+      handler() { },
     })
     t.fail()
   } catch (e) {
@@ -110,9 +110,9 @@ test('Should throw on duplicate decorator encapsulation', (t) => {
 
   app.decorate('foo2', foo2Obj)
 
-  app.register(function(app, opts, next) {
+  app.register(function(subApp, opts, next) {
     try {
-      app.decorate('foo2', foo2Obj)
+      subApp.decorate('foo2', foo2Obj)
       t.fail()
     } catch (e) {
       t.pass()

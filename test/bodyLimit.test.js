@@ -38,7 +38,7 @@ test('bodyLimit', (t) => {
       headers: {'Content-Type': 'application/json'},
       body: [],
       json: true,
-    }, (err, response, body) => {
+    }, (err, response) => {
       t.error(err)
       t.strictEqual(response.statusCode, 413)
     })

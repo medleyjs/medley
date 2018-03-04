@@ -1,3 +1,4 @@
+/* eslint-disable require-await */
 'use strict'
 
 const sget = require('simple-get').concat
@@ -25,7 +26,7 @@ function asyncTest(t) {
     t.plan(11)
     const app = medley()
     try {
-      app.get('/', opts, async function awaitMyFunc(req, reply) {
+      app.get('/', opts, async function awaitMyFunc() {
         await sleep(200)
         return {hello: 'world'}
       })
@@ -35,7 +36,7 @@ function asyncTest(t) {
     }
 
     try {
-      app.get('/no-await', opts, async function(req, reply) {
+      app.get('/no-await', opts, async function() {
         return {hello: 'world'}
       })
       t.pass()
@@ -284,8 +285,8 @@ function asyncTest(t) {
 
     const app = medley()
 
-    app.register(async (app, opts) => {
-      app.get('/', (req, reply) => {
+    app.register(async (subApp) => {
+      subApp.get('/', (req, reply) => {
         reply.send({hello: 'world'})
       })
 
@@ -308,7 +309,7 @@ function asyncTest(t) {
     const err = new Error('winter is coming')
     err.statusCode = 418
 
-    app.get('/', async (req, reply) => {
+    app.get('/', async () => {
       throw err
     })
 
@@ -334,7 +335,7 @@ function asyncTest(t) {
 
     const app = medley()
 
-    app.get('/', async (req, reply) => {
+    app.get('/', async () => {
       const error = new Error('ouch')
       error.statusCode = 400
       throw error
