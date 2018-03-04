@@ -14,12 +14,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MedleyJS/medley.git"
+    "url": "git+https://github.com/medleyjs/medley.git"
   },
   "bugs": {
-    "url": "https://github.com/MedleyJS/medley/issues"
+    "url": "https://github.com/medleyjs/medley/issues"
   },
-  "homepage": "https://github.com/MedleyJS/medley#readme",
+  "homepage": "https://github.com/medleyjs/medley#readme",
   "keywords": [
     "fast",
     "web",
