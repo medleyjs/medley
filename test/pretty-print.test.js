@@ -2,18 +2,18 @@
 
 const t = require('tap')
 const test = t.test
-const Fastify = require('..')
+const medley = require('..')
 
 test('pretty print - static routes', t => {
   t.plan(2)
 
-  const fastify = Fastify()
-  fastify.get('/test', () => {})
-  fastify.get('/test/hello', () => {})
-  fastify.get('/hello/world', () => {})
+  const app = medley()
+  app.get('/test', () => {})
+  app.get('/test/hello', () => {})
+  app.get('/hello/world', () => {})
 
-  fastify.ready(() => {
-    const tree = fastify.printRoutes()
+  app.ready(() => {
+    const tree = app.printRoutes()
 
     const expected = `└── /
     ├── test (GET)
@@ -29,13 +29,13 @@ test('pretty print - static routes', t => {
 test('pretty print - parametric routes', t => {
   t.plan(2)
 
-  const fastify = Fastify()
-  fastify.get('/test', () => {})
-  fastify.get('/test/:hello', () => {})
-  fastify.get('/hello/:world', () => {})
+  const app = medley()
+  app.get('/test', () => {})
+  app.get('/test/:hello', () => {})
+  app.get('/hello/:world', () => {})
 
-  fastify.ready(() => {
-    const tree = fastify.printRoutes()
+  app.ready(() => {
+    const tree = app.printRoutes()
 
     const expected = `└── /
     ├── test (GET)
@@ -53,14 +53,14 @@ test('pretty print - parametric routes', t => {
 test('pretty print - mixed parametric routes', t => {
   t.plan(2)
 
-  const fastify = Fastify()
-  fastify.get('/test', () => {})
-  fastify.get('/test/:hello', () => {})
-  fastify.post('/test/:hello', () => {})
-  fastify.get('/test/:hello/world', () => {})
+  const app = medley()
+  app.get('/test', () => {})
+  app.get('/test/:hello', () => {})
+  app.post('/test/:hello', () => {})
+  app.get('/test/:hello/world', () => {})
 
-  fastify.ready(() => {
-    const tree = fastify.printRoutes()
+  app.ready(() => {
+    const tree = app.printRoutes()
 
     const expected = `└── /
     └── test (GET)
@@ -78,13 +78,13 @@ test('pretty print - mixed parametric routes', t => {
 test('pretty print - wildcard routes', t => {
   t.plan(2)
 
-  const fastify = Fastify()
-  fastify.get('/test', () => {})
-  fastify.get('/test/*', () => {})
-  fastify.get('/hello/*', () => {})
+  const app = medley()
+  app.get('/test', () => {})
+  app.get('/test/*', () => {})
+  app.get('/hello/*', () => {})
 
-  fastify.ready(() => {
-    const tree = fastify.printRoutes()
+  app.ready(() => {
+    const tree = app.printRoutes()
 
     const expected = `└── /
     ├── test (GET)

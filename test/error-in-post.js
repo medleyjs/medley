@@ -1,12 +1,12 @@
 'use strict'
 
 const t = require('tap')
-const Fastify = require('..')
-const fastify = Fastify()
+const medley = require('..')
+const app = medley()
 
 let errored = false
 
-fastify.route({
+app.route({
   method: 'POST',
   path: '/jsonBody',
   handler(req, reply) {
@@ -27,7 +27,7 @@ process.on('uncaughtException', (err) => {
   t.equal(err.message, 'kaboom')
 })
 
-fastify.inject(reqOpts, (e, res) => {
+app.inject(reqOpts, (e, res) => {
   t.fail('should not be called')
 })
 

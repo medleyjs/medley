@@ -2,25 +2,25 @@
 
 const t = require('tap')
 const test = t.test
-const fastify = require('..')()
+const app = require('..')()
 
 function handler() { }
 
 test('chainable - get', t => {
   t.plan(1)
-  t.equal(fastify.get('/', handler), fastify)
+  t.equal(app.get('/', handler), app)
 })
 
 test('chainable - post', t => {
   t.plan(1)
-  t.equal(fastify.post('/', {}, handler), fastify)
+  t.equal(app.post('/', {}, handler), app)
 })
 
 test('chainable - route', t => {
   t.plan(1)
-  t.equal(fastify.route({
+  t.equal(app.route({
     method: 'PUT',
     url: '/other',
     handler,
-  }), fastify)
+  }), app)
 })

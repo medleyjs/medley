@@ -5,13 +5,13 @@ const test = t.test
 const sget = require('simple-get').concat
 const fs = require('fs')
 const path = require('path')
-const Fastify = require('../..')
+const medley = require('../..')
 
 try {
-  var fastify = Fastify({
+  var app = medley({
     https: {
-      key: fs.readFileSync(path.join(__dirname, 'fastify.key')),
-      cert: fs.readFileSync(path.join(__dirname, 'fastify.cert')),
+      key: fs.readFileSync(path.join(__dirname, 'app.key')),
+      cert: fs.readFileSync(path.join(__dirname, 'app.cert')),
     },
   })
   t.pass('Key/cert successfully loaded')
@@ -22,7 +22,7 @@ try {
 test('https get', t => {
   t.plan(1)
   try {
-    fastify.get('/', function(req, reply) {
+    app.get('/', function(req, reply) {
       reply.code(200).send({hello: 'world'})
     })
     t.pass()
@@ -31,15 +31,15 @@ test('https get', t => {
   }
 })
 
-fastify.listen(0, err => {
+app.listen(0, err => {
   t.error(err)
-  fastify.server.unref()
+  app.server.unref()
 
   test('https get request', t => {
     t.plan(4)
     sget({
       method: 'GET',
-      url: 'https://localhost:' + fastify.server.address().port,
+      url: 'https://localhost:' + app.server.address().port,
       rejectUnauthorized: false,
     }, (err, response, body) => {
       t.error(err)

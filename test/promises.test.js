@@ -3,7 +3,7 @@
 const t = require('tap')
 const test = t.test
 const sget = require('simple-get').concat
-const fastify = require('..')()
+const app = require('..')()
 
 const opts = {
   responseSchema: {
@@ -18,21 +18,21 @@ const opts = {
   },
 }
 
-fastify.get('/return', opts, function(req, reply) {
+app.get('/return', opts, function(req, reply) {
   const promise = new Promise((resolve, reject) => {
     resolve({hello: 'world'})
   })
   return promise
 })
 
-fastify.get('/return-error', opts, function(req, reply) {
+app.get('/return-error', opts, function(req, reply) {
   const promise = new Promise((resolve, reject) => {
     reject(new Error('some error'))
   })
   return promise
 })
 
-fastify.get('/double', function(req, reply) {
+app.get('/double', function(req, reply) {
   setTimeout(function() {
     // this should not throw
     reply.send({hello: 'world'})
@@ -40,15 +40,15 @@ fastify.get('/double', function(req, reply) {
   return Promise.resolve({hello: '42'})
 })
 
-fastify.listen(0, err => {
+app.listen(0, err => {
   t.error(err)
-  fastify.server.unref()
+  app.server.unref()
 
   test('shorthand - sget return promise es6 get', t => {
     t.plan(4)
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/return',
+      url: 'http://localhost:' + app.server.address().port + '/return',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -61,7 +61,7 @@ fastify.listen(0, err => {
     t.plan(2)
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/return-error',
+      url: 'http://localhost:' + app.server.address().port + '/return-error',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 500)
@@ -73,7 +73,7 @@ fastify.listen(0, err => {
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/double',
+      url: 'http://localhost:' + app.server.address().port + '/double',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)

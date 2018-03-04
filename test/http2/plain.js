@@ -2,13 +2,13 @@
 
 const t = require('tap')
 const test = t.test
-const Fastify = require('../..')
+const medley = require('../..')
 const h2url = require('h2url')
 const msg = {hello: 'world'}
 
-var fastify
+var app
 try {
-  fastify = Fastify({
+  app = medley({
     http2: true,
   })
   t.pass('http2 successfully loaded')
@@ -16,18 +16,18 @@ try {
   t.fail('http2 loading failed', e)
 }
 
-fastify.get('/', function(req, reply) {
+app.get('/', function(req, reply) {
   reply.code(200).send(msg)
 })
 
-fastify.listen(0, (err) => {
+app.listen(0, (err) => {
   t.error(err)
-  fastify.server.unref()
+  app.server.unref()
 
   test('http get request', async (t) => {
     t.plan(3)
 
-    const url = `http://localhost:${fastify.server.address().port}`
+    const url = `http://localhost:${app.server.address().port}`
     const res = await h2url.concat({url})
 
     t.strictEqual(res.headers[':status'], 200)

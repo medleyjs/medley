@@ -2,18 +2,18 @@
 
 const t = require('tap')
 const test = t.test
-const Fastify = require('..')
+const medley = require('..')
 
 test('default 500', t => {
   t.plan(4)
 
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.get('/', function(req, reply) {
+  app.get('/', function(req, reply) {
     reply.send(new Error('kaboom'))
   })
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/',
   }, (err, res) => {
@@ -31,22 +31,22 @@ test('default 500', t => {
 test('custom 500', t => {
   t.plan(6)
 
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.get('/', function(req, reply) {
+  app.get('/', function(req, reply) {
     reply.send(new Error('kaboom'))
   })
 
-  fastify.setErrorHandler(function(err, request, reply) {
+  app.setErrorHandler(function(err, request, reply) {
     t.type(request, 'object')
-    t.type(request, fastify._Request)
+    t.type(request, app._Request)
     reply
       .code(500)
       .type('text/plain')
       .send('an error happened: ' + err.message)
   })
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/',
   }, (err, res) => {
@@ -60,13 +60,13 @@ test('custom 500', t => {
 test('encapsulated 500', t => {
   t.plan(10)
 
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.get('/', function(req, reply) {
+  app.get('/', function(req, reply) {
     reply.send(new Error('kaboom'))
   })
 
-  fastify.register(function(f, opts, next) {
+  app.register(function(f, opts, next) {
     f.get('/', function(req, reply) {
       reply.send(new Error('kaboom'))
     })
@@ -83,7 +83,7 @@ test('encapsulated 500', t => {
     next()
   }, {prefix: 'test'})
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/test',
   }, (err, res) => {
@@ -93,7 +93,7 @@ test('encapsulated 500', t => {
     t.deepEqual(res.payload.toString(), 'an error happened: kaboom')
   })
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/',
   }, (err, res) => {
@@ -111,33 +111,33 @@ test('encapsulated 500', t => {
 test('custom 500 with hooks', t => {
   t.plan(7)
 
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.get('/', function(req, reply) {
+  app.get('/', function(req, reply) {
     reply.send(new Error('kaboom'))
   })
 
-  fastify.setErrorHandler(function(err, request, reply) {
+  app.setErrorHandler(function(err, request, reply) {
     reply
       .code(500)
       .type('text/plain')
       .send('an error happened: ' + err.message)
   })
 
-  fastify.addHook('onSend', (req, res, payload, next) => {
+  app.addHook('onSend', (req, res, payload, next) => {
     t.ok('called', 'onSend')
     next()
   })
-  fastify.addHook('onRequest', (req, res, next) => {
+  app.addHook('onRequest', (req, res, next) => {
     t.ok('called', 'onRequest')
     next()
   })
-  fastify.addHook('onResponse', (res, next) => {
+  app.addHook('onResponse', (res, next) => {
     t.ok('called', 'onResponse')
     next()
   })
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/',
   }, (err, res) => {
@@ -151,14 +151,14 @@ test('custom 500 with hooks', t => {
 test('cannot set errorHandler after binding', t => {
   t.plan(2)
 
-  const fastify = Fastify()
-  t.tearDown(fastify.close.bind(fastify))
+  const app = medley()
+  t.tearDown(app.close.bind(app))
 
-  fastify.listen(0, err => {
+  app.listen(0, err => {
     t.error(err)
 
     try {
-      fastify.setErrorHandler(() => { })
+      app.setErrorHandler(() => { })
       t.fail()
     } catch (e) {
       t.pass()

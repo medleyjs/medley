@@ -80,7 +80,7 @@ test('checkDependencies should throw if a dependency is not present', t => {
     decorator.dependencies(instance, ['test'])
     t.fail()
   } catch (e) {
-    t.is(e.message, 'Fastify decorator: missing dependency: \'test\'.')
+    t.is(e.message, 'medley decorator: missing dependency: \'test\'.')
   }
 })
 
@@ -100,6 +100,6 @@ test('decorate should internally call checkDependencies', t => {
     server.add('method', () => {}, ['test'])
     t.fail()
   } catch (e) {
-    t.is(e.message, 'Fastify decorator: missing dependency: \'test\'.')
+    t.is(e.message, 'medley decorator: missing dependency: \'test\'.')
   }
 })

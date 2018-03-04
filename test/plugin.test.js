@@ -2,24 +2,24 @@
 
 const t = require('tap')
 const test = t.test
-const Fastify = require('..')
+const medley = require('..')
 const sget = require('simple-get').concat
 const fp = require('fastify-plugin')
 
 test('require a plugin', t => {
   t.plan(1)
-  const fastify = Fastify()
-  fastify.register(require('./plugin.helper'))
-  fastify.ready(() => {
-    t.ok(fastify.test)
+  const app = medley()
+  app.register(require('./plugin.helper'))
+  app.ready(() => {
+    t.ok(app.test)
   })
 })
 
-test('fastify.register with fastify-plugin should not incapsulate his code', t => {
+test('app.register with fastify-plugin should not incapsulate his code', t => {
   t.plan(10)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.register((instance, opts, next) => {
+  app.register((instance, opts, next) => {
     instance.register(fp((i, o, n) => {
       i.decorate('test', () => {})
       t.ok(i.test)
@@ -41,17 +41,17 @@ test('fastify.register with fastify-plugin should not incapsulate his code', t =
     next()
   })
 
-  fastify.ready(() => {
-    t.notOk(fastify.test)
+  app.ready(() => {
+    t.notOk(app.test)
   })
 
-  fastify.listen(0, err => {
+  app.listen(0, err => {
     t.error(err)
-    fastify.server.unref()
+    app.server.unref()
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port,
+      url: 'http://localhost:' + app.server.address().port,
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -61,9 +61,9 @@ test('fastify.register with fastify-plugin should not incapsulate his code', t =
   })
 })
 
-test('fastify.register with fastify-plugin registers root level plugins', t => {
+test('app.register with fastify-plugin registers root level plugins', t => {
   t.plan(15)
-  const fastify = Fastify()
+  const app = medley()
 
   function rootPlugin(instance, opts, next) {
     instance.decorate('test', 'first')
@@ -76,9 +76,9 @@ test('fastify.register with fastify-plugin registers root level plugins', t => {
     next()
   }
 
-  fastify.register(fp(rootPlugin))
+  app.register(fp(rootPlugin))
 
-  fastify.register((instance, opts, next) => {
+  app.register((instance, opts, next) => {
     t.ok(instance.test)
     instance.register(fp(innerPlugin))
 
@@ -90,23 +90,23 @@ test('fastify.register with fastify-plugin registers root level plugins', t => {
     next()
   })
 
-  fastify.ready(() => {
-    t.ok(fastify.test)
-    t.notOk(fastify.test2)
+  app.ready(() => {
+    t.ok(app.test)
+    t.notOk(app.test2)
   })
 
-  fastify.get('/', (req, reply) => {
-    t.ok(fastify.test)
-    reply.send({test: fastify.test})
+  app.get('/', (req, reply) => {
+    t.ok(app.test)
+    reply.send({test: app.test})
   })
 
-  fastify.listen(0, err => {
+  app.listen(0, err => {
     t.error(err)
-    fastify.server.unref()
+    app.server.unref()
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port,
+      url: 'http://localhost:' + app.server.address().port,
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -116,7 +116,7 @@ test('fastify.register with fastify-plugin registers root level plugins', t => {
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/test2',
+      url: 'http://localhost:' + app.server.address().port + '/test2',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -128,9 +128,9 @@ test('fastify.register with fastify-plugin registers root level plugins', t => {
 
 test('check dependencies - should not throw', t => {
   t.plan(12)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.register((instance, opts, next) => {
+  app.register((instance, opts, next) => {
     instance.register(fp((i, o, n) => {
       i.decorate('test', () => {})
       t.ok(i.test)
@@ -157,18 +157,18 @@ test('check dependencies - should not throw', t => {
     next()
   })
 
-  fastify.ready(() => {
-    t.notOk(fastify.test)
-    t.notOk(fastify.otherTest)
+  app.ready(() => {
+    t.notOk(app.test)
+    t.notOk(app.otherTest)
   })
 
-  fastify.listen(0, err => {
+  app.listen(0, err => {
     t.error(err)
-    fastify.server.unref()
+    app.server.unref()
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port,
+      url: 'http://localhost:' + app.server.address().port,
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -180,15 +180,15 @@ test('check dependencies - should not throw', t => {
 
 test('check dependencies - should throw', t => {
   t.plan(11)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.register((instance, opts, next) => {
+  app.register((instance, opts, next) => {
     instance.register(fp((i, o, n) => {
       try {
         i.decorate('otherTest', () => {}, ['test'])
         t.fail()
       } catch (e) {
-        t.is(e.message, 'Fastify decorator: missing dependency: \'test\'.')
+        t.is(e.message, 'medley decorator: missing dependency: \'test\'.')
       }
       n()
     }))
@@ -209,17 +209,17 @@ test('check dependencies - should throw', t => {
     next()
   })
 
-  fastify.ready(() => {
-    t.notOk(fastify.test)
+  app.ready(() => {
+    t.notOk(app.test)
   })
 
-  fastify.listen(0, err => {
+  app.listen(0, err => {
     t.error(err)
-    fastify.server.unref()
+    app.server.unref()
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port,
+      url: 'http://localhost:' + app.server.address().port,
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -231,9 +231,9 @@ test('check dependencies - should throw', t => {
 
 test('plugin incapsulation', t => {
   t.plan(10)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.register((instance, opts, next) => {
+  app.register((instance, opts, next) => {
     instance.register(fp((i, o, n) => {
       i.decorate('test', 'first')
       n()
@@ -246,7 +246,7 @@ test('plugin incapsulation', t => {
     next()
   })
 
-  fastify.register((instance, opts, next) => {
+  app.register((instance, opts, next) => {
     instance.register(fp((i, o, n) => {
       i.decorate('test', 'second')
       n()
@@ -259,17 +259,17 @@ test('plugin incapsulation', t => {
     next()
   })
 
-  fastify.ready(() => {
-    t.notOk(fastify.test)
+  app.ready(() => {
+    t.notOk(app.test)
   })
 
-  fastify.listen(0, err => {
+  app.listen(0, err => {
     t.error(err)
-    fastify.server.unref()
+    app.server.unref()
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/first',
+      url: 'http://localhost:' + app.server.address().port + '/first',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -279,7 +279,7 @@ test('plugin incapsulation', t => {
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/second',
+      url: 'http://localhost:' + app.server.address().port + '/second',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -291,13 +291,13 @@ test('plugin incapsulation', t => {
 
 test('if a plugin raises an error and there is not a callback to handle it, the server must not start', t => {
   t.plan(2)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.register((instance, opts, next) => {
+  app.register((instance, opts, next) => {
     next(new Error('err'))
   })
 
-  fastify.listen(0, err => {
+  app.listen(0, err => {
     t.ok(err instanceof Error)
     t.is(err.message, 'err')
   })
@@ -305,16 +305,16 @@ test('if a plugin raises an error and there is not a callback to handle it, the 
 
 test('add hooks after route declaration', t => {
   t.plan(3)
-  const fastify = Fastify()
+  const app = medley()
 
   function plugin(instance, opts, next) {
     instance.decorateRequest('check', {})
     setImmediate(next)
   }
 
-  fastify.register(fp(plugin))
+  app.register(fp(plugin))
 
-  fastify.register((instance, options, next) => {
+  app.register((instance, options, next) => {
     instance.addHook('preHandler', function b(req, res, next) {
       req.check.hook2 = true
       next()
@@ -332,21 +332,21 @@ test('add hooks after route declaration', t => {
     next()
   })
 
-  fastify.addHook('preHandler', function a(req, res, next) {
+  app.addHook('preHandler', function a(req, res, next) {
     req.check.hook1 = true
     next()
   })
 
-  fastify.listen(0, err => {
+  app.listen(0, err => {
     t.error(err)
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port,
+      url: 'http://localhost:' + app.server.address().port,
     }, (err, response, body) => {
       t.error(err)
       t.deepEqual(JSON.parse(body), {hook1: true, hook2: true, hook3: true})
-      fastify.close()
+      app.close()
     })
   })
 })
@@ -354,20 +354,20 @@ test('add hooks after route declaration', t => {
 test('nested plugins', t => {
   t.plan(5)
 
-  const fastify = Fastify()
+  const app = medley()
 
-  t.tearDown(fastify.close.bind(fastify))
+  t.tearDown(app.close.bind(app))
 
-  fastify.register(function(fastify, opts, next) {
-    fastify.register((fastify, opts, next) => {
-      fastify.get('/', function(req, reply) {
+  app.register(function(app, opts, next) {
+    app.register((app, opts, next) => {
+      app.get('/', function(req, reply) {
         reply.send('I am child 1')
       })
       next()
     }, {prefix: '/child1'})
 
-    fastify.register((fastify, opts, next) => {
-      fastify.get('/', function(req, reply) {
+    app.register((app, opts, next) => {
+      app.get('/', function(req, reply) {
         reply.send('I am child 2')
       })
       next()
@@ -376,12 +376,12 @@ test('nested plugins', t => {
     next()
   }, {prefix: '/parent'})
 
-  fastify.listen(0, err => {
+  app.listen(0, err => {
     t.error(err)
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/parent/child1',
+      url: 'http://localhost:' + app.server.address().port + '/parent/child1',
     }, (err, response, body) => {
       t.error(err)
       t.deepEqual(body.toString(), 'I am child 1')
@@ -389,7 +389,7 @@ test('nested plugins', t => {
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/parent/child2',
+      url: 'http://localhost:' + app.server.address().port + '/parent/child2',
     }, (err, response, body) => {
       t.error(err)
       t.deepEqual(body.toString(), 'I am child 2')
@@ -399,25 +399,25 @@ test('nested plugins', t => {
 
 test('plugin metadata - decorators', t => {
   t.plan(1)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.decorate('plugin1', true)
-  fastify.decorateReply('plugin1', true)
-  fastify.decorateRequest('plugin1', true)
+  app.decorate('plugin1', true)
+  app.decorateReply('plugin1', true)
+  app.decorateRequest('plugin1', true)
 
   plugin[Symbol.for('skip-override')] = true
   plugin[Symbol.for('plugin-meta')] = {
     decorators: {
-      fastify: ['plugin1'],
+      app: ['plugin1'],
       reply: ['plugin1'],
       request: ['plugin1'],
     },
   }
 
-  fastify.register(plugin)
+  app.register(plugin)
 
-  fastify.ready(() => {
-    t.ok(fastify.plugin)
+  app.ready(() => {
+    t.ok(app.plugin)
   })
 
   function plugin(instance, opts, next) {
@@ -428,7 +428,7 @@ test('plugin metadata - decorators', t => {
 
 test('plugin metadata - dependencies', t => {
   t.plan(1)
-  const fastify = Fastify()
+  const app = medley()
 
   dependency[Symbol.for('skip-override')] = true
   dependency[Symbol.for('plugin-meta')] = {
@@ -440,10 +440,10 @@ test('plugin metadata - dependencies', t => {
     dependencies: ['plugin'],
   }
 
-  fastify.register(dependency)
-  fastify.register(plugin)
+  app.register(dependency)
+  app.register(plugin)
 
-  fastify.ready(() => {
+  app.ready(() => {
     t.pass('everything right')
   })
 
@@ -458,7 +458,7 @@ test('plugin metadata - dependencies', t => {
 
 test('plugin metadata - dependencies (nested)', t => {
   t.plan(1)
-  const fastify = Fastify()
+  const app = medley()
 
   dependency[Symbol.for('skip-override')] = true
   dependency[Symbol.for('plugin-meta')] = {
@@ -470,10 +470,10 @@ test('plugin metadata - dependencies (nested)', t => {
     dependencies: ['plugin'],
   }
 
-  fastify.register(dependency)
-  fastify.register(plugin)
+  app.register(dependency)
+  app.register(plugin)
 
-  fastify.ready(() => {
+  app.ready(() => {
     t.pass('everything right')
   })
 

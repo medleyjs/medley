@@ -2,7 +2,7 @@
 
 const fp = require('fastify-plugin')
 
-module.exports = fp(function(fastify, opts, next) {
-  fastify.decorate('test', () => {})
+module.exports = fp(function(app, opts, next) {
+  app.decorate('test', () => {})
   next()
 })

@@ -1,6 +1,6 @@
 'use strict'
 
-const Fastify = require('..')
+const medley = require('..')
 const sget = require('simple-get').concat
 const t = require('tap')
 const test = t.test
@@ -9,32 +9,32 @@ test('bodyLimit', t => {
   t.plan(5)
 
   try {
-    Fastify({bodyLimit: 1.3})
+    medley({bodyLimit: 1.3})
     t.fail('option must be an integer')
   } catch (err) {
     t.ok(err)
   }
 
   try {
-    Fastify({bodyLimit: []})
+    medley({bodyLimit: []})
     t.fail('option must be an integer')
   } catch (err) {
     t.ok(err)
   }
 
-  const fastify = Fastify({bodyLimit: 1})
+  const app = medley({bodyLimit: 1})
 
-  fastify.post('/', (request, reply) => {
+  app.post('/', (request, reply) => {
     reply.send({error: 'handler should not be called'})
   })
 
-  fastify.listen(0, function(err) {
+  app.listen(0, function(err) {
     t.error(err)
-    fastify.server.unref()
+    app.server.unref()
 
     sget({
       method: 'POST',
-      url: 'http://localhost:' + fastify.server.address().port,
+      url: 'http://localhost:' + app.server.address().port,
       headers: {'Content-Type': 'application/json'},
       body: [],
       json: true,

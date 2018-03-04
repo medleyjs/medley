@@ -2,23 +2,23 @@
 
 const t = require('tap')
 const test = t.test
-const Fastify = require('..')
+const medley = require('..')
 
 test('Prefix options should add a prefix for all the routes inside a register / 1', t => {
   t.plan(6)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.get('/first', (req, reply) => {
+  app.get('/first', (req, reply) => {
     reply.send({route: '/first'})
   })
 
-  fastify.register(function(fastify, opts, next) {
-    fastify.get('/first', (req, reply) => {
+  app.register(function(app, opts, next) {
+    app.get('/first', (req, reply) => {
       reply.send({route: '/v1/first'})
     })
 
-    fastify.register(function(fastify, opts, next) {
-      fastify.get('/first', (req, reply) => {
+    app.register(function(app, opts, next) {
+      app.get('/first', (req, reply) => {
         reply.send({route: '/v1/v2/first'})
       })
       next()
@@ -27,7 +27,7 @@ test('Prefix options should add a prefix for all the routes inside a register / 
     next()
   }, {prefix: '/v1'})
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/first',
   }, (err, res) => {
@@ -35,7 +35,7 @@ test('Prefix options should add a prefix for all the routes inside a register / 
     t.same(JSON.parse(res.payload), {route: '/first'})
   })
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/v1/first',
   }, (err, res) => {
@@ -43,7 +43,7 @@ test('Prefix options should add a prefix for all the routes inside a register / 
     t.same(JSON.parse(res.payload), {route: '/v1/first'})
   })
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/v1/v2/first',
   }, (err, res) => {
@@ -54,20 +54,20 @@ test('Prefix options should add a prefix for all the routes inside a register / 
 
 test('Prefix options should add a prefix for all the routes inside a register / 2', t => {
   t.plan(4)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.register(function(fastify, opts, next) {
-    fastify.get('/first', (req, reply) => {
+  app.register(function(app, opts, next) {
+    app.get('/first', (req, reply) => {
       reply.send({route: '/v1/first'})
     })
 
-    fastify.get('/second', (req, reply) => {
+    app.get('/second', (req, reply) => {
       reply.send({route: '/v1/second'})
     })
     next()
   }, {prefix: '/v1'})
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/v1/first',
   }, (err, res) => {
@@ -75,7 +75,7 @@ test('Prefix options should add a prefix for all the routes inside a register / 
     t.same(JSON.parse(res.payload), {route: '/v1/first'})
   })
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/v1/second',
   }, (err, res) => {
@@ -87,10 +87,10 @@ test('Prefix options should add a prefix for all the routes inside a register / 
 test('Prefix options should add a prefix for all the chained routes inside a register / 3', t => {
   t.plan(4)
 
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.register(function(fastify, opts, next) {
-    fastify
+  app.register(function(app, opts, next) {
+    app
       .get('/first', (req, reply) => {
         reply.send({route: '/v1/first'})
       })
@@ -100,7 +100,7 @@ test('Prefix options should add a prefix for all the chained routes inside a reg
     next()
   }, {prefix: '/v1'})
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/v1/first',
   }, (err, res) => {
@@ -108,7 +108,7 @@ test('Prefix options should add a prefix for all the chained routes inside a reg
     t.same(JSON.parse(res.payload), {route: '/v1/first'})
   })
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/v1/second',
   }, (err, res) => {
@@ -119,16 +119,16 @@ test('Prefix options should add a prefix for all the chained routes inside a reg
 
 test('Prefix should support parameters as well', t => {
   t.plan(2)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.register(function(fastify, opts, next) {
-    fastify.get('/hello', (req, reply) => {
+  app.register(function(app, opts, next) {
+    app.get('/hello', (req, reply) => {
       reply.send({id: req.params.id})
     })
     next()
   }, {prefix: '/v1/:id'})
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/v1/param/hello',
   }, (err, res) => {
@@ -139,16 +139,16 @@ test('Prefix should support parameters as well', t => {
 
 test('Prefix should support /', t => {
   t.plan(2)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.register(function(fastify, opts, next) {
-    fastify.get('/', (req, reply) => {
+  app.register(function(app, opts, next) {
+    app.get('/', (req, reply) => {
       reply.send({hello: 'world'})
     })
     next()
   }, {prefix: '/v1'})
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/v1',
   }, (err, res) => {
@@ -159,16 +159,16 @@ test('Prefix should support /', t => {
 
 test('Prefix without /', t => {
   t.plan(2)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.register(function(fastify, opts, next) {
-    fastify.get('/', (req, reply) => {
+  app.register(function(app, opts, next) {
+    app.get('/', (req, reply) => {
       reply.send({hello: 'world'})
     })
     next()
   }, {prefix: 'v1'})
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/v1',
   }, (err, res) => {
@@ -179,18 +179,18 @@ test('Prefix without /', t => {
 
 test('Prefix with trailing /', t => {
   t.plan(6)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.register(function(fastify, opts, next) {
-    fastify.get('/route1', (req, reply) => {
+  app.register(function(app, opts, next) {
+    app.get('/route1', (req, reply) => {
       reply.send({hello: 'world1'})
     })
-    fastify.get('route2', (req, reply) => {
+    app.get('route2', (req, reply) => {
       reply.send({hello: 'world2'})
     })
 
-    fastify.register(function(fastify, opts, next) {
-      fastify.get('/route3', (req, reply) => {
+    app.register(function(app, opts, next) {
+      app.get('/route3', (req, reply) => {
         reply.send({hello: 'world3'})
       })
       next()
@@ -199,7 +199,7 @@ test('Prefix with trailing /', t => {
     next()
   }, {prefix: '/v1/'})
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/v1/route1',
   }, (err, res) => {
@@ -207,7 +207,7 @@ test('Prefix with trailing /', t => {
     t.same(JSON.parse(res.payload), {hello: 'world1'})
   })
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/v1/route2',
   }, (err, res) => {
@@ -215,7 +215,7 @@ test('Prefix with trailing /', t => {
     t.same(JSON.parse(res.payload), {hello: 'world2'})
   })
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/v1/inner/route3',
   }, (err, res) => {
@@ -226,13 +226,13 @@ test('Prefix with trailing /', t => {
 
 test('Prefix works multiple levels deep', t => {
   t.plan(2)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.register(function(fastify, opts, next) {
-    fastify.register(function(fastify, opts, next) {
-      fastify.register(function(fastify, opts, next) {
-        fastify.register(function(fastify, opts, next) {
-          fastify.get('/', (req, reply) => {
+  app.register(function(app, opts, next) {
+    app.register(function(app, opts, next) {
+      app.register(function(app, opts, next) {
+        app.register(function(app, opts, next) {
+          app.get('/', (req, reply) => {
             reply.send({hello: 'world'})
           })
           next()
@@ -244,7 +244,7 @@ test('Prefix works multiple levels deep', t => {
     next()
   }, {prefix: '/v1'})
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/v1/v2/v3',
   }, (err, res) => {
@@ -255,13 +255,13 @@ test('Prefix works multiple levels deep', t => {
 
 test('Different register - encapsulation check', t => {
   t.plan(4)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.get('/first', (req, reply) => {
+  app.get('/first', (req, reply) => {
     reply.send({route: '/first'})
   })
 
-  fastify.register(function(instance, opts, next) {
+  app.register(function(instance, opts, next) {
     instance.register(function(f, opts, next) {
       f.get('/', (req, reply) => {
         reply.send({route: '/v1/v2'})
@@ -271,7 +271,7 @@ test('Different register - encapsulation check', t => {
     next()
   }, {prefix: '/v1'})
 
-  fastify.register(function(instance, opts, next) {
+  app.register(function(instance, opts, next) {
     instance.register(function(f, opts, next) {
       f.get('/', (req, reply) => {
         reply.send({route: '/v3/v4'})
@@ -281,7 +281,7 @@ test('Different register - encapsulation check', t => {
     next()
   }, {prefix: '/v3'})
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/v1/v2',
   }, (err, res) => {
@@ -289,7 +289,7 @@ test('Different register - encapsulation check', t => {
     t.same(JSON.parse(res.payload), {route: '/v1/v2'})
   })
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/v3/v4',
   }, (err, res) => {
@@ -300,9 +300,9 @@ test('Different register - encapsulation check', t => {
 
 test('Can retrieve basePath within encapsulated instances', t => {
   t.plan(4)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.register(function(instance, opts, next) {
+  app.register(function(instance, opts, next) {
     instance.get('/one', function(req, reply) {
       reply.send(instance.basePath)
     })
@@ -317,7 +317,7 @@ test('Can retrieve basePath within encapsulated instances', t => {
     next()
   }, {prefix: '/v1'})
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/v1/one',
   }, (err, res) => {
@@ -325,7 +325,7 @@ test('Can retrieve basePath within encapsulated instances', t => {
     t.is(res.payload, '/v1')
   })
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/v1/v2/two',
   }, (err, res) => {

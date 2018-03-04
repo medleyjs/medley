@@ -1,9 +1,9 @@
 'use strict'
 
 const test = require('tap').test
-const Fastify = require('..')
+const medley = require('..')
 
-test('Fastify should throw on wrong options', t => {
+test('medley should throw on wrong options', t => {
   t.plan(2)
   try {
     require('..')('lol')
@@ -14,22 +14,22 @@ test('Fastify should throw on wrong options', t => {
   }
 })
 
-test('Fastify should throw on multiple assignment to the same route', t => {
+test('medley should throw on multiple assignment to the same route', t => {
   t.plan(1)
-  const fastify = Fastify()
-  fastify.get('/', () => {})
-  fastify.get('/', () => {})
+  const app = medley()
+  app.get('/', () => {})
+  app.get('/', () => {})
 
-  fastify.ready(err => {
+  app.ready(err => {
     t.is(err.message, "Method 'GET' already declared for route '/'")
   })
 })
 
 test('Should throw on unsupported method', t => {
   t.plan(1)
-  const fastify = Fastify()
+  const app = medley()
   try {
-    fastify.route({
+    app.route({
       method: 'TROLL',
       url: '/',
       handler(req, reply) {},
@@ -42,9 +42,9 @@ test('Should throw on unsupported method', t => {
 
 test('Should throw on missing handler', t => {
   t.plan(1)
-  const fastify = Fastify()
+  const app = medley()
   try {
-    fastify.route({
+    app.route({
       method: 'GET',
       url: '/',
     })
@@ -55,10 +55,10 @@ test('Should throw on missing handler', t => {
 })
 
 test('Should throw if one method is unsupported', t => {
-  const fastify = Fastify()
+  const app = medley()
   t.plan(1)
   try {
-    fastify.route({
+    app.route({
       method: ['GET', 'TROLL'],
       url: '/',
       handler(req, reply) {},
@@ -72,15 +72,15 @@ test('Should throw if one method is unsupported', t => {
 test('Should throw on duplicate content type parser', t => {
   t.plan(1)
 
-  const fastify = Fastify()
+  const app = medley()
 
   function customParser(req, done) {
     done(null, '')
   }
 
-  fastify.addContentTypeParser('application/qq', customParser)
+  app.addContentTypeParser('application/qq', customParser)
   try {
-    fastify.addContentTypeParser('application/qq', customParser)
+    app.addContentTypeParser('application/qq', customParser)
     t.fail()
   } catch (e) {
     t.pass()
@@ -90,12 +90,12 @@ test('Should throw on duplicate content type parser', t => {
 test('Should throw on duplicate decorator', t => {
   t.plan(1)
 
-  const fastify = Fastify()
+  const app = medley()
   const fooObj = {}
 
-  fastify.decorate('foo', fooObj)
+  app.decorate('foo', fooObj)
   try {
-    fastify.decorate('foo', fooObj)
+    app.decorate('foo', fooObj)
     t.fail()
   } catch (e) {
     t.pass()
@@ -105,14 +105,14 @@ test('Should throw on duplicate decorator', t => {
 test('Should throw on duplicate decorator encapsulation', t => {
   t.plan(1)
 
-  const fastify = Fastify()
+  const app = medley()
   const foo2Obj = {}
 
-  fastify.decorate('foo2', foo2Obj)
+  app.decorate('foo2', foo2Obj)
 
-  fastify.register(function(fastify, opts, next) {
+  app.register(function(app, opts, next) {
     try {
-      fastify.decorate('foo2', foo2Obj)
+      app.decorate('foo2', foo2Obj)
       t.fail()
     } catch (e) {
       t.pass()
@@ -120,18 +120,18 @@ test('Should throw on duplicate decorator encapsulation', t => {
     next()
   })
 
-  fastify.ready()
+  app.ready()
 })
 
 test('Should throw on duplicate request decorator', t => {
   t.plan(1)
 
   const fooObj = {}
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.decorateRequest('foo', fooObj)
+  app.decorateRequest('foo', fooObj)
   try {
-    fastify.decorateRequest('foo', fooObj)
+    app.decorateRequest('foo', fooObj)
     t.fail()
   } catch (e) {
     t.ok(/has been already added/.test(e.message))
@@ -141,11 +141,11 @@ test('Should throw on duplicate request decorator', t => {
 test('Should throw if request decorator dependencies are not met', t => {
   t.plan(1)
 
-  const fastify = Fastify()
+  const app = medley()
   const fooObj = {}
 
   try {
-    fastify.decorateRequest('bar', fooObj, ['world'])
+    app.decorateRequest('bar', fooObj, ['world'])
     t.fail()
   } catch (e) {
     t.ok(/missing dependency/.test(e.message))
@@ -155,12 +155,12 @@ test('Should throw if request decorator dependencies are not met', t => {
 test('Should throw on duplicate reply decorator', t => {
   t.plan(1)
 
-  const fastify = Fastify()
+  const app = medley()
   const fooObj = {}
 
-  fastify.decorateReply('foo', fooObj)
+  app.decorateReply('foo', fooObj)
   try {
-    fastify.decorateReply('foo', fooObj)
+    app.decorateReply('foo', fooObj)
     t.fail()
   } catch (e) {
     t.ok(/has been already added/.test(e.message))
@@ -170,11 +170,11 @@ test('Should throw on duplicate reply decorator', t => {
 test('Should throw if reply decorator dependencies are not met', t => {
   t.plan(1)
 
-  const fastify = Fastify()
+  const app = medley()
   const fooObj = {}
 
   try {
-    fastify.decorateReply('bar', fooObj, ['world'])
+    app.decorateReply('bar', fooObj, ['world'])
     t.fail()
   } catch (e) {
     t.ok(/missing dependency/.test(e.message))

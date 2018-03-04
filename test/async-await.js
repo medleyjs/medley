@@ -1,7 +1,7 @@
 'use strict'
 
 const sget = require('simple-get').concat
-const Fastify = require('..')
+const medley = require('..')
 const sleep = require('then-sleep')
 const statusCodes = require('http').STATUS_CODES
 
@@ -23,9 +23,9 @@ function asyncTest(t) {
 
   test('async await', (t) => {
     t.plan(11)
-    const fastify = Fastify()
+    const app = medley()
     try {
-      fastify.get('/', opts, async function awaitMyFunc(req, reply) {
+      app.get('/', opts, async function awaitMyFunc(req, reply) {
         await sleep(200)
         return {hello: 'world'}
       })
@@ -35,7 +35,7 @@ function asyncTest(t) {
     }
 
     try {
-      fastify.get('/no-await', opts, async function(req, reply) {
+      app.get('/no-await', opts, async function(req, reply) {
         return {hello: 'world'}
       })
       t.pass()
@@ -43,13 +43,13 @@ function asyncTest(t) {
       t.fail()
     }
 
-    fastify.listen(0, (err) => {
+    app.listen(0, (err) => {
       t.error(err)
-      fastify.server.unref()
+      app.server.unref()
 
       sget({
         method: 'GET',
-        url: 'http://localhost:' + fastify.server.address().port,
+        url: 'http://localhost:' + app.server.address().port,
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 200)
@@ -59,7 +59,7 @@ function asyncTest(t) {
 
       sget({
         method: 'GET',
-        url: 'http://localhost:' + fastify.server.address().port + '/no-await',
+        url: 'http://localhost:' + app.server.address().port + '/no-await',
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 200)
@@ -72,7 +72,7 @@ function asyncTest(t) {
   test('ignore the result of the promise if reply.send is called beforehand (undefined)', (t) => {
     t.plan(4)
 
-    const server = Fastify()
+    const server = medley()
     const payload = {hello: 'world'}
 
     server.get('/', async function awaitMyFunc(req, reply) {
@@ -97,7 +97,7 @@ function asyncTest(t) {
   test('ignore the result of the promise if reply.send is called beforehand (object)', (t) => {
     t.plan(4)
 
-    const server = Fastify()
+    const server = medley()
     const payload = {hello: 'world2'}
 
     server.get('/', async function awaitMyFunc(req, reply) {
@@ -123,7 +123,7 @@ function asyncTest(t) {
   test('ignore the result of the promise if reply.send is called beforehand (undefined)', (t) => {
     t.plan(4)
 
-    const server = Fastify()
+    const server = medley()
     const payload = {hello: 'world'}
 
     server.get('/', async function awaitMyFunc(req, reply) {
@@ -148,7 +148,7 @@ function asyncTest(t) {
   test('ignore the result of the promise if reply.send is called beforehand (object)', (t) => {
     t.plan(4)
 
-    const server = Fastify()
+    const server = medley()
     const payload = {hello: 'world2'}
 
     server.get('/', async function awaitMyFunc(req, reply) {
@@ -174,20 +174,20 @@ function asyncTest(t) {
   test('support reply decorators with await', (t) => {
     t.plan(2)
 
-    const fastify = Fastify()
+    const app = medley()
 
-    fastify.decorateReply('wow', function() {
+    app.decorateReply('wow', function() {
       setImmediate(() => {
         this.send({hello: 'world'})
       })
     })
 
-    fastify.get('/', async (req, reply) => {
+    app.get('/', async (req, reply) => {
       await sleep(1)
       reply.wow()
     })
 
-    fastify.inject({
+    app.inject({
       method: 'GET',
       url: '/',
     }, (err, res) => {
@@ -200,13 +200,13 @@ function asyncTest(t) {
   test('support 204', (t) => {
     t.plan(2)
 
-    const fastify = Fastify()
+    const app = medley()
 
-    fastify.get('/', async (req, reply) => {
+    app.get('/', async (req, reply) => {
       reply.code(204)
     })
 
-    fastify.inject({
+    app.inject({
       method: 'GET',
       url: '/',
     }, (err, res) => {
@@ -218,16 +218,16 @@ function asyncTest(t) {
   test('does not call reply.send() twice if 204 reponse is already sent', (t) => {
     t.plan(2)
 
-    const fastify = Fastify()
+    const app = medley()
 
-    fastify.get('/', async (req, reply) => {
+    app.get('/', async (req, reply) => {
       reply.code(204).send()
       reply.send = () => {
         throw new Error('reply.send() was called twice')
       }
     })
 
-    fastify.inject({
+    app.inject({
       method: 'GET',
       url: '/',
     }, (err, res) => {
@@ -239,14 +239,14 @@ function asyncTest(t) {
   test('inject async await', async (t) => {
     t.plan(1)
 
-    const fastify = Fastify()
+    const app = medley()
 
-    fastify.get('/', (req, reply) => {
+    app.get('/', (req, reply) => {
       reply.send({hello: 'world'})
     })
 
     try {
-      const res = await fastify.inject({method: 'GET', url: '/'})
+      const res = await app.inject({method: 'GET', url: '/'})
       t.deepEqual({hello: 'world'}, JSON.parse(res.payload))
     } catch (err) {
       t.fail(err)
@@ -256,14 +256,14 @@ function asyncTest(t) {
   test('inject async await - when the server is up', async (t) => {
     t.plan(2)
 
-    const fastify = Fastify()
+    const app = medley()
 
-    fastify.get('/', (req, reply) => {
+    app.get('/', (req, reply) => {
       reply.send({hello: 'world'})
     })
 
     try {
-      const res = await fastify.inject({method: 'GET', url: '/'})
+      const res = await app.inject({method: 'GET', url: '/'})
       t.deepEqual({hello: 'world'}, JSON.parse(res.payload))
     } catch (err) {
       t.fail(err)
@@ -272,7 +272,7 @@ function asyncTest(t) {
     await sleep(200)
 
     try {
-      const res2 = await fastify.inject({method: 'GET', url: '/'})
+      const res2 = await app.inject({method: 'GET', url: '/'})
       t.deepEqual({hello: 'world'}, JSON.parse(res2.payload))
     } catch (err) {
       t.fail(err)
@@ -282,10 +282,10 @@ function asyncTest(t) {
   test('async await plugin', async (t) => {
     t.plan(1)
 
-    const fastify = Fastify()
+    const app = medley()
 
-    fastify.register(async (fastify, opts) => {
-      fastify.get('/', (req, reply) => {
+    app.register(async (app, opts) => {
+      app.get('/', (req, reply) => {
         reply.send({hello: 'world'})
       })
 
@@ -293,7 +293,7 @@ function asyncTest(t) {
     })
 
     try {
-      const res = await fastify.inject({method: 'GET', url: '/'})
+      const res = await app.inject({method: 'GET', url: '/'})
       t.deepEqual({hello: 'world'}, JSON.parse(res.payload))
     } catch (err) {
       t.fail(err)
@@ -303,16 +303,16 @@ function asyncTest(t) {
   test('Thrown Error instance sets HTTP status code', (t) => {
     t.plan(3)
 
-    const fastify = Fastify()
+    const app = medley()
 
     const err = new Error('winter is coming')
     err.statusCode = 418
 
-    fastify.get('/', async (req, reply) => {
+    app.get('/', async (req, reply) => {
       throw err
     })
 
-    fastify.inject({
+    app.inject({
       method: 'GET',
       url: '/',
     }, (error, res) => {
@@ -332,22 +332,22 @@ function asyncTest(t) {
   test('customErrorHandler support', (t) => {
     t.plan(4)
 
-    const fastify = Fastify()
+    const app = medley()
 
-    fastify.get('/', async (req, reply) => {
+    app.get('/', async (req, reply) => {
       const error = new Error('ouch')
       error.statusCode = 400
       throw error
     })
 
-    fastify.setErrorHandler(async (err) => {
+    app.setErrorHandler(async (err) => {
       t.is(err.message, 'ouch')
       const error = new Error('kaboom')
       error.statusCode = 401
       throw error
     })
 
-    fastify.inject({
+    app.inject({
       method: 'GET',
       url: '/',
     }, (err, res) => {

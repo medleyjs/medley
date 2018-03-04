@@ -2,23 +2,23 @@
 
 const test = require('tap').test
 const sget = require('simple-get')
-const Fastify = require('../')
+const medley = require('../')
 
 test('Should honor ignoreTrailingSlash option', t => {
   t.plan(4)
-  const fastify = Fastify({
+  const app = medley({
     ignoreTrailingSlash: true,
   })
 
-  fastify.get('/test', (req, res) => {
+  app.get('/test', (req, res) => {
     res.send('test')
   })
 
-  fastify.listen(0, (err) => {
-    fastify.server.unref()
+  app.listen(0, (err) => {
+    app.server.unref()
     if (err) t.threw(err)
 
-    const baseUrl = 'http://127.0.0.1:' + fastify.server.address().port
+    const baseUrl = 'http://127.0.0.1:' + app.server.address().port
 
     sget.concat(baseUrl + '/test', (err, res, data) => {
       if (err) t.threw(err)
@@ -36,13 +36,13 @@ test('Should honor ignoreTrailingSlash option', t => {
 
 test('Should honor maxParamLength option', t => {
   t.plan(4)
-  const fastify = Fastify({maxParamLength: 10})
+  const app = medley({maxParamLength: 10})
 
-  fastify.get('/test/:id', (req, reply) => {
+  app.get('/test/:id', (req, reply) => {
     reply.send({hello: 'world'})
   })
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/test/123456789',
   }, (error, res) => {
@@ -50,7 +50,7 @@ test('Should honor maxParamLength option', t => {
     t.strictEqual(res.statusCode, 200)
   })
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/test/123456789abcd',
   }, (error, res) => {

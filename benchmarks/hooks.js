@@ -1,8 +1,32 @@
 'use strict'
 
-const fastify = require('../fastify')()
+const app = require('../fastify')()
 
-const opts = {
+app
+  .addHook('onRequest', (req, res, next) => {
+    next()
+  })
+  .addHook('onRequest', (req, res, next) => {
+    next()
+  })
+
+app
+  .addHook('preHandler', (request, reply, next) => {
+    next()
+  })
+  .addHook('preHandler', (request, reply, next) => {
+    setImmediate(next)
+  })
+  .addHook('preHandler', (request, reply, next) => {
+    next()
+  })
+
+app
+  .addHook('onSend', (request, reply, payload, next) => {
+    next()
+  })
+
+app.get('/', {
   responseSchema: {
     200: {
       type: 'object',
@@ -13,40 +37,14 @@ const opts = {
       },
     },
   },
-}
-
-fastify
-  .addHook('onRequest', function(req, res, next) {
-    next()
-  })
-  .addHook('onRequest', function(req, res, next) {
-    next()
-  })
-
-fastify
-  .addHook('preHandler', function(request, reply, next) {
-    next()
-  })
-  .addHook('preHandler', function(request, reply, next) {
-    setImmediate(next)
-  })
-  .addHook('preHandler', function(request, reply, next) {
-    next()
-  })
-
-fastify
-  .addHook('onSend', function(request, reply, payload, next) {
-    next()
-  })
-
-fastify.get('/', opts, function(request, reply) {
+}, (request, reply) => {
   reply.send({hello: 'world'})
 })
 
-fastify.listen(3000, (err) => {
+app.listen(3000, (err) => {
   if (err) {
     throw err
   }
   // eslint-disable-next-line no-console
-  console.log(`server listening on ${fastify.server.address().port}`)
+  console.log(`server listening on ${app.server.address().port}`)
 })

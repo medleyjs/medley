@@ -35,7 +35,7 @@ test('checkDecorators should check if the given decorator is present in the inst
 
   fn[Symbol.for('plugin-meta')] = {
     decorators: {
-      fastify: ['plugin'],
+      app: ['plugin'],
       reply: ['plugin'],
       request: ['plugin'],
     },
@@ -62,7 +62,7 @@ test('checkDecorators should check if the given decorator is present in the inst
 
   fn[Symbol.for('plugin-meta')] = {
     decorators: {
-      fastify: ['plugin'],
+      app: ['plugin'],
       reply: ['plugin'],
       request: ['plugin'],
     },

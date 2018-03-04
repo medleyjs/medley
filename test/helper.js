@@ -5,14 +5,14 @@ const stream = require('stream')
 
 module.exports.payloadMethod = function(method, t) {
   const test = t.test
-  const fastify = require('..')()
+  const app = require('..')()
   const upMethod = method.toUpperCase()
   const loMethod = method.toLowerCase()
 
   test(`${upMethod} can be created`, (t) => {
     t.plan(1)
     try {
-      fastify[loMethod]('/', {
+      app[loMethod]('/', {
         responseSchema: {
           200: {
             type: 'object',
@@ -35,7 +35,7 @@ module.exports.payloadMethod = function(method, t) {
   test(`${upMethod} without schema can be created`, (t) => {
     t.plan(1)
     try {
-      fastify[loMethod]('/missing', function(req, reply) {
+      app[loMethod]('/missing', function(req, reply) {
         reply.code(200).send(req.body)
       })
       t.pass()
@@ -47,7 +47,7 @@ module.exports.payloadMethod = function(method, t) {
   test(`${upMethod} with body and querystring`, (t) => {
     t.plan(1)
     try {
-      fastify[loMethod]('/with-query', function(req, reply) {
+      app[loMethod]('/with-query', function(req, reply) {
         req.body.hello = req.body.hello + req.query.foo
         reply.code(200).send(req.body)
       })
@@ -60,7 +60,7 @@ module.exports.payloadMethod = function(method, t) {
   test(`${upMethod} with bodyLimit option`, (t) => {
     t.plan(1)
     try {
-      fastify[loMethod]('/with-limit', {bodyLimit: 1}, function(req, reply) {
+      app[loMethod]('/with-limit', {bodyLimit: 1}, function(req, reply) {
         reply.send(req.body)
       })
       t.pass()
@@ -69,18 +69,18 @@ module.exports.payloadMethod = function(method, t) {
     }
   })
 
-  fastify.listen(0, function(err) {
+  app.listen(0, function(err) {
     if (err) {
       t.error(err)
     }
 
-    fastify.server.unref()
+    app.server.unref()
 
     test(`${upMethod} - correctly replies`, (t) => {
       t.plan(3)
       sget({
         method: upMethod,
-        url: 'http://localhost:' + fastify.server.address().port,
+        url: 'http://localhost:' + app.server.address().port,
         body: {
           hello: 'world',
         },
@@ -98,7 +98,7 @@ module.exports.payloadMethod = function(method, t) {
       const largeString = 'world'.repeat(13200)
       sget({
         method: upMethod,
-        url: 'http://localhost:' + fastify.server.address().port,
+        url: 'http://localhost:' + app.server.address().port,
         body: {hello: largeString},
         json: true,
       }, (err, response, body) => {
@@ -112,7 +112,7 @@ module.exports.payloadMethod = function(method, t) {
       t.plan(3)
       sget({
         method: upMethod,
-        url: 'http://localhost:' + fastify.server.address().port,
+        url: 'http://localhost:' + app.server.address().port,
         body: JSON.stringify({hello: 'world'}),
         headers: {
           'content-type': 'application/json;charset=utf-8',
@@ -128,7 +128,7 @@ module.exports.payloadMethod = function(method, t) {
       t.plan(3)
       sget({
         method: upMethod,
-        url: 'http://localhost:' + fastify.server.address().port + '/missing',
+        url: 'http://localhost:' + app.server.address().port + '/missing',
         body: {
           hello: 'world',
         },
@@ -144,7 +144,7 @@ module.exports.payloadMethod = function(method, t) {
       t.plan(3)
       sget({
         method: upMethod,
-        url: 'http://localhost:' + fastify.server.address().port + '/with-query?foo=hello',
+        url: 'http://localhost:' + app.server.address().port + '/with-query?foo=hello',
         body: {
           hello: 'world',
         },
@@ -161,7 +161,7 @@ module.exports.payloadMethod = function(method, t) {
 
       sget({
         method: upMethod,
-        url: 'http://localhost:' + fastify.server.address().port + '/missing',
+        url: 'http://localhost:' + app.server.address().port + '/missing',
         headers: {'Content-Length': '0'},
         timeout: 500,
       }, (err, response, body) => {
@@ -171,7 +171,7 @@ module.exports.payloadMethod = function(method, t) {
       })
 
       // Must use inject to make a request without a Content-Length header
-      fastify.inject({
+      app.inject({
         method: upMethod,
         url: '/missing',
       }, (err, res) => {
@@ -185,7 +185,7 @@ module.exports.payloadMethod = function(method, t) {
       t.plan(2)
       sget({
         method: upMethod,
-        url: 'http://localhost:' + fastify.server.address().port + '/missing',
+        url: 'http://localhost:' + app.server.address().port + '/missing',
         body: 'hello world',
         timeout: 500,
       }, (err, response, body) => {
@@ -203,7 +203,7 @@ module.exports.payloadMethod = function(method, t) {
         t.plan(2)
         sget({
           method: upMethod,
-          url: 'http://localhost:' + fastify.server.address().port + '/missing',
+          url: 'http://localhost:' + app.server.address().port + '/missing',
           body: 'hello world',
           headers: {
             'Content-Type': 'text/plain',
@@ -221,7 +221,7 @@ module.exports.payloadMethod = function(method, t) {
 
       sget({
         method: upMethod,
-        url: 'http://localhost:' + fastify.server.address().port,
+        url: 'http://localhost:' + app.server.address().port,
         body: 'hello world',
         headers: {
           'Content-Type': 'application/json',
@@ -234,7 +234,7 @@ module.exports.payloadMethod = function(method, t) {
 
       sget({
         method: upMethod,
-        url: 'http://localhost:' + fastify.server.address().port,
+        url: 'http://localhost:' + app.server.address().port,
         body: '',
         headers: {'Content-Type': 'application/json'},
         timeout: 500,
@@ -249,7 +249,7 @@ module.exports.payloadMethod = function(method, t) {
 
       sget({
         method: upMethod,
-        url: 'http://localhost:' + fastify.server.address().port,
+        url: 'http://localhost:' + app.server.address().port,
         headers: {
           'Content-Type': 'application/json',
           'Content-Length': 1024 * 1024 + 1,
@@ -270,7 +270,7 @@ module.exports.payloadMethod = function(method, t) {
         })
         sget({
           method: upMethod,
-          url: 'http://localhost:' + fastify.server.address().port,
+          url: 'http://localhost:' + app.server.address().port,
           headers: {'Content-Type': 'application/json'},
           body: largeStream,
           timeout: 500,
@@ -282,7 +282,7 @@ module.exports.payloadMethod = function(method, t) {
 
       sget({
         method: upMethod,
-        url: `http://localhost:${fastify.server.address().port}/with-limit`,
+        url: `http://localhost:${app.server.address().port}/with-limit`,
         headers: {'Content-Type': 'application/json'},
         body: {},
         json: true,

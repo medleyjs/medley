@@ -3,7 +3,7 @@
 const t = require('tap')
 const test = t.test
 const sget = require('simple-get').concat
-const fastify = require('..')()
+const app = require('..')()
 
 const options = {
   responseSchema: {
@@ -16,7 +16,7 @@ const options = {
 test('shorthand - head', t => {
   t.plan(1)
   try {
-    fastify.head('/', options, function(req, reply) {
+    app.head('/', options, function(req, reply) {
       reply.code(200).send(null)
     })
     t.pass()
@@ -28,7 +28,7 @@ test('shorthand - head', t => {
 test('missing schema - head', t => {
   t.plan(1)
   try {
-    fastify.head('/missing', function(req, reply) {
+    app.head('/missing', function(req, reply) {
       reply.code(200).send(null)
     })
     t.pass()
@@ -37,15 +37,15 @@ test('missing schema - head', t => {
   }
 })
 
-fastify.listen(0, err => {
+app.listen(0, err => {
   t.error(err)
-  fastify.server.unref()
+  app.server.unref()
 
   test('shorthand - request head', t => {
     t.plan(2)
     sget({
       method: 'HEAD',
-      url: 'http://localhost:' + fastify.server.address().port,
+      url: 'http://localhost:' + app.server.address().port,
     }, (err, response) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -56,7 +56,7 @@ fastify.listen(0, err => {
     t.plan(2)
     sget({
       method: 'HEAD',
-      url: 'http://localhost:' + fastify.server.address().port + '/missing',
+      url: 'http://localhost:' + app.server.address().port + '/missing',
     }, (err, response) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)

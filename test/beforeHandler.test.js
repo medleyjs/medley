@@ -2,13 +2,13 @@
 
 const t = require('tap')
 const test = t.test
-const Fastify = require('..')
+const medley = require('..')
 
 test('beforeHandler', t => {
   t.plan(2)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.post('/', {
+  app.post('/', {
     beforeHandler: (req, reply, done) => {
       req.body.beforeHandler = true
       done()
@@ -17,7 +17,7 @@ test('beforeHandler', t => {
     reply.send(req.body)
   })
 
-  fastify.inject({
+  app.inject({
     method: 'POST',
     url: '/',
     payload: {hello: 'world'},
@@ -30,14 +30,14 @@ test('beforeHandler', t => {
 
 test('beforeHandler should be called after preHandler hook', t => {
   t.plan(2)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.addHook('preHandler', (req, reply, next) => {
+  app.addHook('preHandler', (req, reply, next) => {
     req.body.check = 'a'
     next()
   })
 
-  fastify.post('/', {
+  app.post('/', {
     beforeHandler: (req, reply, done) => {
       req.body.check += 'b'
       done()
@@ -46,7 +46,7 @@ test('beforeHandler should be called after preHandler hook', t => {
     reply.send(req.body)
   })
 
-  fastify.inject({
+  app.inject({
     method: 'POST',
     url: '/',
     payload: {hello: 'world'},
@@ -59,9 +59,9 @@ test('beforeHandler should be called after preHandler hook', t => {
 
 test('beforeHandler should be unique per route', t => {
   t.plan(4)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.post('/', {
+  app.post('/', {
     beforeHandler: (req, reply, done) => {
       req.body.hello = 'earth'
       done()
@@ -70,11 +70,11 @@ test('beforeHandler should be unique per route', t => {
     reply.send(req.body)
   })
 
-  fastify.post('/no', (req, reply) => {
+  app.post('/no', (req, reply) => {
     reply.send(req.body)
   })
 
-  fastify.inject({
+  app.inject({
     method: 'POST',
     url: '/',
     payload: {hello: 'world'},
@@ -84,7 +84,7 @@ test('beforeHandler should be unique per route', t => {
     t.deepEqual(payload, {hello: 'earth'})
   })
 
-  fastify.inject({
+  app.inject({
     method: 'POST',
     url: '/no',
     payload: {hello: 'world'},
@@ -97,9 +97,9 @@ test('beforeHandler should be unique per route', t => {
 
 test('beforeHandler should handle errors', t => {
   t.plan(3)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.post('/', {
+  app.post('/', {
     beforeHandler: (req, reply, done) => {
       done(new Error('kaboom'))
     },
@@ -107,7 +107,7 @@ test('beforeHandler should handle errors', t => {
     reply.send(req.body)
   })
 
-  fastify.inject({
+  app.inject({
     method: 'POST',
     url: '/',
     payload: {hello: 'world'},
@@ -125,9 +125,9 @@ test('beforeHandler should handle errors', t => {
 
 test('beforeHandler should handle errors with custom status code', t => {
   t.plan(3)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.post('/', {
+  app.post('/', {
     beforeHandler: (req, reply, done) => {
       reply.code(401)
       done(new Error('go away'))
@@ -136,7 +136,7 @@ test('beforeHandler should handle errors with custom status code', t => {
     reply.send(req.body)
   })
 
-  fastify.inject({
+  app.inject({
     method: 'POST',
     url: '/',
     payload: {hello: 'world'},
@@ -154,9 +154,9 @@ test('beforeHandler should handle errors with custom status code', t => {
 
 test('beforeHandler should handle errors with custom status code in shorthand form', t => {
   t.plan(3)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.post('/', {
+  app.post('/', {
     beforeHandler: (req, reply, done) => {
       reply.code(401)
       done(new Error('go away'))
@@ -165,7 +165,7 @@ test('beforeHandler should handle errors with custom status code in shorthand fo
     reply.send(req.body)
   })
 
-  fastify.inject({
+  app.inject({
     method: 'POST',
     url: '/',
     payload: {hello: 'world'},
@@ -183,9 +183,9 @@ test('beforeHandler should handle errors with custom status code in shorthand fo
 
 test('beforeHandler could accept an array of functions', t => {
   t.plan(2)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.post('/', {
+  app.post('/', {
     beforeHandler: [
       (req, reply, done) => {
         req.body.beforeHandler = 'a'
@@ -200,7 +200,7 @@ test('beforeHandler could accept an array of functions', t => {
     reply.send(req.body)
   })
 
-  fastify.inject({
+  app.inject({
     method: 'POST',
     url: '/',
     payload: {hello: 'world'},
@@ -213,14 +213,14 @@ test('beforeHandler could accept an array of functions', t => {
 
 test('beforeHandler does not interfere with preHandler', t => {
   t.plan(4)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.addHook('preHandler', (req, reply, next) => {
+  app.addHook('preHandler', (req, reply, next) => {
     req.body.check = 'a'
     next()
   })
 
-  fastify.post('/', {
+  app.post('/', {
     beforeHandler: (req, reply, done) => {
       req.body.check += 'b'
       done()
@@ -229,11 +229,11 @@ test('beforeHandler does not interfere with preHandler', t => {
     reply.send(req.body)
   })
 
-  fastify.post('/no', (req, reply) => {
+  app.post('/no', (req, reply) => {
     reply.send(req.body)
   })
 
-  fastify.inject({
+  app.inject({
     method: 'post',
     url: '/',
     payload: {hello: 'world'},
@@ -243,7 +243,7 @@ test('beforeHandler does not interfere with preHandler', t => {
     t.deepEqual(payload, {check: 'ab', hello: 'world'})
   })
 
-  fastify.inject({
+  app.inject({
     method: 'post',
     url: '/no',
     payload: {hello: 'world'},

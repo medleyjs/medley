@@ -42,19 +42,19 @@ function build(options) {
     maxParamLength: options.maxParamLength,
   })
 
-  const fastify = {
+  const medley = {
     _children: [],
     printRoutes: router.prettyPrint.bind(router),
   }
 
-  const app = avvio(fastify, {
+  const app = avvio(medley, {
     autostart: false,
   })
   // Override to allow the plugin incapsulation
   app.override = override
 
   var listening = false
-  // true when Fastify is ready to go
+  // true when medley is ready to go
   var started = false
   app.on('start', () => {
     started = true
@@ -80,7 +80,7 @@ function build(options) {
     server = http.createServer(httpHandler)
   }
 
-  fastify.onClose((instance, done) => {
+  medley.onClose((instance, done) => {
     if (listening) {
       instance.server.close(done)
     } else {
@@ -90,65 +90,65 @@ function build(options) {
 
   // body limit option
   validateBodyLimitOption(options.bodyLimit)
-  fastify._bodyLimit = options.bodyLimit || DEFAULT_BODY_LIMIT
+  medley._bodyLimit = options.bodyLimit || DEFAULT_BODY_LIMIT
 
   // shorthand methods
-  fastify.delete = _delete
-  fastify.get = _get
-  fastify.head = _head
-  fastify.patch = _patch
-  fastify.post = _post
-  fastify.put = _put
-  fastify.options = _options
-  fastify.all = _all
+  medley.delete = _delete
+  medley.get = _get
+  medley.head = _head
+  medley.patch = _patch
+  medley.post = _post
+  medley.put = _put
+  medley.options = _options
+  medley.all = _all
   // extended route
-  fastify.route = route
-  fastify._routePrefix = ''
+  medley.route = route
+  medley._routePrefix = ''
 
-  Object.defineProperty(fastify, 'basePath', {
+  Object.defineProperty(medley, 'basePath', {
     get() {
       return this._routePrefix
     },
   })
 
   // hooks
-  fastify.addHook = addHook
-  fastify._hooks = new Hooks()
+  medley.addHook = addHook
+  medley._hooks = new Hooks()
 
   const onRouteHooks = []
 
   // custom parsers
-  fastify.addContentTypeParser = addContentTypeParser
-  fastify.hasContentTypeParser = hasContentTypeParser
-  fastify._contentTypeParser = new ContentTypeParser(fastify._bodyLimit)
+  medley.addContentTypeParser = addContentTypeParser
+  medley.hasContentTypeParser = hasContentTypeParser
+  medley._contentTypeParser = new ContentTypeParser(medley._bodyLimit)
 
   // plugin
-  fastify.register = fastify.use
-  fastify.listen = listen
-  fastify.server = server
-  fastify[pluginUtils.registeredPlugins] = []
+  medley.register = medley.use
+  medley.listen = listen
+  medley.server = server
+  medley[pluginUtils.registeredPlugins] = []
 
   // extend server methods
-  fastify.decorate = decorator.add
-  fastify.hasDecorator = decorator.exist
-  fastify.decorateReply = decorator.decorateReply
-  fastify.decorateRequest = decorator.decorateRequest
+  medley.decorate = decorator.add
+  medley.hasDecorator = decorator.exist
+  medley.decorateReply = decorator.decorateReply
+  medley.decorateRequest = decorator.decorateRequest
 
-  fastify._Reply = Reply.buildReply(Reply)
-  fastify._Request = Request.buildRequest(Request)
+  medley._Reply = Reply.buildReply(Reply)
+  medley._Request = Request.buildRequest(Request)
 
   // fake http injection
-  fastify.inject = inject
+  medley.inject = inject
 
   var fourOhFour = findMyWay({defaultRoute: fourOhFourFallBack})
-  fastify.setNotFoundHandler = setNotFoundHandler
-  fastify._notFoundHandler = null
-  fastify._404Context = null
-  fastify.setNotFoundHandler(basic404) // Set the default 404 handler
+  medley.setNotFoundHandler = setNotFoundHandler
+  medley._notFoundHandler = null
+  medley._404Context = null
+  medley.setNotFoundHandler(basic404) // Set the default 404 handler
 
-  fastify.setErrorHandler = setErrorHandler
+  medley.setErrorHandler = setErrorHandler
 
-  return fastify
+  return medley
 
   function routeHandler(req, res, params, context) {
     if (context.onResponse !== null) {
@@ -205,7 +205,7 @@ function build(options) {
 
     if (cb === undefined) {
       return new Promise((resolve, reject) => {
-        fastify.listen(port, host, (err) => {
+        medley.listen(port, host, (err) => {
           if (err) {
             reject(err)
           } else {
@@ -215,13 +215,13 @@ function build(options) {
       })
     }
 
-    fastify.ready((err) => {
+    medley.ready((err) => {
       if (err) {
         cb(err)
         return
       }
       if (listening) {
-        cb(new Error('Fastify is already listening'))
+        cb(new Error('app is already listening'))
         return
       }
 
@@ -349,7 +349,7 @@ function build(options) {
     return _route(this, supportedMethods, url, opts, handler)
   }
 
-  function _route(_fastify, method, url, opts, handler) {
+  function _route(_medley, method, url, opts, handler) {
     if (!handler && typeof opts === 'function') {
       handler = opts
       opts = {}
@@ -361,14 +361,14 @@ function build(options) {
       handler,
     })
 
-    return _fastify.route(opts)
+    return _medley.route(opts)
   }
 
   // Route management
   function route(opts) {
-    throwIfAlreadyStarted('Cannot add route when fastify instance is already started!')
+    throwIfAlreadyStarted('Cannot add route when app is already started!')
 
-    const _fastify = this
+    const _medley = this
 
     if (Array.isArray(opts.method)) {
       for (var i = 0; i < opts.method.length; i++) {
@@ -388,8 +388,8 @@ function build(options) {
 
     validateBodyLimitOption(opts.bodyLimit)
 
-    _fastify.after(function afterRouteAdded(notHandledErr, done) {
-      const prefix = _fastify._routePrefix
+    _medley.after(function afterRouteAdded(notHandledErr, done) {
+      const prefix = _medley._routePrefix
       var path = opts.url || opts.path
       if (path === '/' && prefix.length > 0) {
         // Ensure that '/prefix' + '/' gets registered as '/prefix'
@@ -406,7 +406,7 @@ function build(options) {
 
       // run 'onRoute' hooks
       for (var h of onRouteHooks) {
-        h.call(_fastify, opts)
+        h.call(_medley, opts)
       }
 
       const config = opts.config || {}
@@ -421,7 +421,7 @@ function build(options) {
       }
 
       const context = new Context(
-        _fastify,
+        _medley,
         serializers,
         opts.handler,
         config,
@@ -440,10 +440,10 @@ function build(options) {
       // To be sure to load also that hoooks, we must listen for the avvio's 'preReady' event and
       // update the context object accordingly.
       app.once('preReady', () => {
-        const onRequest = _fastify._hooks.onRequest
-        const onResponse = _fastify._hooks.onResponse
-        const onSend = _fastify._hooks.onSend
-        const preHandler = _fastify._hooks.preHandler.concat(opts.beforeHandler || [])
+        const onRequest = _medley._hooks.onRequest
+        const onResponse = _medley._hooks.onResponse
+        const onSend = _medley._hooks.onSend
+        const preHandler = _medley._hooks.preHandler.concat(opts.beforeHandler || [])
 
         context.onRequest = onRequest.length ? onRequest : null
         context.preHandler = preHandler.length ? preHandler : null
@@ -455,7 +455,7 @@ function build(options) {
     })
 
     // chainable api
-    return _fastify
+    return _medley
   }
 
   function Context(appInstance, serializers, handler, config, bodyLimit, storeApp) {
@@ -473,7 +473,7 @@ function build(options) {
     this.preHandler = null
     this.onSend = null
     this.onResponse = null
-    this._fastify = storeApp ? appInstance : null
+    this._appInstance = storeApp ? appInstance : null
   }
 
   function inject(opts, cb) {
@@ -504,7 +504,7 @@ function build(options) {
   }
 
   function addHook(name, fn) {
-    throwIfAlreadyStarted('Cannot call "addHook" when fastify instance is already started!')
+    throwIfAlreadyStarted('Cannot call "addHook" when app is already started!')
 
     if (name === 'onClose') {
       this._hooks.validate(name, fn)
@@ -527,9 +527,7 @@ function build(options) {
   }
 
   function addContentTypeParser(contentType, opts, parser) {
-    throwIfAlreadyStarted(
-      'Cannot call "addContentTypeParser" when fastify instance is already started!'
-    )
+    throwIfAlreadyStarted('Cannot call "addContentTypeParser" when app is already started!')
 
     if (typeof opts === 'function') {
       parser = opts
@@ -568,13 +566,11 @@ function build(options) {
   }
 
   function setNotFoundHandler(opts, handler) {
-    throwIfAlreadyStarted(
-      'Cannot call "setNotFoundHandler" when fastify instance is already started!'
-    )
+    throwIfAlreadyStarted('Cannot call "setNotFoundHandler" when app is already started!')
 
     if (this._notFoundHandler !== null && this._notFoundHandler !== basic404) {
       throw new Error(
-        `Not found handler already set for Fastify instance with prefix: '${this._routePrefix || '/'}'`
+        `Not found handler already set for sub app with prefix: '${this._routePrefix || '/'}'`
       )
     }
 
@@ -631,7 +627,7 @@ function build(options) {
   }
 
   function setErrorHandler(func) {
-    throwIfAlreadyStarted('Cannot call "setErrorHandler" when fastify instance is already started!')
+    throwIfAlreadyStarted('Cannot call "setErrorHandler" when app is already started!')
 
     this._errorHandler = func
     return this

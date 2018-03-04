@@ -4,21 +4,21 @@ const t = require('tap')
 const test = t.test
 const Stream = require('stream')
 const util = require('util')
-const Fastify = require('..')
+const medley = require('..')
 
 test('inject should exist', t => {
   t.plan(2)
-  const fastify = Fastify()
-  t.ok(fastify.inject)
-  t.is(typeof fastify.inject, 'function')
+  const app = medley()
+  t.ok(app.inject)
+  t.is(typeof app.inject, 'function')
 })
 
 test('should wait for the ready event', t => {
   t.plan(4)
-  const fastify = Fastify()
+  const app = medley()
   const payload = {hello: 'world'}
 
-  fastify.register((instance, opts, next) => {
+  app.register((instance, opts, next) => {
     instance.get('/', (req, reply) => {
       reply.send(payload)
     })
@@ -26,7 +26,7 @@ test('should wait for the ready event', t => {
     setTimeout(next, 500)
   })
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/',
   }, (err, res) => {
@@ -39,14 +39,14 @@ test('should wait for the ready event', t => {
 
 test('inject get request', t => {
   t.plan(4)
-  const fastify = Fastify()
+  const app = medley()
   const payload = {hello: 'world'}
 
-  fastify.get('/', (req, reply) => {
+  app.get('/', (req, reply) => {
     reply.send(payload)
   })
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/',
   }, (err, res) => {
@@ -59,14 +59,14 @@ test('inject get request', t => {
 
 test('inject get request - code check', t => {
   t.plan(4)
-  const fastify = Fastify()
+  const app = medley()
   const payload = {hello: 'world'}
 
-  fastify.get('/', (req, reply) => {
+  app.get('/', (req, reply) => {
     reply.code(201).send(payload)
   })
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/',
   }, (err, res) => {
@@ -79,13 +79,13 @@ test('inject get request - code check', t => {
 
 test('inject get request - headers check', t => {
   t.plan(4)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.get('/', (req, reply) => {
+  app.get('/', (req, reply) => {
     reply.header('content-type', 'text/plain').send('')
   })
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/',
   }, (err, res) => {
@@ -98,13 +98,13 @@ test('inject get request - headers check', t => {
 
 test('inject get request - querystring', t => {
   t.plan(4)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.get('/', (req, reply) => {
+  app.get('/', (req, reply) => {
     reply.send(req.query)
   })
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/?hello=world',
   }, (err, res) => {
@@ -117,13 +117,13 @@ test('inject get request - querystring', t => {
 
 test('inject get request - params', t => {
   t.plan(4)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.get('/:hello', (req, reply) => {
+  app.get('/:hello', (req, reply) => {
     reply.send(req.params)
   })
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/world',
   }, (err, res) => {
@@ -136,13 +136,13 @@ test('inject get request - params', t => {
 
 test('inject get request - wildcard', t => {
   t.plan(4)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.get('/test/*', (req, reply) => {
+  app.get('/test/*', (req, reply) => {
     reply.send(req.params)
   })
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/test/wildcard',
   }, (err, res) => {
@@ -155,13 +155,13 @@ test('inject get request - wildcard', t => {
 
 test('inject get request - headers', t => {
   t.plan(4)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.get('/', (req, reply) => {
+  app.get('/', (req, reply) => {
     reply.send(req.headers)
   })
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/',
     headers: {hello: 'world'},
@@ -175,14 +175,14 @@ test('inject get request - headers', t => {
 
 test('inject post request', t => {
   t.plan(4)
-  const fastify = Fastify()
+  const app = medley()
   const payload = {hello: 'world'}
 
-  fastify.post('/', (req, reply) => {
+  app.post('/', (req, reply) => {
     reply.send(req.body)
   })
 
-  fastify.inject({
+  app.inject({
     method: 'POST',
     url: '/',
     payload,
@@ -196,13 +196,13 @@ test('inject post request', t => {
 
 test('inject post request - send stream', t => {
   t.plan(4)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.post('/', (req, reply) => {
+  app.post('/', (req, reply) => {
     reply.send(req.body)
   })
 
-  fastify.inject({
+  app.inject({
     method: 'POST',
     url: '/',
     headers: {'content-type': 'application/json'},
@@ -217,13 +217,13 @@ test('inject post request - send stream', t => {
 
 test('inject get request - reply stream', t => {
   t.plan(3)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.get('/', (req, reply) => {
+  app.get('/', (req, reply) => {
     reply.send(getStream())
   })
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/',
   }, (err, res) => {
@@ -235,10 +235,10 @@ test('inject get request - reply stream', t => {
 
 test('inject promisify - waiting for ready event', t => {
   t.plan(1)
-  const fastify = Fastify()
+  const app = medley()
   const payload = {hello: 'world'}
 
-  fastify.get('/', (req, reply) => {
+  app.get('/', (req, reply) => {
     reply.send(payload)
   })
 
@@ -246,7 +246,7 @@ test('inject promisify - waiting for ready event', t => {
     method: 'GET',
     url: '/',
   }
-  fastify.inject(injectParams)
+  app.inject(injectParams)
     .then(res => {
       t.strictEqual(res.statusCode, 200)
     })
@@ -255,21 +255,21 @@ test('inject promisify - waiting for ready event', t => {
 
 test('inject promisify - after the ready event', t => {
   t.plan(2)
-  const fastify = Fastify()
+  const app = medley()
   const payload = {hello: 'world'}
 
-  fastify.get('/', (req, reply) => {
+  app.get('/', (req, reply) => {
     reply.send(payload)
   })
 
-  fastify.ready(err => {
+  app.ready(err => {
     t.error(err)
 
     const injectParams = {
       method: 'GET',
       url: '/',
     }
-    fastify.inject(injectParams)
+    app.inject(injectParams)
       .then(res => {
         t.strictEqual(res.statusCode, 200)
       })
@@ -279,14 +279,14 @@ test('inject promisify - after the ready event', t => {
 
 test('inject promisify - when the server is up', t => {
   t.plan(2)
-  const fastify = Fastify()
+  const app = medley()
   const payload = {hello: 'world'}
 
-  fastify.get('/', (req, reply) => {
+  app.get('/', (req, reply) => {
     reply.send(payload)
   })
 
-  fastify.ready(err => {
+  app.ready(err => {
     t.error(err)
 
     // setTimeout because the ready event don't set "started" flag
@@ -296,7 +296,7 @@ test('inject promisify - when the server is up', t => {
         method: 'GET',
         url: '/',
       }
-      fastify.inject(injectParams)
+      app.inject(injectParams)
         .then(res => {
           t.strictEqual(res.statusCode, 200)
         })
@@ -307,14 +307,14 @@ test('inject promisify - when the server is up', t => {
 
 test('should reject in error case', t => {
   t.plan(1)
-  const fastify = Fastify()
+  const app = medley()
 
   const error = new Error('DOOM!')
-  fastify.register((instance, opts, next) => {
+  app.register((instance, opts, next) => {
     setTimeout(next, 500, error)
   })
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/',
   })

@@ -4,19 +4,19 @@ const t = require('tap')
 const test = t.test
 const fs = require('fs')
 const path = require('path')
-const Fastify = require('../..')
+const medley = require('../..')
 const h2url = require('h2url')
 const sget = require('simple-get').concat
 const msg = {hello: 'world'}
 
-var fastify
+var app
 try {
-  fastify = Fastify({
+  app = medley({
     http2: true,
     https: {
       allowHTTP1: true,
-      key: fs.readFileSync(path.join(__dirname, '..', 'https', 'fastify.key')),
-      cert: fs.readFileSync(path.join(__dirname, '..', 'https', 'fastify.cert')),
+      key: fs.readFileSync(path.join(__dirname, '..', 'https', 'app.key')),
+      cert: fs.readFileSync(path.join(__dirname, '..', 'https', 'app.cert')),
     },
   })
   t.pass('Key/cert successfully loaded')
@@ -24,26 +24,26 @@ try {
   t.fail('Key/cert loading failed', e)
 }
 
-fastify.get('/', function(req, reply) {
+app.get('/', function(req, reply) {
   reply.code(200).send(msg)
 })
 
-fastify.post('/', function(req, reply) {
+app.post('/', function(req, reply) {
   reply.code(200).send(req.body)
 })
 
-fastify.get('/error', async function(req, reply) {
+app.get('/error', async function(req, reply) {
   throw new Error('kaboom')
 })
 
-fastify.listen(0, (err) => {
+app.listen(0, (err) => {
   t.error(err)
-  fastify.server.unref()
+  app.server.unref()
 
   test('https get error', async (t) => {
     t.plan(1)
 
-    const url = `https://localhost:${fastify.server.address().port}/error`
+    const url = `https://localhost:${app.server.address().port}/error`
     const res = await h2url.concat({url})
 
     t.strictEqual(res.headers[':status'], 500)
@@ -52,7 +52,7 @@ fastify.listen(0, (err) => {
   test('https post', async (t) => {
     t.plan(2)
 
-    const url = `https://localhost:${fastify.server.address().port}`
+    const url = `https://localhost:${app.server.address().port}`
     const res = await h2url.concat({
       url,
       method: 'POST',
@@ -69,7 +69,7 @@ fastify.listen(0, (err) => {
   test('https get request', async (t) => {
     t.plan(3)
 
-    const url = `https://localhost:${fastify.server.address().port}`
+    const url = `https://localhost:${app.server.address().port}`
     const res = await h2url.concat({url})
 
     t.strictEqual(res.headers[':status'], 200)
@@ -81,7 +81,7 @@ fastify.listen(0, (err) => {
     t.plan(4)
     sget({
       method: 'GET',
-      url: 'https://localhost:' + fastify.server.address().port,
+      url: 'https://localhost:' + app.server.address().port,
       rejectUnauthorized: false,
     }, (err, response, body) => {
       t.error(err)
@@ -95,7 +95,7 @@ fastify.listen(0, (err) => {
     t.plan(2)
     sget({
       method: 'GET',
-      url: 'https://localhost:' + fastify.server.address().port + '/error',
+      url: 'https://localhost:' + app.server.address().port + '/error',
       rejectUnauthorized: false,
     }, (err, response, body) => {
       t.error(err)

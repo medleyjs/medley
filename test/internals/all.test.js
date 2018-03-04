@@ -2,15 +2,15 @@
 
 const t = require('tap')
 const test = t.test
-const Fastify = require('../..')
+const medley = require('../..')
 const supportedMethods = ['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT', 'OPTIONS']
 
-test('fastify.all should add all the methods to the same url', t => {
+test('app.all should add all the methods to the same URL', t => {
   t.plan(supportedMethods.length * 2)
 
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.all('/', (request, reply) => {
+  app.all('/', (request, reply) => {
     reply.send({method: request.req.method})
   })
 
@@ -26,7 +26,7 @@ test('fastify.all should add all the methods to the same url', t => {
       options.payload = {hello: 'world'}
     }
 
-    fastify.inject(options, (err, res) => {
+    app.inject(options, (err, res) => {
       t.error(err)
       var payload = JSON.parse(res.payload)
       t.deepEqual(payload, {method})

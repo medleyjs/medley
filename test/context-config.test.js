@@ -3,7 +3,7 @@
 const t = require('tap')
 const test = t.test
 const sget = require('simple-get').concat
-const Fastify = require('..')
+const medley = require('..')
 
 const routeOptions = {
   config: {
@@ -18,32 +18,32 @@ function handler(req, reply) {
 
 test('config', t => {
   t.plan(10)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.get('/get', {
+  app.get('/get', {
     config: Object.assign({}, routeOptions.config),
   }, handler)
 
-  fastify.route({
+  app.route({
     method: 'GET',
     url: '/route',
     handler,
     config: Object.assign({}, routeOptions.config),
   })
 
-  fastify.route({
+  app.route({
     method: 'GET',
     url: '/no-config',
     handler,
   })
 
-  fastify.listen(0, err => {
+  app.listen(0, err => {
     t.error(err)
-    fastify.server.unref()
+    app.server.unref()
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/get',
+      url: 'http://localhost:' + app.server.address().port + '/get',
       json: true,
     }, (err, response, body) => {
       t.error(err)
@@ -53,7 +53,7 @@ test('config', t => {
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/route',
+      url: 'http://localhost:' + app.server.address().port + '/route',
       json: true,
     }, (err, response, body) => {
       t.error(err)
@@ -63,7 +63,7 @@ test('config', t => {
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/no-config',
+      url: 'http://localhost:' + app.server.address().port + '/no-config',
       json: true,
     }, (err, response, body) => {
       t.error(err)

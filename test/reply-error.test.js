@@ -3,7 +3,7 @@
 const t = require('tap')
 const test = t.test
 const net = require('net')
-const Fastify = require('..')
+const medley = require('..')
 const statusCodes = require('http').STATUS_CODES
 
 const codes = Object.keys(statusCodes)
@@ -14,16 +14,16 @@ codes.forEach(code => {
 function helper(code) {
   test('Reply error handling - code: ' + code, t => {
     t.plan(4)
-    const fastify = Fastify()
+    const app = medley()
     const err = new Error('winter is coming')
 
-    fastify.get('/', (req, reply) => {
+    app.get('/', (req, reply) => {
       reply
         .code(Number(code))
         .send(err)
     })
 
-    fastify.inject({
+    app.inject({
       method: 'GET',
       url: '/',
     }, (error, res) => {
@@ -44,17 +44,17 @@ function helper(code) {
 
 test('preHandler hook error handling with external code', t => {
   t.plan(3)
-  const fastify = Fastify()
+  const app = medley()
   const err = new Error('winter is coming')
 
-  fastify.addHook('preHandler', (req, reply, done) => {
+  app.addHook('preHandler', (req, reply, done) => {
     reply.code(400)
     done(err)
   })
 
-  fastify.get('/', () => {})
+  app.get('/', () => {})
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/',
   }, (error, res) => {
@@ -73,17 +73,17 @@ test('preHandler hook error handling with external code', t => {
 
 test('onRequest hook error handling with external done', t => {
   t.plan(3)
-  const fastify = Fastify()
+  const app = medley()
   const err = new Error('winter is coming')
 
-  fastify.addHook('onRequest', (req, res, done) => {
+  app.addHook('onRequest', (req, res, done) => {
     res.statusCode = 400
     done(err)
   })
 
-  fastify.get('/', () => {})
+  app.get('/', () => {})
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/',
   }, (error, res) => {
@@ -102,15 +102,15 @@ test('onRequest hook error handling with external done', t => {
 
 test('Error instance sets HTTP status code', t => {
   t.plan(3)
-  const fastify = Fastify()
+  const app = medley()
   const err = new Error('winter is coming')
   err.statusCode = 418
 
-  fastify.get('/', () => {
+  app.get('/', () => {
     return Promise.reject(err)
   })
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/',
   }, (error, res) => {
@@ -129,15 +129,15 @@ test('Error instance sets HTTP status code', t => {
 
 test('Error status code below 400 defaults to 500', t => {
   t.plan(3)
-  const fastify = Fastify()
+  const app = medley()
   const err = new Error('winter is coming')
   err.statusCode = 399
 
-  fastify.get('/', () => {
+  app.get('/', () => {
     return Promise.reject(err)
   })
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/',
   }, (error, res) => {
@@ -156,15 +156,15 @@ test('Error status code below 400 defaults to 500', t => {
 
 test('Error.status property support', t => {
   t.plan(3)
-  const fastify = Fastify()
+  const app = medley()
   const err = new Error('winter is coming')
   err.status = 418
 
-  fastify.get('/', () => {
+  app.get('/', () => {
     return Promise.reject(err)
   })
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/',
   }, (error, res) => {
@@ -199,13 +199,13 @@ test('Support rejection with values that are not Error instances', t => {
   for (const nonErr of objs) {
     t.test('Type: ' + typeof nonErr, t => {
       t.plan(4)
-      const fastify = Fastify()
+      const app = medley()
 
-      fastify.get('/', () => {
+      app.get('/', () => {
         return Promise.reject(nonErr)
       })
 
-      fastify.setErrorHandler((err, request, reply) => {
+      app.setErrorHandler((err, request, reply) => {
         if (typeof err === 'object') {
           t.deepEqual(err, nonErr)
         } else {
@@ -214,7 +214,7 @@ test('Support rejection with values that are not Error instances', t => {
         reply.send('error')
       })
 
-      fastify.inject({
+      app.inject({
         method: 'GET',
         url: '/',
       }, (error, res) => {
@@ -228,21 +228,21 @@ test('Support rejection with values that are not Error instances', t => {
 
 test('should set the status code from the error object (from route handler)', t => {
   t.plan(6)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.get('/status', (req, reply) => {
+  app.get('/status', (req, reply) => {
     const error = new Error('kaboom')
     error.status = 400
     reply.send(error)
   })
 
-  fastify.get('/statusCode', (req, reply) => {
+  app.get('/statusCode', (req, reply) => {
     const error = new Error('kaboom')
     error.statusCode = 400
     reply.send(error)
   })
 
-  fastify.inject({
+  app.inject({
     url: '/status',
     method: 'GET',
   }, (err, res) => {
@@ -255,7 +255,7 @@ test('should set the status code from the error object (from route handler)', t 
     })
   })
 
-  fastify.inject({
+  app.inject({
     url: '/statusCode',
     method: 'GET',
   }, (err, res) => {
@@ -271,15 +271,15 @@ test('should set the status code from the error object (from route handler)', t 
 
 test('should set the status code from the error object (from custom error handler)', t => {
   t.plan(5)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.get('/', (req, reply) => {
+  app.get('/', (req, reply) => {
     const error = new Error('ouch')
     error.statusCode = 401
     reply.send(error)
   })
 
-  fastify.setErrorHandler((err, request, reply) => {
+  app.setErrorHandler((err, request, reply) => {
     t.is(err.message, 'ouch')
     t.is(reply.res.statusCode, 401)
     const error = new Error('kaboom')
@@ -287,7 +287,7 @@ test('should set the status code from the error object (from custom error handle
     reply.send(error)
   })
 
-  fastify.inject({
+  app.inject({
     url: '/',
     method: 'GET',
   }, (err, res) => {
@@ -303,9 +303,9 @@ test('should set the status code from the error object (from custom error handle
 
 test('should throw an error if the payload does not get serialized to a valid type', t => {
   t.plan(2)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.get('/', (request, reply) => {
+  app.get('/', (request, reply) => {
     reply.type('text/html')
     try {
       reply.send({})
@@ -315,7 +315,7 @@ test('should throw an error if the payload does not get serialized to a valid ty
     }
   })
 
-  fastify.inject('/', () => {
+  app.inject('/', () => {
     t.fail('should not be called')
   })
 })

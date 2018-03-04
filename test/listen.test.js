@@ -4,45 +4,45 @@ const os = require('os')
 const path = require('path')
 const fs = require('fs')
 const test = require('tap').test
-const Fastify = require('..')
+const medley = require('..')
 
 test('listen accepts a port and a callback', t => {
   t.plan(3)
-  const fastify = Fastify()
-  fastify.listen(0, (err) => {
-    fastify.server.unref()
-    t.is(fastify.server.address().address, '127.0.0.1')
+  const app = medley()
+  app.listen(0, (err) => {
+    app.server.unref()
+    t.is(app.server.address().address, '127.0.0.1')
     t.error(err)
     t.pass()
-    fastify.close()
+    app.close()
   })
 })
 
 test('listen accepts a port, address, and callback', t => {
   t.plan(2)
-  const fastify = Fastify()
-  fastify.listen(0, '127.0.0.1', (err) => {
-    fastify.server.unref()
+  const app = medley()
+  app.listen(0, '127.0.0.1', (err) => {
+    app.server.unref()
     t.error(err)
     t.pass()
-    fastify.close()
+    app.close()
   })
 })
 
 test('listen accepts a port, address, backlog and callback', t => {
   t.plan(2)
-  const fastify = Fastify()
-  fastify.listen(0, '127.0.0.1', 511, (err) => {
-    fastify.server.unref()
+  const app = medley()
+  app.listen(0, '127.0.0.1', 511, (err) => {
+    app.server.unref()
     t.error(err)
     t.pass()
-    fastify.close()
+    app.close()
   })
 })
 
 test('listen after Promise.resolve()', t => {
   t.plan(2)
-  const f = Fastify()
+  const f = medley()
   Promise.resolve()
     .then(() => {
       f.listen(0, (err) => {
@@ -56,7 +56,7 @@ test('listen after Promise.resolve()', t => {
 
 test('register after listen using Promise.resolve()', t => {
   t.plan(1)
-  const f = Fastify()
+  const f = medley()
 
   const handler = (req, res) => res.send({})
   Promise.resolve()
@@ -74,24 +74,24 @@ test('register after listen using Promise.resolve()', t => {
 
 test('double listen errors', t => {
   t.plan(2)
-  const fastify = Fastify()
-  fastify.listen(0, (err) => {
+  const app = medley()
+  app.listen(0, (err) => {
     t.error(err)
-    fastify.listen(fastify.server.address().port, (err) => {
+    app.listen(app.server.address().port, (err) => {
       t.ok(err)
-      fastify.close()
+      app.close()
     })
   })
 })
 
 test('listen twice on the same port', t => {
   t.plan(2)
-  const fastify = Fastify()
-  fastify.listen(0, (err) => {
+  const app = medley()
+  app.listen(0, (err) => {
     t.error(err)
-    const s2 = Fastify()
-    s2.listen(fastify.server.address().port, (err) => {
-      fastify.close()
+    const s2 = medley()
+    s2.listen(app.server.address().port, (err) => {
+      app.close()
       t.ok(err)
     })
   })
@@ -101,43 +101,43 @@ test('listen twice on the same port', t => {
 if (os.platform() !== 'win32') {
   test('listen on socket', t => {
     t.plan(2)
-    const fastify = Fastify()
+    const app = medley()
     const sockFile = path.join(os.tmpdir(), 'server.sock')
     try {
       fs.unlinkSync(sockFile)
     } catch (e) { }
-    fastify.listen(sockFile, (err) => {
+    app.listen(sockFile, (err) => {
       t.error(err)
-      t.equal(sockFile, fastify.server.address())
-      fastify.close()
+      t.equal(sockFile, app.server.address())
+      app.close()
     })
   })
 }
 
 test('listen without callback', t => {
   t.plan(1)
-  const fastify = Fastify()
-  fastify.listen(0)
+  const app = medley()
+  app.listen(0)
     .then(() => {
-      t.is(fastify.server.address().address, '127.0.0.1')
-      fastify.close()
+      t.is(app.server.address().address, '127.0.0.1')
+      app.close()
       t.end()
     })
 })
 
 test('double listen without callback rejects', t => {
   t.plan(1)
-  const fastify = Fastify()
-  fastify.listen(0)
+  const app = medley()
+  app.listen(0)
     .then(() => {
-      fastify.listen(0)
+      app.listen(0)
         .then(() => {
-          t.error(new Error('second call to fastify.listen resolved'))
-          fastify.close()
+          t.error(new Error('second call to app.listen resolved'))
+          app.close()
         })
         .catch(err => {
           t.ok(err)
-          fastify.close()
+          app.close()
         })
     })
     .catch(err => t.error(err))
@@ -145,20 +145,20 @@ test('double listen without callback rejects', t => {
 
 test('listen twice on the same port without callback rejects', t => {
   t.plan(1)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.listen(0)
+  app.listen(0)
     .then(() => {
-      const s2 = Fastify()
-      s2.listen(fastify.server.address().port)
+      const s2 = medley()
+      s2.listen(app.server.address().port)
         .then(() => {
           t.error(new Error('listen on port already in use resolved'))
-          fastify.close()
+          app.close()
           s2.close()
         })
         .catch(err => {
           t.ok(err)
-          fastify.close()
+          app.close()
           s2.close()
         })
     })

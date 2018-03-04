@@ -2,22 +2,22 @@
 
 const t = require('tap')
 const test = t.test
-const Fastify = require('..')
+const medley = require('..')
 
 test('close callback', t => {
   t.plan(4)
-  const fastify = Fastify()
-  fastify.addHook('onClose', onClose)
+  const app = medley()
+  app.addHook('onClose', onClose)
 
   function onClose(instance, done) {
-    t.type(fastify, instance)
+    t.type(app, instance)
     done()
   }
 
-  fastify.listen(0, err => {
+  app.listen(0, err => {
     t.error(err)
 
-    fastify.close((err) => {
+    app.close((err) => {
       t.error(err)
       t.ok('close callback')
     })
@@ -26,12 +26,12 @@ test('close callback', t => {
 
 test('inside register', t => {
   t.plan(5)
-  const fastify = Fastify()
-  fastify.register(function(f, opts, next) {
+  const app = medley()
+  app.register(function(f, opts, next) {
     f.addHook('onClose', onClose)
 
     function onClose(instance, done) {
-      t.ok(instance.prototype === fastify.prototype)
+      t.ok(instance.prototype === app.prototype)
       t.strictEqual(instance, f)
       done()
     }
@@ -39,10 +39,10 @@ test('inside register', t => {
     next()
   })
 
-  fastify.listen(0, err => {
+  app.listen(0, err => {
     t.error(err)
 
-    fastify.close((err) => {
+    app.close((err) => {
       t.error(err)
       t.ok('close callback')
     })
@@ -51,10 +51,10 @@ test('inside register', t => {
 
 test('close order', t => {
   t.plan(5)
-  const fastify = Fastify()
+  const app = medley()
   const order = [1, 2, 3]
 
-  fastify.register(function(f, opts, next) {
+  app.register(function(f, opts, next) {
     f.addHook('onClose', (instance, done) => {
       t.is(order.shift(), 1)
       done()
@@ -63,15 +63,15 @@ test('close order', t => {
     next()
   })
 
-  fastify.addHook('onClose', (instance, done) => {
+  app.addHook('onClose', (instance, done) => {
     t.is(order.shift(), 2)
     done()
   })
 
-  fastify.listen(0, err => {
+  app.listen(0, err => {
     t.error(err)
 
-    fastify.close((err) => {
+    app.close((err) => {
       t.error(err)
       t.is(order.shift(), 3)
     })
@@ -80,28 +80,28 @@ test('close order', t => {
 
 test('should not throw an error if the server is not listening', t => {
   t.plan(2)
-  const fastify = Fastify()
-  fastify.addHook('onClose', onClose)
+  const app = medley()
+  app.addHook('onClose', onClose)
 
   function onClose(instance, done) {
-    t.type(fastify, instance)
+    t.type(app, instance)
     done()
   }
 
-  fastify.close((err) => {
+  app.close((err) => {
     t.error(err)
   })
 })
 
 test('onClose should keep the context', t => {
   t.plan(4)
-  const fastify = Fastify()
-  fastify.register(plugin)
+  const app = medley()
+  app.register(plugin)
 
   function plugin(instance, opts, next) {
     instance.decorate('test', true)
     instance.addHook('onClose', onClose)
-    t.ok(instance.prototype === fastify.prototype)
+    t.ok(instance.prototype === app.prototype)
 
     function onClose(i, done) {
       t.ok(i.test)
@@ -112,7 +112,7 @@ test('onClose should keep the context', t => {
     next()
   }
 
-  fastify.close((err) => {
+  app.close((err) => {
     t.error(err)
   })
 })

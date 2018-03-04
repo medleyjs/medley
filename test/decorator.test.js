@@ -2,68 +2,68 @@
 
 const t = require('tap')
 const test = t.test
-const Fastify = require('..')
+const medley = require('..')
 const fp = require('fastify-plugin')
 const sget = require('simple-get').concat
 
 test('server methods should exist', t => {
   t.plan(2)
-  const fastify = Fastify()
-  t.ok(fastify.decorate)
-  t.ok(fastify.hasDecorator)
+  const app = medley()
+  t.ok(app.decorate)
+  t.ok(app.hasDecorator)
 })
 
 test('server methods should be incapsulated via .register', t => {
   t.plan(2)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.register((instance, opts, next) => {
+  app.register((instance, opts, next) => {
     instance.decorate('test', () => {})
     t.ok(instance.test)
     next()
   })
 
-  fastify.ready(() => {
-    t.notOk(fastify.test)
+  app.ready(() => {
+    t.notOk(app.test)
   })
 })
 
 test('hasServerMethod should check if the given method already exist', t => {
   t.plan(2)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.register((instance, opts, next) => {
+  app.register((instance, opts, next) => {
     instance.decorate('test', () => {})
     t.ok(instance.hasDecorator('test'))
     next()
   })
 
-  fastify.ready(() => {
-    t.notOk(fastify.hasDecorator('test'))
+  app.ready(() => {
+    t.notOk(app.hasDecorator('test'))
   })
 })
 
 test('decorate should throw if a declared dependency is not present', t => {
   t.plan(2)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.register((instance, opts, next) => {
+  app.register((instance, opts, next) => {
     try {
       instance.decorate('test', () => {}, ['dependency'])
       t.fail()
     } catch (e) {
-      t.is(e.message, 'Fastify decorator: missing dependency: \'dependency\'.')
+      t.is(e.message, 'medley decorator: missing dependency: \'dependency\'.')
     }
     next()
   })
 
-  fastify.ready(() => t.pass())
+  app.ready(() => t.pass())
 })
 
 // issue #777
 test('should pass error for missing request decorator', t => {
   t.plan(2)
-  const fastify = Fastify()
+  const app = medley()
 
   const plugin = fp(function(instance, opts, next) {
     next()
@@ -72,7 +72,7 @@ test('should pass error for missing request decorator', t => {
       request: ['foo'],
     },
   })
-  fastify
+  app
     .register(plugin)
     .ready((err) => {
       t.type(err, Error)
@@ -82,9 +82,9 @@ test('should pass error for missing request decorator', t => {
 
 test('decorateReply inside register', t => {
   t.plan(12)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.register((instance, opts, next) => {
+  app.register((instance, opts, next) => {
     instance.decorateReply('test', 'test')
     t.ok(instance._Reply.prototype.test)
 
@@ -96,18 +96,18 @@ test('decorateReply inside register', t => {
     next()
   })
 
-  fastify.get('/no', (req, reply) => {
+  app.get('/no', (req, reply) => {
     t.notOk(reply.test)
     reply.send({hello: 'world'})
   })
 
-  fastify.listen(0, err => {
+  app.listen(0, err => {
     t.error(err)
-    fastify.server.unref()
+    app.server.unref()
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/yes',
+      url: 'http://localhost:' + app.server.address().port + '/yes',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -117,7 +117,7 @@ test('decorateReply inside register', t => {
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/no',
+      url: 'http://localhost:' + app.server.address().port + '/no',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -129,9 +129,9 @@ test('decorateReply inside register', t => {
 
 test('decorateReply as plugin (inside .after)', t => {
   t.plan(11)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.register((instance, opts, next) => {
+  app.register((instance, opts, next) => {
     instance.register(fp((i, o, n) => {
       instance.decorateReply('test', 'test')
       n()
@@ -144,18 +144,18 @@ test('decorateReply as plugin (inside .after)', t => {
     next()
   })
 
-  fastify.get('/no', (req, reply) => {
+  app.get('/no', (req, reply) => {
     t.notOk(reply.test)
     reply.send({hello: 'world'})
   })
 
-  fastify.listen(0, err => {
+  app.listen(0, err => {
     t.error(err)
-    fastify.server.unref()
+    app.server.unref()
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/yes',
+      url: 'http://localhost:' + app.server.address().port + '/yes',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -165,7 +165,7 @@ test('decorateReply as plugin (inside .after)', t => {
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/no',
+      url: 'http://localhost:' + app.server.address().port + '/no',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -177,9 +177,9 @@ test('decorateReply as plugin (inside .after)', t => {
 
 test('decorateReply as plugin (outside .after)', t => {
   t.plan(11)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.register((instance, opts, next) => {
+  app.register((instance, opts, next) => {
     instance.register(fp((i, o, n) => {
       instance.decorateReply('test', 'test')
       n()
@@ -192,18 +192,18 @@ test('decorateReply as plugin (outside .after)', t => {
     next()
   })
 
-  fastify.get('/no', (req, reply) => {
+  app.get('/no', (req, reply) => {
     t.notOk(reply.test)
     reply.send({hello: 'world'})
   })
 
-  fastify.listen(0, err => {
+  app.listen(0, err => {
     t.error(err)
-    fastify.server.unref()
+    app.server.unref()
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/yes',
+      url: 'http://localhost:' + app.server.address().port + '/yes',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -213,7 +213,7 @@ test('decorateReply as plugin (outside .after)', t => {
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/no',
+      url: 'http://localhost:' + app.server.address().port + '/no',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -225,9 +225,9 @@ test('decorateReply as plugin (outside .after)', t => {
 
 test('decorateRequest inside register', t => {
   t.plan(12)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.register((instance, opts, next) => {
+  app.register((instance, opts, next) => {
     instance.decorateRequest('test', 'test')
     t.ok(instance._Request.prototype.test)
 
@@ -239,18 +239,18 @@ test('decorateRequest inside register', t => {
     next()
   })
 
-  fastify.get('/no', (req, reply) => {
+  app.get('/no', (req, reply) => {
     t.notOk(req.test)
     reply.send({hello: 'world'})
   })
 
-  fastify.listen(0, err => {
+  app.listen(0, err => {
     t.error(err)
-    fastify.server.unref()
+    app.server.unref()
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/yes',
+      url: 'http://localhost:' + app.server.address().port + '/yes',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -260,7 +260,7 @@ test('decorateRequest inside register', t => {
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/no',
+      url: 'http://localhost:' + app.server.address().port + '/no',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -272,9 +272,9 @@ test('decorateRequest inside register', t => {
 
 test('decorateRequest as plugin (inside .after)', t => {
   t.plan(11)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.register((instance, opts, next) => {
+  app.register((instance, opts, next) => {
     instance.register(fp((i, o, n) => {
       instance.decorateRequest('test', 'test')
       n()
@@ -287,18 +287,18 @@ test('decorateRequest as plugin (inside .after)', t => {
     next()
   })
 
-  fastify.get('/no', (req, reply) => {
+  app.get('/no', (req, reply) => {
     t.notOk(req.test)
     reply.send({hello: 'world'})
   })
 
-  fastify.listen(0, err => {
+  app.listen(0, err => {
     t.error(err)
-    fastify.server.unref()
+    app.server.unref()
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/yes',
+      url: 'http://localhost:' + app.server.address().port + '/yes',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -308,7 +308,7 @@ test('decorateRequest as plugin (inside .after)', t => {
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/no',
+      url: 'http://localhost:' + app.server.address().port + '/no',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -320,9 +320,9 @@ test('decorateRequest as plugin (inside .after)', t => {
 
 test('decorateRequest as plugin (outside .after)', t => {
   t.plan(11)
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.register((instance, opts, next) => {
+  app.register((instance, opts, next) => {
     instance.register(fp((i, o, n) => {
       instance.decorateRequest('test', 'test')
       n()
@@ -335,18 +335,18 @@ test('decorateRequest as plugin (outside .after)', t => {
     next()
   })
 
-  fastify.get('/no', (req, reply) => {
+  app.get('/no', (req, reply) => {
     t.notOk(req.test)
     reply.send({hello: 'world'})
   })
 
-  fastify.listen(0, err => {
+  app.listen(0, err => {
     t.error(err)
-    fastify.server.unref()
+    app.server.unref()
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/yes',
+      url: 'http://localhost:' + app.server.address().port + '/yes',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -356,7 +356,7 @@ test('decorateRequest as plugin (outside .after)', t => {
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/no',
+      url: 'http://localhost:' + app.server.address().port + '/no',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -369,17 +369,17 @@ test('decorateRequest as plugin (outside .after)', t => {
 test('decorators should be instance separated', t => {
   t.plan(1)
 
-  const fastify1 = Fastify()
-  const fastify2 = Fastify()
+  const app1 = medley()
+  const app2 = medley()
 
-  fastify1.decorate('test', 'foo')
-  fastify2.decorate('test', 'foo')
+  app1.decorate('test', 'foo')
+  app2.decorate('test', 'foo')
 
-  fastify1.decorateRequest('test', 'foo')
-  fastify2.decorateRequest('test', 'foo')
+  app1.decorateRequest('test', 'foo')
+  app2.decorateRequest('test', 'foo')
 
-  fastify1.decorateReply('test', 'foo')
-  fastify2.decorateReply('test', 'foo')
+  app1.decorateReply('test', 'foo')
+  app2.decorateReply('test', 'foo')
 
   t.pass()
 })

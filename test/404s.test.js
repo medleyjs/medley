@@ -6,28 +6,28 @@ const fp = require('fastify-plugin')
 const httpErrors = require('http-errors')
 const sget = require('simple-get').concat
 const errors = require('http-errors')
-const Fastify = require('..')
+const medley = require('..')
 
 test('default 404', t => {
   t.plan(3)
 
   const test = t.test
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.get('/', function(req, reply) {
+  app.get('/', function(req, reply) {
     reply.send({hello: 'world'})
   })
 
-  t.tearDown(fastify.close.bind(fastify))
+  t.tearDown(app.close.bind(app))
 
-  fastify.listen(0, err => {
+  app.listen(0, err => {
     t.error(err)
 
     test('unsupported method', t => {
       t.plan(2)
       sget({
         method: 'PUT',
-        url: 'http://localhost:' + fastify.server.address().port,
+        url: 'http://localhost:' + app.server.address().port,
         body: {},
         json: true,
       }, (err, response, body) => {
@@ -40,7 +40,7 @@ test('default 404', t => {
       t.plan(2)
       sget({
         method: 'GET',
-        url: 'http://localhost:' + fastify.server.address().port + '/notSupported',
+        url: 'http://localhost:' + app.server.address().port + '/notSupported',
         body: {},
         json: true,
       }, (err, response, body) => {
@@ -55,30 +55,30 @@ test('customized 404', t => {
   t.plan(4)
 
   const test = t.test
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.get('/', function(req, reply) {
+  app.get('/', function(req, reply) {
     reply.send({hello: 'world'})
   })
 
-  fastify.get('/with-error', function(req, reply) {
+  app.get('/with-error', function(req, reply) {
     reply.send(new errors.NotFound())
   })
 
-  fastify.setNotFoundHandler(function(req, reply) {
+  app.setNotFoundHandler(function(req, reply) {
     reply.code(404).send('this was not found')
   })
 
-  t.tearDown(fastify.close.bind(fastify))
+  t.tearDown(app.close.bind(app))
 
-  fastify.listen(0, err => {
+  app.listen(0, err => {
     t.error(err)
 
     test('unsupported method', t => {
       t.plan(3)
       sget({
         method: 'PUT',
-        url: 'http://localhost:' + fastify.server.address().port,
+        url: 'http://localhost:' + app.server.address().port,
         body: JSON.stringify({hello: 'world'}),
         headers: {'Content-Type': 'application/json'},
       }, (err, response, body) => {
@@ -92,7 +92,7 @@ test('customized 404', t => {
       t.plan(3)
       sget({
         method: 'GET',
-        url: 'http://localhost:' + fastify.server.address().port + '/notSupported',
+        url: 'http://localhost:' + app.server.address().port + '/notSupported',
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 404)
@@ -104,7 +104,7 @@ test('customized 404', t => {
       t.plan(3)
       sget({
         method: 'GET',
-        url: 'http://localhost:' + fastify.server.address().port + '/with-error',
+        url: 'http://localhost:' + app.server.address().port + '/with-error',
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 404)
@@ -120,25 +120,25 @@ test('setting a custom 404 handler multiple times is an error', t => {
   t.test('at the root level', t => {
     t.plan(2)
 
-    const fastify = Fastify()
+    const app = medley()
 
-    fastify.setNotFoundHandler(() => {})
+    app.setNotFoundHandler(() => {})
 
     try {
-      fastify.setNotFoundHandler(() => {})
+      app.setNotFoundHandler(() => {})
       t.fail('setting multiple 404 handlers at the same prefix encapsulation level should throw')
     } catch (err) {
       t.type(err, Error)
-      t.strictEqual(err.message, 'Not found handler already set for Fastify instance with prefix: \'/\'')
+      t.strictEqual(err.message, 'Not found handler already set for sub app with prefix: \'/\'')
     }
   })
 
   t.test('at the plugin level', t => {
     t.plan(3)
 
-    const fastify = Fastify()
+    const app = medley()
 
-    fastify.register((instance, options, next) => {
+    app.register((instance, options, next) => {
       instance.setNotFoundHandler(() => {})
 
       try {
@@ -146,48 +146,48 @@ test('setting a custom 404 handler multiple times is an error', t => {
         t.fail('setting multiple 404 handlers at the same prefix encapsulation level should throw')
       } catch (err) {
         t.type(err, Error)
-        t.strictEqual(err.message, 'Not found handler already set for Fastify instance with prefix: \'/prefix\'')
+        t.strictEqual(err.message, 'Not found handler already set for sub app with prefix: \'/prefix\'')
       }
 
       next()
     }, {prefix: '/prefix'})
 
-    fastify.listen(0, err => {
+    app.listen(0, err => {
       t.error(err)
-      fastify.close()
+      app.close()
     })
   })
 
   t.test('at multiple levels', t => {
     t.plan(3)
 
-    const fastify = Fastify()
+    const app = medley()
 
-    fastify.register((instance, options, next) => {
+    app.register((instance, options, next) => {
       try {
         instance.setNotFoundHandler(() => {})
         t.fail('setting multiple 404 handlers at the same prefix encapsulation level should throw')
       } catch (err) {
         t.type(err, Error)
-        t.strictEqual(err.message, 'Not found handler already set for Fastify instance with prefix: \'/\'')
+        t.strictEqual(err.message, 'Not found handler already set for sub app with prefix: \'/\'')
       }
       next()
     })
 
-    fastify.setNotFoundHandler(() => {})
+    app.setNotFoundHandler(() => {})
 
-    fastify.listen(0, err => {
+    app.listen(0, err => {
       t.error(err)
-      fastify.close()
+      app.close()
     })
   })
 
   t.test('at multiple levels / 2', t => {
     t.plan(3)
 
-    const fastify = Fastify()
+    const app = medley()
 
-    fastify.register((instance, options, next) => {
+    app.register((instance, options, next) => {
       instance.setNotFoundHandler(() => {})
 
       instance.register((instance2, options, next) => {
@@ -196,7 +196,7 @@ test('setting a custom 404 handler multiple times is an error', t => {
           t.fail('setting multiple 404 handlers at the same prefix encapsulation level should throw')
         } catch (err) {
           t.type(err, Error)
-          t.strictEqual(err.message, 'Not found handler already set for Fastify instance with prefix: \'/prefix\'')
+          t.strictEqual(err.message, 'Not found handler already set for sub app with prefix: \'/prefix\'')
         }
         next()
       })
@@ -204,11 +204,11 @@ test('setting a custom 404 handler multiple times is an error', t => {
       next()
     }, {prefix: '/prefix'})
 
-    fastify.setNotFoundHandler(() => {})
+    app.setNotFoundHandler(() => {})
 
-    fastify.listen(0, err => {
+    app.listen(0, err => {
       t.error(err)
-      fastify.close()
+      app.close()
     })
   })
 })
@@ -217,47 +217,47 @@ test('encapsulated 404', t => {
   t.plan(9)
 
   const test = t.test
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.get('/', function(req, reply) {
+  app.get('/', function(req, reply) {
     reply.send({hello: 'world'})
   })
 
-  fastify.setNotFoundHandler(function(req, reply) {
+  app.setNotFoundHandler(function(req, reply) {
     reply.code(404).send('this was not found')
   })
 
-  fastify.register(function(f, opts, next) {
+  app.register(function(f, opts, next) {
     f.setNotFoundHandler(function(req, reply) {
       reply.code(404).send('this was not found 2')
     })
     next()
   }, {prefix: '/test'})
 
-  fastify.register(function(f, opts, next) {
+  app.register(function(f, opts, next) {
     f.setNotFoundHandler(function(req, reply) {
       reply.code(404).send('this was not found 3')
     })
     next()
   }, {prefix: '/test2'})
 
-  fastify.register(function(f, opts, next) {
+  app.register(function(f, opts, next) {
     f.setNotFoundHandler(function(request, reply) {
       reply.code(404).send('this was not found 4')
     })
     next()
   }, {prefix: '/test3/'})
 
-  t.tearDown(fastify.close.bind(fastify))
+  t.tearDown(app.close.bind(app))
 
-  fastify.listen(0, err => {
+  app.listen(0, err => {
     t.error(err)
 
     test('root unsupported method', t => {
       t.plan(3)
       sget({
         method: 'PUT',
-        url: 'http://localhost:' + fastify.server.address().port,
+        url: 'http://localhost:' + app.server.address().port,
         body: JSON.stringify({hello: 'world'}),
         headers: {'Content-Type': 'application/json'},
       }, (err, response, body) => {
@@ -271,7 +271,7 @@ test('encapsulated 404', t => {
       t.plan(3)
       sget({
         method: 'GET',
-        url: 'http://localhost:' + fastify.server.address().port + '/notSupported',
+        url: 'http://localhost:' + app.server.address().port + '/notSupported',
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 404)
@@ -283,7 +283,7 @@ test('encapsulated 404', t => {
       t.plan(3)
       sget({
         method: 'PUT',
-        url: 'http://localhost:' + fastify.server.address().port + '/test',
+        url: 'http://localhost:' + app.server.address().port + '/test',
         body: JSON.stringify({hello: 'world'}),
         headers: {'Content-Type': 'application/json'},
       }, (err, response, body) => {
@@ -297,7 +297,7 @@ test('encapsulated 404', t => {
       t.plan(3)
       sget({
         method: 'GET',
-        url: 'http://localhost:' + fastify.server.address().port + '/test/notSupported',
+        url: 'http://localhost:' + app.server.address().port + '/test/notSupported',
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 404)
@@ -309,7 +309,7 @@ test('encapsulated 404', t => {
       t.plan(3)
       sget({
         method: 'PUT',
-        url: 'http://localhost:' + fastify.server.address().port + '/test2',
+        url: 'http://localhost:' + app.server.address().port + '/test2',
         body: JSON.stringify({hello: 'world'}),
         headers: {'Content-Type': 'application/json'},
       }, (err, response, body) => {
@@ -323,7 +323,7 @@ test('encapsulated 404', t => {
       t.plan(3)
       sget({
         method: 'GET',
-        url: 'http://localhost:' + fastify.server.address().port + '/test2/notSupported',
+        url: 'http://localhost:' + app.server.address().port + '/test2/notSupported',
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 404)
@@ -335,7 +335,7 @@ test('encapsulated 404', t => {
       t.plan(3)
       sget({
         method: 'PUT',
-        url: 'http://localhost:' + fastify.server.address().port + '/test3/',
+        url: 'http://localhost:' + app.server.address().port + '/test3/',
         body: JSON.stringify({hello: 'world'}),
         headers: {'Content-Type': 'application/json'},
       }, (err, response, body) => {
@@ -349,7 +349,7 @@ test('encapsulated 404', t => {
       t.plan(3)
       sget({
         method: 'GET',
-        url: 'http://localhost:' + fastify.server.address().port + '/test3/notSupported',
+        url: 'http://localhost:' + app.server.address().port + '/test3/notSupported',
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 404)
@@ -362,40 +362,40 @@ test('encapsulated 404', t => {
 test('run hooks on default 404', t => {
   t.plan(7)
 
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.addHook('onRequest', function(req, res, next) {
+  app.addHook('onRequest', function(req, res, next) {
     t.pass('onRequest called')
     next()
   })
 
-  fastify.addHook('preHandler', function(request, reply, next) {
+  app.addHook('preHandler', function(request, reply, next) {
     t.pass('preHandler called')
     next()
   })
 
-  fastify.addHook('onSend', function(request, reply, payload, next) {
+  app.addHook('onSend', function(request, reply, payload, next) {
     t.pass('onSend called')
     next()
   })
 
-  fastify.addHook('onResponse', function(res, next) {
+  app.addHook('onResponse', function(res, next) {
     t.pass('onResponse called')
     next()
   })
 
-  fastify.get('/', function(req, reply) {
+  app.get('/', function(req, reply) {
     reply.send({hello: 'world'})
   })
 
-  t.tearDown(fastify.close.bind(fastify))
+  t.tearDown(app.close.bind(app))
 
-  fastify.listen(0, err => {
+  app.listen(0, err => {
     t.error(err)
 
     sget({
       method: 'PUT',
-      url: 'http://localhost:' + fastify.server.address().port,
+      url: 'http://localhost:' + app.server.address().port,
       body: JSON.stringify({hello: 'world'}),
       headers: {'Content-Type': 'application/json'},
     }, (err, response, body) => {
@@ -408,9 +408,9 @@ test('run hooks on default 404', t => {
 test('run non-encapsulated plugin hooks on default 404', t => {
   t.plan(6)
 
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.register(fp(function(instance, options, next) {
+  app.register(fp(function(instance, options, next) {
     instance.addHook('onRequest', function(req, res, next) {
       t.pass('onRequest called')
       next()
@@ -434,11 +434,11 @@ test('run non-encapsulated plugin hooks on default 404', t => {
     next()
   }))
 
-  fastify.get('/', function(req, reply) {
+  app.get('/', function(req, reply) {
     reply.send({hello: 'world'})
   })
 
-  fastify.inject({
+  app.inject({
     method: 'POST',
     url: '/',
     payload: {hello: 'world'},
@@ -451,7 +451,7 @@ test('run non-encapsulated plugin hooks on default 404', t => {
 test('run non-encapsulated plugin hooks on custom 404', t => {
   t.plan(11)
 
-  const fastify = Fastify()
+  const app = medley()
 
   const plugin = fp((instance, opts, next) => {
     instance.addHook('onRequest', function(req, res, next) {
@@ -477,19 +477,19 @@ test('run non-encapsulated plugin hooks on custom 404', t => {
     next()
   })
 
-  fastify.register(plugin)
+  app.register(plugin)
 
-  fastify.get('/', function(req, reply) {
+  app.get('/', function(req, reply) {
     reply.send({hello: 'world'})
   })
 
-  fastify.setNotFoundHandler(function(req, reply) {
+  app.setNotFoundHandler(function(req, reply) {
     reply.code(404).send('this was not found')
   })
 
-  fastify.register(plugin) // Registering plugin after handler also works
+  app.register(plugin) // Registering plugin after handler also works
 
-  fastify.inject({url: '/not-found'}, (err, res) => {
+  app.inject({url: '/not-found'}, (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 404)
     t.strictEqual(res.payload, 'this was not found')
@@ -499,29 +499,29 @@ test('run non-encapsulated plugin hooks on custom 404', t => {
 test('run hooks with encapsulated 404', t => {
   t.plan(11)
 
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.addHook('onRequest', function(req, res, next) {
+  app.addHook('onRequest', function(req, res, next) {
     t.pass('onRequest called')
     next()
   })
 
-  fastify.addHook('preHandler', function(request, reply, next) {
+  app.addHook('preHandler', function(request, reply, next) {
     t.pass('preHandler called')
     next()
   })
 
-  fastify.addHook('onSend', function(request, reply, payload, next) {
+  app.addHook('onSend', function(request, reply, payload, next) {
     t.pass('onSend called')
     next()
   })
 
-  fastify.addHook('onResponse', function(res, next) {
+  app.addHook('onResponse', function(res, next) {
     t.pass('onResponse called')
     next()
   })
 
-  fastify.register(function(f, opts, next) {
+  app.register(function(f, opts, next) {
     f.setNotFoundHandler(function(req, reply) {
       reply.code(404).send('this was not found 2')
     })
@@ -549,14 +549,14 @@ test('run hooks with encapsulated 404', t => {
     next()
   }, {prefix: '/test'})
 
-  t.tearDown(fastify.close.bind(fastify))
+  t.tearDown(app.close.bind(app))
 
-  fastify.listen(0, err => {
+  app.listen(0, err => {
     t.error(err)
 
     sget({
       method: 'PUT',
-      url: 'http://localhost:' + fastify.server.address().port + '/test',
+      url: 'http://localhost:' + app.server.address().port + '/test',
       body: JSON.stringify({hello: 'world'}),
       headers: {'Content-Type': 'application/json'},
     }, (err, response, body) => {
@@ -569,34 +569,34 @@ test('run hooks with encapsulated 404', t => {
 test('hooks check 404', t => {
   t.plan(13)
 
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.get('/', function(req, reply) {
+  app.get('/', function(req, reply) {
     reply.send({hello: 'world'})
   })
 
-  fastify.addHook('onSend', (req, reply, payload, next) => {
+  app.addHook('onSend', (req, reply, payload, next) => {
     t.deepEqual(req.query, {foo: 'asd'})
     t.ok('called', 'onSend')
     next()
   })
-  fastify.addHook('onRequest', (req, res, next) => {
+  app.addHook('onRequest', (req, res, next) => {
     t.ok('called', 'onRequest')
     next()
   })
-  fastify.addHook('onResponse', (res, next) => {
+  app.addHook('onResponse', (res, next) => {
     t.ok('called', 'onResponse')
     next()
   })
 
-  t.tearDown(fastify.close.bind(fastify))
+  t.tearDown(app.close.bind(app))
 
-  fastify.listen(0, err => {
+  app.listen(0, err => {
     t.error(err)
 
     sget({
       method: 'PUT',
-      url: 'http://localhost:' + fastify.server.address().port + '?foo=asd',
+      url: 'http://localhost:' + app.server.address().port + '?foo=asd',
       body: JSON.stringify({hello: 'world'}),
       headers: {'Content-Type': 'application/json'},
     }, (err, response, body) => {
@@ -606,7 +606,7 @@ test('hooks check 404', t => {
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port + '/notSupported?foo=asd',
+      url: 'http://localhost:' + app.server.address().port + '/notSupported?foo=asd',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 404)
@@ -617,21 +617,21 @@ test('hooks check 404', t => {
 test('setNotFoundHandler should not suppress duplicated routes checking', t => {
   t.plan(1)
 
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.get('/', function(req, reply) {
+  app.get('/', function(req, reply) {
     reply.send({hello: 'world'})
   })
 
-  fastify.get('/', function(req, reply) {
+  app.get('/', function(req, reply) {
     reply.send({hello: 'world'})
   })
 
-  fastify.setNotFoundHandler(function(req, reply) {
+  app.setNotFoundHandler(function(req, reply) {
     reply.code(404).send('this was not found')
   })
 
-  fastify.listen(0, err => {
+  app.listen(0, err => {
     t.ok(err)
   })
 })
@@ -639,18 +639,18 @@ test('setNotFoundHandler should not suppress duplicated routes checking', t => {
 test('Unsupported method', t => {
   t.plan(5)
 
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.get('/', function(req, reply) {
+  app.get('/', function(req, reply) {
     reply.send({hello: 'world'})
   })
 
-  t.tearDown(fastify.close.bind(fastify))
+  t.tearDown(app.close.bind(app))
 
-  fastify.listen(0, err => {
+  app.listen(0, err => {
     t.error(err)
 
-    fastify.inject({
+    app.inject({
       method: 'PROPFIND',
       url: '/',
     }, (err, res) => {
@@ -659,7 +659,7 @@ test('Unsupported method', t => {
 
       sget({
         method: 'PROPFIND',
-        url: 'http://localhost:' + fastify.server.address().port,
+        url: 'http://localhost:' + app.server.address().port,
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 404)
@@ -671,25 +671,25 @@ test('Unsupported method', t => {
 test('recognizes errors from the http-errors module', t => {
   t.plan(5)
 
-  const fastify = Fastify()
+  const app = medley()
 
-  fastify.get('/', function(req, reply) {
+  app.get('/', function(req, reply) {
     reply.send(httpErrors.NotFound())
   })
 
-  t.tearDown(fastify.close.bind(fastify))
+  t.tearDown(app.close.bind(app))
 
-  fastify.listen(0, err => {
+  app.listen(0, err => {
     t.error(err)
 
-    fastify.inject({
+    app.inject({
       method: 'GET',
       url: '/',
     }, (err, res) => {
       t.error(err)
       t.strictEqual(res.statusCode, 404)
 
-      sget('http://localhost:' + fastify.server.address().port, (err, response, body) => {
+      sget('http://localhost:' + app.server.address().port, (err, response, body) => {
         t.error(err)
         const obj = JSON.parse(body.toString())
         t.strictDeepEqual(obj, {
@@ -705,14 +705,14 @@ test('recognizes errors from the http-errors module', t => {
 test('cannot set notFoundHandler after binding', t => {
   t.plan(2)
 
-  const fastify = Fastify()
-  t.tearDown(fastify.close.bind(fastify))
+  const app = medley()
+  t.tearDown(app.close.bind(app))
 
-  fastify.listen(0, err => {
+  app.listen(0, err => {
     t.error(err)
 
     try {
-      fastify.setNotFoundHandler(() => { })
+      app.setNotFoundHandler(() => { })
       t.fail()
     } catch (e) {
       t.pass()
@@ -723,15 +723,15 @@ test('cannot set notFoundHandler after binding', t => {
 test('404 inside onSend', t => {
   t.plan(3)
 
-  const fastify = Fastify()
+  const app = medley()
 
   var called = false
 
-  fastify.get('/', function(req, reply) {
+  app.get('/', function(req, reply) {
     reply.send({hello: 'world'})
   })
 
-  fastify.addHook('onSend', function(request, reply, payload, next) {
+  app.addHook('onSend', function(request, reply, payload, next) {
     if (!called) {
       called = true
       next(new errors.NotFound())
@@ -740,14 +740,14 @@ test('404 inside onSend', t => {
     }
   })
 
-  t.tearDown(fastify.close.bind(fastify))
+  t.tearDown(app.close.bind(app))
 
-  fastify.listen(0, err => {
+  app.listen(0, err => {
     t.error(err)
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port,
+      url: 'http://localhost:' + app.server.address().port,
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 404)
