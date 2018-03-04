@@ -9,14 +9,14 @@
 Function called when all the plugins has been loaded.
 It takes an error parameter if something went wrong.
 ```js
-fastify.ready(err => {
+app.ready(err => {
   if (err) throw err
 })
 ```
 If it is called without any arguments, it will return a `Promise`:
 
 ```js
-fastify.ready().then(() => {
+app.ready().then(() => {
   console.log('successfully booted!')
 }, (err) => {
   console.log('an error happened', err)
@@ -28,7 +28,7 @@ fastify.ready().then(() => {
 Starts the server on the given port after all the plugins are loaded, internally waits for the `.ready()` event. The callback is the same as the Node core. By default, the server will listen on address `127.0.0.1` when no specific address is provided. If listening on any available interface is desired, then specifying `0.0.0.0` for the address will listen on all IPv4 address. Using `::` for the address will listen on all IPv6 addresses, and, depending on OS, may also listen on all IPv4 addresses. Be careful when deciding to listen on all interfaces; it comes with inherent [security risks](https://web.archive.org/web/20170831174611/https://snyk.io/blog/mongodb-hack-and-secure-defaults/).
 
 ```js
-fastify.listen(3000, err => {
+app.listen(3000, err => {
   if (err) {
     console.error(err)
     process.exit(1)
@@ -39,7 +39,7 @@ fastify.listen(3000, err => {
 Specifying an address is also supported:
 
 ```js
-fastify.listen(3000, '127.0.0.1', err => {
+app.listen(3000, '127.0.0.1', err => {
   if (err) {
     console.error(err)
     process.exit(1)
@@ -50,7 +50,7 @@ fastify.listen(3000, '127.0.0.1', err => {
 Specifying a backlog queue size is also supported:
 
 ```js
-fastify.listen(3000, '127.0.0.1', 511, err => {
+app.listen(3000, '127.0.0.1', 511, err => {
   if (err) {
     console.error(err)
     process.exit(1)
@@ -61,7 +61,7 @@ fastify.listen(3000, '127.0.0.1', 511, err => {
 If no callback is provided a Promise is returned:
 
 ```js
-fastify.listen(3000)
+app.listen(3000)
   .then(() => console.log('Listening'))
   .catch(err => {
     console.log('Error starting server:', err)
@@ -72,7 +72,7 @@ fastify.listen(3000)
 Specifying an address without a callback is also supported:
 
 ```js
-fastify.listen(3000, '127.0.0.1')
+app.listen(3000, '127.0.0.1')
   .then(() => console.log('Listening'))
   .catch(err => {
     console.log('Error starting server:', err)
@@ -83,7 +83,7 @@ fastify.listen(3000, '127.0.0.1')
 When deploying to a Docker, and potentially other, containers, it is advisable to listen on `0.0.0.0` because they do not default to exposing mapped ports to `127.0.0.1`:
 
 ```js
-fastify.listen(3000, '0.0.0.0', (err) => {
+app.listen(3000, '0.0.0.0', (err) => {
   if (err) {
     console.error(err)
     process.exit(1)
@@ -105,12 +105,12 @@ Function useful if you need to decorate the app, Reply or Request, check [here](
 
 <a name="register"></a>
 #### register
-Fastify allows the user to extend its functionalities with plugins.
+Medley allows the user to extend its functionalities with plugins.
 A plugin can be a set of routes, a server decorator or whatever, check [here](Plugins.md).
 
 <a name="addHook"></a>
 #### addHook
-Function to add a specific hook in the lifecycle of Fastify, check [here](Hooks.md).
+Function to add a specific hook in the lifecycle of Medley, check [here](Hooks.md).
 
 <a name="base-path"></a>
 #### basePath
@@ -139,14 +139,14 @@ Fake http injection (for testing purposes) [here](Testing.md#inject).
 <a name="set-not-found-handler"></a>
 #### setNotFoundHandler
 
-`fastify.setNotFoundHandler(handler(request, reply))`: set the 404 handler. This call is encapsulated by prefix, so different plugins can set different not found handlers if a different [`prefix` option](Plugins.md#route-prefixing-option) is passed to `fastify.register()`. The handler is treated like a regular route handler so requests will go through the full [Fastify lifecycle](Lifecycle.md#lifecycle).
+`app.setNotFoundHandler(handler(request, reply))`: set the 404 handler. This call is encapsulated by prefix, so different plugins can set different not found handlers if a different [`prefix` option](Plugins.md#route-prefixing-option) is passed to `app.register()`. The handler is treated like a regular route handler so requests will go through the full [Medley lifecycle](Lifecycle.md#lifecycle).
 
 ```js
-fastify.setNotFoundHandler((request, reply) => {
+app.setNotFoundHandler((request, reply) => {
   // Default not found handler
 })
 
-fastify.register((subApp, options, next) => {
+app.register((subApp, options, next) => {
   subApp.setNotFoundHandler(function (request, reply) {
     // Handle not found request to URLs that begin with '/v1'
   })
@@ -157,10 +157,10 @@ fastify.register((subApp, options, next) => {
 <a name="set-error-handler"></a>
 #### setErrorHandler
 
-`fastify.setErrorHandler(handler(error, request, reply))`: Set a function that will be called whenever an error happens. The handler is fully encapsulated, so different plugins can set different error handlers. *async-await* is supported as well.
+`app.setErrorHandler(handler(error, request, reply))`: Set a function that will be called whenever an error happens. The handler is fully encapsulated, so different plugins can set different error handlers. *async-await* is supported as well.
 
 ```js
-fastify.setErrorHandler(function (error, request, reply) {
+app.setErrorHandler(function (error, request, reply) {
   // Send error response
 })
 ```
@@ -168,16 +168,16 @@ fastify.setErrorHandler(function (error, request, reply) {
 <a name="print-routes"></a>
 #### printRoutes
 
-`fastify.printRoutes()`: Prints the representation of the internal radix tree used by the router, useful for debugging.<br/>
+`app.printRoutes()`: Prints the representation of the internal radix tree used by the router, useful for debugging.<br/>
 *Remember to call it inside or after a `ready` call.*
 
 ```js
-fastify.get('/test', () => {})
-fastify.get('/test/hello', () => {})
-fastify.get('/hello/world', () => {})
+app.get('/test', () => {})
+app.get('/test/hello', () => {})
+app.get('/hello/world', () => {})
 
-fastify.ready(() => {
-  console.log(fastify.printRoutes())
+app.ready(() => {
+  console.log(app.printRoutes())
   // └── /
   //   ├── test (GET)
   //   │   └── /hello (GET)

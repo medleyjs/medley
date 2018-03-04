@@ -1,24 +1,24 @@
 # Plugins
-Fastify allows the user to extend its functionalities with plugins.
+Medley allows the user to extend its functionalities with plugins.
 A plugin can be a set of routes, a server [decorator](Decorators.md) or whatever. The API that you will need to use one or more plugins, is `register`.<br>
 
 By default, `register` creates a *new scope*, this means that if you do some changes to the app instance (via `decorate`), this change will not be reflected to the current context ancestors, but only to its children. This feature allows us to achieve plugin *encapsulation* and *inheritance*, in this way we create a *direct acyclic graph* (DAG) and we will not have issues caused by cross dependencies.
 
 You already see in the [getting started](Getting-Started.md#register) section how using this API is pretty straightforward.
 ```
-fastify.register(plugin, [options])
+app.register(plugin, [options])
 ```
 
 <a name="plugin-options"></a>
 ### Plugin Options
-The optional `options` parameter for `fastify.register` supports a predefined set of options that Fastify itself will use, except when the plugin has been wrapped with [fastify-plugin](https://github.com/fastify/fastify-plugin). This options object will also be passed to the plugin upon invocation, regardless of whether or not the plugin has been wrapped. The currently supported list of Fastify specific options is:
+The optional `options` parameter for `app.register` supports a predefined set of options that Medley itself will use, except when the plugin has been wrapped with [fastify-plugin](https://github.com/fastify/fastify-plugin). This options object will also be passed to the plugin upon invocation, regardless of whether or not the plugin has been wrapped. The currently supported list of Medley specific options is:
 
 + [`prefix`](Plugins.md#route-prefixing-options)
 
-It is possible that Fastify will directly support other options in the future. Thus, to avoid collisions, a plugin should consider namespacing its options. For example, a plugin `foo` might be registered like so:
+It is possible that Medley will directly support other options in the future. Thus, to avoid collisions, a plugin should consider namespacing its options. For example, a plugin `foo` might be registered like so:
 
 ```js
-fastify.register(require('fastify-foo'), {
+app.register(require('fastify-foo'), {
   prefix: '/foo',
   foo: {
     fooOption1: 'value',
@@ -30,7 +30,7 @@ fastify.register(require('fastify-foo'), {
 If collisions are not a concern, the plugin may simply accept the options object as-is:
 
 ```js
-fastify.register(require('fastify-foo'), {
+app.register(require('fastify-foo'), {
   prefix: '/foo',
   fooOption1: 'value',
   fooOption2: 'value'
@@ -39,7 +39,7 @@ fastify.register(require('fastify-foo'), {
 
 <a name="route-prefixing-option"></a>
 #### Route Prefixing option
-If you pass an option with the key `prefix` with a `string` value, Fastify will use it to prefix all the routes inside the register, for more info check [here](Routes.md#route-prefixing).<br>
+If you pass an option with the key `prefix` with a `string` value, Medley will use it to prefix all the routes inside the register, for more info check [here](Routes.md#route-prefixing).<br>
 Be aware that if you use [`fastify-plugin`](https://github.com/fastify/fastify-plugin) this option won't work.
 
 <a name="error-handling"></a>
@@ -52,53 +52,53 @@ As general rule, it is highly recommended that you handle your errors in the `re
 Creating a plugin is very easy, you just need to create a function that takes three parameters, the `app` instance, an options object and the next callback.<br>
 Example:
 ```js
-module.exports = function (fastify, opts, next) {
-  fastify.decorate('utility', () => {})
+module.exports = function(app, opts, next) {
+  app.decorate('utility', () => {})
 
-  fastify.get('/', handler)
+  app.get('/', handler)
 
   next()
 }
 ```
 You can also use `register` inside another `register`:
 ```js
-module.exports = function (fastify, opts, next) {
-  fastify.decorate('utility', () => {})
+module.exports = function(app, opts, next) {
+  app.decorate('utility', () => {})
 
-  fastify.get('/', handler)
+  app.get('/', handler)
 
-  fastify.register(require('./other-plugin'))
+  app.register(require('./other-plugin'))
 
   next()
 }
 ```
 Sometimes, you will need to know when the server is about to close, for example because you must close a connection to a database. To know when this is going to happen, you can use the [`'onClose'`](Hooks.md#on-close) hook.
 
-Do not forget that `register` will always create a new Fastify scope, if you don't need that, read the following section.
+Do not forget that `register` will always create a new Medley scope, if you don't need that, read the following section.
 
 <a name="handle-scope"></a>
 ### Handle the scope
-If you are using `register` only for extending the functionality of the server with  [`decorate`](Decorators.md), it is your responsibility to tell Fastify to not create a new scope, otherwise your changes will not be accessible by the user in the upper scope.
+If you are using `register` only for extending the functionality of the server with  [`decorate`](Decorators.md), it is your responsibility to tell Medley to not create a new scope, otherwise your changes will not be accessible by the user in the upper scope.
 
-You have two ways to tell Fastify to avoid the creation of a new context:
+You have two ways to tell Medley to avoid the creation of a new context:
 - Use the [`fastify-plugin`](https://github.com/fastify/fastify-plugin) module
 - Use the `'skip-override'` hidden property
 
-We recommend to using the `fastify-plugin` module, because it solves this problem for you, and you can pass a version range of Fastify as a parameter that your plugin will support.
+We recommend to using the `fastify-plugin` module, because it solves this problem for you, and you can pass a version range of Medley as a parameter that your plugin will support.
 ```js
 const fp = require('fastify-plugin')
 
-module.exports = fp(function (fastify, opts, next) {
-  fastify.decorate('utility', () => {})
+module.exports = fp(function(app, opts, next) {
+  app.decorate('utility', () => {})
   next()
 }, '0.x')
 ```
 Check the [`fastify-plugin`](https://github.com/fastify/fastify-plugin) documentation to know more about how use this module.
 
-If you don't use the `fastify-plugin` module, you can use the `'skip-override'` hidden property, but we do not recommend it. If in the future the Fastify API changes it will be a your responsibility update the module, while if you use `fastify-plugin`, you can be sure about backwards compatibility.
+If you don't use the `fastify-plugin` module, you can use the `'skip-override'` hidden property, but we do not recommend it. If in the future the Medley API changes it will be a your responsibility update the module, while if you use `fastify-plugin`, you can be sure about backwards compatibility.
 ```js
-function yourPlugin (fastify, opts, next) {
-  fastify.decorate('utility', () => {})
+function yourPlugin(app, opts, next) {
+  app.decorate('utility', () => {})
   next()
 }
 yourPlugin[Symbol.for('skip-override')] = true

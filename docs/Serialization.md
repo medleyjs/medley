@@ -15,7 +15,7 @@ const responseSchema = {
   }
 }
 
-fastify.get('/info', { responseSchema }, (request, reply) => {
+app.get('/info', { responseSchema }, (request, reply) => {
   reply.send({ value: 'medley', fast: true })
 })
 ```
@@ -42,7 +42,7 @@ const responseSchema = {
   }
 }
 
-fastify.post('/info', { responseSchema }, (request, reply) => {
+app.post('/info', { responseSchema }, (request, reply) => {
   if (request.body.createInfo) {
     // Create info ...
     reply.code(201).send({ success: true, error: null })
@@ -66,7 +66,7 @@ const responseSchema = {
   }
 }
 
-fastify.get('/mismatch', { responseSchema }, (request, reply) => {
+app.get('/mismatch', { responseSchema }, (request, reply) => {
   reply.send({ value: [1, 2, 3] }) // Gets serialized to: '{ "value": [1, 2, 3] }'
 })
 ```

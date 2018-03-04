@@ -1,11 +1,11 @@
 # HTTP2
 
-_Fastify_ offers **experimental support** for HTTP2 starting from Node
-8.8.0, which includes HTTP2 without a flag. _Fastify_ supports HTTP2
+_Medley_ offers **experimental support** for HTTP2 starting from Node
+8.8.0, which includes HTTP2 without a flag. _Medley_ supports HTTP2
 both over HTTPS or over plaintext.
 
 Currently none of the HTTP2-specific APIs are available through
-_Fastify_, but Node's `req` and `res` can be access through our
+_Medley_, but Node's `req` and `res` can be access through our
 `Request` and `Reply` interface. PRs are welcome.
 
 ### Secure (HTTPS)
@@ -18,46 +18,46 @@ connection__:
 
 const fs = require('fs')
 const path = require('path')
-const fastify = require('fastify')({
+const app = require('medley')({
   http2: true,
   https: {
-    key: fs.readFileSync(path.join(__dirname, '..', 'https', 'fastify.key')),
-    cert: fs.readFileSync(path.join(__dirname, '..', 'https', 'fastify.cert'))
+    key: fs.readFileSync(path.join(__dirname, '..', 'https', 'app.key')),
+    cert: fs.readFileSync(path.join(__dirname, '..', 'https', 'app.cert'))
   }
 })
 
-fastify.get('/', function (request, reply) {
+app.get('/', function (request, reply) {
   reply.send({ hello: 'world' })
 })
 
-fastify.listen(3000)
+app.listen(3000)
 ```
 
 ALPN negotiation allows to support both HTTPS and HTTP/2 over the same socket.
 Node core `req` and `res` objects can be either [HTTP/1](https://nodejs.org/api/http.html)
 or [HTTP/2](https://nodejs.org/api/http2.html).
-_Fastify_ supports this out of the box:
+_Medley_ supports this out of the box:
 
 ```js
 'use strict'
 
 const fs = require('fs')
 const path = require('path')
-const fastify = require('fastify')({
+const app = require('medley')({
   http2: true,
   https: {
     allowHTTP1: true, // fallback support for HTTP1
-    key: fs.readFileSync(path.join(__dirname, '..', 'https', 'fastify.key')),
-    cert: fs.readFileSync(path.join(__dirname, '..', 'https', 'fastify.cert'))
+    key: fs.readFileSync(path.join(__dirname, '..', 'https', 'app.key')),
+    cert: fs.readFileSync(path.join(__dirname, '..', 'https', 'app.cert'))
   }
 })
 
 // this route can be accessed through both protocols
-fastify.get('/', function (request, reply) {
+app.get('/', function (request, reply) {
   reply.send({ hello: 'world' })
 })
 
-fastify.listen(3000)
+app.listen(3000)
 ```
 
 You can test your new server with:
@@ -74,15 +74,15 @@ text, however this is not supported by browsers.
 ```js
 'use strict'
 
-const fastify = require('fastify')({
+const app = require('medley')({
   http2: true
 })
 
-fastify.get('/', function (request, reply) {
+app.get('/', function (request, reply) {
   reply.send({ hello: 'world' })
 })
 
-fastify.listen(3000)
+app.listen(3000)
 ```
 
 You can test your new server with:

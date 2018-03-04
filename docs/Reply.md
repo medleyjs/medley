@@ -1,6 +1,6 @@
 # Reply
 The second parameter of the handler function is `Reply`.
-Reply is a core Fastify object that exposes the following functions:
+Reply is a core Medley object that exposes the following functions:
 
 - `.code(statusCode)` - Sets the status code.
 - `.header(name, value)` - Sets a response header.
@@ -11,7 +11,7 @@ Reply is a core Fastify object that exposes the following functions:
 - `.res` - The [`http.ServerResponse`](https://nodejs.org/dist/latest/docs/api/http.html#http_class_http_serverresponse) from Node core.
 
 ```js
-fastify.get('/', options, function (request, reply) {
+app.get('/', options, function (request, reply) {
   // Your code
   reply
     .header('Content-Type', 'application/json')
@@ -22,7 +22,7 @@ fastify.get('/', options, function (request, reply) {
 Additionally, `Reply` provides access to the context of the request:
 
 ```js
-fastify.get('/', {config: {foo: 'bar'}}, function (request, reply) {
+app.get('/', {config: {foo: 'bar'}}, function (request, reply) {
   reply.send('handler config.foo = ' + reply.context.config.foo)
 })
 ```
@@ -67,7 +67,7 @@ The payload will be JSON-serialized by default if it is not a `string`, `buffer`
 JSON payloads are serialized with [`compile-json-stringify`](https://www.npmjs.com/package/compile-json-stringify) if a response schema was set, otherwise `JSON.stringify()` is used.
 
 ```js
-fastify.get('/json', {
+app.get('/json', {
   responseSchema: {
     200: {
       type: 'object',
@@ -81,7 +81,7 @@ fastify.get('/json', {
 })
 
 // Send a string as JSON
-fastify.get('/json-string', (request, reply) => {
+app.get('/json-string', (request, reply) => {
   reply.type('application/json').send('Hello world!')
 })
 ```
@@ -90,7 +90,7 @@ fastify.get('/json-string', (request, reply) => {
 #### Strings
 If you pass a string to `send` without a `Content-Type`, it will be sent as plain text. If you set the `Content-Type` header and pass a string to `send`, it will be sent unmodified (unless the `Content-Type` header is set to `application/json`, in which case it will be JSON-serialized like an object — see the section above).
 ```js
-fastify.get('/json', options, function (request, reply) {
+app.get('/json', options, function (request, reply) {
   reply.send('plain string')
 })
 ```
@@ -99,7 +99,7 @@ fastify.get('/json', options, function (request, reply) {
 #### Streams
 *send* can also handle streams out of the box, internally uses [pump](https://www.npmjs.com/package/pump) to avoid leaks of file descriptors. If you are sending a stream and you have not set a `'Content-Type'` header, *send* will set it at `'application/octet-stream'`.
 ```js
-fastify.get('/streams', function (request, reply) {
+app.get('/streams', function (request, reply) {
   const fs = require('fs')
   const stream = fs.createReadStream('some-file', 'utf8')
   reply.send(stream)
@@ -111,7 +111,7 @@ fastify.get('/streams', function (request, reply) {
 If you are sending a buffer and you have not set a `'Content-Type'` header, *send* will set it to `'application/octet-stream'`.
 ```js
 const fs = require('fs')
-fastify.get('/streams', function (request, reply) {
+app.get('/streams', function (request, reply) {
   fs.readFile('some-file', (err, fileBuffer) => {
     reply.send(err || fileBuffer)
   })
@@ -120,7 +120,7 @@ fastify.get('/streams', function (request, reply) {
 
 <a name="errors"></a>
 #### Errors
-If you pass to *send* an object that is an instance of *Error*, Fastify will automatically create an error structured as the following:
+If you pass to *send* an object that is an instance of *Error*, Medley will automatically create an error structured as the following:
 ```js
 {
   error: String        // the http error message
@@ -129,28 +129,28 @@ If you pass to *send* an object that is an instance of *Error*, Fastify will aut
 }
 ```
 You can add some custom property to the Error object, such as `code` and `headers`, that will be used to enhance the http response.<br>
-*Note: If you are passing an error to `send` and the statusCode is less than 400, Fastify will automatically set it at 500.*
+*Note: If you are passing an error to `send` and the statusCode is less than 400, Medley will automatically set it at 500.*
 
 Tip: you can simplify errors by using the [`http-errors`](https://npm.im/http-errors) module to generate errors:
 
 ```js
-fastify.get('/', function (request, reply) {
+app.get('/', function (request, reply) {
   reply.send(httpErrors.Gone())
 })
 ```
 
-If you want to completely customize the error response, checkout [`setErrorHandler`](https://github.com/fastify/fastify/blob/error-docs/docs/Server-Methods.md#seterrorhandler) API.
+If you want to completely customize the error response, checkout [`setErrorHandler`](Server-Methods.md#seterrorhandler) API.
 
 Errors with a `status` or `statusCode` property equal to `404` will be routed to the not found handler.
-See [`server.setNotFoundHandler`](https://github.com/fastify/fastify/blob/error-docs/docs/Server-Methods.md#setnotfoundhandler)
+See [`server.setNotFoundHandler`](Server-Methods.md#setnotfoundhandler)
 API to learn more about handling such cases:
 
 ```js
-fastify.setNotFoundHandler(function (request, reply) {
+app.setNotFoundHandler(function (request, reply) {
   reply.type('text/plain').send('a custom not found')
 })
 
-fastify.get('/', function (request, reply) {
+app.get('/', function (request, reply) {
   reply.send(new httpErrors.NotFound())
 })
 ```
@@ -167,16 +167,16 @@ The type of the sent payload (after serialization and going through any [`onSend
 
 <a name="async-await-promise"></a>
 #### Async-Await and Promises
-Fastify natively handles promises and supports async-await.<br>
+Medley natively handles promises and supports async-await.<br>
 *Note that in the following examples we are not using reply.send.*
 ```js
-fastify.get('/promises', options, function (request, reply) {
+app.get('/promises', options, function (request, reply) {
   return new Promise(function (resolve) {
     setTimeout(resolve, 200, { hello: 'world' })
   })
 })
 
-fastify.get('/async-await', options, async function (request, reply) {
+app.get('/async-await', options, async function (request, reply) {
   var res = await new Promise(function (resolve) {
     setTimeout(resolve, 200, { hello: 'world' })
   })
@@ -187,7 +187,7 @@ fastify.get('/async-await', options, async function (request, reply) {
 Rejected promises default to a `500` HTTP status code. Reject the promise, or `throw` in an `async function`, with an object that has `statusCode` (or `status`) and `message` properties to modify the reply.
 
 ```js
-fastify.get('/teapot', async function (request, reply) => {
+app.get('/teapot', async function (request, reply) => {
   const err = new Error()
   err.statusCode = 418
   err.message = 'short and stout'

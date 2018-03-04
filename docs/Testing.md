@@ -1,14 +1,14 @@
 # Testing
-Testing is one of the most important parts of developing an application. Fastify is very flexible when it comes to testing and is compatible with most testing frameworks (such as [Tap](https://www.npmjs.com/package/tap), which is used in the examples below).
+Testing is one of the most important parts of developing an application. Medley is very flexible when it comes to testing and is compatible with most testing frameworks (such as [Tap](https://www.npmjs.com/package/tap), which is used in the examples below).
 
 <a name="inject"></a>
 ### Testing with http injection
-Fastify comes with built-in support for fake http injection thanks to [`light-my-request`](https://github.com/fastify/light-my-request).
+Medley comes with built-in support for fake http injection thanks to [`light-my-request`](https://github.com/fastify/light-my-request).
 
 To inject a fake http request, use the `inject` method:
 
 ```js
-fastify.inject({
+app.inject({
   method: String,
   url: String,
   payload: Object,
@@ -21,7 +21,7 @@ fastify.inject({
 or in the promisified version:
 
 ```js
-fastify
+app
   .inject({
     method: String,
     url: String,
@@ -39,7 +39,7 @@ fastify
 Async await is supported as well!
 ```js
 try {
-  const res = await fastify.inject({ method: String, url: String, payload: Object, headers: Object })
+  const res = await app.inject({ method: String, url: String, payload: Object, headers: Object })
   // your tests
 } catch (err) {
   // handle error
@@ -50,36 +50,36 @@ try {
 
 **app.js**
 ```js
-const Fastify = require('fastify')
+const medley = require('medley')
 
-function buildFastify () {
-  const fastify = Fastify()
+function buildMedley () {
+  const app = medley()
 
-  fastify.get('/', function (request, reply) {
+  app.get('/', function (request, reply) {
     reply.send({ hello: 'world' })
   })
   
-  return fastify
+  return app
 }
 
-module.exports = buildFastify
+module.exports = buildMedley
 ```
 
 **test.js**
 ```js
 const tap = require('tap')
-const buildFastify = require('./app')
+const buildMedley = require('./app')
 
 tap.test('GET `/` route', t => {
   t.plan(4)
   
-  const fastify = buildFastify()
+  const app = buildMedley()
   
   // At the end of your tests it is highly recommended to call `.close()`
   // to ensure that all connections to external services get closed.
-  t.tearDown(() => fastify.close())
+  t.tearDown(() => app.close())
 
-  fastify.inject({
+  app.inject({
     method: 'GET',
     url: '/'
   }, (err, response) => {
@@ -92,7 +92,7 @@ tap.test('GET `/` route', t => {
 ```
 
 ### Testing with a running server
-Fastify can also be tested after starting the server with `fastify.listen()` or after initializing routes and plugins with `fastify.ready()`.
+Medley can also be tested after starting the server with `app.listen()` or after initializing routes and plugins with `app.ready()`.
 
 #### Example:
 
@@ -102,21 +102,21 @@ Uses **app.js** from the previous example.
 ```js
 const tap = require('tap')
 const request = require('request')
-const buildFastify = require('./app')
+const buildMedley = require('./app')
 
 tap.test('GET `/` route', t => {
   t.plan(5)
   
-  const fastify = buildFastify()
+  const app = buildMedley()
   
-  t.tearDown(() => fastify.close())
+  t.tearDown(() => app.close())
   
-  fastify.listen(0, (err) => {
+  app.listen(0, (err) => {
     t.error(err)
     
     request({
       method: 'GET',
-      url: 'http://localhost:' + fastify.server.address().port
+      url: 'http://localhost:' + app.server.address().port
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
@@ -131,16 +131,16 @@ tap.test('GET `/` route', t => {
 ```js
 const tap = require('tap')
 const supertest = require('supertest')
-const buildFastify = require('./app')
+const buildMedley = require('./app')
 
 tap.test('GET `/` route', async (t) => {
-  const fastify = buildFastify()
+  const app = buildMedley()
 
-  t.tearDown(() => fastify.close())
+  t.tearDown(() => app.close())
   
-  await fastify.ready()
+  await app.ready()
   
-  const response = await supertest(fastify.server)
+  const response = await supertest(app.server)
     .get('/')
     .expect(200)
     .expect('Content-Type', 'application/json')

@@ -1,10 +1,10 @@
 # Hooks
 
-Hooks are registered with the `fastify.addHook` method and allow you to listen to specific events in the application or request/response lifecycle. You have to register a hook before the event is triggered otherwise the event is lost.
+Hooks are registered with the `app.addHook` method and allow you to listen to specific events in the application or request/response lifecycle. You have to register a hook before the event is triggered otherwise the event is lost.
 
 ## Request/Response Hooks
 
-By using the hooks you can interact directly inside the lifecycle of Fastify. There are five different Hooks that you can use *(in order of execution)*:
+By using the hooks you can interact directly inside the lifecycle of Medley. There are five different Hooks that you can use *(in order of execution)*:
 - `'onRequest'`
 - `'preHandler'`
 - `'onSend'`
@@ -12,29 +12,29 @@ By using the hooks you can interact directly inside the lifecycle of Fastify. Th
 
 Example:
 ```js
-fastify.addHook('onRequest', (req, res, next) => {
+app.addHook('onRequest', (req, res, next) => {
   // some code
   next()
 })
 
-fastify.addHook('preHandler', (request, reply, next) => {
+app.addHook('preHandler', (request, reply, next) => {
   // some code
   next()
 })
 
-fastify.addHook('onSend', (request, reply, payload, next) => {
+app.addHook('onSend', (request, reply, payload, next) => {
   // some code
   next()
 })
 
-fastify.addHook('onResponse', (res, next) => {
+app.addHook('onResponse', (res, next) => {
   // some code
   next()
 })
 ```
 Or `async/await`
 ```js
-fastify.addHook('onRequest', async (req, res) => {
+app.addHook('onRequest', async (req, res) => {
   // some code
   await asyncMethod()
   // error occurred
@@ -44,7 +44,7 @@ fastify.addHook('onRequest', async (req, res) => {
   return
 })
 
-fastify.addHook('preHandler', async (request, reply) => {
+app.addHook('preHandler', async (request, reply) => {
   // some code
   await asyncMethod()
   // error occurred
@@ -54,7 +54,7 @@ fastify.addHook('preHandler', async (request, reply) => {
   return
 })
 
-fastify.addHook('onSend', async (request, reply, payload) => {
+app.addHook('onSend', async (request, reply, payload) => {
   // some code
   await asyncMethod()
   // error occurred
@@ -64,7 +64,7 @@ fastify.addHook('onSend', async (request, reply, payload) => {
   return
 })
 
-fastify.addHook('onResponse', async (res) => {
+app.addHook('onResponse', async (res) => {
   // some code
   await asyncMethod()
   // error occurred
@@ -79,25 +79,25 @@ fastify.addHook('onResponse', async (res) => {
 |-------------|-------------|
 | req |  Node.js [IncomingMessage](https://nodejs.org/api/http.html#http_class_http_incomingmessage) |
 | res | Node.js [ServerResponse](https://nodejs.org/api/http.html#http_class_http_serverresponse) |
-| request | Fastify [Request](Request.md) interface |
-| reply | Fastify [Reply](Reply.md) interface |
+| request | Medley [Request](Request.md) interface |
+| reply | Medley [Reply](Reply.md) interface |
 | payload | The serialized payload |
 | next | Function to continue with the [lifecycle](Lifecycle.md) |
 
 It is pretty easy to understand where each hook is executed by looking at the [lifecycle page](Lifecycle.md).<br>
-Hooks are affected by Fastify's encapsulation, and can thus be applied to selected routes. See the [Scopes](#scope) section for more information.
+Hooks are affected by Medley's encapsulation, and can thus be applied to selected routes. See the [Scopes](#scope) section for more information.
 
-If you get an error during the execution of you hook, just pass it to `next()` and Fastify will automatically close the request and send the appropriate error code to the user.
+If you get an error during the execution of you hook, just pass it to `next()` and Medley will automatically close the request and send the appropriate error code to the user.
 
 ```js
-fastify.addHook('onRequest', (req, res, next) => {
+app.addHook('onRequest', (req, res, next) => {
   next(new Error('some error'))
 })
 ```
 
 If you want to pass a custom error code to the user, just use `reply.code()`:
 ```js
-fastify.addHook('preHandler', (request, reply, next) => {
+app.addHook('preHandler', (request, reply, next) => {
   reply.code(500)
   next(new Error('some error'))
 })
@@ -105,21 +105,21 @@ fastify.addHook('preHandler', (request, reply, next) => {
 
 *The error will be handled by [`Reply`](Reply.md#errors).*
 
-Note that in the `'preHandler'` and `'onSend'` hook the request and reply objects are different from `'onRequest'`, because the two arguments are [`request`](Request.md) and [`reply`](Reply.md) core Fastify objects.
+Note that in the `'preHandler'` and `'onSend'` hook the request and reply objects are different from `'onRequest'`, because the two arguments are [`request`](Request.md) and [`reply`](Reply.md) core Medley objects.
 
 #### The `onSend` Hook
 
 If you are using the `onSend` hook, you can change the payload. For example:
 
 ```js
-fastify.addHook('onSend', (request, reply, payload, next) => {
+app.addHook('onSend', (request, reply, payload, next) => {
   var err = null;
   var newPayload = payload.replace('some-text', 'some-new-text')
   next(err, newPayload)
 })
 
 // Or async
-fastify.addHook('onSend', async (request, reply, payload) => {
+app.addHook('onSend', async (request, reply, payload) => {
   var newPayload = payload.replace('some-text', 'some-new-text')
   return newPayload
 })
@@ -128,7 +128,7 @@ fastify.addHook('onSend', async (request, reply, payload) => {
 You can also clear the payload to send a response with an empty body by replacing the payload with `null`:
 
 ```js
-fastify.addHook('onSend', (request, reply, payload, next) => {
+app.addHook('onSend', (request, reply, payload, next) => {
   reply.code(304)
   const newPayload = null
   next(null, newPayload)
@@ -143,12 +143,12 @@ Note: If you change the payload, you may only change it to a `string`, a `Buffer
 It is possible to respond to a request within a hook and skip the route handler. An example could be an authentication hook. If you are using `onRequest` should use `res.end()` and `beforeHandler`/`preHandler` hook should use `reply.send`.
 
 ```js
-fastify.addHook('onRequest', (req, res, next) => {
+app.addHook('onRequest', (req, res, next) => {
   res.end('early response')
 })
 
 // Works with async functions too
-fastify.addHook('preHandler', async (request, reply) => {
+app.addHook('preHandler', async (request, reply) => {
   reply.send({ hello: 'world' })
 })
 ```
@@ -158,7 +158,7 @@ If responding with a stream, it is best to avoid using an `async` function for t
 ```js
 const pump = require('pump')
 
-fastify.addHook('onRequest', (req, res, next) => {
+app.addHook('onRequest', (req, res, next) => {
   if (req.skip) return next()
   const stream = fs.createReadStream('some-file', 'utf8')
   pump(stream, res, (err) => { /* Handle error */ })
@@ -194,11 +194,11 @@ app.addHook('onRoute', (routeOptions) => {
 ```
 <a name="scope"></a>
 ### Scope
-Except for [Application Hooks](#application-hooks), all hooks are encapsulated. This means that you can decide where your hooks should run by using `register` as explained in the [plugins guide](Plugins-Guide.md). If you pass a function, that function is bound to the right Fastify context and from there you have full access to the Fastify API.
+Except for [Application Hooks](#application-hooks), all hooks are encapsulated. This means that you can decide where your hooks should run by using `register` as explained in the [plugins guide](Plugins-Guide.md). If you pass a function, that function is bound to the right Medley context and from there you have full access to the Medley API.
 
 ```js
-fastify.addHook('onRequest', function (req, res, next) {
-  const self = this // Fastify context
+app.addHook('onRequest', function (req, res, next) {
+  const self = this // Medley context
   next()
 })
 ```
@@ -209,12 +209,12 @@ Despite the name, `beforeHandler` is not a standard hook like `preHandler`, but 
 **`beforeHandler` is executed always after the `preHandler` hook.**
 
 ```js
-fastify.addHook('preHandler', (request, reply, done) => {
+app.addHook('preHandler', (request, reply, done) => {
   // your code
   done()
 })
 
-fastify.route({
+app.route({
   method: 'GET',
   url: '/',
   beforeHandler: function (request, reply, done) {
@@ -226,7 +226,7 @@ fastify.route({
   }
 })
 
-fastify.route({
+app.route({
   method: 'GET',
   url: '/',
   beforeHandler: [

@@ -1,6 +1,6 @@
 # The hitchhiker's guide to plugins
 
-Fastify has been built since the beginning to be an extremely modular system, we built a powerful api that allows you to add methods and utilities to Fastify by creating a namespace, we built a system that creates an encapsulation model that allows you to split you application in multiple microservices at any moment, without the need to refactor the entire application.
+Medley has been built since the beginning to be an extremely modular system, we built a powerful api that allows you to add methods and utilities to Medley by creating a namespace, we built a system that creates an encapsulation model that allows you to split you application in multiple microservices at any moment, without the need to refactor the entire application.
 
 **Table of contents**
 - [Register](#register)
@@ -12,10 +12,10 @@ Fastify has been built since the beginning to be an extremely modular system, we
 
 <a name="register"></a>
 ## Register
-As in JavaScript everything is an object, in Fastify everything is a plugin.<br>
-Your routes, your utilities and so on are all plugins. And to add a new plugin, whatever its functionality is, in Fastify you have a nice and unique api to use: [`register`](Plugins.md).
+As in JavaScript everything is an object, in Medley everything is a plugin.<br>
+Your routes, your utilities and so on are all plugins. And to add a new plugin, whatever its functionality is, in Medley you have a nice and unique api to use: [`register`](Plugins.md).
 ```js
-fastify.register(
+app.register(
   require('./my-plugin'),
   { options }
 )
@@ -26,7 +26,7 @@ fastify.register(
 *Why is encapsulation important?*<br>
 Well, let's say you are creating a new disruptive startup, what do you do? You create an api server with all your stuff, everything in the same place, a monolith!<br>
 Ok, you are growing very fast and you want to change your architecture and try microservices. Usually this implies an huge amount of work, because of cross dependencies and the lack of separation of concerns.<br>
-Fastify helps you a lot in this direction, because thanks to the encapsulation model it will completely avoid cross dependencies, and will help you structure your code in cohesive blocks.
+Medley helps you a lot in this direction, because thanks to the encapsulation model it will completely avoid cross dependencies, and will help you structure your code in cohesive blocks.
 
 *Let's return to how to correctly use `register`.*<br>
 As you probably know, the required plugins must expose a single function with the following signature
@@ -35,7 +35,7 @@ module.exports = function(app, options, next) {}
 ```
 Where `app` is the encapsulated app instance, `options` is the options object and `next` is the function you **must** call when you plugin is ready.
 
-Fastify's plugin model is fully reentrant and graph-based, it handles without any kind of problem asynchronous code and it guarantees the load order of the plugins, even the close order! *How?* Glad you asked, checkout [`avvio`](https://github.com/mcollina/avvio)! Fastify starts loading the plugin __after__ `.listen()`, `.inject()` or `.ready()` are called.
+Medley's plugin model is fully reentrant and graph-based, it handles without any kind of problem asynchronous code and it guarantees the load order of the plugins, even the close order! *How?* Glad you asked, checkout [`avvio`](https://github.com/mcollina/avvio)! Medley starts loading the plugin __after__ `.listen()`, `.inject()` or `.ready()` are called.
 
 Inside a plugin you can do whatever you want, register routes, utilities (we'll see this in a moment) and do nested registers, just remember to call `next` when everything is set up!
 ```js
@@ -65,7 +65,7 @@ console.log(util('that is ', ' awesome'))
 ```
 And now you will import your utility in every file you need it. (And don't forget that you will probably also need it in your test).
 
-Fastify offers you a way nicer and elegant way to do this, *decorators*.
+Medley offers you a way nicer and elegant way to do this, *decorators*.
 Create a decorator is extremely easy, just use the [`decorate`](Decorators.md) api:
 ```js
 app.decorate('util', (a, b) => a + b)
@@ -112,59 +112,59 @@ app.register((subApp2, opts, next) => {
 `decorate` is not the unique api that you can use to extend the server functionalities, you can also use `decorateRequest` and `decorateReply`.
 
 *`decorateRequest` and `decorateReply`? Why do we need them if we already have `decorate`?*<br>
-Good question, we added them to make Fastify more developer-friendly. Let's see an example:
+Good question, we added them to make Medley more developer-friendly. Let's see an example:
 ```js
-fastify.decorate('html', payload => {
+app.decorate('html', payload => {
   return generateHtml(payload)
 })
 
-fastify.get('/html', (request, reply) => {
+app.get('/html', (request, reply) => {
   reply
     .type('text/html')
-    .send(fastify.html({ hello: 'world' }))
+    .send(app.html({ hello: 'world' }))
 })
 ```
 It works, but it can be way better!
 ```js
-fastify.decorateReply('html', function (payload) {
+app.decorateReply('html', function (payload) {
   this.type('text/html') // this is the 'Reply' object
   this.send(generateHtml(payload))
 })
 
-fastify.get('/html', (request, reply) => {
+app.get('/html', (request, reply) => {
   reply.html({ hello: 'world' })
 })
 ```
 
 And in the same way you can do this for the `request` object:
 ```js
-fastify.decorate('getHeader', (request, header) => {
+app.decorate('getHeader', (request, header) => {
   return request.headers[header]
 })
 
-fastify.addHook('preHandler', (request, reply, done) => {
-  request.isHappy = fastify.getHeader(request, 'happy')
+app.addHook('preHandler', (request, reply, done) => {
+  request.isHappy = app.getHeader(request, 'happy')
   done()
 })
 
-fastify.get('/happiness', (request, reply) => {
+app.get('/happiness', (request, reply) => {
   reply.send({ happy: request.isHappy })
 })
 ```
 Again, it works, but it can be way better!
 ```js
-fastify.decorateRequest('setHeader', function (header) {
+app.decorateRequest('setHeader', function (header) {
   this.isHappy = this.headers[header]
 })
 
-fastify.decorateRequest('isHappy', false) // this will be added to the Request object prototype, yay speed!
+app.decorateRequest('isHappy', false) // this will be added to the Request object prototype, yay speed!
 
-fastify.addHook('preHandler', (request, reply, done) => {
+app.addHook('preHandler', (request, reply, done) => {
   request.setHeader('happy')
   done()
 })
 
-fastify.get('/happiness', (request, reply) => {
+app.get('/happiness', (request, reply) => {
   reply.send({ happy: request.isHappy })
 })
 ```
@@ -175,15 +175,15 @@ We've seen how extend server functionalities and how handle the encapsulation sy
 ## Hooks
 You just built an amazing utility, but now you need to execute that for every request, this is what you will likely do:
 ```js
-fastify.decorate('util', (request, key, value) => { request.key = value })
+app.decorate('util', (request, key, value) => { request.key = value })
 
-fastify.get('/plugin1', (request, reply) => {
-  fastify.util(request, 'timestamp', new Date())
+app.get('/plugin1', (request, reply) => {
+  app.util(request, 'timestamp', new Date())
   reply.send(request)
 })
 
-fastify.get('/plugin2', (request, reply) => {
-  fastify.util(request, 'timestamp', new Date())
+app.get('/plugin2', (request, reply) => {
+  app.util(request, 'timestamp', new Date())
   reply.send(request)
 })
 ```
@@ -191,18 +191,18 @@ I think we all agree that this is terrible. Code repeat, awful readability and i
 
 So what can you do to avoid this annoying issue? Yes, you are right, use an [hook](Hooks.md)!<br>
 ```js
-fastify.decorate('util', (request, key, value) => { request.key = value })
+app.decorate('util', (request, key, value) => { request.key = value })
 
-fastify.addHook('preHandler', (request, reply, done) => {
-  fastify.util(request, 'timestamp', new Date())
+app.addHook('preHandler', (request, reply, done) => {
+  app.util(request, 'timestamp', new Date())
   done()
 })
 
-fastify.get('/plugin1', (request, reply) => {
+app.get('/plugin1', (request, reply) => {
   reply.send(request)
 })
 
-fastify.get('/plugin2', (request, reply) => {
+app.get('/plugin2', (request, reply) => {
   reply.send(request)
 })
 ```
@@ -210,7 +210,7 @@ Now for every request you will run your utility, it is obvious that you can regi
 It can happen that you want a hook that must be executed just for a subset of routes, how can you do that?  Yep, encapsulation!
 
 ```js
-fastify.register((subApp, opts, next) => {
+app.register((subApp, opts, next) => {
   subApp.decorate('util', (request, key, value) => { request.key = value })
 
   subApp.addHook('preHandler', (request, reply, done) => {
@@ -225,7 +225,7 @@ fastify.register((subApp, opts, next) => {
   next()
 })
 
-fastify.get('/plugin2', (request, reply) => {
+app.get('/plugin2', (request, reply) => {
   reply.send(request)
 })
 ```
@@ -233,27 +233,27 @@ Now your hook will run just for the first route!
 
 <a name="distribution"></a>
 ## How to handle encapsulation and distribution
-Perfect, now you know (almost) all the tools that you can use to extend Fastify. But probably there is something you noted when trying out your code.<br>
+Perfect, now you know (almost) all the tools that you can use to extend Medley. But probably there is something you noted when trying out your code.<br>
 How can you distribute your code?
 
 The preferred way to distribute an utility is to wrap all your code inside a `register`, in this way your plugin can support an asynchronous bootstrap *(since `decorate` is a synchronous api)*, in the case of a database connection for example.
 
 *Wait, what? Didn't you tell me that `register` creates an encapsulation and that what I create inside there will not be available outside?*<br>
-Yes, I said that. But what I didn't tell you, is that you can tell to Fastify to avoid this behavior, with the [`fastify-plugin`](https://github.com/fastify/fastify-plugin) module.
+Yes, I said that. But what I didn't tell you, is that you can tell to Medley to avoid this behavior, with the [`fastify-plugin`](https://github.com/fastify/fastify-plugin) module.
 ```js
 const fp = require('fastify-plugin')
 const dbClient = require('db-client')
 
-function dbPlugin (fastify, opts, next) {
+function dbPlugin (app, opts, next) {
   dbClient.connect(opts.url, (err, conn) => {
-    fastify.decorate('db', conn)
+    app.decorate('db', conn)
     next()
   })
 }
 
 module.exports = fp(dbPlugin)
 ```
-You can also tell to `fastify-plugin` to check the installed version of Fastify, in case of you need a specific api.
+You can also tell to `fastify-plugin` to check the installed version of Medley, in case of you need a specific api.
 
 <a name="handle-errors"></a>
 ## Handle errors
@@ -277,15 +277,15 @@ fastify
 
 <a name="start"></a>
 ## Let's start!
-Awesome, now you know everything you need to know about Fastify and its plugin system to start building your first plugin, and please if you do, tell us! We will add it to the [*ecosystem*](https://github.com/fastify/fastify#ecosystem) section of our documentation!
+Awesome, now you know everything you need to know about Medley and its plugin system to start building your first plugin, and please if you do, tell us! We will add it to the [*ecosystem*](https://github.com/fastify/fastify#ecosystem) section of our documentation!
 
 If you want to see some real world example, checkout:
 - [`point-of-view`](https://github.com/fastify/point-of-view)
-Templates rendering (*ejs, pug, handlebars, marko*) plugin support for Fastify.
+Templates rendering (*ejs, pug, handlebars, marko*) plugin support for Medley.
 - [`fastify-mongodb`](https://github.com/fastify/fastify-mongodb)
-Fastify MongoDB connection plugin, with this you can share the same MongoDb connection pool in every part of your server.
+Medley MongoDB connection plugin, with this you can share the same MongoDb connection pool in every part of your server.
 - [`fastify-multipart`](https://github.com/fastify/fastify-multipart)
-Multipart support for Fastify
+Multipart support for Medley
 
 
 *Do you feel it's missing something here? Let us know! :)*

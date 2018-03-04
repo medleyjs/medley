@@ -1,6 +1,6 @@
 # Factory
 
-The Fastify module exports a factory function that is used to create new [**`Medley app`**](Server-Methods.md)
+The Medley module exports a factory function that is used to create new [**`Medley app`**](Server-Methods.md)
 instance. This factory function accepts an options object which is used to
 customize the resulting instance. This document describes the properties
 available in that options object.
@@ -28,7 +28,7 @@ This option also applies when the [`http2`](Factory.md#factory-http2) option is 
 <a name="factory-ignore-slash"></a>
 ### `ignoreTrailingSlash`
 
-Fastify uses [find-my-way](https://github.com/delvedor/find-my-way) to handle
+Medley uses [find-my-way](https://github.com/delvedor/find-my-way) to handle
 routing. This option may be set to `true` to ignore trailing slashes in routes.
 This option applies to *all* route registrations for the resulting app
 instance.
@@ -36,17 +36,17 @@ instance.
 + Default: `false`
 
 ```js
-const fastify = require('fastify')({
+const app = require('medley')({
   ignoreTrailingSlash: true
 })
 
 // registers both "/foo" and "/foo/"
-fastify.get('/foo/', function (req, reply) {
+app.get('/foo/', function (req, reply) {
   res.send('foo')
 })
 
 // registers both "/bar" and "/bar/"
-fastify.get('/bar', function (req, reply) {
+app.get('/bar', function (req, reply) {
   res.send('bar')
 })
 ```
