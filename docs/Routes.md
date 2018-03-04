@@ -1,6 +1,4 @@
-<h1 align="center">Fastify</h1>
-
-## Routes
+# Routes
 You have two ways to declare a route with Fastify, the shorthand method and the full declaration. Let's start with the second one:
 <a name="full-declaration"></a>
 ### Full declaration

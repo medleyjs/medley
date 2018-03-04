@@ -1,7 +1,4 @@
-<h1 align="center">Fastify</h1>
-
 # The hitchhiker's guide to plugins
-First of all, `DON'T PANIC`!
 
 Fastify has been built since the beginning to be an extremely modular system, we built a powerful api that allows you to add methods and utilities to Fastify by creating a namespace, we built a system that creates an encapsulation model that allows you to split you application in multiple microservices at any moment, without the need to refactor the entire application.
 

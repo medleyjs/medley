@@ -1,6 +1,4 @@
-<h1 align="center">Fastify</h1>
-
-## Testing
+# Testing
 Testing is one of the most important parts of developing an application. Fastify is very flexible when it comes to testing and is compatible with most testing frameworks (such as [Tap](https://www.npmjs.com/package/tap), which is used in the examples below).
 
 <a name="inject"></a>
@@ -8,6 +6,7 @@ Testing is one of the most important parts of developing an application. Fastify
 Fastify comes with built-in support for fake http injection thanks to [`light-my-request`](https://github.com/fastify/light-my-request).
 
 To inject a fake http request, use the `inject` method:
+
 ```js
 fastify.inject({
   method: String,
@@ -19,7 +18,7 @@ fastify.inject({
 })
 ```
 
-or in the promisified version
+or in the promisified version:
 
 ```js
 fastify

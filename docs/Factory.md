@@ -1,7 +1,4 @@
-<h1 align="center">Fastify</h1>
-
-<a name="factory"></a>
-## Factory
+# Factory
 
 The Fastify module exports a factory function that is used to create new [**`Medley app`**](Server-Methods.md)
 instance. This factory function accepts an options object which is used to

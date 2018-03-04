@@ -1,6 +1,4 @@
-<h1 align="center">Fastify</h1>
-
-## Decorators
+# Decorators
 
 The API allows you to add new properties to the Medley `app` instance. A value is not restricted to a function and could also be an object or a string, for example.
 

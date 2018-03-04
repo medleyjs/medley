@@ -1,6 +1,4 @@
-<h1 align="center">Fastify</h1>
-
-## HTTP2
+# HTTP2
 
 _Fastify_ offers **experimental support** for HTTP2 starting from Node
 8.8.0, which includes HTTP2 without a flag. _Fastify_ supports HTTP2
