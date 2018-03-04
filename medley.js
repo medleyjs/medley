@@ -390,18 +390,17 @@ function build(options) {
 
     _medley.after(function afterRouteAdded(notHandledErr, done) {
       const prefix = _medley._routePrefix
-      var path = opts.url || opts.path
-      if (path === '/' && prefix.length > 0) {
+      var url = opts.url || opts.path
+      if (url === '/' && prefix.length > 0) {
         // Ensure that '/prefix' + '/' gets registered as '/prefix'
-        path = ''
-      } else if (path[0] === '/' && prefix.endsWith('/')) {
+        url = ''
+      } else if (url[0] === '/' && prefix.endsWith('/')) {
         // Ensure that '/prefix/' + '/route' gets registered as '/prefix/route'
-        path = path.slice(1)
+        url = url.slice(1)
       }
-      const url = prefix + path
+      url = prefix + url
 
-      opts.url = url
-      opts.path = url
+      opts.url = opts.path = url
       opts.prefix = prefix
 
       // Run 'onRoute' hooks
