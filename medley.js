@@ -173,20 +173,10 @@ function build(options) {
     this.removeListener('finish', runOnResponseHooks)
     this.removeListener('error', runOnResponseHooks)
 
-    runHooks(
-      this._onResponseHooks,
-      onResponseIterator,
-      this,
-      onResponseCallback
-    )
-  }
-
-  function onResponseIterator(fn, res, next) {
-    return fn(res, next)
-  }
-
-  function onResponseCallback() {
-    // noop
+    const onResponseHooks = this._onResponseHooks
+    for (var i = 0; i < onResponseHooks.length; i++) {
+      onResponseHooks[i](this)
+    }
   }
 
   function listen(port, host, backlog, cb) {

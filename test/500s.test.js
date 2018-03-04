@@ -113,34 +113,30 @@ test('custom 500 with hooks', (t) => {
 
   const app = medley()
 
-  app.get('/', function(req, reply) {
+  app.get('/', (request, reply) => {
     reply.send(new Error('kaboom'))
   })
 
-  app.setErrorHandler(function(err, request, reply) {
+  app.setErrorHandler((err, request, reply) => {
     reply
       .code(500)
       .type('text/plain')
       .send('an error happened: ' + err.message)
   })
 
-  app.addHook('onSend', (req, res, payload, next) => {
+  app.addHook('onSend', (request, res, payload, next) => {
     t.ok('called', 'onSend')
     next()
   })
-  app.addHook('onRequest', (req, res, next) => {
+  app.addHook('onRequest', (request, res, next) => {
     t.ok('called', 'onRequest')
     next()
   })
-  app.addHook('onResponse', (res, next) => {
+  app.addHook('onResponse', () => {
     t.ok('called', 'onResponse')
-    next()
   })
 
-  app.inject({
-    method: 'GET',
-    url: '/',
-  }, (err, res) => {
+  app.inject('/', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 500)
     t.strictEqual(res.headers['content-type'], 'text/plain')

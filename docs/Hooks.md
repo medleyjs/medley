@@ -27,9 +27,8 @@ app.addHook('onSend', (request, reply, payload, next) => {
   next()
 })
 
-app.addHook('onResponse', (res, next) => {
+app.addHook('onResponse', (res) => {
   // some code
-  next()
 })
 ```
 Or `async/await`
@@ -65,13 +64,11 @@ app.addHook('onSend', async (request, reply, payload) => {
 })
 
 app.addHook('onResponse', async (res) => {
-  // some code
-  await asyncMethod()
-  // error occurred
-  if (err) {
-    throw new Error('some errors occurred.')
+  try {
+    await asyncMethod()
+  } catch (err) {
+    // Errors must be handled manually in onResponse hooks
   }
-  return
 })
 ```
 

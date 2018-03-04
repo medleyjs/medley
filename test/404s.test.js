@@ -376,12 +376,11 @@ test('run hooks on default 404', (t) => {
     next()
   })
 
-  app.addHook('onResponse', function(res, next) {
+  app.addHook('onResponse', () => {
     t.pass('onResponse called')
-    next()
   })
 
-  app.get('/', function(req, reply) {
+  app.get('/', (request, reply) => {
     reply.send({hello: 'world'})
   })
 
@@ -423,15 +422,14 @@ test('run non-encapsulated plugin hooks on default 404', (t) => {
       next()
     })
 
-    subApp.addHook('onResponse', function(res, next) {
+    subApp.addHook('onResponse', () => {
       t.pass('onResponse called')
-      next()
     })
 
     next()
   }))
 
-  app.get('/', function(req, reply) {
+  app.get('/', (request, reply) => {
     reply.send({hello: 'world'})
   })
 
@@ -466,9 +464,8 @@ test('run non-encapsulated plugin hooks on custom 404', (t) => {
       next()
     })
 
-    subApp.addHook('onResponse', function(res, next) {
+    subApp.addHook('onResponse', () => {
       t.pass('onResponse called')
-      next()
     })
 
     next()
@@ -476,11 +473,11 @@ test('run non-encapsulated plugin hooks on custom 404', (t) => {
 
   app.register(plugin)
 
-  app.get('/', function(req, reply) {
+  app.get('/', (request, reply) => {
     reply.send({hello: 'world'})
   })
 
-  app.setNotFoundHandler(function(req, reply) {
+  app.setNotFoundHandler((request, reply) => {
     reply.code(404).send('this was not found')
   })
 
@@ -513,13 +510,12 @@ test('run hooks with encapsulated 404', (t) => {
     next()
   })
 
-  app.addHook('onResponse', function(res, next) {
+  app.addHook('onResponse', () => {
     t.pass('onResponse called')
-    next()
   })
 
   app.register(function(f, opts, next) {
-    f.setNotFoundHandler(function(req, reply) {
+    f.setNotFoundHandler((request, reply) => {
       reply.code(404).send('this was not found 2')
     })
 
@@ -538,9 +534,8 @@ test('run hooks with encapsulated 404', (t) => {
       next()
     })
 
-    f.addHook('onResponse', function(res, next) {
+    f.addHook('onResponse', () => {
       t.pass('onResponse 2 called')
-      next()
     })
 
     next()
@@ -581,9 +576,8 @@ test('hooks check 404', (t) => {
     t.ok('called', 'onRequest')
     next()
   })
-  app.addHook('onResponse', (res, next) => {
+  app.addHook('onResponse', () => {
     t.ok('called', 'onResponse')
-    next()
   })
 
   t.tearDown(app.close.bind(app))

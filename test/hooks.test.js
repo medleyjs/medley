@@ -9,7 +9,7 @@ const fp = require('fastify-plugin')
 const fs = require('fs')
 
 test('hooks', (t) => {
-  t.plan(19)
+  t.plan(22)
 
   const payload = {hello: 'world'}
   const app = medley()
@@ -34,14 +34,14 @@ test('hooks', (t) => {
     }
   })
 
-  app.addHook('onResponse', function(res, next) {
-    t.ok('onResponse called')
-    next()
-  })
-
   app.addHook('onSend', function(req, reply, thePayload, next) {
     t.ok('onSend called')
     next()
+  })
+
+  app.addHook('onResponse', function(res) {
+    t.ok('onResponse called')
+    t.ok(res.finished)
   })
 
   app.get('/', function(req, reply) {
@@ -465,9 +465,8 @@ test('onResponse hook should support encapsulation / 1', (t) => {
   const app = medley()
 
   app.register((subApp, opts, next) => {
-    subApp.addHook('onResponse', (res, next) => {
+    subApp.addHook('onResponse', (res) => {
       t.strictEqual(res.plugin, true)
-      next()
     })
 
     subApp.get('/plugin', (request, reply) => {
@@ -517,9 +516,8 @@ test('onResponse hook should support encapsulation / 3', (t) => {
   t.plan(12)
   const app = medley()
 
-  app.addHook('onResponse', function(res, next) {
+  app.addHook('onResponse', function() {
     t.ok('onResponse called')
-    next()
   })
 
   app.get('/first', (req, reply) => {
@@ -527,9 +525,8 @@ test('onResponse hook should support encapsulation / 3', (t) => {
   })
 
   app.register((subApp, opts, next) => {
-    subApp.addHook('onResponse', function(res, next) {
+    subApp.addHook('onResponse', function() {
       t.ok('onResponse called')
-      next()
     })
 
     subApp.get('/second', (req, reply) => {
@@ -759,7 +756,7 @@ test('onSend hook is called after payload is serialized and headers are set', (t
   })
 })
 
-test('modify payload', (t) => {
+test('onSend hooks can modify payload', (t) => {
   t.plan(10)
   const app = medley()
   const payload = {hello: 'world'}
@@ -800,7 +797,7 @@ test('modify payload', (t) => {
   })
 })
 
-test('clear payload', (t) => {
+test('onSend hooks can clear payload', (t) => {
   t.plan(6)
   const app = medley()
 
@@ -970,9 +967,8 @@ test('onRequest hooks should be able to block a request', (t) => {
     t.fail('this should not be called')
   })
 
-  app.addHook('onResponse', (res, next) => {
+  app.addHook('onResponse', () => {
     t.ok('called')
-    next()
   })
 
   app.get('/', function() {
@@ -1007,9 +1003,8 @@ test('preHandler hooks should be able to block a request', (t) => {
     next()
   })
 
-  app.addHook('onResponse', (res, next) => {
+  app.addHook('onResponse', () => {
     t.ok('called')
-    next()
   })
 
   app.get('/', function() {
@@ -1043,9 +1038,8 @@ test('onRequest hooks should be able to block a request (last hook)', (t) => {
     t.fail('this should not be called')
   })
 
-  app.addHook('onResponse', (res, next) => {
+  app.addHook('onResponse', () => {
     t.ok('called')
-    next()
   })
 
   app.get('/', function() {
@@ -1076,9 +1070,8 @@ test('preHandler hooks should be able to block a request (last hook)', (t) => {
     next()
   })
 
-  app.addHook('onResponse', (res, next) => {
+  app.addHook('onResponse', () => {
     t.ok('called')
-    next()
   })
 
   app.get('/', function() {
@@ -1117,9 +1110,8 @@ test('onRequest respond with a stream', (t) => {
     t.fail('this should not be called')
   })
 
-  app.addHook('onResponse', (res, next) => {
+  app.addHook('onResponse', () => {
     t.ok('called')
-    next()
   })
 
   app.get('/', function() {
@@ -1167,9 +1159,8 @@ test('preHandler respond with a stream', (t) => {
     next()
   })
 
-  app.addHook('onResponse', (res, next) => {
+  app.addHook('onResponse', () => {
     t.ok('called')
-    next()
   })
 
   app.get('/', function() {
@@ -1185,7 +1176,7 @@ test('preHandler respond with a stream', (t) => {
   })
 })
 
-test('Register an hook after a plugin inside a plugin', (t) => {
+test('Register a hook after a plugin inside a plugin', (t) => {
   t.plan(6)
   const app = medley()
 
@@ -1226,7 +1217,7 @@ test('Register an hook after a plugin inside a plugin', (t) => {
   })
 })
 
-test('Register an hook after a plugin inside a plugin (with beforeHandler)', (t) => {
+test('Register a hook after a plugin inside a plugin (with beforeHandler)', (t) => {
   t.plan(7)
   const app = medley()
 
@@ -1300,9 +1291,8 @@ test('Register hooks inside a plugin after an encapsulated plugin', (t) => {
       next()
     })
 
-    subApp.addHook('onResponse', function(res, next) {
+    subApp.addHook('onResponse', function() {
       t.ok('called')
-      next()
     })
 
     next()
@@ -1498,10 +1488,9 @@ test('onResponse hooks should run in the order in which they are defined', (t) =
   const app = medley()
 
   app.register(function(subApp, opts, next) {
-    subApp.addHook('onResponse', function(res, next) {
+    subApp.addHook('onResponse', function(res) {
       t.strictEqual(res.previous, undefined)
       res.previous = 1
-      next()
     })
 
     subApp.get('/', function(request, reply) {
@@ -1509,10 +1498,9 @@ test('onResponse hooks should run in the order in which they are defined', (t) =
     })
 
     subApp.register(fp(function(i, opts, next) {
-      i.addHook('onResponse', function(res, next) {
+      i.addHook('onResponse', function(res) {
         t.strictEqual(res.previous, 1)
         res.previous = 2
-        next()
       })
       next()
     }))
@@ -1521,24 +1509,21 @@ test('onResponse hooks should run in the order in which they are defined', (t) =
   })
 
   app.register(fp(function(subApp, opts, next) {
-    subApp.addHook('onResponse', function(res, next) {
+    subApp.addHook('onResponse', function(res) {
       t.strictEqual(res.previous, 2)
       res.previous = 3
-      next()
     })
 
     subApp.register(fp(function(i, opts, next) {
-      i.addHook('onResponse', function(res, next) {
+      i.addHook('onResponse', function(res) {
         t.strictEqual(res.previous, 3)
         res.previous = 4
-        next()
       })
       next()
     }))
 
-    subApp.addHook('onResponse', function(res, next) {
+    subApp.addHook('onResponse', function(res) {
       t.strictEqual(res.previous, 4)
-      next()
     })
 
     next()
