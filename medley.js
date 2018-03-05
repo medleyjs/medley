@@ -622,8 +622,18 @@ function build(options) {
 
     const prefix = this._routePrefix
 
-    fourOhFour.all(prefix + (prefix.endsWith('/') ? '*' : '/*'), routeHandler, context)
-    fourOhFour.all(prefix || '/', routeHandler, context)
+    fourOhFour.on(
+      supportedMethods,
+      prefix + (prefix.endsWith('/') ? '*' : '/*'),
+      routeHandler,
+      context
+    )
+    fourOhFour.on(
+      supportedMethods,
+      prefix || '/',
+      routeHandler,
+      context
+    )
   }
 
   function setErrorHandler(func) {
