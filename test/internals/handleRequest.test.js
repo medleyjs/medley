@@ -60,7 +60,7 @@ test('request should be defined in onSend Hook on post request with content type
       },
     }, (err, response) => {
       t.error(err)
-      // a 415 error is expected because of missing content type parser
+      // a 415 error is expected because of missing body parser
       t.strictEqual(response.statusCode, 415)
     })
   })
@@ -91,7 +91,7 @@ test('request should be defined in onSend Hook on options request with content t
       },
     }, (err, response) => {
       t.error(err)
-      // a 415 error is expected because of missing content type parser
+      // a 415 error is expected because of missing body parser
       t.strictEqual(response.statusCode, 415)
     })
   })

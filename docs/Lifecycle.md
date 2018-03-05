@@ -48,7 +48,7 @@ If an error occurs during a hook, the rest of the lifecycle up to the *Route Han
 
 ## Body Parsing
 
-In this step, a [`ContentTypeParser`](ContentTypeParser.md) is used to parse the body of the request and set `request.body`.
+In this step, a [`BodyParser`](BodyParser.md) is used to parse the body of the request and set `request.body`.
 
 Body parsing is skipped if the request method is `GET` or `HEAD`.
 

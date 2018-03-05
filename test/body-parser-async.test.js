@@ -5,7 +5,7 @@ const test = t.test
 const sget = require('simple-get').concat
 const medley = require('..')
 
-test('contentTypeParser should add a custom async parser', (t) => {
+test('bodyParser should add a custom async parser', (t) => {
   t.plan(3)
   const app = medley()
 
@@ -17,7 +17,7 @@ test('contentTypeParser should add a custom async parser', (t) => {
     reply.send(req.body)
   })
 
-  app.addContentTypeParser('application/jsoff', async function(req) {
+  app.addBodyParser('application/jsoff', async function(req) {
     const ret = await Promise.resolve(req)
     return ret
   })

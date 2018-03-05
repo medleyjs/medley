@@ -894,15 +894,15 @@ test('onSend hook should receive valid request and reply objects if onRequest ho
   })
 })
 
-test('onSend hook should receive valid request and reply objects if a custom content type parser fails', (t) => {
+test('onSend hook should receive valid request and reply objects if a custom body parser fails', (t) => {
   t.plan(4)
   const app = medley()
 
   app.decorateRequest('testDecorator', 'testDecoratorVal')
   app.decorateReply('testDecorator', 'testDecoratorVal')
 
-  app.addContentTypeParser('*', function(req, done) {
-    done(new Error('content type parser failed'))
+  app.addBodyParser('*', function(req, done) {
+    done(new Error('body parser failed'))
   })
 
   app.addHook('onSend', function(request, reply, payload, next) {

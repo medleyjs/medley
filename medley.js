@@ -7,7 +7,7 @@ const https = require('https')
 const lightMyRequest = require('light-my-request')
 const querystring = require('querystring')
 
-const ContentTypeParser = require('./lib/ContentTypeParser')
+const BodyParser = require('./lib/BodyParser')
 const Hooks = require('./lib/Hooks')
 const Reply = require('./lib/Reply')
 const Request = require('./lib/Request')
@@ -107,9 +107,9 @@ function medley(options) {
     _hooks: new Hooks(),
 
     // Body parsing
-    addContentTypeParser,
-    hasContentTypeParser,
-    _contentTypeParser: new ContentTypeParser(_bodyLimit),
+    addBodyParser,
+    hasBodyParser,
+    _bodyParser: new BodyParser(_bodyLimit),
 
     inject, // Fake HTTP injection
 
@@ -279,8 +279,7 @@ function medley(options) {
     subApp._children = []
     subApp._Reply = Reply.buildReply(subApp._Reply)
     subApp._Request = Request.buildRequest(subApp._Request)
-    subApp._contentTypeParser =
-      ContentTypeParser.buildContentTypeParser(subApp._contentTypeParser)
+    subApp._bodyParser = BodyParser.buildBodyParser(subApp._bodyParser)
     subApp._hooks = Hooks.buildHooks(subApp._hooks)
     subApp._routePrefix = buildRoutePrefix(subApp._routePrefix, opts.prefix)
     subApp[pluginUtils.registeredPlugins] = Object.create(subApp[pluginUtils.registeredPlugins])
@@ -436,7 +435,7 @@ function medley(options) {
     }
     this.Reply = appInstance._Reply
     this.Request = appInstance._Request
-    this.contentTypeParser = appInstance._contentTypeParser
+    this.bodyParser = appInstance._bodyParser
     this.errorHandler = appInstance._errorHandler
     this.queryParser = appInstance._queryParser
     this.onRequest = null
@@ -500,8 +499,8 @@ function medley(options) {
     appInstance._children.forEach(child => _addHook(child, name, fn))
   }
 
-  function addContentTypeParser(contentType, opts, parser) {
-    throwIfAlreadyStarted('Cannot call "addContentTypeParser" when app is already loaded!')
+  function addBodyParser(contentType, opts, parser) {
+    throwIfAlreadyStarted('Cannot call "addBodyParser" when app is already loaded!')
 
     if (typeof opts === 'function') {
       parser = opts
@@ -516,12 +515,12 @@ function medley(options) {
       opts.bodyLimit = this._bodyLimit
     }
 
-    this._contentTypeParser.add(contentType, opts, parser)
+    this._bodyParser.add(contentType, opts, parser)
     return this
   }
 
-  function hasContentTypeParser(contentType) {
-    return this._contentTypeParser.hasParser(contentType)
+  function hasBodyParser(contentType) {
+    return this._bodyParser.hasParser(contentType)
   }
 
   function basic404(request, reply) {

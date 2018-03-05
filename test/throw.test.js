@@ -69,7 +69,7 @@ test('Should throw if one method is unsupported', (t) => {
   }
 })
 
-test('Should throw on duplicate content type parser', (t) => {
+test('Should throw on duplicate body parser', (t) => {
   t.plan(1)
 
   const app = medley()
@@ -78,9 +78,9 @@ test('Should throw on duplicate content type parser', (t) => {
     done(null, '')
   }
 
-  app.addContentTypeParser('application/qq', customParser)
+  app.addBodyParser('application/qq', customParser)
   try {
-    app.addContentTypeParser('application/qq', customParser)
+    app.addBodyParser('application/qq', customParser)
     t.fail()
   } catch (e) {
     t.pass()
