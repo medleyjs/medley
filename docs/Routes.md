@@ -40,10 +40,7 @@ app.route({
   path: '/',
   responseSchema: {
     200: {
-      type: 'object',
-      properties: {
-        hello: { type: 'string' }
-      }
+      hello: { type: 'string' }
     }
   },
   handler(request, reply) {

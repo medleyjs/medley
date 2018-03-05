@@ -216,10 +216,7 @@ Medley has first-class support for JSON and can serialize JSON 2-5x faster if a 
 ```js
 const responseSchema = {
   200: {
-    type: 'object',
-    properties: {
-      hello: { type: 'string' }
-    }
+    hello: { type: 'string' }
   }
 }
 

@@ -70,10 +70,7 @@ JSON payloads are serialized with [`compile-json-stringify`](https://www.npmjs.c
 app.get('/json', {
   responseSchema: {
     200: {
-      type: 'object',
-      properties: {
-        hello: { type: 'string' }
-      }
+      hello: { type: 'string' }
     }
   }
 }, (request, reply) => {

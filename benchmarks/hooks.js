@@ -29,12 +29,7 @@ app
 app.get('/', {
   responseSchema: {
     200: {
-      type: 'object',
-      properties: {
-        hello: {
-          type: 'string',
-        },
-      },
+      hello: {type: 'string'},
     },
   },
 }, (request, reply) => {

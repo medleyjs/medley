@@ -15,12 +15,9 @@ const opts = {
         },
       },
     },
-    201: {
-      type: 'object',
-      properties: {
-        hello: {
-          type: 'number',
-        },
+    201: { // shorthand
+      hello: {
+        type: 'number',
       },
     },
   },

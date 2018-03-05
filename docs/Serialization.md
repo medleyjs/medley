@@ -9,18 +9,17 @@ const responseSchema = {
   200: {
     type: 'object',
     properties: {
-      value: { type: 'string' },
-      fast: { type: 'boolean' }
+      hello: { type: 'string' }
     }
   }
 }
 
-app.get('/info', { responseSchema }, (request, reply) => {
-  reply.send({ value: 'medley', fast: true })
+app.get('/', { responseSchema }, (request, reply) => {
+  reply.send({ hello: 'world' })
 })
 ```
 
-The example above shows that the structure of the schema is a mapping of a *status code* to a *`compile-json-stringify` schema*. Different schemas can be set for different status codes.
+The structure of the schema is a mapping of a *status code* to a *`compile-json-stringify` schema*. Different schemas can be set for different status codes.
 
 **Example:**
 
@@ -52,6 +51,28 @@ app.post('/info', { responseSchema }, (request, reply) => {
 })
 ```
 
+For more information on how to define a response schema, see the [`compile-json-stringify` documentation](https://github.com/nwoltman/compile-json-stringify).
+
+## Object Shorthand
+
+Medley lets you use a "shorthand" format for object schema definitions. If the schema is missing the `type` and `properties` keyword properties, Medley will wrap it in a `{type: 'object', properties: yourSchema}` object so that it will be compiled properly.
+
+**Example:**
+
+```js
+const responseSchema = {
+  200: {
+    hello: { type: 'string' }
+  }
+}
+
+app.get('/', { responseSchema }, (request, reply) => {
+  reply.send({ hello: 'world' })
+})
+```
+
+## Incorrect Types in the Payload
+
 `compile-json-stringify` works just like `JSON.stringify()` ([mostly](https://github.com/nwoltman/compile-json-stringify#differences-from-jsonstringify)). If a part of the payload being sent doesn't match the schema, it will still be serialized.
 
 **Example:**
@@ -70,5 +91,3 @@ app.get('/mismatch', { responseSchema }, (request, reply) => {
   reply.send({ value: [1, 2, 3] }) // Gets serialized to: '{ "value": [1, 2, 3] }'
 })
 ```
-
-For more information on how to define a response schema, see the [`compile-json-stringify` documentation](https://github.com/nwoltman/compile-json-stringify).

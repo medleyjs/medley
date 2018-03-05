@@ -22,11 +22,24 @@ test('build serializers - output schema', (t) => {
   t.plan(2)
 
   const serializers = serializer.buildSerializers({
-    201: {
+    200: {
       type: 'object',
       properties: {
         hello: {type: 'number'},
       },
+    },
+  })
+
+  t.is(serializers['200']({hello: 1}), '{"hello":1}')
+  t.is(serializers['200']({hello: false}), '{"hello":false}')
+})
+
+test('build serializers - schema shorthand', (t) => {
+  t.plan(2)
+
+  const serializers = serializer.buildSerializers({
+    201: {
+      hello: {type: 'number'},
     },
   })
 
