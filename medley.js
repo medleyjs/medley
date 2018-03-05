@@ -39,6 +39,8 @@ function medley(options) {
     throw new TypeError('Options must be an object')
   }
 
+  validateBodyLimitOption(options.bodyLimit)
+
   if (options.queryParser !== undefined && typeof options.queryParser !== 'function') {
     throw new TypeError(`'queryParser' option must be an function. Got '${options.queryParser}'`)
   }
@@ -49,35 +51,9 @@ function medley(options) {
     ignoreTrailingSlash: options.ignoreTrailingSlash,
     maxParamLength: options.maxParamLength,
   })
-
-  const app = {
-    _children: [],
-    _queryParser: options.queryParser || querystring.parse,
-    printRoutes: router.prettyPrint.bind(router),
-  }
-
-  const appLoader = avvio(app, {
-    autostart: false,
-    expose: {use: 'register'},
-  })
-  // Override to allow the plugin incapsulation
-  appLoader.override = override
-
-  var listening = false // true when server is listening
-  var started = false // true when plugins and sub apps have loaded
-
-  appLoader.on('start', () => {
-    started = true
-  })
-
-  function throwIfAlreadyStarted(msg) {
-    if (started) {
-      throw new Error(msg)
-    }
-  }
+  const httpHandler = router.lookup.bind(router)
 
   var server
-  const httpHandler = router.lookup.bind(router)
   if (options.https) {
     if (options.http2) {
       server = http2().createSecureServer(options.https, httpHandler)
@@ -90,6 +66,79 @@ function medley(options) {
     server = http.createServer(httpHandler)
   }
 
+  const _bodyLimit = options.bodyLimit || DEFAULT_BODY_LIMIT
+
+  const app = {
+    _bodyLimit,
+    _queryParser: options.queryParser || querystring.parse,
+    printRoutes: router.prettyPrint.bind(router),
+    server,
+    listen,
+
+    // Decorator methods
+    decorate: decorator.add,
+    hasDecorator: decorator.exist,
+    decorateReply: decorator.decorateReply,
+    decorateRequest: decorator.decorateRequest,
+
+    // Routing
+    route,
+    delete: _createShorthandRouteMethod('DELETE'),
+    get: _createShorthandRouteMethod('GET'),
+    head: _createShorthandRouteMethod('HEAD'),
+    patch: _createShorthandRouteMethod('PATCH'),
+    post: _createShorthandRouteMethod('POST'),
+    put: _createShorthandRouteMethod('PUT'),
+    options: _createShorthandRouteMethod('OPTIONS'),
+    all: _createShorthandRouteMethod(supportedMethods),
+
+    get basePath() {
+      return this._routePrefix
+    },
+    _routePrefix: '',
+
+    setNotFoundHandler,
+    _notFoundHandler: null,
+    _404Context: null,
+
+    setErrorHandler,
+
+    // Hooks
+    addHook,
+    _hooks: new Hooks(),
+
+    // Body parsing
+    addContentTypeParser,
+    hasContentTypeParser,
+    _contentTypeParser: new ContentTypeParser(_bodyLimit),
+
+    inject, // Fake HTTP injection
+
+    _Request: Request.buildRequest(Request),
+    _Reply: Reply.buildReply(Reply),
+    [pluginUtils.registeredPlugins]: [], // For storing plugins
+    _children: [], // For storing child app instances
+  }
+
+  const appLoader = avvio(app, {
+    autostart: false,
+    expose: {use: 'register'},
+  })
+  appLoader.override = override // Override to allow plugin incapsulation
+
+  var ready = false // true when plugins and sub apps have loaded
+  var listening = false // true when server is listening
+
+  appLoader.on('start', () => {
+    ready = true
+  })
+
+  function throwIfAlreadyStarted(msg) {
+    if (ready) {
+      throw new Error(msg)
+    }
+  }
+
   app.onClose((_app, done) => {
     if (listening) {
       _app.server.close(done)
@@ -98,63 +147,9 @@ function medley(options) {
     }
   })
 
-  // body limit option
-  validateBodyLimitOption(options.bodyLimit)
-  app._bodyLimit = options.bodyLimit || DEFAULT_BODY_LIMIT
-
-  // shorthand methods
-  app.delete = _delete
-  app.get = _get
-  app.head = _head
-  app.patch = _patch
-  app.post = _post
-  app.put = _put
-  app.options = _options
-  app.all = _all
-  // extended route
-  app.route = route
-  app._routePrefix = ''
-
-  Object.defineProperty(app, 'basePath', {
-    get() {
-      return this._routePrefix
-    },
-  })
-
-  // hooks
-  app.addHook = addHook
-  app._hooks = new Hooks()
-
   const onRouteHooks = []
 
-  // custom parsers
-  app.addContentTypeParser = addContentTypeParser
-  app.hasContentTypeParser = hasContentTypeParser
-  app._contentTypeParser = new ContentTypeParser(app._bodyLimit)
-
-  // plugin
-  app.listen = listen
-  app.server = server
-  app[pluginUtils.registeredPlugins] = []
-
-  // extend server methods
-  app.decorate = decorator.add
-  app.hasDecorator = decorator.exist
-  app.decorateReply = decorator.decorateReply
-  app.decorateRequest = decorator.decorateRequest
-
-  app._Reply = Reply.buildReply(Reply)
-  app._Request = Request.buildRequest(Request)
-
-  // fake http injection
-  app.inject = inject
-
-  app.setNotFoundHandler = setNotFoundHandler
-  app._notFoundHandler = null
-  app._404Context = null
   app.setNotFoundHandler(basic404) // Set the default 404 handler
-
-  app.setErrorHandler = setErrorHandler
 
   return app
 
@@ -316,37 +311,11 @@ function medley(options) {
     return basePrefix + pluginPrefix
   }
 
-  // Shorthand methods
-  function _delete(url, opts, handler) {
-    return _route(this, 'DELETE', url, opts, handler)
-  }
-
-  function _get(url, opts, handler) {
-    return _route(this, 'GET', url, opts, handler)
-  }
-
-  function _head(url, opts, handler) {
-    return _route(this, 'HEAD', url, opts, handler)
-  }
-
-  function _patch(url, opts, handler) {
-    return _route(this, 'PATCH', url, opts, handler)
-  }
-
-  function _post(url, opts, handler) {
-    return _route(this, 'POST', url, opts, handler)
-  }
-
-  function _put(url, opts, handler) {
-    return _route(this, 'PUT', url, opts, handler)
-  }
-
-  function _options(url, opts, handler) {
-    return _route(this, 'OPTIONS', url, opts, handler)
-  }
-
-  function _all(url, opts, handler) {
-    return _route(this, supportedMethods, url, opts, handler)
+  // Routing methods
+  function _createShorthandRouteMethod(method) {
+    return function(url, opts, handler) {
+      return _route(this, method, url, opts, handler)
+    }
   }
 
   function _route(appInstance, method, url, opts, handler) {
@@ -365,7 +334,7 @@ function medley(options) {
   }
 
   function route(opts) {
-    throwIfAlreadyStarted('Cannot add route when app is already started!')
+    throwIfAlreadyStarted('Cannot add route when app is already loaded!')
 
     if (Array.isArray(opts.method)) {
       for (var i = 0; i < opts.method.length; i++) {
@@ -478,7 +447,7 @@ function medley(options) {
   }
 
   function inject(opts, cb) {
-    if (started) {
+    if (ready) {
       return lightMyRequest(httpHandler, opts, cb)
     }
 
@@ -505,7 +474,7 @@ function medley(options) {
   }
 
   function addHook(name, fn) {
-    throwIfAlreadyStarted('Cannot call "addHook" when app is already started!')
+    throwIfAlreadyStarted('Cannot call "addHook" when app is already loaded!')
 
     if (name === 'onClose') {
       this._hooks.validate(name, fn)
@@ -532,7 +501,7 @@ function medley(options) {
   }
 
   function addContentTypeParser(contentType, opts, parser) {
-    throwIfAlreadyStarted('Cannot call "addContentTypeParser" when app is already started!')
+    throwIfAlreadyStarted('Cannot call "addContentTypeParser" when app is already loaded!')
 
     if (typeof opts === 'function') {
       parser = opts
@@ -565,7 +534,7 @@ function medley(options) {
   }
 
   function setNotFoundHandler(opts, handler) {
-    throwIfAlreadyStarted('Cannot call "setNotFoundHandler" when app is already started!')
+    throwIfAlreadyStarted('Cannot call "setNotFoundHandler" when app is already loaded!')
 
     if (this._notFoundHandler !== null && this._notFoundHandler !== basic404) {
       throw new Error(
@@ -642,7 +611,7 @@ function medley(options) {
   }
 
   function setErrorHandler(func) {
-    throwIfAlreadyStarted('Cannot call "setErrorHandler" when app is already started!')
+    throwIfAlreadyStarted('Cannot call "setErrorHandler" when app is already loaded!')
 
     this._errorHandler = func
     return this
