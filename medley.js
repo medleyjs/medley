@@ -207,6 +207,7 @@ function medley(options) {
   }
 
   function routeHandler(req, res, params, context) {
+    res._onResponseHooks = undefined
     if (context.onResponse !== null) {
       res._onResponseHooks = context.onResponse
       res.on('finish', runOnResponseHooks)
