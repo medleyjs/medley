@@ -169,57 +169,6 @@ test('check dependencies - should not throw', (t) => {
   })
 })
 
-test('check dependencies - should throw', (t) => {
-  t.plan(11)
-  const app = medley()
-
-  app.register((subApp, opts, next) => {
-    subApp.register(fp((i, o, n) => {
-      try {
-        i.decorate('otherTest', () => {}, ['test'])
-        t.fail()
-      } catch (e) {
-        t.is(e.message, 'medley decorator: missing dependency: \'test\'.')
-      }
-      n()
-    }))
-
-    subApp.register(fp((i, o, n) => {
-      i.decorate('test', () => {})
-      t.ok(i.test)
-      t.notOk(i.otherTest)
-      n()
-    }))
-
-    subApp.get('/', (req, reply) => {
-      t.ok(subApp.test)
-      t.notOk(subApp.otherTest)
-      reply.send({hello: 'world'})
-    })
-
-    next()
-  })
-
-  app.ready(() => {
-    t.notOk(app.test)
-  })
-
-  app.listen(0, (err) => {
-    t.error(err)
-    app.server.unref()
-
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + app.server.address().port,
-    }, (err, response, body) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 200)
-      t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), {hello: 'world'})
-    })
-  })
-})
-
 test('plugin incapsulation', (t) => {
   t.plan(10)
   const app = medley()

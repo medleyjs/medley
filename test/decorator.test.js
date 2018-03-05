@@ -7,10 +7,11 @@ const fp = require('fastify-plugin')
 const sget = require('simple-get').concat
 
 test('server methods should exist', (t) => {
-  t.plan(2)
+  t.plan(3)
   const app = medley()
   t.ok(app.decorate)
-  t.ok(app.hasDecorator)
+  t.ok(app.decorateRequest)
+  t.ok(app.decorateReply)
 })
 
 test('server methods should be incapsulated via .register', (t) => {
@@ -26,38 +27,6 @@ test('server methods should be incapsulated via .register', (t) => {
   app.ready(() => {
     t.notOk(app.test)
   })
-})
-
-test('hasServerMethod should check if the given method already exist', (t) => {
-  t.plan(2)
-  const app = medley()
-
-  app.register((subApp, opts, next) => {
-    subApp.decorate('test', () => {})
-    t.ok(subApp.hasDecorator('test'))
-    next()
-  })
-
-  app.ready(() => {
-    t.notOk(app.hasDecorator('test'))
-  })
-})
-
-test('decorate should throw if a declared dependency is not present', (t) => {
-  t.plan(2)
-  const app = medley()
-
-  app.register((subApp, opts, next) => {
-    try {
-      subApp.decorate('test', () => {}, ['dependency'])
-      t.fail()
-    } catch (e) {
-      t.is(e.message, 'medley decorator: missing dependency: \'dependency\'.')
-    }
-    next()
-  })
-
-  app.ready(() => t.pass())
 })
 
 // issue #777

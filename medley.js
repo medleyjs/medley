@@ -76,8 +76,7 @@ function medley(options) {
     listen,
 
     // Decorator methods
-    decorate: decorator.add,
-    hasDecorator: decorator.exist,
+    decorate: decorator.decorateApp,
     decorateReply: decorator.decorateReply,
     decorateRequest: decorator.decorateRequest,
 
