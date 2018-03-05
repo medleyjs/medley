@@ -249,7 +249,7 @@ test('bodyParser shouldn\'t support request with undefined "Content-Type"', (t) 
   })
 })
 
-test('the content type should be a string', (t) => {
+test('contentType must be a string', (t) => {
   t.plan(1)
   const app = medley()
 
@@ -257,11 +257,11 @@ test('the content type should be a string', (t) => {
     app.addBodyParser(null, () => {})
     t.fail()
   } catch (err) {
-    t.is(err.message, 'The content type should be a string')
+    t.is(err.message, 'The content type must be a string and cannot be empty')
   }
 })
 
-test('the content type cannot be an empty string', (t) => {
+test('contentType cannot be an empty string', (t) => {
   t.plan(1)
   const app = medley()
 
@@ -269,11 +269,11 @@ test('the content type cannot be an empty string', (t) => {
     app.addBodyParser('', () => {})
     t.fail()
   } catch (err) {
-    t.is(err.message, 'The content type cannot be an empty string')
+    t.is(err.message, 'The content type must be a string and cannot be empty')
   }
 })
 
-test('the content type handler should be a function', (t) => {
+test('the parser must be a function', (t) => {
   t.plan(1)
   const app = medley()
 
@@ -281,7 +281,7 @@ test('the content type handler should be a function', (t) => {
     app.addBodyParser('aaa', null)
     t.fail()
   } catch (err) {
-    t.is(err.message, 'The content type handler should be a function')
+    t.is(err.message, 'The parser argument must be a function. Got: null')
   }
 })
 
@@ -622,7 +622,7 @@ test('The charset should not interfere with the content type handling', (t) => {
   })
 })
 
-test('Wrong parseAs parameter', (t) => {
+test('should validate the parseAs option', (t) => {
   t.plan(1)
   const app = medley()
 
@@ -630,11 +630,11 @@ test('Wrong parseAs parameter', (t) => {
     app.addBodyParser('application/json', {parseAs: 'fireworks'}, () => {})
     t.fail('should throw')
   } catch (err) {
-    t.is(err.message, 'The body parser can only parse your data as \'string\' or \'buffer\', you asked \'fireworks\' which is not supported.')
+    t.is(err.message, "The 'parseAs' option must be either 'string' or 'buffer'. Got 'fireworks'.")
   }
 })
 
-test('Should allow defining the bodyLimit per parser', (t) => {
+test('should allow defining the bodyLimit per parser', (t) => {
   t.plan(3)
   const app = medley()
   t.tearDown(() => app.close())

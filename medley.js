@@ -66,10 +66,7 @@ function medley(options) {
     server = http.createServer(httpHandler)
   }
 
-  const _bodyLimit = options.bodyLimit || DEFAULT_BODY_LIMIT
-
   const app = {
-    _bodyLimit,
     _queryParser: options.queryParser || querystring.parse,
     printRoutes: router.prettyPrint.bind(router),
     server,
@@ -109,7 +106,7 @@ function medley(options) {
     // Body parsing
     addBodyParser,
     hasBodyParser,
-    _bodyParser: new BodyParser(_bodyLimit),
+    _bodyParser: new BodyParser(options.bodyLimit || DEFAULT_BODY_LIMIT),
 
     inject, // Fake HTTP injection
 
@@ -279,7 +276,7 @@ function medley(options) {
     subApp._children = []
     subApp._Reply = Reply.buildReply(subApp._Reply)
     subApp._Request = Request.buildRequest(subApp._Request)
-    subApp._bodyParser = BodyParser.buildBodyParser(subApp._bodyParser)
+    subApp._bodyParser = subApp._bodyParser.clone()
     subApp._hooks = Hooks.buildHooks(subApp._hooks)
     subApp._routePrefix = buildRoutePrefix(subApp._routePrefix, opts.prefix)
     subApp[pluginUtils.registeredPlugins] = Object.create(subApp[pluginUtils.registeredPlugins])
@@ -502,17 +499,9 @@ function medley(options) {
   function addBodyParser(contentType, opts, parser) {
     throwIfAlreadyStarted('Cannot call "addBodyParser" when app is already loaded!')
 
-    if (typeof opts === 'function') {
+    if (parser === undefined) {
       parser = opts
       opts = {}
-    }
-
-    if (!opts) {
-      opts = {}
-    }
-
-    if (!opts.bodyLimit) {
-      opts.bodyLimit = this._bodyLimit
     }
 
     this._bodyParser.add(contentType, opts, parser)
