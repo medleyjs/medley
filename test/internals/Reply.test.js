@@ -8,30 +8,24 @@ const NotFound = require('http-errors').NotFound
 const Reply = require('../../lib/Reply')
 
 test('Once called, Reply should return an object with methods', (t) => {
-  t.plan(9)
-  const response = {res: 'res'}
+  t.plan(7)
+  const res = {}
+  const request = {}
+  const context = {}
 
-  function context() {}
-
-  function request() {}
-
-  const reply = new Reply(response, context, request)
-  t.is(typeof reply, 'object')
-  t.is(typeof reply._isError, 'boolean')
-  t.is(typeof reply._customError, 'boolean')
-  t.is(typeof reply.send, 'function')
-  t.is(typeof reply.code, 'function')
-  t.is(typeof reply.header, 'function')
-  t.strictEqual(reply.res, response)
-  t.strictEqual(reply.context, context)
-  t.strictEqual(reply.request, request)
+  const reply = new Reply(res, request, context)
+  t.type(reply, Reply)
+  t.equal(reply.res, res)
+  t.equal(reply.request, request)
+  t.equal(reply.context, context)
+  t.equal(reply.sent, false)
+  t.equal(reply._isError, false)
+  t.equal(reply._customError, false)
 })
 
-test('reply.send throw with circular JSON', (t) => {
+test('reply.send() throws with circular JSON', (t) => {
   t.plan(1)
-  const request = {}
-  const response = {setHeader: () => {}}
-  const reply = new Reply(request, response, null)
+  const reply = new Reply({}, {}, {})
   t.throws(() => {
     var obj = {}
     obj.obj = obj

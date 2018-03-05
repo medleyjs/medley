@@ -248,12 +248,12 @@ function build(options) {
 
     var {context, req} = state
     var request = new context.Request(
-      state.params,
       req,
-      parseQuery(req.url, context.queryParser),
-      req.headers
+      req.headers,
+      state.params,
+      parseQuery(req.url, context.queryParser)
     )
-    var reply = new context.Reply(state.res, context, request)
+    var reply = new context.Reply(state.res, request, context)
 
     if (err) {
       reply.send(err)
