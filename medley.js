@@ -5,7 +5,7 @@ const avvio = require('avvio')
 const http = require('http')
 const https = require('https')
 const lightMyRequest = require('light-my-request')
-const parseURL = require('url').parse
+const querystring = require('querystring')
 
 const Reply = require('./lib/Reply')
 const Request = require('./lib/Request')
@@ -14,6 +14,7 @@ const decorator = require('./lib/decorate')
 const ContentTypeParser = require('./lib/ContentTypeParser')
 const Hooks = require('./lib/Hooks')
 const pluginUtils = require('./lib/pluginUtils')
+const parseQuery = require('./lib/parseQuery')
 const runHooks = require('./lib/hookRunner').hookRunner
 
 const {buildSerializers} = require('./lib/Serializer')
@@ -37,6 +38,10 @@ function build(options) {
     throw new TypeError('Options must be an object')
   }
 
+  if (options.queryParser !== undefined && typeof options.queryParser !== 'function') {
+    throw new TypeError(`'queryParser' option must be an function. Got '${options.queryParser}'`)
+  }
+
   const router = findMyWay({
     defaultRoute,
     ignoreTrailingSlash: options.ignoreTrailingSlash,
@@ -45,6 +50,7 @@ function build(options) {
 
   const medley = {
     _children: [],
+    _queryParser: options.queryParser || querystring.parse,
     printRoutes: router.prettyPrint.bind(router),
   }
 
@@ -241,7 +247,12 @@ function build(options) {
     }
 
     var {context, req} = state
-    var request = new context.Request(state.params, req, parseURL(req.url, true).query, req.headers)
+    var request = new context.Request(
+      state.params,
+      req,
+      parseQuery(req.url, context.queryParser),
+      req.headers
+    )
     var reply = new context.Reply(state.res, context, request)
 
     if (err) {
@@ -461,6 +472,7 @@ function build(options) {
     this.Request = app._Request
     this.contentTypeParser = app._contentTypeParser
     this.errorHandler = app._errorHandler
+    this.queryParser = app._queryParser
     this.onRequest = null
     this.preHandler = null
     this.onSend = null
