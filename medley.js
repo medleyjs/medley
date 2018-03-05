@@ -457,11 +457,11 @@ function medley(options) {
     return this // Chainable api
   }
 
-  function Context(appInstance, serializers, handler, config, bodyLimit, storeApp) {
-    this._jsonSerializers = serializers
+  function Context(appInstance, jsonSerializers, handler, config, bodyLimit, storeApp) {
+    this.jsonSerializers = jsonSerializers
     this.handler = handler
     this.config = config
-    this._parserOptions = {
+    this.parserOptions = {
       limit: bodyLimit || null,
     }
     this.Reply = appInstance._Reply
@@ -473,7 +473,7 @@ function medley(options) {
     this.preHandler = null
     this.onSend = null
     this.onResponse = null
-    this._appInstance = storeApp ? appInstance : null
+    this.appInstance = storeApp ? appInstance : null
   }
 
   function inject(opts, cb) {
