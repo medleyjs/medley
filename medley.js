@@ -504,6 +504,8 @@ function medley(options) {
       opts = {}
     }
 
+    validateBodyLimitOption(opts.bodyLimit)
+
     this._bodyParser.add(contentType, opts, parser)
     return this
   }

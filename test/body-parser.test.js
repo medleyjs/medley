@@ -634,6 +634,38 @@ test('should validate the parseAs option', (t) => {
   }
 })
 
+test('should validate the bodyLimit option', (t) => {
+  t.plan(2)
+  const app = medley()
+
+  try {
+    app.addBodyParser('application/json', {bodyLimit: null}, () => {})
+    t.fail('should throw')
+  } catch (err) {
+    t.is(err.message, "'bodyLimit' option must be an integer > 0. Got 'null'")
+  }
+
+  try {
+    app.addBodyParser('application/json', {bodyLimit: 1.5}, () => {})
+    t.fail('should throw')
+  } catch (err) {
+    t.is(err.message, "'bodyLimit' option must be an integer > 0. Got '1.5'")
+  }
+})
+
+test('the bodyLimit option may only be used with the parseAs option', (t) => {
+  t.plan(1)
+  const app = medley()
+
+  try {
+    app.addBodyParser('application/json', {bodyLimit: 20}, () => {})
+    t.fail('should throw')
+  } catch (err) {
+    t.is(err.message, "Received the 'bodyLimit' option without the 'parseAs' option. " +
+      "The 'bodyLimit' option has no effect without the 'parseAs' option.")
+  }
+})
+
 test('should allow defining the bodyLimit per parser', (t) => {
   t.plan(3)
   const app = medley()
