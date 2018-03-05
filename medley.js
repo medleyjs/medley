@@ -58,6 +58,7 @@ function medley(options) {
 
   const appLoader = avvio(app, {
     autostart: false,
+    expose: {use: 'register'},
   })
   // Override to allow the plugin incapsulation
   appLoader.override = override
@@ -132,7 +133,6 @@ function medley(options) {
   app._contentTypeParser = new ContentTypeParser(app._bodyLimit)
 
   // plugin
-  app.register = app.use
   app.listen = listen
   app.server = server
   app[pluginUtils.registeredPlugins] = []
