@@ -32,7 +32,7 @@ function validateBodyLimitOption(bodyLimit) {
   }
 }
 
-function build(options) {
+function medley(options) {
   options = options || {}
   if (typeof options !== 'object') {
     throw new TypeError('Options must be an object')
@@ -42,19 +42,20 @@ function build(options) {
     throw new TypeError(`'queryParser' option must be an function. Got '${options.queryParser}'`)
   }
 
+  const notFoundRouter = findMyWay({defaultRoute: notFoundFallbackRoute})
   const router = findMyWay({
-    defaultRoute,
+    defaultRoute: notFoundRouter.lookup.bind(notFoundRouter),
     ignoreTrailingSlash: options.ignoreTrailingSlash,
     maxParamLength: options.maxParamLength,
   })
 
-  const medley = {
+  const app = {
     _children: [],
     _queryParser: options.queryParser || querystring.parse,
     printRoutes: router.prettyPrint.bind(router),
   }
 
-  const appLoader = avvio(medley, {
+  const appLoader = avvio(app, {
     autostart: false,
   })
   // Override to allow the plugin incapsulation
@@ -87,9 +88,9 @@ function build(options) {
     server = http.createServer(httpHandler)
   }
 
-  medley.onClose((app, done) => {
+  app.onClose((_app, done) => {
     if (listening) {
-      app.server.close(done)
+      _app.server.close(done)
     } else {
       done(null)
     }
@@ -97,75 +98,74 @@ function build(options) {
 
   // body limit option
   validateBodyLimitOption(options.bodyLimit)
-  medley._bodyLimit = options.bodyLimit || DEFAULT_BODY_LIMIT
+  app._bodyLimit = options.bodyLimit || DEFAULT_BODY_LIMIT
 
   // shorthand methods
-  medley.delete = _delete
-  medley.get = _get
-  medley.head = _head
-  medley.patch = _patch
-  medley.post = _post
-  medley.put = _put
-  medley.options = _options
-  medley.all = _all
+  app.delete = _delete
+  app.get = _get
+  app.head = _head
+  app.patch = _patch
+  app.post = _post
+  app.put = _put
+  app.options = _options
+  app.all = _all
   // extended route
-  medley.route = route
-  medley._routePrefix = ''
+  app.route = route
+  app._routePrefix = ''
 
-  Object.defineProperty(medley, 'basePath', {
+  Object.defineProperty(app, 'basePath', {
     get() {
       return this._routePrefix
     },
   })
 
   // hooks
-  medley.addHook = addHook
-  medley._hooks = new Hooks()
+  app.addHook = addHook
+  app._hooks = new Hooks()
 
   const onRouteHooks = []
 
   // custom parsers
-  medley.addContentTypeParser = addContentTypeParser
-  medley.hasContentTypeParser = hasContentTypeParser
-  medley._contentTypeParser = new ContentTypeParser(medley._bodyLimit)
+  app.addContentTypeParser = addContentTypeParser
+  app.hasContentTypeParser = hasContentTypeParser
+  app._contentTypeParser = new ContentTypeParser(app._bodyLimit)
 
   // plugin
-  medley.register = medley.use
-  medley.listen = listen
-  medley.server = server
-  medley[pluginUtils.registeredPlugins] = []
+  app.register = app.use
+  app.listen = listen
+  app.server = server
+  app[pluginUtils.registeredPlugins] = []
 
   // extend server methods
-  medley.decorate = decorator.add
-  medley.hasDecorator = decorator.exist
-  medley.decorateReply = decorator.decorateReply
-  medley.decorateRequest = decorator.decorateRequest
+  app.decorate = decorator.add
+  app.hasDecorator = decorator.exist
+  app.decorateReply = decorator.decorateReply
+  app.decorateRequest = decorator.decorateRequest
 
-  medley._Reply = Reply.buildReply(Reply)
-  medley._Request = Request.buildRequest(Request)
+  app._Reply = Reply.buildReply(Reply)
+  app._Request = Request.buildRequest(Request)
 
   // fake http injection
-  medley.inject = inject
+  app.inject = inject
 
-  var fourOhFour = findMyWay({defaultRoute: fourOhFourFallBack})
-  medley.setNotFoundHandler = setNotFoundHandler
-  medley._notFoundHandler = null
-  medley._404Context = null
-  medley.setNotFoundHandler(basic404) // Set the default 404 handler
+  app.setNotFoundHandler = setNotFoundHandler
+  app._notFoundHandler = null
+  app._404Context = null
+  app.setNotFoundHandler(basic404) // Set the default 404 handler
 
-  medley.setErrorHandler = setErrorHandler
+  app.setErrorHandler = setErrorHandler
 
-  return medley
+  return app
 
   function listen(port, host, backlog, cb) {
-    /* Deal with listen (port, cb) */
+    // Handle listen (port, cb)
     if (typeof host === 'function') {
       cb = host
       host = undefined
     }
     host = host || '127.0.0.1'
 
-    /* Deal with listen (port, host, cb) */
+    // Handle listen (port, host, cb)
     if (typeof backlog === 'function') {
       cb = backlog
       backlog = undefined
@@ -173,7 +173,7 @@ function build(options) {
 
     if (cb === undefined) {
       return new Promise((resolve, reject) => {
-        medley.listen(port, host, (err) => {
+        this.listen(port, host, (err) => {
           if (err) {
             reject(err)
           } else {
@@ -183,7 +183,7 @@ function build(options) {
       })
     }
 
-    medley.ready((err) => {
+    this.ready((err) => {
       if (err) {
         cb(err)
         return
@@ -348,7 +348,7 @@ function build(options) {
     return _route(this, supportedMethods, url, opts, handler)
   }
 
-  function _route(_medley, method, url, opts, handler) {
+  function _route(appInstance, method, url, opts, handler) {
     if (!handler && typeof opts === 'function') {
       handler = opts
       opts = {}
@@ -360,14 +360,11 @@ function build(options) {
       handler,
     })
 
-    return _medley.route(opts)
+    return appInstance.route(opts)
   }
 
-  // Route management
   function route(opts) {
     throwIfAlreadyStarted('Cannot add route when app is already started!')
-
-    const _medley = this
 
     if (Array.isArray(opts.method)) {
       for (var i = 0; i < opts.method.length; i++) {
@@ -387,13 +384,13 @@ function build(options) {
 
     validateBodyLimitOption(opts.bodyLimit)
 
-    _medley.after((err, done) => {
+    this.after((err, done) => {
       if (err) {
         done(err)
         return
       }
 
-      const prefix = _medley._routePrefix
+      const prefix = this._routePrefix
       var url = opts.url || opts.path
       if (url === '/' && prefix.length > 0) {
         // Ensure that '/prefix' + '/' gets registered as '/prefix'
@@ -424,7 +421,7 @@ function build(options) {
       }
 
       const context = new Context(
-        _medley,
+        this,
         serializers,
         opts.handler,
         config,
@@ -443,10 +440,10 @@ function build(options) {
       // To be sure to load also that hoooks, we must listen for the avvio's 'preReady' event and
       // update the context object accordingly.
       appLoader.once('preReady', () => {
-        const onRequest = _medley._hooks.onRequest
-        const onResponse = _medley._hooks.onResponse
-        const onSend = _medley._hooks.onSend
-        const preHandler = _medley._hooks.preHandler.concat(opts.beforeHandler || [])
+        const onRequest = this._hooks.onRequest
+        const onResponse = this._hooks.onResponse
+        const onSend = this._hooks.onSend
+        const preHandler = this._hooks.preHandler.concat(opts.beforeHandler || [])
 
         context.onRequest = onRequest.length ? onRequest : null
         context.preHandler = preHandler.length ? preHandler : null
@@ -457,27 +454,26 @@ function build(options) {
       done()
     })
 
-    // chainable api
-    return _medley
+    return this // Chainable api
   }
 
-  function Context(app, serializers, handler, config, bodyLimit, storeApp) {
+  function Context(appInstance, serializers, handler, config, bodyLimit, storeApp) {
     this._jsonSerializers = serializers
     this.handler = handler
     this.config = config
     this._parserOptions = {
       limit: bodyLimit || null,
     }
-    this.Reply = app._Reply
-    this.Request = app._Request
-    this.contentTypeParser = app._contentTypeParser
-    this.errorHandler = app._errorHandler
-    this.queryParser = app._queryParser
+    this.Reply = appInstance._Reply
+    this.Request = appInstance._Request
+    this.contentTypeParser = appInstance._contentTypeParser
+    this.errorHandler = appInstance._errorHandler
+    this.queryParser = appInstance._queryParser
     this.onRequest = null
     this.preHandler = null
     this.onSend = null
     this.onResponse = null
-    this._appInstance = storeApp ? app : null
+    this._appInstance = storeApp ? appInstance : null
   }
 
   function inject(opts, cb) {
@@ -529,9 +525,9 @@ function build(options) {
     return this
   }
 
-  function _addHook(app, name, fn) {
-    app._hooks.add(name, fn)
-    app._children.forEach(child => _addHook(child, name, fn))
+  function _addHook(appInstance, name, fn) {
+    appInstance._hooks.add(name, fn)
+    appInstance._children.forEach(child => _addHook(child, name, fn))
   }
 
   function addContentTypeParser(contentType, opts, parser) {
@@ -558,15 +554,11 @@ function build(options) {
     return this._contentTypeParser.hasParser(contentType)
   }
 
-  function defaultRoute(req, res) {
-    fourOhFour.lookup(req, res)
-  }
-
   function basic404(request, reply) {
     reply.code(404).send(new Error('Not found'))
   }
 
-  function fourOhFourFallBack(req, res) {
+  function notFoundFallbackRoute(req, res) {
     res.statusCode = 501 // Not Implemented
     res.end('Unsupported request method: ' + req.method)
   }
@@ -597,6 +589,8 @@ function build(options) {
       _setNotFoundHandler.call(this, opts, handler, serializers)
       done()
     })
+
+    return this
   }
 
   function _setNotFoundHandler(opts, handler, serializers) {
@@ -632,13 +626,13 @@ function build(options) {
 
     const prefix = this._routePrefix
 
-    fourOhFour.on(
+    notFoundRouter.on(
       supportedMethods,
       prefix + (prefix.endsWith('/') ? '*' : '/*'),
       routeHandler,
       context
     )
-    fourOhFour.on(
+    notFoundRouter.on(
       supportedMethods,
       prefix || '/',
       routeHandler,
@@ -663,4 +657,4 @@ function http2() {
   }
 }
 
-module.exports = build
+module.exports = medley
