@@ -1,20 +1,21 @@
 'use strict'
 
-const findMyWay = require('find-my-way')
 const avvio = require('avvio')
+const findMyWay = require('find-my-way')
 const http = require('http')
 const https = require('https')
 const lightMyRequest = require('light-my-request')
 const querystring = require('querystring')
 
-const Reply = require('./lib/Reply')
-const Request = require('./lib/Request')
-const handleRequest = require('./lib/handleRequest')
-const decorator = require('./lib/decorate')
 const ContentTypeParser = require('./lib/ContentTypeParser')
 const Hooks = require('./lib/Hooks')
-const pluginUtils = require('./lib/pluginUtils')
+const Reply = require('./lib/Reply')
+const Request = require('./lib/Request')
+
+const decorator = require('./lib/decorate')
+const handleRequest = require('./lib/handleRequest')
 const parseQuery = require('./lib/parseQuery')
+const pluginUtils = require('./lib/pluginUtils')
 const runHooks = require('./lib/hookRunner').hookRunner
 
 const {buildSerializers} = require('./lib/Serializer')
