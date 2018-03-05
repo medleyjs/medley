@@ -30,7 +30,7 @@ The first step Medley takes after receiving a request is to look up a route that
 
 If no route matches the request, a not-found handler that matches the URL is selected (or the default not-found handler if none set with [`app.setNotFoundHandler()`](Server-Methods.md#set-not-found-handler) were a match).
 
-If the request method is not one of the [supported HTTP methods](Routes.md), a `404 Not Found` error response is sent immediately and the entire lifecycle is skipped. 
+If the request method is not one of the [supported HTTP methods](Routes.md#options), a `501 Not Implemented` error response is sent immediately and the entire lifecycle is skipped. 
 
 ## `onRequest` Hook
 

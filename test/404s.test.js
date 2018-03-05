@@ -627,38 +627,6 @@ test('setNotFoundHandler should not suppress duplicated routes checking', (t) =>
   })
 })
 
-test('Unsupported method', (t) => {
-  t.plan(5)
-
-  const app = medley()
-
-  app.get('/', function(request, reply) {
-    reply.send({hello: 'world'})
-  })
-
-  t.tearDown(app.close.bind(app))
-
-  app.listen(0, (err) => {
-    t.error(err)
-
-    app.inject({
-      method: 'PROPFIND',
-      url: '/',
-    }, (err, res) => {
-      t.error(err)
-      t.strictEqual(res.statusCode, 404)
-
-      sget({
-        method: 'PROPFIND',
-        url: 'http://localhost:' + app.server.address().port,
-      }, (err, response) => {
-        t.error(err)
-        t.strictEqual(response.statusCode, 404)
-      })
-    })
-  })
-})
-
 test('recognizes errors from the http-errors module', (t) => {
   t.plan(5)
 

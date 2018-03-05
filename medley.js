@@ -555,10 +555,8 @@ function build(options) {
   }
 
   function fourOhFourFallBack(req, res) {
-    const request = new Request(null, req, null, req.headers)
-    const reply = new Reply(res, {onSend: []}, request)
-
-    reply.code(404).send(new Error('Not found'))
+    res.statusCode = 501 // Not Implemented
+    res.end('Unsupported request method: ' + req.method)
   }
 
   function setNotFoundHandler(opts, handler) {
