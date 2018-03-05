@@ -29,26 +29,6 @@ test('server methods should be incapsulated via .register', (t) => {
   })
 })
 
-// issue #777
-test('should pass error for missing request decorator', (t) => {
-  t.plan(2)
-  const app = medley()
-
-  const plugin = fp(function(subApp, opts, next) {
-    next()
-  }, {
-    decorators: {
-      request: ['foo'],
-    },
-  })
-  app
-    .register(plugin)
-    .ready((err) => {
-      t.type(err, Error)
-      t.match(err, /The decorator 'foo'/)
-    })
-})
-
 test('decorateReply inside register', (t) => {
   t.plan(12)
   const app = medley()

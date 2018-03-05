@@ -30,60 +30,6 @@ test('getMeta should return the object stored with the \'plugin-meta\' symbol', 
   function fn() {}
 })
 
-test('checkDecorators should check if the given decorator is present in the subApp', (t) => {
-  t.plan(1)
-
-  fn[Symbol.for('plugin-meta')] = {
-    decorators: {
-      app: ['plugin'],
-      reply: ['plugin'],
-      request: ['plugin'],
-    },
-  }
-
-  function context() {}
-
-  context.plugin = true
-  context._Reply = {prototype: {plugin: true}}
-  context._Request = {prototype: {plugin: true}}
-
-  try {
-    pluginUtils.checkDecorators.call(context, fn)
-    t.pass('Everything ok')
-  } catch (err) {
-    t.fail(err)
-  }
-
-  function fn() {}
-})
-
-test('checkDecorators should check if the given decorator is present in the subApp (errored)', (t) => {
-  t.plan(1)
-
-  fn[Symbol.for('plugin-meta')] = {
-    decorators: {
-      app: ['plugin'],
-      reply: ['plugin'],
-      request: ['plugin'],
-    },
-  }
-
-  function context() {}
-
-  context.plugin = true
-  context._Reply = {prototype: {plugin: true}}
-  context._Request = {prototype: {}}
-
-  try {
-    pluginUtils.checkDecorators.call(context, fn)
-    t.fail('should throw')
-  } catch (err) {
-    t.is(err.message, 'The decorator \'plugin\' is not present in Request')
-  }
-
-  function fn() {}
-})
-
 test('checkDependencies should check if the given dependency is present in the subApp', (t) => {
   t.plan(1)
 

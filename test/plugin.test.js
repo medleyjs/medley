@@ -337,35 +337,6 @@ test('nested plugins', (t) => {
   })
 })
 
-test('plugin metadata - decorators', (t) => {
-  t.plan(1)
-  const app = medley()
-
-  app.decorate('plugin1', true)
-  app.decorateReply('plugin1', true)
-  app.decorateRequest('plugin1', true)
-
-  plugin[Symbol.for('skip-override')] = true
-  plugin[Symbol.for('plugin-meta')] = {
-    decorators: {
-      app: ['plugin1'],
-      reply: ['plugin1'],
-      request: ['plugin1'],
-    },
-  }
-
-  app.register(plugin)
-
-  app.ready(() => {
-    t.ok(app.plugin)
-  })
-
-  function plugin(subApp, opts, next) {
-    subApp.decorate('plugin', true)
-    next()
-  }
-})
-
 test('plugin metadata - dependencies', (t) => {
   t.plan(1)
   const app = medley()
