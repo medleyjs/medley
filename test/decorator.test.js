@@ -31,6 +31,95 @@ test('.decorateReply() should be chainable', (t) => {
   t.end()
 })
 
+test('.decorateRequest() should not allow decorating Medley values', (t) => {
+  const app = medley()
+
+  try {
+    app.decorateRequest('req', null)
+    t.fail()
+  } catch (err) {
+    t.equal(err.message, "The decorator 'req' has been already added to Request!")
+  }
+
+  try {
+    app.decorateRequest('headers', null)
+    t.fail()
+  } catch (err) {
+    t.equal(err.message, "The decorator 'headers' has been already added to Request!")
+  }
+
+  try {
+    app.decorateRequest('params', null)
+    t.fail()
+  } catch (err) {
+    t.equal(err.message, "The decorator 'params' has been already added to Request!")
+  }
+
+  try {
+    app.decorateRequest('query', null)
+    t.fail()
+  } catch (err) {
+    t.equal(err.message, "The decorator 'query' has been already added to Request!")
+  }
+
+  try {
+    app.decorateRequest('body', null)
+    t.fail()
+  } catch (err) {
+    t.equal(err.message, "The decorator 'body' has been already added to Request!")
+  }
+
+  t.end()
+})
+
+test('.decorateReply() should not allow decorating Medley values', (t) => {
+  const app = medley()
+
+  try {
+    app.decorateReply('res', null)
+    t.fail()
+  } catch (err) {
+    t.equal(err.message, "The decorator 'res' has been already added to Reply!")
+  }
+
+  try {
+    app.decorateReply('request', null)
+    t.fail()
+  } catch (err) {
+    t.equal(err.message, "The decorator 'request' has been already added to Reply!")
+  }
+
+  try {
+    app.decorateReply('context', null)
+    t.fail()
+  } catch (err) {
+    t.equal(err.message, "The decorator 'context' has been already added to Reply!")
+  }
+
+  try {
+    app.decorateReply('sent', null)
+    t.fail()
+  } catch (err) {
+    t.equal(err.message, "The decorator 'sent' has been already added to Reply!")
+  }
+
+  try {
+    app.decorateReply('_customError', null)
+    t.fail()
+  } catch (err) {
+    t.equal(err.message, "The decorator '_customError' has been already added to Reply!")
+  }
+
+  try {
+    app.decorateReply('payload', null)
+    t.fail()
+  } catch (err) {
+    t.equal(err.message, "The decorator 'payload' has been already added to Reply!")
+  }
+
+  t.end()
+})
+
 test('server methods should be incapsulated via .register', (t) => {
   t.plan(2)
   const app = medley()
