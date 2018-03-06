@@ -13,7 +13,6 @@ const Reply = require('./lib/Reply')
 const Request = require('./lib/Request')
 
 const handleRequest = require('./lib/handleRequest')
-const parseQuery = require('./lib/parseQuery')
 const pluginUtils = require('./lib/pluginUtils')
 const runHooks = require('./lib/hookRunner')
 
@@ -65,6 +64,11 @@ function medley(options) {
     server = http.createServer(httpHandler)
   }
 
+  const _Request = Request.buildRequest(Request)
+  const _Reply = Reply.buildReply(Reply)
+
+  _Request.prototype._queryParser = options.queryParser || querystring.parse
+
   const app = {
     _queryParser: options.queryParser || querystring.parse,
     printRoutes: router.prettyPrint.bind(router),
@@ -109,8 +113,8 @@ function medley(options) {
 
     inject, // Fake HTTP injection
 
-    _Request: Request.buildRequest(Request),
-    _Reply: Reply.buildReply(Reply),
+    _Request,
+    _Reply,
     [pluginUtils.registeredPlugins]: [], // For storing plugins
     _children: [], // For storing child app instances
   }
@@ -266,12 +270,7 @@ function medley(options) {
     }
 
     var {context, req} = state
-    var request = new context.Request(
-      req,
-      req.headers,
-      state.params,
-      parseQuery(req.url, context.queryParser)
-    )
+    var request = new context.Request(req, req.headers, state.params)
     var reply = new context.Reply(state.res, request, context)
 
     if (err) {
@@ -460,7 +459,6 @@ function medley(options) {
     this.Request = appInstance._Request
     this.bodyParser = appInstance._bodyParser
     this.errorHandler = appInstance._errorHandler
-    this.queryParser = appInstance._queryParser
     this.onRequest = null
     this.preHandler = null
     this.onSend = null
