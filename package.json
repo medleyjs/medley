@@ -59,7 +59,7 @@
     "bench": "branchcmp -r 2 -g -s \"npm run benchmark\"",
     "benchmark": "concurrently -k -s first \"node ./benchmarks/basic.js\" \"npx autocannon -c 100 -d 5 -p 10 localhost:3000/\"",
     "lint": "eslint --cache --cache-location node_modules/.cache/.eslintcache .",
-    "test": "tap -j4 test/**/*.test.js",
+    "test": "tap -j4 -t5 test/**/*.test.js",
     "ci": "npm run lint && npm run test"
   }
 }
