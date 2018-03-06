@@ -6,12 +6,29 @@ const medley = require('..')
 const fp = require('fastify-plugin')
 const sget = require('simple-get').concat
 
-test('server methods should exist', (t) => {
-  t.plan(3)
+test('.decorate() should be chainable', (t) => {
   const app = medley()
-  t.ok(app.decorate)
-  t.ok(app.decorateRequest)
-  t.ok(app.decorateReply)
+    .decorate('a', 'aVal')
+    .decorate('b', 'bVal')
+
+  t.equal(app.a, 'aVal')
+  t.equal(app.b, 'bVal')
+
+  t.end()
+})
+
+test('.decorateRequest() should be chainable', (t) => {
+  medley()
+    .decorateRequest('a', 'aVal')
+    .decorateRequest('b', 'bVal')
+  t.end()
+})
+
+test('.decorateReply() should be chainable', (t) => {
+  medley()
+    .decorateReply('a', 'aVal')
+    .decorateReply('b', 'bVal')
+  t.end()
 })
 
 test('server methods should be incapsulated via .register', (t) => {

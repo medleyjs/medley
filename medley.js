@@ -12,7 +12,6 @@ const Hooks = require('./lib/Hooks')
 const Reply = require('./lib/Reply')
 const Request = require('./lib/Request')
 
-const decorator = require('./lib/decorate')
 const handleRequest = require('./lib/handleRequest')
 const parseQuery = require('./lib/parseQuery')
 const pluginUtils = require('./lib/pluginUtils')
@@ -73,9 +72,9 @@ function medley(options) {
     listen,
 
     // Decorator methods
-    decorate: decorator.decorateApp,
-    decorateReply: decorator.decorateReply,
-    decorateRequest: decorator.decorateRequest,
+    decorate: decorateApp,
+    decorateRequest,
+    decorateReply,
 
     // Routing
     route,
@@ -148,6 +147,33 @@ function medley(options) {
   app.setNotFoundHandler(basic404) // Set the default 404 handler
 
   return app
+
+  function decorateApp(name, fn) {
+    if (name in this) {
+      throw new Error(`The decorator '${name}' has been already added!`)
+    }
+
+    this[name] = fn
+    return this
+  }
+
+  function decorateRequest(name, fn) {
+    if (name in this._Request.prototype) {
+      throw new Error(`The decorator '${name}' has been already added to Request!`)
+    }
+
+    this._Request.prototype[name] = fn
+    return this
+  }
+
+  function decorateReply(name, fn) {
+    if (name in this._Reply.prototype) {
+      throw new Error(`The decorator '${name}' has been already added to Reply!`)
+    }
+
+    this._Reply.prototype[name] = fn
+    return this
+  }
 
   function listen(port, host, backlog, cb) {
     // Handle listen (port, cb)
