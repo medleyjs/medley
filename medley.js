@@ -15,7 +15,7 @@ const Request = require('./lib/Request')
 const handleRequest = require('./lib/handleRequest')
 const parseQuery = require('./lib/parseQuery')
 const pluginUtils = require('./lib/pluginUtils')
-const runHooks = require('./lib/hookRunner').hookRunner
+const runHooks = require('./lib/hookRunner')
 
 const {buildSerializers} = require('./lib/Serializer')
 

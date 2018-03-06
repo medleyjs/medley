@@ -34,7 +34,7 @@ test('hooks', (t) => {
     }
   })
 
-  app.addHook('onSend', function(req, reply, thePayload, next) {
+  app.addHook('onSend', function(request, reply, next) {
     t.ok('onSend called')
     next()
   })
@@ -588,7 +588,7 @@ test('onSend hook should support encapsulation / 2', (t) => {
 
   app.decorateRequest('hello', 'world')
 
-  app.addHook('onSend', function(request, reply, thePayload, next) {
+  app.addHook('onSend', (request, reply, next) => {
     t.equal(request.hello, 'world')
     t.ok('onSend called')
     next()
@@ -603,7 +603,7 @@ test('onSend hook should support encapsulation / 2', (t) => {
   app.register((subApp, opts, next) => {
     subApp.decorateRequest('hello2', 'world')
 
-    subApp.addHook('onSend', function(request, reply, thePayload, next) {
+    subApp.addHook('onSend', (request, reply, next) => {
       t.equal(request.hello, 'world')
       t.equal(request.hello2, 'world')
       t.ok('onSend called')
@@ -648,24 +648,24 @@ test('onSend hook is called after payload is serialized and headers are set', (t
   const app = medley()
 
   app.register((subApp, opts, next) => {
-    const thePayload = {hello: 'world'}
+    const payload = {hello: 'world'}
 
-    subApp.addHook('onSend', function(request, reply, payload, next) {
-      t.deepEqual(JSON.parse(payload), thePayload)
+    subApp.addHook('onSend', (request, reply, next) => {
+      t.deepEqual(JSON.parse(reply.payload), payload)
       t.strictEqual(reply.res.getHeader('Content-Type'), 'application/json')
       next()
     })
 
     subApp.get('/json', (request, reply) => {
-      reply.send(thePayload)
+      reply.send(payload)
     })
 
     next()
   })
 
   app.register((subApp, opts, next) => {
-    subApp.addHook('onSend', function(request, reply, payload, next) {
-      t.strictEqual(payload, 'some text')
+    subApp.addHook('onSend', (request, reply, next) => {
+      t.strictEqual(reply.payload, 'some text')
       t.strictEqual(reply.res.getHeader('Content-Type'), 'text/plain')
       next()
     })
@@ -678,16 +678,16 @@ test('onSend hook is called after payload is serialized and headers are set', (t
   })
 
   app.register((subApp, opts, next) => {
-    const thePayload = Buffer.from('buffer payload')
+    const payload = Buffer.from('buffer payload')
 
-    subApp.addHook('onSend', function(request, reply, payload, next) {
-      t.strictEqual(payload, thePayload)
+    subApp.addHook('onSend', (request, reply, next) => {
+      t.strictEqual(reply.payload, payload)
       t.strictEqual(reply.res.getHeader('Content-Type'), 'application/octet-stream')
       next()
     })
 
     subApp.get('/buffer', (request, reply) => {
-      reply.send(thePayload)
+      reply.send(payload)
     })
 
     next()
@@ -695,21 +695,21 @@ test('onSend hook is called after payload is serialized and headers are set', (t
 
   app.register((subApp, opts, next) => {
     var chunk = 'stream payload'
-    const thePayload = new stream.Readable({
+    const payload = new stream.Readable({
       read() {
         this.push(chunk)
         chunk = null
       },
     })
 
-    subApp.addHook('onSend', function(request, reply, payload, next) {
-      t.strictEqual(payload, thePayload)
+    subApp.addHook('onSend', (request, reply, next) => {
+      t.strictEqual(reply.payload, payload)
       t.strictEqual(reply.res.getHeader('Content-Type'), 'application/octet-stream')
       next()
     })
 
     subApp.get('/stream', (request, reply) => {
-      reply.send(thePayload)
+      reply.send(payload)
     })
 
     next()
@@ -763,22 +763,23 @@ test('onSend hooks can modify payload', (t) => {
   const modifiedPayload = {hello: 'modified'}
   const anotherPayload = '"winter is coming"'
 
-  app.addHook('onSend', function(request, reply, thePayload, next) {
+  app.addHook('onSend', (request, reply, next) => {
     t.ok('onSend called')
-    t.deepEqual(JSON.parse(thePayload), payload)
-    thePayload = thePayload.replace('world', 'modified')
-    next(null, thePayload)
+    t.deepEqual(JSON.parse(reply.payload), payload)
+    reply.payload = reply.payload.replace('world', 'modified')
+    next()
   })
 
-  app.addHook('onSend', function(request, reply, thePayload, next) {
+  app.addHook('onSend', (request, reply, next) => {
     t.ok('onSend called')
-    t.deepEqual(JSON.parse(thePayload), modifiedPayload)
-    next(null, anotherPayload)
+    t.deepEqual(JSON.parse(reply.payload), modifiedPayload)
+    reply.payload = anotherPayload
+    next()
   })
 
-  app.addHook('onSend', function(request, reply, thePayload, next) {
+  app.addHook('onSend', (request, reply, next) => {
     t.ok('onSend called')
-    t.strictEqual(thePayload, anotherPayload)
+    t.strictEqual(reply.payload, anotherPayload)
     next()
   })
 
@@ -801,10 +802,11 @@ test('onSend hooks can clear payload', (t) => {
   t.plan(6)
   const app = medley()
 
-  app.addHook('onSend', function(request, reply, payload, next) {
+  app.addHook('onSend', (request, reply, next) => {
     t.ok('onSend called')
     reply.code(304)
-    next(null, null)
+    reply.payload = null
+    next()
   })
 
   app.get('/', (req, reply) => {
@@ -826,7 +828,7 @@ test('onSend hooks can clear payload', (t) => {
 test('onSend hook throws', (t) => {
   t.plan(7)
   const app = medley()
-  app.addHook('onSend', function(request, reply, payload, next) {
+  app.addHook('onSend', (request, reply, next) => {
     if (request.req.method === 'DELETE') {
       next(new Error('some error'))
       return
@@ -875,7 +877,7 @@ test('onSend hook should receive valid request and reply objects if onRequest ho
     next(new Error('onRequest hook failed'))
   })
 
-  app.addHook('onSend', function(request, reply, payload, next) {
+  app.addHook('onSend', function(request, reply, next) {
     t.strictEqual(request.testDecorator, 'testDecoratorVal')
     t.strictEqual(reply.testDecorator, 'testDecoratorVal')
     next()
@@ -905,7 +907,7 @@ test('onSend hook should receive valid request and reply objects if a custom bod
     done(new Error('body parser failed'))
   })
 
-  app.addHook('onSend', function(request, reply, payload, next) {
+  app.addHook('onSend', function(request, reply, next) {
     t.strictEqual(request.testDecorator, 'testDecoratorVal')
     t.strictEqual(reply.testDecorator, 'testDecoratorVal')
     next()
@@ -998,8 +1000,8 @@ test('preHandler hooks should be able to block a request', (t) => {
     t.fail('this should not be called')
   })
 
-  app.addHook('onSend', (req, reply, payload, next) => {
-    t.equal(payload, 'hello')
+  app.addHook('onSend', (request, reply, next) => {
+    t.equal(reply.payload, 'hello')
     next()
   })
 
@@ -1065,8 +1067,8 @@ test('preHandler hooks should be able to block a request (last hook)', (t) => {
     next()
   })
 
-  app.addHook('onSend', (req, reply, payload, next) => {
-    t.equal(payload, 'hello')
+  app.addHook('onSend', (request, reply, next) => {
+    t.equal(reply.payload, 'hello')
     next()
   })
 
@@ -1153,9 +1155,9 @@ test('preHandler respond with a stream', (t) => {
     t.fail('this should not be called')
   })
 
-  app.addHook('onSend', (req, reply, payload, next) => {
+  app.addHook('onSend', (request, reply, next) => {
     t.is(order.shift(), 1)
-    t.is(typeof payload.pipe, 'function')
+    t.is(typeof reply.payload.pipe, 'function')
     next()
   })
 
@@ -1286,7 +1288,7 @@ test('Register hooks inside a plugin after an encapsulated plugin', (t) => {
       next()
     })
 
-    subApp.addHook('onSend', function(request, reply, payload, next) {
+    subApp.addHook('onSend', function(request, reply, next) {
       t.ok('called')
       next()
     })
@@ -1430,7 +1432,7 @@ test('onSend hooks should run in the order in which they are defined', (t) => {
   const app = medley()
 
   app.register(function(subApp, opts, next) {
-    subApp.addHook('onSend', function(request, reply, payload, next) {
+    subApp.addHook('onSend', function(request, reply, next) {
       t.strictEqual(request.previous, undefined)
       request.previous = 1
       next()
@@ -1441,7 +1443,7 @@ test('onSend hooks should run in the order in which they are defined', (t) => {
     })
 
     subApp.register(fp(function(i, opts, next) {
-      i.addHook('onSend', function(request, reply, payload, next) {
+      i.addHook('onSend', function(request, reply, next) {
         t.strictEqual(request.previous, 1)
         request.previous = 2
         next()
@@ -1453,14 +1455,14 @@ test('onSend hooks should run in the order in which they are defined', (t) => {
   })
 
   app.register(fp(function(subApp, opts, next) {
-    subApp.addHook('onSend', function(request, reply, payload, next) {
+    subApp.addHook('onSend', function(request, reply, next) {
       t.strictEqual(request.previous, 2)
       request.previous = 3
       next()
     })
 
     subApp.register(fp(function(i, opts, next) {
-      i.addHook('onSend', function(request, reply, payload, next) {
+      i.addHook('onSend', function(request, reply, next) {
         t.strictEqual(request.previous, 3)
         request.previous = 4
         next()
@@ -1468,9 +1470,10 @@ test('onSend hooks should run in the order in which they are defined', (t) => {
       next()
     }))
 
-    subApp.addHook('onSend', function(request, reply, payload, next) {
+    subApp.addHook('onSend', function(request, reply, next) {
       t.strictEqual(request.previous, 4)
-      next(null, '5')
+      reply.payload = '5'
+      next()
     })
 
     next()
@@ -1536,7 +1539,7 @@ test('onResponse hooks should run in the order in which they are defined', (t) =
   })
 })
 
-test('onRequest, preHandler, and onResponse hooks that resolve to a value do not cause an error', (t) => {
+test('hooks that resolve to a value do not cause an error', (t) => {
   t.plan(3)
   const app = medley()
 
@@ -1545,6 +1548,8 @@ test('onRequest, preHandler, and onResponse hooks that resolve to a value do not
     .addHook('onRequest', () => Promise.resolve(true))
     .addHook('preHandler', () => Promise.resolve(null))
     .addHook('preHandler', () => Promise.resolve('a'))
+    .addHook('onSend', () => Promise.resolve(false))
+    .addHook('onSend', () => Promise.resolve(/regex/))
     .addHook('onResponse', () => Promise.resolve({}))
     .addHook('onResponse', () => Promise.resolve([]))
 

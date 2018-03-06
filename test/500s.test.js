@@ -124,7 +124,7 @@ test('custom 500 with hooks', (t) => {
       .send('an error happened: ' + err.message)
   })
 
-  app.addHook('onSend', (request, res, payload, next) => {
+  app.addHook('onSend', (request, reply, next) => {
     t.ok('called', 'onSend')
     next()
   })

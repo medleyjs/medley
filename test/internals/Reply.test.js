@@ -8,7 +8,7 @@ const NotFound = require('http-errors').NotFound
 const Reply = require('../../lib/Reply')
 
 test('Once called, Reply should return an object with methods', (t) => {
-  t.plan(7)
+  t.plan(8)
   const res = {}
   const request = {}
   const context = {}
@@ -21,6 +21,7 @@ test('Once called, Reply should return an object with methods', (t) => {
   t.equal(reply.sent, false)
   t.equal(reply._isError, false)
   t.equal(reply._customError, false)
+  t.equal(reply.payload, undefined)
 })
 
 test('reply.send() throws with circular JSON', (t) => {
@@ -59,7 +60,7 @@ test('within a sub app', (t) => {
   })
 
   app.register(function(subApp, options, next) {
-    app.addHook('onSend', function(req, reply, payload, next) {
+    app.addHook('onSend', function(request, reply, next) {
       reply.header('x-onsend', 'yes')
       next()
     })
@@ -326,8 +327,8 @@ test('undefined payload should be sent as-is', (t) => {
 
   const app = require('../..')()
 
-  app.addHook('onSend', function(request, reply, payload, next) {
-    t.strictEqual(payload, undefined)
+  app.addHook('onSend', function(request, reply, next) {
+    t.strictEqual(reply.payload, undefined)
     next()
   })
 

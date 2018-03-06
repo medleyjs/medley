@@ -8,12 +8,12 @@ test('request should be defined in onSend Hook on post request with content type
   t.plan(7)
   const app = require('../..')()
 
-  app.addHook('onSend', (request, reply, payload, done) => {
+  app.addHook('onSend', (request, reply, next) => {
     t.ok(request)
     t.ok(request.req)
     t.ok(request.params)
     t.ok(request.query)
-    done()
+    next()
   })
   app.post('/', (request, reply) => {
     reply.send(200)
@@ -39,12 +39,12 @@ test('request should be defined in onSend Hook on post request with content type
   t.plan(7)
   const app = require('../..')()
 
-  app.addHook('onSend', (request, reply, payload, done) => {
+  app.addHook('onSend', (request, reply, next) => {
     t.ok(request)
     t.ok(request.req)
     t.ok(request.params)
     t.ok(request.query)
-    done()
+    next()
   })
   app.post('/', (request, reply) => {
     reply.send(200)
@@ -70,12 +70,12 @@ test('request should be defined in onSend Hook on options request with content t
   t.plan(7)
   const app = require('../..')()
 
-  app.addHook('onSend', (request, reply, payload, done) => {
+  app.addHook('onSend', (request, reply, next) => {
     t.ok(request)
     t.ok(request.req)
     t.ok(request.params)
     t.ok(request.query)
-    done()
+    next()
   })
   app.options('/', (request, reply) => {
     reply.send(200)

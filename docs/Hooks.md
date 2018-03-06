@@ -22,7 +22,7 @@ app.addHook('preHandler', (request, reply, next) => {
   next()
 })
 
-app.addHook('onSend', (request, reply, payload, next) => {
+app.addHook('onSend', (request, reply, next) => {
   // some code
   next()
 })
@@ -40,7 +40,6 @@ app.addHook('onRequest', async (req, res) => {
   if (err) {
     throw new Error('some errors occurred.')
   }
-  return
 })
 
 app.addHook('preHandler', async (request, reply) => {
@@ -50,17 +49,15 @@ app.addHook('preHandler', async (request, reply) => {
   if (err) {
     throw new Error('some errors occurred.')
   }
-  return
 })
 
-app.addHook('onSend', async (request, reply, payload) => {
+app.addHook('onSend', async (request, reply) => {
   // some code
   await asyncMethod()
   // error occurred
   if (err) {
     throw new Error('some errors occurred.')
   }
-  return
 })
 
 app.addHook('onResponse', async (res) => {
@@ -78,7 +75,6 @@ app.addHook('onResponse', async (res) => {
 | res | Node.js [ServerResponse](https://nodejs.org/api/http.html#http_class_http_serverresponse) |
 | request | Medley [Request](Request.md) interface |
 | reply | Medley [Reply](Reply.md) interface |
-| payload | The serialized payload |
 | next | Function to continue with the [lifecycle](Lifecycle.md) |
 
 It is pretty easy to understand where each hook is executed by looking at the [lifecycle page](Lifecycle.md).<br>
@@ -106,35 +102,28 @@ Note that in the `'preHandler'` and `'onSend'` hook the request and reply object
 
 #### The `onSend` Hook
 
-If you are using the `onSend` hook, you can change the payload. For example:
+Inside the `onSend` hook, the serialized payload will be available as the `payload` property on the `reply` object.
 
 ```js
-app.addHook('onSend', (request, reply, payload, next) => {
-  var err = null;
-  var newPayload = payload.replace('some-text', 'some-new-text')
-  next(err, newPayload)
+app.get('/', (request, reply) => {
+  reply.send({ hello: 'world' })  
 })
-
-// Or async
-app.addHook('onSend', async (request, reply, payload) => {
-  var newPayload = payload.replace('some-text', 'some-new-text')
-  return newPayload
+app.addHook('onSend', (request, reply, next) => {
+  console.log(reply.payload) // '{"hello":"world"}'
+  next()
 })
 ```
 
-You can also clear the payload to send a response with an empty body by replacing the payload with `null`:
+It is possible to modify the payload before it is sent by changing the `reply.payload` property.
 
 ```js
-app.addHook('onSend', (request, reply, payload, next) => {
-  reply.code(304)
-  const newPayload = null
-  next(null, newPayload)
+app.addHook('onSend', (request, reply, next) => {
+  reply.payload = reply.payload.replace('world', 'everyone!')
+  next()
 })
 ```
 
-> You can also send an empty body by replacing the payload with the empty string `''`, but be aware that this will cause the `Content-Length` header to be set to `0`, whereas the `Content-Length` header will not be set if the payload is `null`.
-
-Note: If you change the payload, you may only change it to a `string`, a `Buffer`, a `stream`, or `null`.
+Note: The payload may only be changed to a `string`, a `Buffer`, a `stream`, `null`, or `undefined`.
 
 ### Respond to a request from a hook
 It is possible to respond to a request within a hook and skip the route handler. An example could be an authentication hook. If you are using `onRequest` should use `res.end()` and `beforeHandler`/`preHandler` hook should use `reply.send`.

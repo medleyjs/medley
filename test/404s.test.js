@@ -371,7 +371,7 @@ test('run hooks on default 404', (t) => {
     next()
   })
 
-  app.addHook('onSend', function(request, reply, payload, next) {
+  app.addHook('onSend', function(request, reply, next) {
     t.pass('onSend called')
     next()
   })
@@ -417,7 +417,7 @@ test('run non-encapsulated plugin hooks on default 404', (t) => {
       next()
     })
 
-    subApp.addHook('onSend', function(request, reply, payload, next) {
+    subApp.addHook('onSend', function(request, reply, next) {
       t.pass('onSend called')
       next()
     })
@@ -459,7 +459,7 @@ test('run non-encapsulated plugin hooks on custom 404', (t) => {
       next()
     })
 
-    subApp.addHook('onSend', function(request, reply, payload, next) {
+    subApp.addHook('onSend', function(request, reply, next) {
       t.pass('onSend called')
       next()
     })
@@ -505,7 +505,7 @@ test('run hooks with encapsulated 404', (t) => {
     next()
   })
 
-  app.addHook('onSend', function(request, reply, payload, next) {
+  app.addHook('onSend', function(request, reply, next) {
     t.pass('onSend called')
     next()
   })
@@ -529,7 +529,7 @@ test('run hooks with encapsulated 404', (t) => {
       next()
     })
 
-    f.addHook('onSend', function(request, reply, payload, next) {
+    f.addHook('onSend', function(request, reply, next) {
       t.pass('onSend 2 called')
       next()
     })
@@ -567,8 +567,8 @@ test('hooks check 404', (t) => {
     reply.send({hello: 'world'})
   })
 
-  app.addHook('onSend', (req, reply, payload, next) => {
-    t.deepEqual(req.query, {foo: 'asd'})
+  app.addHook('onSend', (request, reply, next) => {
+    t.deepEqual(request.query, {foo: 'asd'})
     t.ok('called', 'onSend')
     next()
   })
@@ -690,7 +690,7 @@ test('404 inside onSend', (t) => {
     reply.send({hello: 'world'})
   })
 
-  app.addHook('onSend', function(request, reply, payload, next) {
+  app.addHook('onSend', function(request, reply, next) {
     if (called) {
       next()
     } else {

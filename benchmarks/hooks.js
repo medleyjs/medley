@@ -22,7 +22,7 @@ app
   })
 
 app
-  .addHook('onSend', (request, reply, payload, next) => {
+  .addHook('onSend', (request, reply, next) => {
     next()
   })
 

@@ -89,28 +89,28 @@ test('async hooks', (t) => {
   })
 })
 
-test('modify payload', (t) => {
+test('onSend hooks can modify payload', (t) => {
   t.plan(10)
   const app = medley()
   const payload = {hello: 'world'}
   const modifiedPayload = {hello: 'modified'}
   const anotherPayload = '"winter is coming"'
 
-  app.addHook('onSend', async function(request, reply, thePayload) {
+  app.addHook('onSend', async (request, reply) => {
     t.ok('onSend called')
-    t.deepEqual(JSON.parse(thePayload), payload)
-    return thePayload.replace('world', 'modified')
+    t.deepEqual(JSON.parse(reply.payload), payload)
+    reply.payload = reply.payload.replace('world', 'modified')
   })
 
-  app.addHook('onSend', async function(request, reply, thePayload) {
+  app.addHook('onSend', async (request, reply) => {
     t.ok('onSend called')
-    t.deepEqual(JSON.parse(thePayload), modifiedPayload)
-    return anotherPayload
+    t.deepEqual(JSON.parse(reply.payload), modifiedPayload)
+    reply.payload = anotherPayload
   })
 
-  app.addHook('onSend', async function(request, reply, thePayload) {
+  app.addHook('onSend', async (request, reply) => {
     t.ok('onSend called')
-    t.strictEqual(thePayload, anotherPayload)
+    t.strictEqual(reply.payload, anotherPayload)
   })
 
   app.get('/', (req, reply) => {
@@ -178,8 +178,8 @@ test('preHandler hooks should be able to block a request', (t) => {
     t.fail('this should not be called')
   })
 
-  app.addHook('onSend', async (req, reply, payload) => {
-    t.equal(payload, 'hello')
+  app.addHook('onSend', async (request, reply) => {
+    t.equal(reply.payload, 'hello')
   })
 
   app.addHook('onResponse', async () => {
@@ -242,8 +242,8 @@ test('preHandler hooks should be able to block a request (last hook)', (t) => {
     reply.send('hello')
   })
 
-  app.addHook('onSend', async (req, reply, payload) => {
-    t.equal(payload, 'hello')
+  app.addHook('onSend', async (request, reply) => {
+    t.equal(reply.payload, 'hello')
   })
 
   app.addHook('onResponse', async () => {
@@ -334,9 +334,9 @@ test('preHandler respond with a stream', (t) => {
     t.fail('this should not be called')
   })
 
-  app.addHook('onSend', async (req, reply, payload) => {
+  app.addHook('onSend', async (request, reply) => {
     t.is(order.shift(), 1)
-    t.is(typeof payload.pipe, 'function')
+    t.is(typeof reply.payload.pipe, 'function')
   })
 
   app.addHook('onResponse', async () => {
