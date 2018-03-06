@@ -6,6 +6,7 @@ Reply is a core Medley object that exposes the following functions:
 - `.header(name, value)` - Sets a response header.
 - `.type(value)` - Sets the header `Content-Type`.
 - `.redirect([code,] url)` - Redirect to the specified url, the status code is optional (default to `302`).
+- `.error(err)` - Sends an error response.
 - `.send([payload])` - Sends the response payload for the request.
 - `.sent` - A boolean value that you can use if you need to know if `send` has already been called.
 - `.res` - The [`http.ServerResponse`](https://nodejs.org/dist/latest/docs/api/http.html#http_class_http_serverresponse) from Node core.
@@ -37,20 +38,76 @@ Sets a response header.
 
 For more information, see [`http.ServerResponse#setHeader`](https://nodejs.org/dist/latest/docs/api/http.html#http_response_setheader_name_value).
 
-<a name="redirect"></a>
-### Redirect
+### `.type(contentType)`
+
+Sets the `Content-Type` header for the response.<br>
+This is a shortcut for `reply.header('Content-Type', contentType)`.
+
+```js
+reply.type('text/html')
+```
+
+### `.redirect([code,] url)`
+
 Redirects a request to the specified url, the status code is optional, default to `302`.
 ```js
 reply.redirect('/home')
 ```
 
-<a name="type"></a>
-### Type
-Sets the content type for the response.
-This is a shortcut for `reply.header('Content-Type', 'the/type')`.
+### `.error(err)`
+
+The `reply.error()` method can be used to send an error response.
+
+Example:
 
 ```js
-reply.type('text/html')
+app.get('/', function(request, reply) {
+  asyncFn((err, data) => {
+    if (err) {
+      reply.error(err)
+    } else {
+      reply.send(data)
+    }
+  })
+})
+```
+
+If a custom error handler (set with [`app.setErrorHandler()`](Server-Methods.md#seterrorhandler)) is associated with the route, it is invoked. Otherwise the following default JSON response will be sent:
+
+```js
+{
+  error: String      // The HTTP error message for the status code
+  message: String    // The error message (on the error object)
+  statusCode: Number // The error status code
+}
+```
+
+The status code for the response is chosen in the following order:
+
+1. The `status` property on the error object if it is >= `400`.
+1. The `statusCode` property on the error object if it is >= `400`.
+1. The current status code for the request (set with `reply.code()`) if it is >= `400`.
+1. If none of the above, `500` is used.
+
+Tip: The [`http-errors`](https://npm.im/http-errors) module can be used to simplify generating errors:
+
+```js
+app.get('/', (request, reply) => {
+  reply.error(httpErrors.Gone())
+})
+```
+
+Errors with a `status` or `statusCode` property equal to `404` cause the not-found handler to be invoked.
+See [`app.setNotFoundHandler()`](Server-Methods.md#setnotfoundhandler) to learn more about handling such cases.
+
+```js
+app.setNotFoundHandler((request, reply) => {
+  reply.code(404).send('Custom 404 response')
+})
+
+app.get('/', (request, reply) => {
+  reply.error(new httpErrors.NotFound())
+})
 ```
 
 <a name="send"></a>
@@ -110,45 +167,12 @@ If you are sending a buffer and you have not set a `'Content-Type'` header, *sen
 const fs = require('fs')
 app.get('/streams', function (request, reply) {
   fs.readFile('some-file', (err, fileBuffer) => {
-    reply.send(err || fileBuffer)
+    if (err) {
+      reply.error(err)
+    } else {
+      reply.send(fileBuffer) 
+    }
   })
-})
-```
-
-<a name="errors"></a>
-#### Errors
-If you pass to *send* an object that is an instance of *Error*, Medley will automatically create an error structured as the following:
-```js
-{
-  error: String        // the http error message
-  message: String      // the user error message
-  statusCode: Number   // the http status code
-}
-```
-You can add some custom property to the Error object, such as `code` and `headers`, that will be used to enhance the http response.<br>
-*Note: If you are passing an error to `send` and the statusCode is less than 400, Medley will automatically set it at 500.*
-
-Tip: you can simplify errors by using the [`http-errors`](https://npm.im/http-errors) module to generate errors:
-
-```js
-app.get('/', function (request, reply) {
-  reply.send(httpErrors.Gone())
-})
-```
-
-If you want to completely customize the error response, checkout [`setErrorHandler`](Server-Methods.md#seterrorhandler) API.
-
-Errors with a `status` or `statusCode` property equal to `404` will be routed to the not found handler.
-See [`server.setNotFoundHandler`](Server-Methods.md#setnotfoundhandler)
-API to learn more about handling such cases:
-
-```js
-app.setNotFoundHandler(function (request, reply) {
-  reply.type('text/plain').send('a custom not found')
-})
-
-app.get('/', function (request, reply) {
-  reply.send(new httpErrors.NotFound())
 })
 ```
 

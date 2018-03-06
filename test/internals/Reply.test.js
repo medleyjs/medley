@@ -8,7 +8,7 @@ const NotFound = require('http-errors').NotFound
 const Reply = require('../../lib/Reply')
 
 test('Once called, Reply should return an object with methods', (t) => {
-  t.plan(8)
+  t.plan(7)
   const res = {}
   const request = {}
   const context = {}
@@ -19,7 +19,6 @@ test('Once called, Reply should return an object with methods', (t) => {
   t.equal(reply.request, request)
   t.equal(reply.context, context)
   t.equal(reply.sent, false)
-  t.equal(reply._isError, false)
   t.equal(reply._customError, false)
   t.equal(reply.payload, undefined)
 })
@@ -288,6 +287,70 @@ test('plain string with content type application/json should be serialized as js
   })
 })
 
+test('reply.error(err) should work with any err value', (t) => {
+  t.plan(4)
+
+  const app = require('../..')()
+
+  app.get('/string', (request, reply) => {
+    reply.error('string')
+  })
+
+  app.get('/undefined', (request, reply) => {
+    reply.error()
+  })
+
+  app.inject('/string', (err, res) => {
+    t.error(err)
+    t.deepEqual(JSON.parse(res.payload), {
+      error: 'Internal Server Error',
+      message: '',
+      statusCode: 500,
+    })
+  })
+
+  app.inject('/undefined', (err, res) => {
+    t.error(err)
+    t.deepEqual(JSON.parse(res.payload), {
+      error: 'Internal Server Error',
+      message: '',
+      statusCode: 500,
+    })
+  })
+})
+
+test('reply.error(err) should use err.status or err.statusCode', (t) => {
+  t.plan(4)
+
+  const app = require('../..')()
+
+  app.get('/501', (request, reply) => {
+    reply.error({status: 501, message: '501'})
+  })
+
+  app.get('/502', (request, reply) => {
+    reply.error({status: 502, message: '502'})
+  })
+
+  app.inject('/501', (err, res) => {
+    t.error(err)
+    t.deepEqual(JSON.parse(res.payload), {
+      error: 'Not Implemented',
+      message: '501',
+      statusCode: 501,
+    })
+  })
+
+  app.inject('/502', (err, res) => {
+    t.error(err)
+    t.deepEqual(JSON.parse(res.payload), {
+      error: 'Bad Gateway',
+      message: '502',
+      statusCode: 502,
+    })
+  })
+})
+
 test('error object with a content type that is not application/json should work', (t) => {
   t.plan(6)
 
@@ -295,12 +358,12 @@ test('error object with a content type that is not application/json should work'
 
   app.get('/text', function(req, reply) {
     reply.type('text/plain')
-    reply.send(new Error('some application error'))
+    reply.error(new Error('some application error'))
   })
 
   app.get('/html', function(req, reply) {
     reply.type('text/html')
-    reply.send(new Error('some application error'))
+    reply.error(new Error('some application error'))
   })
 
   app.inject({
@@ -352,18 +415,18 @@ test('undefined payload should be sent as-is', (t) => {
   })
 })
 
-test('reply.send(new NotFound()) should invoke the 404 handler', (t) => {
+test('reply.error(new NotFound()) should invoke the 404 handler', (t) => {
   t.plan(9)
 
   const app = require('../..')()
 
   app.get('/not-found', function(req, reply) {
-    reply.send(new NotFound())
+    reply.error(new NotFound())
   })
 
   app.register(function(subApp, options, next) {
     subApp.get('/not-found', function(req, reply) {
-      reply.send(new NotFound())
+      reply.error(new NotFound())
     })
 
     subApp.setNotFoundHandler(function(req, reply) {
@@ -404,17 +467,17 @@ test('reply.send(new NotFound()) should invoke the 404 handler', (t) => {
   })
 })
 
-test('reply.send(new NotFound()) should send a basic response if called inside a 404 handler', (t) => {
+test('reply.error(new NotFound()) should send a basic response if called inside a 404 handler', (t) => {
   t.plan(5)
 
   const app = require('../..')()
 
   app.get('/not-found', function(req, reply) {
-    reply.send(new NotFound())
+    reply.error(new NotFound())
   })
 
   app.setNotFoundHandler(function(req, reply) {
-    reply.send(new NotFound())
+    reply.error(new NotFound())
   })
 
   app.listen(0, (err) => {

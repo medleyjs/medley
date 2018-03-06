@@ -10,7 +10,7 @@ test('default 500', (t) => {
   const app = medley()
 
   app.get('/', function(req, reply) {
-    reply.send(new Error('kaboom'))
+    reply.error(new Error('kaboom'))
   })
 
   app.inject({
@@ -34,7 +34,7 @@ test('custom 500', (t) => {
   const app = medley()
 
   app.get('/', function(req, reply) {
-    reply.send(new Error('kaboom'))
+    reply.error(new Error('kaboom'))
   })
 
   app.setErrorHandler(function(err, request, reply) {
@@ -63,12 +63,12 @@ test('encapsulated 500', (t) => {
   const app = medley()
 
   app.get('/', function(req, reply) {
-    reply.send(new Error('kaboom'))
+    reply.error(new Error('kaboom'))
   })
 
   app.register(function(f, opts, next) {
     f.get('/', function(req, reply) {
-      reply.send(new Error('kaboom'))
+      reply.error(new Error('kaboom'))
     })
 
     f.setErrorHandler(function(err, request, reply) {
@@ -114,7 +114,7 @@ test('custom 500 with hooks', (t) => {
   const app = medley()
 
   app.get('/', (request, reply) => {
-    reply.send(new Error('kaboom'))
+    reply.error(new Error('kaboom'))
   })
 
   app.setErrorHandler((err, request, reply) => {

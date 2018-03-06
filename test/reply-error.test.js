@@ -19,7 +19,7 @@ function helper(code) {
     app.get('/', (req, reply) => {
       reply
         .code(Number(code))
-        .send(err)
+        .error(err)
     })
 
     app.inject({
@@ -232,13 +232,13 @@ test('should set the status code from the error object (from route handler)', (t
   app.get('/status', (req, reply) => {
     const error = new Error('kaboom')
     error.status = 400
-    reply.send(error)
+    reply.error(error)
   })
 
   app.get('/statusCode', (req, reply) => {
     const error = new Error('kaboom')
     error.statusCode = 400
-    reply.send(error)
+    reply.error(error)
   })
 
   app.inject({
@@ -275,7 +275,7 @@ test('should set the status code from the error object (from custom error handle
   app.get('/', (req, reply) => {
     const error = new Error('ouch')
     error.statusCode = 401
-    reply.send(error)
+    reply.error(error)
   })
 
   app.setErrorHandler((err, request, reply) => {
@@ -283,7 +283,7 @@ test('should set the status code from the error object (from custom error handle
     t.is(reply.res.statusCode, 401)
     const error = new Error('kaboom')
     error.statusCode = 400
-    reply.send(error)
+    reply.error(error)
   })
 
   app.inject({

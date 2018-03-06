@@ -60,7 +60,7 @@ test('customized 404', (t) => {
   })
 
   app.get('/with-error', function(req, reply) {
-    reply.send(new errors.NotFound())
+    reply.error(new errors.NotFound())
   })
 
   app.setNotFoundHandler(function(req, reply) {
@@ -633,7 +633,7 @@ test('recognizes errors from the http-errors module', (t) => {
   const app = medley()
 
   app.get('/', function(request, reply) {
-    reply.send(httpErrors.NotFound())
+    reply.error(httpErrors.NotFound())
   })
 
   t.tearDown(app.close.bind(app))

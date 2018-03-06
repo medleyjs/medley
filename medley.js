@@ -275,7 +275,7 @@ function medley(options) {
     var reply = new context.Reply(state.res, request, context)
 
     if (err) {
-      reply.send(err)
+      reply.error(err)
     } else {
       handleRequest(reply, context)
     }
@@ -541,7 +541,7 @@ function medley(options) {
   }
 
   function basic404(request, reply) {
-    reply.code(404).send(new Error('Not found'))
+    reply.code(404).error(new Error('Not found'))
   }
 
   function notFoundFallbackRoute(req, res) {
