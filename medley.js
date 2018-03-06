@@ -300,11 +300,11 @@ function medley(options) {
     const subApp = Object.create(parentApp)
     parentApp._children.push(subApp)
     subApp._children = []
-    subApp._Reply = Reply.buildReply(subApp._Reply)
     subApp._Request = Request.buildRequest(subApp._Request)
+    subApp._Reply = Reply.buildReply(subApp._Reply)
     subApp._bodyParser = subApp._bodyParser.clone()
     subApp._hooks = Hooks.buildHooks(subApp._hooks)
-    subApp._routePrefix = buildRoutePrefix(subApp._routePrefix, opts.prefix)
+    subApp._routePrefix = buildRoutePrefix(parentApp._routePrefix, opts.prefix)
     subApp[pluginUtils.registeredPlugins] = Object.create(subApp[pluginUtils.registeredPlugins])
 
     if (opts.prefix) {

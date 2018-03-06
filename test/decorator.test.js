@@ -332,7 +332,7 @@ test('decorateRequest as plugin (outside .after)', (t) => {
   })
 })
 
-test('decorators should be subApp separated', (t) => {
+test('decorators should be app-independant', (t) => {
   t.plan(1)
 
   const app1 = medley()
