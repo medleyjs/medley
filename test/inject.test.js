@@ -82,7 +82,7 @@ test('inject get request - headers check', (t) => {
   const app = medley()
 
   app.get('/', (req, reply) => {
-    reply.header('content-type', 'text/plain').send('')
+    reply.send('')
   })
 
   app.inject({

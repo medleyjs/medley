@@ -351,40 +351,6 @@ test('reply.error(err) should use err.status or err.statusCode', (t) => {
   })
 })
 
-test('error object with a content type that is not application/json should work', (t) => {
-  t.plan(6)
-
-  const app = require('../..')()
-
-  app.get('/text', function(req, reply) {
-    reply.type('text/plain')
-    reply.error(new Error('some application error'))
-  })
-
-  app.get('/html', function(req, reply) {
-    reply.type('text/html')
-    reply.error(new Error('some application error'))
-  })
-
-  app.inject({
-    method: 'GET',
-    url: '/text',
-  }, (err, res) => {
-    t.error(err)
-    t.strictEqual(res.statusCode, 500)
-    t.strictEqual(JSON.parse(res.payload).message, 'some application error')
-  })
-
-  app.inject({
-    method: 'GET',
-    url: '/html',
-  }, (err, res) => {
-    t.error(err)
-    t.strictEqual(res.statusCode, 500)
-    t.strictEqual(JSON.parse(res.payload).message, 'some application error')
-  })
-})
-
 test('undefined payload should be sent as-is', (t) => {
   t.plan(6)
 
@@ -494,5 +460,87 @@ test('reply.error(new NotFound()) should send a basic response if called inside 
       t.strictEqual(response.headers['content-type'], 'text/plain')
       t.deepEqual(body.toString(), '404 Not Found')
     })
+  })
+})
+
+test('error with a Content-Type that is not application/json should work', (t) => {
+  t.plan(8)
+
+  const app = require('../..')()
+
+  app.get('/text', (request, reply) => {
+    reply.type('text/plain')
+    reply.error(new Error('some application error'))
+  })
+
+  app.get('/html', (request, reply) => {
+    reply.type('text/html')
+    reply.error(new Error('some application error'))
+  })
+
+  app.inject('/text', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 500)
+    t.equal(res.headers['content-type'], 'application/json')
+    t.deepEqual(JSON.parse(res.payload), {
+      error: 'Internal Server Error',
+      message: 'some application error',
+      statusCode: 500,
+    })
+  })
+
+  app.inject('/html', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 500)
+    t.equal(res.headers['content-type'], 'application/json')
+    t.deepEqual(JSON.parse(res.payload), {
+      error: 'Internal Server Error',
+      message: 'some application error',
+      statusCode: 500,
+    })
+  })
+})
+
+test('the Content-Type header should be unset before calling a not-found handler', (t) => {
+  t.plan(4)
+
+  const app = require('../..')()
+
+  app.get('/', (request, reply) => {
+    reply.type('application/json')
+    reply.error(new NotFound()) // Cause the not-found handler to be invoked
+  })
+
+  app.setNotFoundHandler((request, reply) => {
+    reply.code(404).send('plain text')
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 404)
+    t.equal(res.headers['content-type'], 'text/plain')
+    t.equal(res.payload, 'plain text')
+  })
+})
+
+test('the Content-Type header should be unset before calling a custom error handler', (t) => {
+  t.plan(4)
+
+  const app = require('../..')()
+
+  app.get('/', (request, reply) => {
+    reply.type('application/json')
+    reply.error(new Error('error message')) // Cause the error handler to be invoked
+  })
+
+  app.setErrorHandler((err, request, reply) => {
+    reply.code(500).send(err.message)
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 500)
+    t.equal(res.headers['content-type'], 'text/plain')
+    t.equal(res.payload, 'error message')
   })
 })
