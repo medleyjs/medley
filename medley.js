@@ -82,14 +82,14 @@ function medley(options) {
 
     // Routing
     route,
-    delete: _createShorthandRouteMethod('DELETE'),
-    get: _createShorthandRouteMethod('GET'),
-    head: _createShorthandRouteMethod('HEAD'),
-    patch: _createShorthandRouteMethod('PATCH'),
-    post: _createShorthandRouteMethod('POST'),
-    put: _createShorthandRouteMethod('PUT'),
-    options: _createShorthandRouteMethod('OPTIONS'),
-    all: _createShorthandRouteMethod(supportedMethods),
+    delete: createShorthandRouteMethod('DELETE'),
+    get: createShorthandRouteMethod('GET'),
+    head: createShorthandRouteMethod('HEAD'),
+    patch: createShorthandRouteMethod('PATCH'),
+    post: createShorthandRouteMethod('POST'),
+    put: createShorthandRouteMethod('PUT'),
+    options: createShorthandRouteMethod('OPTIONS'),
+    all: createShorthandRouteMethod(supportedMethods),
 
     get basePath() {
       return this._routePrefix
@@ -334,25 +334,21 @@ function medley(options) {
   }
 
   // Routing methods
-  function _createShorthandRouteMethod(method) {
+  function createShorthandRouteMethod(method) {
     return function(url, opts, handler) {
-      return _route(this, method, url, opts, handler)
+      if (handler === undefined) {
+        handler = opts
+        opts = {}
+      }
+
+      opts = Object.assign({}, opts, {
+        method,
+        url,
+        handler,
+      })
+
+      return this.route(opts)
     }
-  }
-
-  function _route(appInstance, method, url, opts, handler) {
-    if (!handler && typeof opts === 'function') {
-      handler = opts
-      opts = {}
-    }
-
-    opts = Object.assign({}, opts, {
-      method,
-      url,
-      handler,
-    })
-
-    return appInstance.route(opts)
   }
 
   function route(opts) {
