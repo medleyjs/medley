@@ -412,7 +412,7 @@ function medley(options) {
         return
       }
 
-      const context = new Context(
+      const context = Context.create(
         this,
         serializers,
         opts.handler,
@@ -564,7 +564,7 @@ function medley(options) {
   }
 
   function _setNotFoundHandler(opts, handler, serializers) {
-    const context = new Context(
+    const context = Context.create(
       this,
       serializers,
       handler,
