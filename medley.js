@@ -102,6 +102,7 @@ function medley(options) {
     _404Context: null,
 
     setErrorHandler,
+    _errorHandler: null,
 
     // Hooks
     addHook,
@@ -609,10 +610,16 @@ function medley(options) {
     )
   }
 
-  function setErrorHandler(func) {
+  function setErrorHandler(handler) {
     throwIfAlreadyStarted('Cannot call "setErrorHandler" when app is already loaded!')
 
-    this._errorHandler = func
+    if (typeof handler !== 'function') {
+      throw new TypeError(
+        `Error handler must be a function. Got value with type '${typeof handler}': ${handler}`
+      )
+    }
+
+    this._errorHandler = handler
     return this
   }
 }

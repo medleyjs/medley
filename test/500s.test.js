@@ -57,6 +57,33 @@ test('custom 500', (t) => {
   })
 })
 
+test('.setErrorHandler() should throw if not passed a function', (t) => {
+  const app = medley()
+
+  try {
+    app.setErrorHandler(null)
+    t.fail()
+  } catch (err) {
+    t.equal(err.message, "Error handler must be a function. Got value with type 'object': null")
+  }
+
+  try {
+    app.setErrorHandler(true)
+    t.fail()
+  } catch (err) {
+    t.equal(err.message, "Error handler must be a function. Got value with type 'boolean': true")
+  }
+
+  try {
+    app.setErrorHandler({})
+    t.fail()
+  } catch (err) {
+    t.equal(err.message, "Error handler must be a function. Got value with type 'object': [object Object]")
+  }
+
+  t.end()
+})
+
 test('encapsulated 500', (t) => {
   t.plan(10)
 
