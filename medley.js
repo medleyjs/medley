@@ -71,7 +71,6 @@ function medley(options) {
   _Request.prototype._queryParser = options.queryParser || querystring.parse
 
   const app = {
-    _queryParser: options.queryParser || querystring.parse,
     printRoutes: router.prettyPrint.bind(router),
     server,
     listen,
@@ -99,7 +98,7 @@ function medley(options) {
 
     setNotFoundHandler,
     _notFoundHandler: null,
-    _404Context: null,
+    _notFoundContext: null,
 
     setErrorHandler,
     _errorHandler: null,
@@ -117,8 +116,8 @@ function medley(options) {
 
     _Request,
     _Reply,
+    _subApps: [],
     [pluginUtils.registeredPlugins]: [], // For storing plugins
-    _children: [], // For storing child app instances
   }
 
   const appLoader = avvio(app, {
@@ -299,8 +298,8 @@ function medley(options) {
     }
 
     const subApp = Object.create(parentApp)
-    parentApp._children.push(subApp)
-    subApp._children = []
+    parentApp._subApps.push(subApp)
+    subApp._subApps = []
     subApp._Request = Request.buildRequest(subApp._Request)
     subApp._Reply = Reply.buildReply(subApp._Reply)
     subApp._bodyParser = subApp._bodyParser.clone()
@@ -310,7 +309,7 @@ function medley(options) {
 
     if (opts.prefix) {
       subApp._notFoundHandler = null
-      subApp._404Context = null
+      subApp._notFoundContext = null
     }
 
     return subApp
@@ -444,7 +443,7 @@ function medley(options) {
 
         // Must store the not-found Context in 'preReady' because it is only guaranteed
         // to be available after all of the plugins and routes have been loaded.
-        context.notFoundContext = this._404Context
+        context.notFoundContext = this._notFoundContext
       })
 
       done()
@@ -504,7 +503,7 @@ function medley(options) {
 
   function _addHook(appInstance, name, fn) {
     appInstance._hooks.add(name, fn)
-    appInstance._children.forEach(child => _addHook(child, name, fn))
+    appInstance._subApps.forEach(child => _addHook(child, name, fn))
   }
 
   function addBodyParser(contentType, opts, parser) {
@@ -574,25 +573,25 @@ function medley(options) {
     )
 
     appLoader.once('preReady', () => {
-      const context404 = this._404Context
+      const notFoundContext = this._notFoundContext
 
       const onRequest = this._hooks.onRequest
       const preHandler = this._hooks.preHandler
       const onSend = this._hooks.onSend
       const onResponse = this._hooks.onResponse
 
-      context404.onRequest = onRequest.length ? onRequest : null
-      context404.preHandler = preHandler.length ? preHandler : null
-      context404.onSend = onSend.length ? onSend : null
-      context404.onResponse = onResponse.length ? onResponse : null
+      notFoundContext.onRequest = onRequest.length ? onRequest : null
+      notFoundContext.preHandler = preHandler.length ? preHandler : null
+      notFoundContext.onSend = onSend.length ? onSend : null
+      notFoundContext.onResponse = onResponse.length ? onResponse : null
     })
 
-    if (this._404Context !== null) {
-      Object.assign(this._404Context, context) // Replace the default 404 handler
+    if (this._notFoundContext !== null) {
+      Object.assign(this._notFoundContext, context) // Replace the default 404 handler
       return
     }
 
-    this._404Context = context
+    this._notFoundContext = context
 
     const prefix = this._routePrefix
 
