@@ -8,6 +8,7 @@ const lightMyRequest = require('light-my-request')
 const querystring = require('querystring')
 
 const BodyParser = require('./lib/BodyParser')
+const Context = require('./lib/Context')
 const Hooks = require('./lib/Hooks')
 const Reply = require('./lib/Reply')
 const Request = require('./lib/Request')
@@ -449,24 +450,6 @@ function medley(options) {
     })
 
     return this // Chainable api
-  }
-
-  function Context(appInstance, jsonSerializers, handler, config, bodyLimit) {
-    this.jsonSerializers = jsonSerializers
-    this.handler = handler
-    this.config = config
-    this.parserOptions = {
-      limit: bodyLimit || null,
-    }
-    this.Reply = appInstance._Reply
-    this.Request = appInstance._Request
-    this.bodyParser = appInstance._bodyParser
-    this.errorHandler = appInstance._errorHandler
-    this.onRequest = null
-    this.preHandler = null
-    this.onSend = null
-    this.onResponse = null
-    this.notFoundContext = null
   }
 
   function inject(opts, cb) {
