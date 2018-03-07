@@ -197,7 +197,7 @@ test('should respond with a stream1', (t) => {
 })
 
 test('return a 404 if the stream emits a 404 error', (t) => {
-  t.plan(5)
+  t.plan(6)
 
   const app = medley()
 
@@ -221,10 +221,11 @@ test('return a 404 if the stream emits a 404 error', (t) => {
 
     var port = app.server.address().port
 
-    sget(`http://localhost:${port}`, function(err, response) {
+    sget(`http://localhost:${port}`, function(err, response, body) {
       t.error(err)
-      t.strictEqual(response.headers['content-type'], 'application/json')
-      t.strictEqual(response.statusCode, 404)
+      t.equal(response.statusCode, 404)
+      t.equal(response.headers['content-type'], 'text/plain')
+      t.equal(body.toString(), 'Not Found: GET /')
     })
   })
 })

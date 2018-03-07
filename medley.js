@@ -521,7 +521,7 @@ function medley(options) {
   }
 
   function basic404(request, reply) {
-    reply.code(404).error(new Error('Not found'))
+    reply.code(404).send(`Not Found: ${request.method} ${request.url}`)
   }
 
   function notFoundFallbackRoute(req, res) {

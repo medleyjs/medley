@@ -9,7 +9,7 @@ const errors = require('http-errors')
 const medley = require('..')
 
 test('default 404', (t) => {
-  t.plan(3)
+  t.plan(8)
 
   const app = medley()
 
@@ -17,36 +17,24 @@ test('default 404', (t) => {
     reply.send({hello: 'world'})
   })
 
-  t.tearDown(app.close.bind(app))
-
-  app.listen(0, (err) => {
+  app.inject({
+    method: 'HEAD',
+    url: '/',
+  }, (err, res) => {
     t.error(err)
+    t.equal(res.statusCode, 404)
+    t.equal(res.headers['content-type'], 'text/plain')
+    t.equal(res.payload, 'Not Found: HEAD /')
+  })
 
-    t.test('unsupported method', (t) => {
-      t.plan(2)
-      sget({
-        method: 'PUT',
-        url: 'http://localhost:' + app.server.address().port,
-        body: {},
-        json: true,
-      }, (err, response) => {
-        t.error(err)
-        t.strictEqual(response.statusCode, 404)
-      })
-    })
-
-    t.test('unsupported route', (t) => {
-      t.plan(2)
-      sget({
-        method: 'GET',
-        url: 'http://localhost:' + app.server.address().port + '/notSupported',
-        body: {},
-        json: true,
-      }, (err, response) => {
-        t.error(err)
-        t.strictEqual(response.statusCode, 404)
-      })
-    })
+  app.inject({
+    method: 'GET',
+    url: '/not-defined',
+  }, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 404)
+    t.equal(res.headers['content-type'], 'text/plain')
+    t.equal(res.payload, 'Not Found: GET /not-defined')
   })
 })
 
@@ -628,7 +616,7 @@ test('setNotFoundHandler should not suppress duplicated routes checking', (t) =>
 })
 
 test('recognizes errors from the http-errors module', (t) => {
-  t.plan(5)
+  t.plan(4)
 
   const app = medley()
 
@@ -636,28 +624,11 @@ test('recognizes errors from the http-errors module', (t) => {
     reply.error(httpErrors.NotFound())
   })
 
-  t.tearDown(app.close.bind(app))
-
-  app.listen(0, (err) => {
+  app.inject('/', (err, res) => {
     t.error(err)
-
-    app.inject({
-      method: 'GET',
-      url: '/',
-    }, (err, res) => {
-      t.error(err)
-      t.strictEqual(res.statusCode, 404)
-
-      sget('http://localhost:' + app.server.address().port, (err, response, body) => {
-        t.error(err)
-        const obj = JSON.parse(body.toString())
-        t.strictDeepEqual(obj, {
-          error: 'Not Found',
-          message: 'Not found',
-          statusCode: 404,
-        })
-      })
-    })
+    t.equal(res.statusCode, 404)
+    t.equal(res.headers['content-type'], 'text/plain')
+    t.equal(res.payload, 'Not Found: GET /')
   })
 })
 

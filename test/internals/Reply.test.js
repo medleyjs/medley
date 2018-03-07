@@ -413,12 +413,8 @@ test('reply.error(new NotFound()) should invoke the 404 handler', (t) => {
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 404)
-      t.strictEqual(response.headers['content-type'], 'application/json')
-      t.deepEqual(JSON.parse(body.toString()), {
-        statusCode: 404,
-        error: 'Not Found',
-        message: 'Not found',
-      })
+      t.strictEqual(response.headers['content-type'], 'text/plain')
+      t.strictEqual(body.toString(), 'Not Found: GET /not-found')
     })
 
     sget({
@@ -428,7 +424,7 @@ test('reply.error(new NotFound()) should invoke the 404 handler', (t) => {
       t.error(err)
       t.strictEqual(response.statusCode, 404)
       t.strictEqual(response.headers['content-type'], 'text/plain')
-      t.deepEqual(body.toString(), 'Custom not found response')
+      t.strictEqual(body.toString(), 'Custom not found response')
     })
   })
 })
