@@ -525,8 +525,12 @@ function medley(options) {
   }
 
   function notFoundFallbackRoute(req, res) {
-    res.statusCode = 501 // Not Implemented
-    res.end('Unsupported request method: ' + req.method)
+    const payload = `Unsupported request method: ${req.method}`
+    res.writeHead(501, { // Not Implemented
+      'Content-Type': 'text/plain',
+      'Content-Length': '' + Buffer.byteLength(payload),
+    })
+    res.end(payload)
   }
 
   function setNotFoundHandler(opts, handler) {
