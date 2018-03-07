@@ -417,7 +417,6 @@ function medley(options) {
         opts.handler,
         config,
         opts.bodyLimit,
-        true
       )
 
       try {
@@ -440,6 +439,10 @@ function medley(options) {
         context.preHandler = preHandler.length ? preHandler : null
         context.onSend = onSend.length ? onSend : null
         context.onResponse = onResponse.length ? onResponse : null
+
+        // Must store the not-found Context in 'preReady' because it is only guaranteed
+        // to be available after all of the plugins and routes have been loaded.
+        context.notFoundContext = this._404Context
       })
 
       done()
@@ -448,7 +451,7 @@ function medley(options) {
     return this // Chainable api
   }
 
-  function Context(appInstance, jsonSerializers, handler, config, bodyLimit, storeApp) {
+  function Context(appInstance, jsonSerializers, handler, config, bodyLimit) {
     this.jsonSerializers = jsonSerializers
     this.handler = handler
     this.config = config
@@ -463,7 +466,7 @@ function medley(options) {
     this.preHandler = null
     this.onSend = null
     this.onResponse = null
-    this.appInstance = storeApp ? appInstance : null
+    this.notFoundContext = null
   }
 
   function inject(opts, cb) {
@@ -584,7 +587,6 @@ function medley(options) {
       handler,
       opts.config || {},
       opts.bodyLimit,
-      false
     )
 
     appLoader.once('preReady', () => {
