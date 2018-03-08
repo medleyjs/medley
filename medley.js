@@ -97,7 +97,8 @@ function medley(options) {
     _routePrefix: '',
 
     setNotFoundHandler,
-    _notFoundHandler: null,
+    _canSetNotFoundHandler: true,
+    _notFoundLevelApp: null,
     _notFoundContext: null,
 
     setErrorHandler,
@@ -149,7 +150,9 @@ function medley(options) {
 
   const onRouteHooks = []
 
+  app._notFoundLevelApp = app
   app.setNotFoundHandler(basic404) // Set the default 404 handler
+  app._canSetNotFoundHandler = true // Allowed to override the default 404 handler
 
   return app
 
@@ -308,8 +311,8 @@ function medley(options) {
     subApp[pluginUtils.registeredPlugins] = Object.create(subApp[pluginUtils.registeredPlugins])
 
     if (opts.prefix) {
-      subApp._notFoundHandler = null
-      subApp._notFoundContext = null
+      subApp._canSetNotFoundHandler = true
+      subApp._notFoundLevelApp = subApp
     }
 
     return subApp
@@ -536,18 +539,18 @@ function medley(options) {
   function setNotFoundHandler(opts, handler) {
     throwIfAlreadyStarted('Cannot call "setNotFoundHandler" when app is already loaded!')
 
-    if (this._notFoundHandler !== null && this._notFoundHandler !== basic404) {
-      throw new Error(
-        `Not found handler already set for app instance with prefix: '${this._routePrefix || '/'}'`
-      )
+    const prefix = this._routePrefix || '/'
+
+    if (this._canSetNotFoundHandler === false) {
+      throw new Error(`Not found handler already set for app instance with prefix: '${prefix}'`)
     }
+
+    this._notFoundLevelApp._canSetNotFoundHandler = false
 
     if (handler === undefined) {
       handler = opts
       opts = {}
     }
-
-    this._notFoundHandler = handler
 
     const serializers = buildSerializers(opts.responseSchema)
 
@@ -556,14 +559,14 @@ function medley(options) {
         done(err)
         return
       }
-      _setNotFoundHandler.call(this, opts, handler, serializers)
+      _setNotFoundHandler.call(this, prefix, opts, handler, serializers)
       done()
     })
 
     return this
   }
 
-  function _setNotFoundHandler(opts, handler, serializers) {
+  function _setNotFoundHandler(prefix, opts, handler, serializers) {
     const context = Context.create(
       this,
       serializers,
@@ -586,14 +589,12 @@ function medley(options) {
       notFoundContext.onResponse = onResponse.length ? onResponse : null
     })
 
-    if (this._notFoundContext !== null) {
+    if (this._notFoundContext !== null && prefix === '/') {
       Object.assign(this._notFoundContext, context) // Replace the default 404 handler
       return
     }
 
-    this._notFoundContext = context
-
-    const prefix = this._routePrefix
+    this._notFoundLevelApp._notFoundContext = context
 
     notFoundRouter.on(
       supportedMethods,
