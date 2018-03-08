@@ -103,13 +103,14 @@ t.test('secure with fallback', (t) => {
     t.test('https post', async (t) => {
       t.plan(2)
 
-      const url = `https://localhost:${app.server.address().port}`
+      const body = JSON.stringify({hello: 'http2'})
       const res = await h2url.concat({
-        url,
+        url: `https://localhost:${app.server.address().port}`,
         method: 'POST',
-        body: JSON.stringify({hello: 'http2'}),
+        body,
         headers: {
           'content-type': 'application/json',
+          'content-length': '' + body.length,
         },
       })
 
