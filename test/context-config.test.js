@@ -12,8 +12,8 @@ const routeOptions = {
   },
 }
 
-function handler(req, reply) {
-  reply.send(reply.context.config)
+function handler(request, reply) {
+  reply.send(reply.config)
 }
 
 test('config', (t) => {
@@ -48,7 +48,7 @@ test('config', (t) => {
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
-      t.deepEquals(body, Object.assign({url: '/get'}, routeOptions.config))
+      t.deepEquals(body, Object.assign(routeOptions.config))
     })
 
     sget({
@@ -58,7 +58,7 @@ test('config', (t) => {
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
-      t.deepEquals(body, Object.assign({url: '/route'}, routeOptions.config))
+      t.deepEquals(body, Object.assign(routeOptions.config))
     })
 
     sget({
@@ -68,7 +68,7 @@ test('config', (t) => {
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
-      t.deepEquals(body, {url: '/no-config'})
+      t.deepEquals(body, {})
     })
   })
 })

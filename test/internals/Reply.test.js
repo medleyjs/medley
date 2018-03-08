@@ -8,16 +8,18 @@ const NotFound = require('http-errors').NotFound
 const Reply = require('../../lib/Reply')
 
 test('Once called, Reply should return an object with methods', (t) => {
-  t.plan(7)
+  t.plan(8)
   const res = {}
   const request = {}
+  const config = {}
   const context = {}
 
-  const reply = new Reply(res, request, context)
+  const reply = new Reply(res, request, config, context)
   t.type(reply, Reply)
   t.equal(reply.res, res)
   t.equal(reply.request, request)
-  t.equal(reply.context, context)
+  t.equal(reply.config, config)
+  t.equal(reply._context, context)
   t.equal(reply.sent, false)
   t.equal(reply._customError, false)
   t.equal(reply.payload, undefined)

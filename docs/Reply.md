@@ -10,6 +10,7 @@ Reply is a core Medley object that exposes the following functions:
 - `.send([payload])` - Sends the response payload for the request.
 - `.sent` - A boolean value that you can use if you need to know if `send` has already been called.
 - `.res` - The [`http.ServerResponse`](https://nodejs.org/dist/latest/docs/api/http.html#http_class_http_serverresponse) from Node core.
+- `.config` - The value of the `config` option passed to [`app.route()`](Reply.md#options) (or one of it's shorthand methods).
 
 ```js
 app.get('/', options, function (request, reply) {
@@ -17,14 +18,6 @@ app.get('/', options, function (request, reply) {
   reply
     .header('Content-Type', 'application/json')
     .send({ hello: 'world' })
-})
-```
-
-Additionally, `Reply` provides access to the context of the request:
-
-```js
-app.get('/', {config: {foo: 'bar'}}, function (request, reply) {
-  reply.send('handler config.foo = ' + reply.context.config.foo)
 })
 ```
 

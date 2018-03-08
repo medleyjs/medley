@@ -275,7 +275,7 @@ function medley(options) {
 
     var {context, req} = state
     var request = new context.Request(req, req.headers, state.params)
-    var reply = new context.Reply(state.res, request, context)
+    var reply = new context.Reply(state.res, request, context.config, context)
 
     if (err) {
       reply.error(err)
@@ -417,9 +417,6 @@ function medley(options) {
         hook(opts)
       }
 
-      const config = opts.config || {}
-      config.url = url
-
       var serializers
       try {
         serializers = buildSerializers(opts.responseSchema)
@@ -433,7 +430,7 @@ function medley(options) {
         serializers,
         methodHandler,
         opts.handler,
-        config,
+        opts.config || {},
         opts.bodyLimit,
       )
 

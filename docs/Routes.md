@@ -25,7 +25,7 @@ app.route(options)
 + `beforeHandler(request, reply, next)`: A [function](Hooks.md#before-handler) or an array of functions called just before the request handler. `beforeHandler` functions are treated just like `preHandler` hooks.
 + `handler(request, reply)`: The main function that will handle the request.
 + `bodyLimit`: Limits request bodies to this number of bytes. Must be an integer. Used to override the `bodyLimit` option passed to the [`Medley factory function`](Factory.md#bodylimit).
-+ `config`: Object used to store custom configuration.
++ `config`: Object used to store custom configuration. Defaults to an empty object (`{}`).
 
 `request` is defined in [Request](Request.md).
 
