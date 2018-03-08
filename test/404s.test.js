@@ -8,6 +8,8 @@ const sget = require('simple-get').concat
 const errors = require('http-errors')
 const medley = require('..')
 
+const {methodHandlers} = require('../lib/RequestHandlers')
+
 test('default 404', (t) => {
   t.plan(8)
 
@@ -96,6 +98,48 @@ test('customized 404', (t) => {
         t.strictEqual(response.statusCode, 404)
         t.strictEqual(body.toString(), 'this was not found')
       })
+    })
+  })
+})
+
+test('has a 404 handler for all supported HTTP methods', (t) => {
+  t.plan(28)
+
+  const app = medley()
+
+  app.all('/', (request, reply) => {
+    reply.send('Found')
+  })
+
+  Object.keys(methodHandlers).forEach((method) => {
+    app.inject({method, url: '/not-found'}, (err, res) => {
+      t.error(err)
+      t.equal(res.statusCode, 404)
+      t.equal(res.headers['content-type'], 'text/plain')
+      t.equal(res.payload, `Not Found: ${method} /not-found`)
+    })
+  })
+})
+
+test('has a custom 404 handler for all supported HTTP methods', (t) => {
+  t.plan(28)
+
+  const app = medley()
+
+  app.all('/', (request, reply) => {
+    reply.send('Found')
+  })
+
+  app.setNotFoundHandler((request, reply) => {
+    reply.code(404).send(`Custom Not Found: ${request.method} ${request.url}`)
+  })
+
+  Object.keys(methodHandlers).forEach((method) => {
+    app.inject({method, url: '/not-found'}, (err, res) => {
+      t.error(err)
+      t.equal(res.statusCode, 404)
+      t.equal(res.headers['content-type'], 'text/plain')
+      t.equal(res.payload, `Custom Not Found: ${method} /not-found`)
     })
   })
 })

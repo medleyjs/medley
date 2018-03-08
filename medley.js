@@ -13,13 +13,13 @@ const Hooks = require('./lib/Hooks')
 const Reply = require('./lib/Reply')
 const Request = require('./lib/Request')
 
-const handleRequest = require('./lib/handleRequest')
 const pluginUtils = require('./lib/pluginUtils')
 const runHooks = require('./lib/hookRunner')
 
+const {methodHandlers} = require('./lib/RequestHandlers')
 const {buildSerializers} = require('./lib/Serializer')
 
-const supportedMethods = ['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT', 'OPTIONS']
+const supportedMethods = Object.keys(methodHandlers)
 
 const DEFAULT_BODY_LIMIT = 1024 * 1024 // 1 MiB
 
@@ -99,7 +99,7 @@ function medley(options) {
     setNotFoundHandler,
     _canSetNotFoundHandler: true,
     _notFoundLevelApp: null,
-    _notFoundContext: null,
+    _notFoundContexts: null,
 
     setErrorHandler,
     _errorHandler: null,
@@ -280,7 +280,7 @@ function medley(options) {
     if (err) {
       reply.error(err)
     } else {
-      handleRequest(reply, context)
+      context.methodHandler(reply, context)
     }
   }
 
@@ -357,14 +357,23 @@ function medley(options) {
   function route(opts) {
     throwIfAlreadyStarted('Cannot add route when app is already loaded!')
 
-    if (Array.isArray(opts.method)) {
-      for (var i = 0; i < opts.method.length; i++) {
-        if (supportedMethods.indexOf(opts.method[i]) === -1) {
-          throw new Error(`${opts.method[i]} method is not supported!`)
-        }
+    const methods = Array.isArray(opts.method) ? opts.method : [opts.method]
+    const methodGroups = new Map()
+
+    // Group up methods with the same methodHandler
+    for (var i = 0; i < methods.length; i++) {
+      const method = methods[i]
+      const methodHandler = methodHandlers[method]
+
+      if (methodHandler === undefined) {
+        throw new Error(`${method} method is not supported!`)
       }
-    } else if (supportedMethods.indexOf(opts.method) === -1) {
-      throw new Error(`${opts.method} method is not supported!`)
+
+      if (methodGroups.has(methodHandler)) {
+        methodGroups.get(methodHandler).push(method)
+      } else {
+        methodGroups.set(methodHandler, [method])
+      }
     }
 
     if (typeof opts.handler !== 'function') {
@@ -375,25 +384,33 @@ function medley(options) {
 
     validateBodyLimitOption(opts.bodyLimit)
 
+    const prefix = this._routePrefix
+    var url = opts.url || opts.path
+    if (url === '/' && prefix.length > 0) {
+      // Ensure that '/prefix' + '/' gets registered as '/prefix'
+      url = ''
+    } else if (url[0] === '/' && prefix.endsWith('/')) {
+      // Ensure that '/prefix/' + '/route' gets registered as '/prefix/route'
+      url = url.slice(1)
+    }
+    url = prefix + url
+
+    opts.url = opts.path = url
+    opts.prefix = prefix
+
+    for (const [methodHandler, method] of methodGroups) {
+      _route.call(this, method, methodHandler, url, opts)
+    }
+
+    return this // Chainable
+  }
+
+  function _route(method, methodHandler, url, opts) {
     this.after((err, done) => {
       if (err) {
         done(err)
         return
       }
-
-      const prefix = this._routePrefix
-      var url = opts.url || opts.path
-      if (url === '/' && prefix.length > 0) {
-        // Ensure that '/prefix' + '/' gets registered as '/prefix'
-        url = ''
-      } else if (url[0] === '/' && prefix.endsWith('/')) {
-        // Ensure that '/prefix/' + '/route' gets registered as '/prefix/route'
-        url = url.slice(1)
-      }
-      url = prefix + url
-
-      opts.url = opts.path = url
-      opts.prefix = prefix
 
       // Run 'onRoute' hooks
       for (const hook of onRouteHooks) {
@@ -414,13 +431,14 @@ function medley(options) {
       const context = Context.create(
         this,
         serializers,
+        methodHandler,
         opts.handler,
         config,
         opts.bodyLimit,
       )
 
       try {
-        router.on(opts.method, url, routeHandler, context)
+        router.on(method, url, routeHandler, context)
       } catch (err) {
         done(err)
         return
@@ -442,13 +460,11 @@ function medley(options) {
 
         // Must store the not-found Context in 'preReady' because it is only guaranteed
         // to be available after all of the plugins and routes have been loaded.
-        context.notFoundContext = this._notFoundContext
+        context.notFoundContext = this._notFoundContexts.get(methodHandler)
       })
 
       done()
     })
-
-    return this // Chainable api
   }
 
   function inject(opts, cb) {
@@ -552,31 +568,72 @@ function medley(options) {
       opts = {}
     }
 
+    const replaceDefault404 = prefix === '/' && handler !== basic404
     const serializers = buildSerializers(opts.responseSchema)
+    const methodGroups = new Map()
+
+    // Group up methods with the same methodHandler
+    for (var i = 0; i < supportedMethods.length; i++) {
+      const method = supportedMethods[i]
+      const methodHandler = methodHandlers[method]
+
+      if (methodGroups.has(methodHandler)) {
+        methodGroups.get(methodHandler).push(method)
+      } else {
+        methodGroups.set(methodHandler, [method])
+      }
+    }
 
     this.after((err, done) => {
       if (err) {
         done(err)
         return
       }
-      _setNotFoundHandler.call(this, prefix, opts, handler, serializers)
+
+      if (!replaceDefault404) {
+        // Force a new context map to be created for the not-found level
+        this._notFoundLevelApp._notFoundContexts = null
+      }
+
+      for (const [methodHandler, methods] of methodGroups) {
+        _setNotFoundHandler.call(
+          this,
+          prefix,
+          methods,
+          methodHandler,
+          opts,
+          handler,
+          serializers,
+          replaceDefault404
+        )
+      }
+
       done()
     })
 
     return this
   }
 
-  function _setNotFoundHandler(prefix, opts, handler, serializers) {
+  function _setNotFoundHandler(
+    prefix,
+    methods,
+    methodHandler,
+    opts,
+    handler,
+    serializers,
+    replaceDefault404
+  ) {
     const context = Context.create(
       this,
       serializers,
+      methodHandler,
       handler,
       opts.config || {},
       opts.bodyLimit,
     )
 
     appLoader.once('preReady', () => {
-      const notFoundContext = this._notFoundContext
+      const notFoundContext = this._notFoundContexts.get(methodHandler)
 
       const onRequest = this._hooks.onRequest
       const preHandler = this._hooks.preHandler
@@ -589,21 +646,26 @@ function medley(options) {
       notFoundContext.onResponse = onResponse.length ? onResponse : null
     })
 
-    if (this._notFoundContext !== null && prefix === '/') {
-      Object.assign(this._notFoundContext, context) // Replace the default 404 handler
+    if (replaceDefault404) { // Replace the default 404 handler
+      Object.assign(this._notFoundContexts.get(methodHandler), context)
       return
     }
 
-    this._notFoundLevelApp._notFoundContext = context
+    if (this._notFoundContexts === null) {
+      // Set the context on the "_notFoundLevelApp" so that
+      // it can be inherited by all of that app's children.
+      this._notFoundLevelApp._notFoundContexts = new Map()
+    }
+    this._notFoundContexts.set(methodHandler, context)
 
     notFoundRouter.on(
-      supportedMethods,
+      methods,
       prefix + (prefix.endsWith('/') ? '*' : '/*'),
       routeHandler,
       context
     )
     notFoundRouter.on(
-      supportedMethods,
+      methods,
       prefix || '/',
       routeHandler,
       context
