@@ -332,7 +332,7 @@ test('plain string with content type application/json should be serialized as js
 })
 
 test('reply.error(err) should work with any err value', (t) => {
-  t.plan(4)
+  t.plan(8)
 
   const app = require('../..')()
 
@@ -342,6 +342,14 @@ test('reply.error(err) should work with any err value', (t) => {
 
   app.get('/undefined', (request, reply) => {
     reply.error()
+  })
+
+  app.get('/array', (request, reply) => {
+    reply.error([1, 2])
+  })
+
+  app.get('/object', (request, reply) => {
+    reply.error({message: 'object message'})
   })
 
   app.inject('/string', (err, res) => {
@@ -358,6 +366,24 @@ test('reply.error(err) should work with any err value', (t) => {
     t.deepEqual(JSON.parse(res.payload), {
       error: 'Internal Server Error',
       message: '',
+      statusCode: 500,
+    })
+  })
+
+  app.inject('/array', (err, res) => {
+    t.error(err)
+    t.deepEqual(JSON.parse(res.payload), {
+      error: 'Internal Server Error',
+      message: '',
+      statusCode: 500,
+    })
+  })
+
+  app.inject('/object', (err, res) => {
+    t.error(err)
+    t.deepEqual(JSON.parse(res.payload), {
+      error: 'Internal Server Error',
+      message: 'object message',
       statusCode: 500,
     })
   })
