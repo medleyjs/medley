@@ -126,6 +126,7 @@ In this case as parameter separator it's possible to use whatever character is n
 Having a route with multiple parameters may affect negatively the performance, so prefer single parameter approach whenever possible, especially on routes which are on the hot path of your application.
 If you are interested in how we handle the routing, checkout [find-my-way](https://github.com/delvedor/find-my-way).
 
+<a id="async-await"></a>
 ## Async-Await / Promises
 
 Medley has a convenient feature for `async` functions. If an `async` function returns a value,
@@ -154,7 +155,7 @@ app.get('/', (request, reply) => {
 })
 ```
 
-The default status code for responses is `200 OK`. If needed, use `reply.code()`
+The default status code for responses is `200`. If needed, use `reply.code()`
 to set the status code before returning:
 
 ```js

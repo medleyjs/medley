@@ -1,57 +1,101 @@
 # Reply
-The second parameter of the handler function is `Reply`.
-Reply is a core Medley object that exposes the following functions:
 
-- `.code(statusCode)` - Sets the status code.
-- `.header(name, value)` - Sets a response header.
-- `.type(value)` - Sets the header `Content-Type`.
-- `.redirect([code,] url)` - Redirect to the specified url, the status code is optional (default to `302`).
-- `.error(err)` - Sends an error response.
-- `.send([payload])` - Sends the response payload for the request.
-- `.sent` - A boolean value that you can use if you need to know if `send` has already been called.
-- `.res` - The [`http.ServerResponse`](https://nodejs.org/dist/latest/docs/api/http.html#http_class_http_serverresponse) from Node core.
-- `.config` - The value of the `config` option passed to [`app.route()`](Reply.md#options) (or one of it's shorthand methods).
+Request is a core Medley object that is passed as the second argument to hooks and handlers.
+
+**Properties:**
+
++ [`.config`](#replyconfig)
++ [`.res`](#replyres)
++ [`.sent`](#replysent)
+
+**Methods:**
+
++ [`.code(statusCode)`](#code)
++ [`.header(name, value)`](#header)
++ [`.type(contentType)`](#type)
++ [`.redirect([statusCode,] url)`](#redirect)
++ [`.error(err)`](#error)
++ [`.send([payload])`](#send)
+
+
+## Properties
+
+### `reply.config`
+
+The value of the `config` option passed to [`app.route()`](Reply.md#options)
+(or one of it's shorthand methods).
+
+Defaults to an empty object (`{}`).
+
+### `reply.res`
+
+The native [`http.ServerResponse`](https://nodejs.org/dist/latest/docs/api/http.html#http_class_http_serverresponse)
+from Node core.
+
+### `reply.sent`
+
+A boolean value that indicates whether or not a response has already been sent.
+
+
+## Methods
+
+<a id="code"></a>
+### `reply.code(statusCode)`
+
++ `statusCode` (number)
+
+Sets the HTTP status code for the response. If not set, the status code for
+the response defaults to `200`.
+
+<a id="header"></a>
+### `reply.header(name, value)`
+
++ `name` (string)
++ `value` (string|string[])
+
+Sets a response header.
 
 ```js
-app.get('/', options, function (request, reply) {
-  // Your code
-  reply
-    .header('Content-Type', 'application/json')
-    .send({ hello: 'world' })
-})
+reply.header('Content-Encoding', 'gzip')
 ```
-
-<a name="code"></a>
-### Code
-If not set via `reply.code`, the resulting `statusCode` will be `200`.
-
-<a name="header"></a>
-### Header
-Sets a response header.
 
 For more information, see [`http.ServerResponse#setHeader`](https://nodejs.org/dist/latest/docs/api/http.html#http_response_setheader_name_value).
 
-### `.type(contentType)`
+<a id="type"></a>
+### `reply.type(contentType)`
 
-Sets the `Content-Type` header for the response.<br>
-This is a shortcut for `reply.header('Content-Type', contentType)`.
++ `contentType` (string)
+
+Sets the `Content-Type` header for the response.
 
 ```js
 reply.type('text/html')
 ```
 
-### `.redirect([code,] url)`
+This is a shortcut for: `reply.header('Content-Type', contentType)`.
 
-Redirects a request to the specified url, the status code is optional, default to `302`.
+<a id="redirect"></a>
+### `reply.redirect([statusCode,] url)`
+
++ `statusCode` (number) - The HTTP status code for the response. Defaults to `302`.
++ `url` (string) - The URL to which the client will be redirected.
+
+Redirects a request to the specified URL.
+
 ```js
+// "302 Found" redirect
 reply.redirect('/home')
+
+// With statusCode
+reply.redirect(301, '/moved-permanently')
 ```
 
-### `.error(err)`
+<a id="error"></a>
+### `reply.error(err)`
 
-The `reply.error()` method can be used to send an error response.
++ `err` ([Error](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error))
 
-Example:
+Sends an error response.
 
 ```js
 app.get('/', function(request, reply) {
@@ -65,7 +109,8 @@ app.get('/', function(request, reply) {
 })
 ```
 
-If a custom error handler (set with [`app.setErrorHandler()`](Server-Methods.md#seterrorhandler)) is associated with the route, it is invoked. Otherwise the following default JSON response will be sent:
+If a custom error handler (set with [`app.setErrorHandler()`](Server-Methods.md#seterrorhandler)) is
+associated with the route, it is invoked. Otherwise the following default JSON response will be sent:
 
 ```js
 {
@@ -90,8 +135,8 @@ app.get('/', (request, reply) => {
 })
 ```
 
-Errors with a `status` or `statusCode` property equal to `404` cause the not-found handler to be invoked.
-See [`app.setNotFoundHandler()`](Server-Methods.md#setnotfoundhandler) to learn more about handling such cases.
+Errors with a `status` or `statusCode` property equal to `404` cause the not-found handler
+(set with [`app.setNotFoundHandler()`](Server-Methods.md#setnotfoundhandler)) to be invoked.
 
 ```js
 app.setNotFoundHandler((request, reply) => {
@@ -103,18 +148,27 @@ app.get('/', (request, reply) => {
 })
 ```
 
-<a name="send"></a>
-### `.send([payload])`
+<a id="send"></a>
+### `reply.send([payload])`
 
-This function is used to send the payload to response to the request. It may be called without any arguments to respond without sending a payload (`reply.send()`).
+Sends the payload to respond to the request. It may be called without any arguments to
+respond without sending a payload.
 
-`.send()` handles payloads differently based on their type. The behavior for each type is described below. However, if the `Content-Type` header is set (and it does not match one of the cases below), the payload will be sent as-is.
+`.send()` handles payloads differently based on their type. The behavior for each type
+is described below.
 
-#### Sending JSON
+Note that if the `Content-Type` header is set before `.send()` is called, the payload
+will be sent as-is (unless the `Content-Type` header was set to `application/json`,
+in which case it will be serialized as JSON).
 
-The payload will be JSON-serialized by default if it is not a `string`, `buffer`, `stream`, or `Error`. To force a `string` to be serialized as JSON, set the `Content-Type` header to `application/json` before sending the payload.
+#### JSON
 
-JSON payloads are serialized with [`compile-json-stringify`](https://www.npmjs.com/package/compile-json-stringify) if a response schema was set, otherwise `JSON.stringify()` is used.
+The payload will be JSON-serialized by default if it is not a `string`, `Buffer`, or `stream`.
+To force a `string` to be serialized as JSON, set the `Content-Type` header to `application/json`
+before sending the payload.
+
+JSON payloads are serialized with [`compile-json-stringify`](https://www.npmjs.com/package/compile-json-stringify)
+if a response schema was set, otherwise `JSON.stringify()` is used.
 
 ```js
 app.get('/json', {
@@ -133,32 +187,33 @@ app.get('/json-string', (request, reply) => {
 })
 ```
 
-<a name="send-string"></a>
-#### Strings
-If you pass a string to `send` without a `Content-Type`, it will be sent as plain text. If you set the `Content-Type` header and pass a string to `send`, it will be sent unmodified (unless the `Content-Type` header is set to `application/json`, in which case it will be JSON-serialized like an object — see the section above).
+#### String
+
+If not already set, the `Content-Type` header will be set to `'text/plain'`.
+
 ```js
-app.get('/json', options, function (request, reply) {
-  reply.send('plain string')
+app.get('/text', options, (request, reply) => {
+  reply.send('plain text')
 })
 ```
 
-<a name="send-streams"></a>
-#### Streams
-*send* can also handle streams out of the box, internally uses [pump](https://www.npmjs.com/package/pump) to avoid leaks of file descriptors. If you are sending a stream and you have not set a `'Content-Type'` header, *send* will set it at `'application/octet-stream'`.
+If the `Content-Type` header is set to `'application/json'`, the string is serialized as JSON.
+
 ```js
-app.get('/streams', function (request, reply) {
-  const fs = require('fs')
-  const stream = fs.createReadStream('some-file', 'utf8')
-  reply.send(stream)
+app.get('/json-string', (request, reply) => {
+  reply.type('application/json').send('Hello world!')
+  // Sends: "Hello world!"
 })
 ```
 
-<a name="send-buffers"></a>
-#### Buffers
-If you are sending a buffer and you have not set a `'Content-Type'` header, *send* will set it to `'application/octet-stream'`.
+#### Buffer
+
+If not already set, the `Content-Type` header will be set to `'application/octet-stream'`.
+
 ```js
 const fs = require('fs')
-app.get('/streams', function (request, reply) {
+
+app.get('/buffer', (request, reply) => {
   fs.readFile('some-file', (err, fileBuffer) => {
     if (err) {
       reply.error(err)
@@ -169,44 +224,69 @@ app.get('/streams', function (request, reply) {
 })
 ```
 
-<a name="payload-type"></a>
+#### Stream
+
+If not already set, the `Content-Type` header will be set to `'application/octet-stream'`.
+
+```js
+const fs = require('fs')
+
+app.get('/stream', (request, reply) => {
+  const stream = fs.createReadStream('some-file', 'utf8')
+  reply.send(stream)
+})
+```
+
 #### Type of the final payload
-The type of the sent payload (after serialization and going through any [`onSend` hooks](Hooks.md#the-onsend-hook)) must be one of the following types, otherwise an error will be thrown:
 
-- `string`
-- `Buffer`
-- `stream`
-- `undefined`
-- `null`
+The type of the payload (after serialization and going through any [`onSend` hooks](Hooks.md#the-onsend-hook))
+must be one of the following types:
 
-<a name="async-await-promise"></a>
-#### Async-Await and Promises
-Medley natively handles promises and supports async-await.<br>
-*Note that in the following examples we are not using reply.send.*
++ `string`
++ `Buffer`
++ `stream`
++ `null`
++ `undefined`
+
+An error will be thrown if the payload is not one of these types.
+
+#### Async-Await / Promises
+
+If an `async` function returns a value (other than `undefined`), `reply.send()`
+will be called automatically with the value.
+
 ```js
-app.get('/promises', options, function (request, reply) {
-  return new Promise(function (resolve) {
-    setTimeout(resolve, 200, { hello: 'world' })
-  })
+app.get('/', async (request, reply) => {
+  const user = await loadUser()
+  return user
 })
-
-app.get('/async-await', options, async function (request, reply) {
-  var res = await new Promise(function (resolve) {
-    setTimeout(resolve, 200, { hello: 'world' })
-  })
-  return res
+// Is the same as:
+app.get('/', (request, reply) => {
+  const user = await loadUser()
+  reply.send(user)
 })
 ```
 
-Rejected promises default to a `500` HTTP status code. Reject the promise, or `throw` in an `async function`, with an object that has `statusCode` (or `status`) and `message` properties to modify the reply.
+This means that using `await` isn't always necessary since promises that resolve
+to a value can be returned to have the value automatically sent.
 
 ```js
-app.get('/teapot', async function (request, reply) => {
-  const err = new Error()
-  err.statusCode = 418
-  err.message = 'short and stout'
-  throw err
+app.get('/', (request, reply) => { // no `async` (since `await` isn't used)
+  return loadUser() // no `await`
 })
 ```
 
-If you want to know more please review [Routes#async-await](Routes.md#async-await).
+If an error is throw inside an `async` function, `reply.error()` is called
+automatically with the error.
+
+```js
+app.get('/', async (request, reply) => {
+  throw new Error('async error')
+})
+// Is the same as:
+app.get('/', (request, reply) => {
+  reply.error(new Error('async error'))
+})
+```
+
+See [Routes#async-await](Routes.md#async-await) for more examples.
