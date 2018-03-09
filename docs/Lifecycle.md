@@ -7,13 +7,13 @@ Incoming Request
         │
         └─▶ onRequest Hook
               │
-              └─▶ Body Parsing
-                    │
-                    ├─▶ preHandler Hook
-                    |     │
-                    |     ├─▶ beforeHandler
-                    |     |     │
-              Error └ ─ ─ ┼ ─ ─ ┼─▶ Route Handler / Not-Found Handler / Error Handler
+              ├─▶ Body Parsing
+              |     │
+              |     ├─▶ preHandler Hook
+              |     |     │
+              |     |     ├─▶ beforeHandler
+              |     |     |     │
+        Error └ ─ ─ ┴ ─ ─ ┼ ─ ─ ┼─▶ Route Handler / Not-Found Handler / Error Handler
                           |     |     │
                Early Send └ ─ ─ ┴ ─ ─ ┴─▶ Serialize Payload
                                             │
@@ -23,6 +23,19 @@ Incoming Request
                                                         │
                                                         └─▶ onResponse Hook
 ```
+
+**Table of Contents:**
+
+1. [Routing](#routing)
+1. [onRequest Hook](#onrequest-hook)
+1. [Body Parsing](#body-parsing)
+1. [preHandler Hook](#prehandler-hook)
+1. [beforeHandler](#beforehandler)
+1. [Route Handler](#route-handler)
+1. [Serialize Payload](#serialize-payload)
+1. [onSend Hook](#onsend-hook)
+1. [Send Response](#send-response)
+1. [onResponse Hook](#onresponse-hook)
 
 ## Routing
 
@@ -66,7 +79,7 @@ app.addHook('preHandler', (request, reply, next) => {
 })
 ```
 
-These hooks may send an early response with `reply.send()`. If a hooks does this, the rest of the hooks will be skipped and the lifecycle will go straight to the *Serialize Payload* step.
+These hooks may send an early response with `reply.send()`. If a hooks does this, the rest of the hooks will be skipped and the lifecycle will go straight to the [*Serialize Payload*](#serialize-payload) step.
 
 If an error occurs during a hook, the rest of the lifecycle up to the *Route Handler* is skipped and the error handler is invoked as the *Route Handler*.
 
@@ -91,6 +104,8 @@ app.get('/', (request, reply) => {
   reply.send('payload')
 })
 ```
+
+*Not-found handlers* (set with [`app.setNotFoundHandler()`](Server-Methods.md#set-not-found-handler)) and *error handlers* (set with [`app.setErrorHandler()`](Server-Methods.md#set-error-handler)) are also included in the part of the lifecycle.
 
 ## Serialize Payload
 
