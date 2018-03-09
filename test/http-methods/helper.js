@@ -3,9 +3,10 @@
 const sget = require('simple-get').concat
 const stream = require('stream')
 
+const app = require('../..')()
+
 module.exports.payloadMethod = function(method, t) {
   const test = t.test
-  const app = require('..')()
   const upMethod = method.toUpperCase()
   const loMethod = method.toLowerCase()
 

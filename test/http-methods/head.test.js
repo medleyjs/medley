@@ -3,7 +3,7 @@
 const t = require('tap')
 const test = t.test
 const sget = require('simple-get').concat
-const app = require('..')()
+const app = require('../..')()
 
 const options = {
   responseSchema: {

@@ -1,7 +1,7 @@
 'use strict'
 
 const t = require('tap')
-const medley = require('..')
+const medley = require('../..')
 const app = medley()
 
 let errored = false
