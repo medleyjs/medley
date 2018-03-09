@@ -14,10 +14,14 @@ const Reply = require('./lib/Reply')
 const Request = require('./lib/Request')
 
 const pluginUtils = require('./lib/pluginUtils')
-const runHooks = require('./lib/hookRunner')
 
-const {methodHandlers} = require('./lib/RequestHandlers')
 const {buildSerializers} = require('./lib/Serializer')
+const {
+  routeHandler,
+  methodHandlers,
+  defaultNotFoundHandler,
+  notFoundFallbackHandler,
+} = require('./lib/RequestHandlers')
 
 const supportedMethods = Object.keys(methodHandlers)
 
@@ -44,7 +48,7 @@ function medley(options) {
     throw new TypeError(`'queryParser' option must be an function. Got '${options.queryParser}'`)
   }
 
-  const notFoundRouter = findMyWay({defaultRoute: notFoundFallbackRoute})
+  const notFoundRouter = findMyWay({defaultRoute: notFoundFallbackHandler})
   const router = findMyWay({
     defaultRoute: notFoundRouter.lookup.bind(notFoundRouter),
     ignoreTrailingSlash: options.ignoreTrailingSlash,
@@ -151,7 +155,7 @@ function medley(options) {
   const onRouteHooks = []
 
   app._notFoundLevelApp = app
-  app.setNotFoundHandler(basic404) // Set the default 404 handler
+  app.setNotFoundHandler(defaultNotFoundHandler)
   app._canSetNotFoundHandler = true // Allowed to override the default 404 handler
 
   return app
@@ -235,63 +239,6 @@ function medley(options) {
     })
 
     return undefined
-  }
-
-  function routeHandler(req, res, params, context) {
-    res._onResponseHooks = undefined
-    if (context.onResponse !== null) {
-      res._onResponseHooks = context.onResponse
-      res.on('finish', runOnResponseHooks)
-      res.on('error', runOnResponseHooks)
-    }
-
-    if (context.onRequest === null) {
-      onRequestCallback(null, new State(req, res, params, context))
-    } else {
-      runHooks(
-        context.onRequest,
-        hookIterator,
-        new State(req, res, params, context),
-        onRequestCallback
-      )
-    }
-  }
-
-  function State(req, res, params, context) {
-    this.req = req
-    this.res = res
-    this.params = params
-    this.context = context
-  }
-
-  function hookIterator(fn, state, next) {
-    return state.res.finished ? undefined : fn(state.req, state.res, next)
-  }
-
-  function onRequestCallback(err, state) {
-    if (state.res.finished) {
-      return
-    }
-
-    var {context, req} = state
-    var request = new context.Request(req, req.headers, state.params)
-    var reply = new context.Reply(state.res, request, context.config, context)
-
-    if (err) {
-      reply.error(err)
-    } else {
-      context.methodHandler(reply, context)
-    }
-  }
-
-  function runOnResponseHooks() {
-    this.removeListener('finish', runOnResponseHooks)
-    this.removeListener('error', runOnResponseHooks)
-
-    const onResponseHooks = this._onResponseHooks
-    for (var i = 0; i < onResponseHooks.length; i++) {
-      onResponseHooks[i](this)
-    }
   }
 
   function override(parentApp, fn, opts) {
@@ -536,19 +483,6 @@ function medley(options) {
     return this._bodyParser.hasParser(contentType)
   }
 
-  function basic404(request, reply) {
-    reply.code(404).send(`Not Found: ${request.method} ${request.url}`)
-  }
-
-  function notFoundFallbackRoute(req, res) {
-    const payload = `Unsupported request method: ${req.method}`
-    res.writeHead(501, { // Not Implemented
-      'Content-Type': 'text/plain',
-      'Content-Length': '' + Buffer.byteLength(payload),
-    })
-    res.end(payload)
-  }
-
   function setNotFoundHandler(opts, handler) {
     throwIfAlreadyStarted('Cannot call "setNotFoundHandler" when app is already loaded!')
 
@@ -565,7 +499,7 @@ function medley(options) {
       opts = {}
     }
 
-    const replaceDefault404 = prefix === '/' && handler !== basic404
+    const replaceDefault404 = prefix === '/' && handler !== defaultNotFoundHandler
     const serializers = buildSerializers(opts.responseSchema)
     const methodGroups = new Map()
 
