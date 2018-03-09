@@ -2,9 +2,9 @@
 
 const t = require('tap')
 const test = t.test
-const runHooks = require('../../lib/hookRunner')
+const runHooks = require('../../lib/runHooks')
 
-test('hookRunner - Basic', (t) => {
+test('runHooks - Basic', (t) => {
   t.plan(8)
 
   const originalState = {a: 'a', b: 'b'}
@@ -39,7 +39,7 @@ test('hookRunner - Basic', (t) => {
   }
 })
 
-test('hookRunner - In case of error should skip to done', (t) => {
+test('runHooks - In case of error should skip to done', (t) => {
   t.plan(6)
 
   const originalState = {a: 'a', b: 'b'}
@@ -72,7 +72,7 @@ test('hookRunner - In case of error should skip to done', (t) => {
   }
 })
 
-test('hookRunner - Should handle promises', (t) => {
+test('runHooks - Should handle promises', (t) => {
   t.plan(8)
 
   const originalState = {a: 'a', b: 'b'}
@@ -107,7 +107,7 @@ test('hookRunner - Should handle promises', (t) => {
   }
 })
 
-test('hookRunner - In case of error should skip to done (with promises)', (t) => {
+test('runHooks - In case of error should skip to done (with promises)', (t) => {
   t.plan(6)
 
   const originalState = {a: 'a', b: 'b'}
@@ -140,7 +140,7 @@ test('hookRunner - In case of error should skip to done (with promises)', (t) =>
   }
 })
 
-test('hookRunner - Be able to exit before its natural end', (t) => {
+test('runHooks - Be able to exit before its natural end', (t) => {
   t.plan(2)
 
   const originalState = {a: 'a', b: 'b'}
@@ -174,7 +174,7 @@ test('hookRunner - Be able to exit before its natural end', (t) => {
   }
 })
 
-test('hookRunner - Promises that resolve to a value do not change the state', (t) => {
+test('runHooks - Promises that resolve to a value do not change the state', (t) => {
   t.plan(5)
 
   const originalState = {a: 'a', b: 'b'}
