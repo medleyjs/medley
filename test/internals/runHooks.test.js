@@ -72,7 +72,11 @@ test('runHooks - In case of error should skip to done', (t) => {
   }
 })
 
-test('runHooks - Should handle promises', (t) => {
+function asyncFunc() {
+  return new Promise(resolve => setImmediate(resolve))
+}
+
+test('runHooks - Should handle async functions', (t) => {
   t.plan(8)
 
   const originalState = {a: 'a', b: 'b'}
@@ -83,22 +87,25 @@ test('runHooks - Should handle promises', (t) => {
     return fn(state.a, state.b, next)
   }
 
-  function fn1(a, b) {
+  async function fn1(a, b, next) {
     t.strictEqual(a, 'a')
     t.strictEqual(b, 'b')
-    return Promise.resolve()
+    await asyncFunc()
+    next()
   }
 
-  function fn2(a, b) {
+  async function fn2(a, b, next) {
     t.strictEqual(a, 'a')
     t.strictEqual(b, 'b')
-    return Promise.resolve()
+    await asyncFunc()
+    next()
   }
 
-  function fn3(a, b) {
+  async function fn3(a, b, next) {
     t.strictEqual(a, 'a')
     t.strictEqual(b, 'b')
-    return Promise.resolve()
+    await asyncFunc()
+    next()
   }
 
   function done(err, state) {
@@ -107,7 +114,7 @@ test('runHooks - Should handle promises', (t) => {
   }
 })
 
-test('runHooks - In case of error should skip to done (with promises)', (t) => {
+test('runHooks - Should catch rejected primises and skip to done', (t) => {
   t.plan(6)
 
   const originalState = {a: 'a', b: 'b'}
@@ -118,16 +125,18 @@ test('runHooks - In case of error should skip to done (with promises)', (t) => {
     return fn(state.a, state.b, next)
   }
 
-  function fn1(a, b) {
+  async function fn1(a, b, next) {
     t.strictEqual(a, 'a')
     t.strictEqual(b, 'b')
-    return Promise.resolve()
+    await asyncFunc()
+    next()
   }
 
-  function fn2(a, b) {
+  async function fn2(a, b) {
     t.strictEqual(a, 'a')
     t.strictEqual(b, 'b')
-    return Promise.reject(new Error('kaboom'))
+    await asyncFunc()
+    throw new Error('kaboom')
   }
 
   function fn3() {
@@ -140,32 +149,24 @@ test('runHooks - In case of error should skip to done (with promises)', (t) => {
   }
 })
 
-test('runHooks - Be able to exit before its natural end', (t) => {
-  t.plan(2)
+test('runHooks - Hooks do not continue if next() is never called', (t) => {
+  t.plan(1)
 
   const originalState = {a: 'a', b: 'b'}
 
-  runHooks([fn1, fn2, fn3], iterator, originalState, done)
+  runHooks([fn1, fn2], iterator, originalState, done)
 
   function iterator(fn, state, next) {
-    if (state.stop) {
-      return undefined
-    }
     return fn(state, next)
   }
 
-  function fn1(state, next) {
+  async function fn1(state) {
     t.strictEqual(state, originalState)
-    next()
+    await asyncFunc()
+    return undefined
   }
 
-  function fn2(state) {
-    t.strictEqual(state, originalState)
-    state.stop = true
-    return Promise.resolve()
-  }
-
-  function fn3() {
+  function fn2() {
     t.fail('this should not be called')
   }
 
@@ -185,19 +186,25 @@ test('runHooks - Promises that resolve to a value do not change the state', (t) 
     return fn(state, next)
   }
 
-  function fn1(state) {
+  async function fn1(state, next) {
     t.strictEqual(state, originalState)
-    return Promise.resolve(null)
+    await asyncFunc()
+    next()
+    return null
   }
 
-  function fn2(state) {
+  async function fn2(state, next) {
     t.strictEqual(state, originalState)
-    return Promise.resolve('string')
+    await asyncFunc()
+    next()
+    return 'string'
   }
 
-  function fn3(state) {
+  async function fn3(state, next) {
     t.strictEqual(state, originalState)
-    return Promise.resolve({object: true})
+    await asyncFunc()
+    next()
+    return {object: true}
   }
 
   function done(err, state) {

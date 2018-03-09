@@ -1,86 +1,58 @@
 # Hooks
 
-Hooks are registered with the `app.addHook` method and allow you to listen to specific events in the application or request/response lifecycle. You have to register a hook before the event is triggered otherwise the event is lost.
+Hooks are registered with the `app.addHook()` method and allow you to hook into different parts of the application or request lifecycle.
 
-## Request/Response Hooks
+## Request Lifecycle Hooks
 
-By using the hooks you can interact directly inside the lifecycle of Medley. There are five different Hooks that you can use *(in order of execution)*:
-- `'onRequest'`
-- `'preHandler'`
-- `'onSend'`
-- `'onResponse'`
+Hooks can be added with the `app.addHook()` method:
+
+```js
+app.addHook(hookName, hookHandler)
+```
+
+The possible `hookName` values are:
+
++ `'onRequest'`
++ `'preHandler'`
++ `'onSend'`
++ `'onResponse'`
+
+Check out the [lifecycle docs](Lifecycle.md) to see where each hook is executed in the request lifecycle.
 
 Example:
+
 ```js
 app.addHook('onRequest', (req, res, next) => {
-  // some code
+  // Handle onRequest
   next()
 })
 
 app.addHook('preHandler', (request, reply, next) => {
-  // some code
+  // Handle preHandler
   next()
 })
 
 app.addHook('onSend', (request, reply, next) => {
-  // some code
+  // Handle onSend
   next()
 })
 
 app.addHook('onResponse', (res) => {
-  // some code
-})
-```
-Or `async/await`
-```js
-app.addHook('onRequest', async (req, res) => {
-  // some code
-  await asyncMethod()
-  // error occurred
-  if (err) {
-    throw new Error('some errors occurred.')
-  }
-})
-
-app.addHook('preHandler', async (request, reply) => {
-  // some code
-  await asyncMethod()
-  // error occurred
-  if (err) {
-    throw new Error('some errors occurred.')
-  }
-})
-
-app.addHook('onSend', async (request, reply) => {
-  // some code
-  await asyncMethod()
-  // error occurred
-  if (err) {
-    throw new Error('some errors occurred.')
-  }
-})
-
-app.addHook('onResponse', async (res) => {
-  try {
-    await asyncMethod()
-  } catch (err) {
-    // Errors must be handled manually in onResponse hooks
-  }
+  // Handle onResponse
 })
 ```
 
-| Parameter   |  Description  |
-|-------------|-------------|
-| req |  Node.js [IncomingMessage](https://nodejs.org/api/http.html#http_class_http_incomingmessage) |
-| res | Node.js [ServerResponse](https://nodejs.org/api/http.html#http_class_http_serverresponse) |
-| request | Medley [Request](Request.md) interface |
-| reply | Medley [Reply](Reply.md) interface |
-| next | Function to continue with the [lifecycle](Lifecycle.md) |
+| Parameter | Description |
+|-----------|-------------|
+| `req` | Node.js [IncomingMessage](https://nodejs.org/api/http.html#http_class_http_incomingmessage) |
+| `res` | Node.js [ServerResponse](https://nodejs.org/api/http.html#http_class_http_serverresponse) |
+| `request` | Medley [Request](Request.md) object |
+| `reply` | Medley [Reply](Reply.md) object |
+| `next([error])` | Function to continue with the request |
 
-It is pretty easy to understand where each hook is executed by looking at the [lifecycle page](Lifecycle.md).<br>
-Hooks are affected by Medley's encapsulation, and can thus be applied to selected routes. See the [Scopes](#scope) section for more information.
+Note that in the `'preHandler'` and `'onSend'` hook, the `request` and `reply` objects are different from `'onRequest'` because the two arguments are [`request`](Request.md) and [`reply`](Reply.md) core Medley objects.
 
-If you get an error during the execution of you hook, just pass it to `next()` and Medley will automatically close the request and send the appropriate error code to the user.
+If an error occurs during the execution of a hook, it should be passed to `next()` to end the hook execution and trigger an error response.
 
 ```js
 app.addHook('onRequest', (req, res, next) => {
@@ -88,17 +60,9 @@ app.addHook('onRequest', (req, res, next) => {
 })
 ```
 
-If you want to pass a custom error code to the user, just use `reply.code()`:
-```js
-app.addHook('preHandler', (request, reply, next) => {
-  reply.code(500)
-  next(new Error('some error'))
-})
-```
+*The error will be handled by [`Reply`](Reply.md#errorerr).*
 
-*The error will be handled by [`Reply`](Reply.md#errors).*
-
-Note that in the `'preHandler'` and `'onSend'` hook the request and reply objects are different from `'onRequest'`, because the two arguments are [`request`](Request.md) and [`reply`](Reply.md) core Medley objects.
+Hooks are affected by Medley's encapsulation, and can thus be scoped to selected routes. See the [Scopes](#scope) section for more information.
 
 #### The `onSend` Hook
 
@@ -125,31 +89,47 @@ app.addHook('onSend', (request, reply, next) => {
 
 Note: The payload may only be changed to a `string`, a `Buffer`, a `stream`, `null`, or `undefined`.
 
-### Respond to a request from a hook
-It is possible to respond to a request within a hook and skip the route handler. An example could be an authentication hook. If you are using `onRequest` should use `res.end()` and `beforeHandler`/`preHandler` hook should use `reply.send`.
+#### The `onResponse` Hook
+
+The `onResponse` is different from the other hooks. It only receives the `res` object and is executed synchronously. Any errors that occur during this hook must be handled manually.
+
+```js
+app.addHook('onResponse', async (res) => {
+  try {
+    await asyncFunction()
+  } catch (error) {
+    // Handle error
+  }
+})
+```
+
+### Using async-await
+
+Hooks may be an `async` function. For convenience, all hooks (except for the `onResponse` hook) will automatically catch errors thrown in an `async` function and call `next(error)` for you.
+
+```js
+app.addHook('preHandler', async (request, reply, next) => {
+  const user = await loadUser() // No need to wrap in a try-catch
+  request.user = user
+  next()
+})
+```
+
+### Sending a response from a hook
+
+It is possible to respond to a request within `onRequest` and `preHandler` hooks. This will skip the rest of the `onRequest` and `preHandler` hooks and the route handler.
 
 ```js
 app.addHook('onRequest', (req, res, next) => {
   res.end('early response')
 })
 
-// Works with async functions too
-app.addHook('preHandler', async (request, reply) => {
-  reply.send({ hello: 'world' })
+app.addHook('preHandler', (request, reply, next) => {
+  reply.send({ early: 'response' })
 })
 ```
 
-If responding with a stream, it is best to avoid using an `async` function for the hook. If using an `async` function is necessary, make sure to follow the pattern found in [test/hooks-async.js](https://github.com/fastify/fastify/blob/94ea67ef2d8dce8a955d510cd9081aabd036fa85/test/hooks-async.js#L269-L275).
-
-```js
-const pump = require('pump')
-
-app.addHook('onRequest', (req, res, next) => {
-  if (req.skip) return next()
-  const stream = fs.createReadStream('some-file', 'utf8')
-  pump(stream, res, (err) => { /* Handle error */ })
-})
-```
+If sending a response from inside a hook, **`next()` must not be called** (otherwise the rest of the hooks and then the route handler will be run).
 
 ## Application Hooks
 

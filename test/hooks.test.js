@@ -948,13 +948,12 @@ test('cannot add hook after listening', (t) => {
   })
 })
 
-test('onRequest hooks should be able to block a request', (t) => {
+test('onRequest hooks should be able to send a response', (t) => {
   t.plan(4)
   const app = medley()
 
-  app.addHook('onRequest', (req, res, next) => {
+  app.addHook('onRequest', (req, res) => {
     res.end('hello')
-    next()
   })
 
   app.addHook('onRequest', () => {
@@ -987,13 +986,46 @@ test('onRequest hooks should be able to block a request', (t) => {
   })
 })
 
-test('preHandler hooks should be able to block a request', (t) => {
+test('onRequest hooks should be able to send a response (last hook)', (t) => {
+  t.plan(4)
+  const app = medley()
+
+  app.addHook('onRequest', (req, res) => {
+    res.end('hello')
+  })
+
+  app.addHook('preHandler', () => {
+    t.fail('this should not be called')
+  })
+
+  app.addHook('onSend', () => {
+    t.fail('this should not be called')
+  })
+
+  app.addHook('onResponse', () => {
+    t.ok('called')
+  })
+
+  app.get('/', function() {
+    t.fail('this should not be called')
+  })
+
+  app.inject({
+    url: '/',
+    method: 'GET',
+  }, (err, res) => {
+    t.error(err)
+    t.is(res.statusCode, 200)
+    t.is(res.payload, 'hello')
+  })
+})
+
+test('preHandler hooks should be able to send a response', (t) => {
   t.plan(5)
   const app = medley()
 
-  app.addHook('preHandler', (req, reply, next) => {
+  app.addHook('preHandler', (req, reply) => {
     reply.send('hello')
-    next()
   })
 
   app.addHook('preHandler', () => {
@@ -1023,48 +1055,12 @@ test('preHandler hooks should be able to block a request', (t) => {
   })
 })
 
-test('onRequest hooks should be able to block a request (last hook)', (t) => {
-  t.plan(4)
-  const app = medley()
-
-  app.addHook('onRequest', (req, res, next) => {
-    res.end('hello')
-    next()
-  })
-
-  app.addHook('preHandler', () => {
-    t.fail('this should not be called')
-  })
-
-  app.addHook('onSend', () => {
-    t.fail('this should not be called')
-  })
-
-  app.addHook('onResponse', () => {
-    t.ok('called')
-  })
-
-  app.get('/', function() {
-    t.fail('this should not be called')
-  })
-
-  app.inject({
-    url: '/',
-    method: 'GET',
-  }, (err, res) => {
-    t.error(err)
-    t.is(res.statusCode, 200)
-    t.is(res.payload, 'hello')
-  })
-})
-
-test('preHandler hooks should be able to block a request (last hook)', (t) => {
+test('preHandler hooks should be able to send a response (last hook)', (t) => {
   t.plan(5)
   const app = medley()
 
-  app.addHook('preHandler', (req, reply, next) => {
+  app.addHook('preHandler', (req, reply) => {
     reply.send('hello')
-    next()
   })
 
   app.addHook('onSend', (request, reply, next) => {
@@ -1094,10 +1090,8 @@ test('onRequest respond with a stream', (t) => {
   t.plan(3)
   const app = medley()
 
-  app.addHook('onRequest', (req, res, next) => {
-    fs.createReadStream(process.cwd() + '/test/stream.test.js', 'utf8')
-      .pipe(res)
-    res.once('finish', next)
+  app.addHook('onRequest', (req, res) => {
+    fs.createReadStream(process.cwd() + '/test/stream.test.js', 'utf8').pipe(res)
   })
 
   app.addHook('onRequest', () => {
@@ -1142,12 +1136,11 @@ test('preHandler respond with a stream', (t) => {
   // this triggers the `onSend` hook event if `preHanlder` has not yet finished
   const order = [1, 2]
 
-  app.addHook('preHandler', (req, reply, next) => {
+  app.addHook('preHandler', (req, reply) => {
     const readStream = fs.createReadStream(process.cwd() + '/test/stream.test.js', 'utf8')
     reply.send(readStream)
     reply.res.once('finish', () => {
       t.is(order.shift(), 2)
-      next()
     })
   })
 
@@ -1536,30 +1529,5 @@ test('onResponse hooks should run in the order in which they are defined', (t) =
     t.error(err)
     t.strictEqual(res.statusCode, 200)
     t.deepEqual(JSON.parse(res.payload), {hello: 'world'})
-  })
-})
-
-test('hooks that resolve to a value do not cause an error', (t) => {
-  t.plan(3)
-  const app = medley()
-
-  app
-    .addHook('onRequest', () => Promise.resolve(1))
-    .addHook('onRequest', () => Promise.resolve(true))
-    .addHook('preHandler', () => Promise.resolve(null))
-    .addHook('preHandler', () => Promise.resolve('a'))
-    .addHook('onSend', () => Promise.resolve(false))
-    .addHook('onSend', () => Promise.resolve(/regex/))
-    .addHook('onResponse', () => Promise.resolve({}))
-    .addHook('onResponse', () => Promise.resolve([]))
-
-  app.get('/', (request, reply) => {
-    reply.send('hello')
-  })
-
-  app.inject('/', (err, res) => {
-    t.error(err)
-    t.strictEqual(res.statusCode, 200)
-    t.strictEqual(res.payload, 'hello')
   })
 })
