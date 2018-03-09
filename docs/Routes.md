@@ -126,26 +126,47 @@ In this case as parameter separator it's possible to use whatever character is n
 Having a route with multiple parameters may affect negatively the performance, so prefer single parameter approach whenever possible, especially on routes which are on the hot path of your application.
 If you are interested in how we handle the routing, checkout [find-my-way](https://github.com/delvedor/find-my-way).
 
-## Async-Await
-Are you an `async/await` user? We have you covered!
+## Async-Await / Promises
+
+Medley has a convenient feature for `async` functions. If an `async` function returns a value,
+it will be sent automatically.
+
 ```js
-app.get('/', options, async function (request, reply) {
-  var data = await getData()
-  var processed = await processData(data)
-  return processed
+// Using reply.send()
+app.get('/', async (request, reply) => {
+  const data = await getDataAsync()
+  reply.send(data)
 })
-```
-As you can see we are not calling `reply.send` to send back the data to the user. You just need to return the body (given that body is not `undefined`) and you are done!
-If you need it you can also send back the data to the user with `reply.send`.
-```js
-app.get('/', options, async function (request, reply) {
-  var data = await getData()
-  var processed = await processData(data)
-  reply.send(processed)
+
+// Using return
+app.get('/', async (request, reply) => {
+  const data = await getDataAsync()
+  return data
 })
 ```
 
-**Warning:** If `return someValue` and `reply.send()` are used at the same time, the first one that happens takes precedence; the second value will be ignored.
+This means that using `async-await` might not be needed at all since awaitable
+functions return a promise, which can be returned from a normal function:
+
+```js
+app.get('/', (request, reply) => {
+  return getDataAsync()
+})
+```
+
+The default status code for responses is `200 OK`. If needed, use `reply.code()`
+to set the status code before returning:
+
+```js
+app.post('/user', (request, reply) => {
+  reply.code(201) // 201 Created
+  return createUserAsync()
+})
+```
+
+Note that `reply.send()` will not be called automatically if the value returned from an `async` function is `undefined`. This is because returning `undefined` is the same as not returning anything all (see the [MDN `return` documentation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/return#wikiArticle)).
+
+**Warning:** An error will be thrown if `return someValue` and `reply.send()` are used at the same time because a response cannot be sent twice.
 
 ## Route Prefixing
 Sometimes you need to maintain two or more different versions of the same api, a classic approach is to prefix all the routes with the api version number, `/v1/user` for example.

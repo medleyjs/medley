@@ -198,45 +198,6 @@ test('support reply decorators with await', (t) => {
   })
 })
 
-test('support 204', (t) => {
-  t.plan(2)
-
-  const app = medley()
-
-  app.get('/', async (req, reply) => {
-    reply.code(204)
-  })
-
-  app.inject({
-    method: 'GET',
-    url: '/',
-  }, (err, res) => {
-    t.error(err)
-    t.equal(res.statusCode, 204)
-  })
-})
-
-test('does not call reply.send() twice if 204 reponse is already sent', (t) => {
-  t.plan(2)
-
-  const app = medley()
-
-  app.get('/', async (req, reply) => {
-    reply.code(204).send()
-    reply.send = () => {
-      throw new Error('reply.send() was called twice')
-    }
-  })
-
-  app.inject({
-    method: 'GET',
-    url: '/',
-  }, (err, res) => {
-    t.error(err)
-    t.equal(res.statusCode, 204)
-  })
-})
-
 test('inject async await', async (t) => {
   t.plan(1)
 
