@@ -22,14 +22,6 @@ app.get('/return', opts, () => Promise.resolve({hello: 'world'}))
 
 app.get('/return-error', opts, () => Promise.reject(new Error('some error')))
 
-app.get('/double', function(req, reply) {
-  setTimeout(function() {
-    // this should not throw
-    reply.send({hello: 'world'})
-  }, 20)
-  return Promise.resolve({hello: '42'})
-})
-
 app.listen(0, (err) => {
   t.error(err)
   app.server.unref()
@@ -55,19 +47,6 @@ app.listen(0, (err) => {
     }, (err, response) => {
       t.error(err)
       t.strictEqual(response.statusCode, 500)
-    })
-  })
-
-  test('sget promise double send', (t) => {
-    t.plan(3)
-
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + app.server.address().port + '/double',
-    }, (err, response, body) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 200)
-      t.deepEqual(JSON.parse(body), {hello: '42'})
     })
   })
 })

@@ -7,6 +7,8 @@ const http = require('http')
 const NotFound = require('http-errors').NotFound
 const Reply = require('../../lib/Reply')
 
+const medley = require('../..')
+
 test('Once called, Reply should return an object with methods', (t) => {
   t.plan(8)
   const res = {}
@@ -32,6 +34,46 @@ test('reply.send() throws with circular JSON', (t) => {
     var obj = {}
     obj.obj = obj
     reply.send(JSON.stringify(obj))
+  })
+})
+
+test('reply.send() throws if called after response is sent', (t) => {
+  t.plan(3)
+
+  const app = medley()
+
+  app.get('/', (request, reply) => {
+    reply.send('first')
+    try {
+      reply.send('second')
+    } catch (err) {
+      t.equal(err.message, 'Cannot call reply.send() when a response has already been sent')
+    }
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.payload, 'first')
+  })
+})
+
+test('reply.error() throws if called after response is sent', (t) => {
+  t.plan(3)
+
+  const app = medley()
+
+  app.get('/', (request, reply) => {
+    reply.send('send')
+    try {
+      reply.error(new Error())
+    } catch (err) {
+      t.equal(err.message, 'Cannot call reply.error() when a response has already been sent')
+    }
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.payload, 'send')
   })
 })
 

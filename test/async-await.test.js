@@ -70,105 +70,47 @@ test('async await', (t) => {
   })
 })
 
-test('ignore the result of the promise if reply.send is called beforehand (undefined)', (t) => {
-  t.plan(4)
+test('should throw if an async function returns a value and reply.send() is also called', (t) => {
+  t.plan(3)
 
-  const server = medley()
-  const payload = {hello: 'world'}
+  const app = medley()
 
-  server.get('/', async function awaitMyFunc(req, reply) {
-    reply.send(payload)
+  app.get('/', async (request, reply) => {
+    setImmediate(() => {
+      try {
+        reply.send()
+      } catch (err) {
+        t.equal(err.message, 'Cannot call reply.send() when a response has already been sent')
+      }
+    })
+    return 'value'
   })
 
-  t.tearDown(server.close.bind(server))
-
-  server.listen(0, (err) => {
+  app.inject('/', (err, res) => {
     t.error(err)
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + server.server.address().port + '/',
-    }, (err, res, body) => {
-      t.error(err)
-      t.deepEqual(payload, JSON.parse(body))
-      t.strictEqual(res.statusCode, 200)
-    })
+    t.equal(res.payload, 'value')
   })
 })
 
-test('ignore the result of the promise if reply.send is called beforehand (object)', (t) => {
-  t.plan(4)
+test('should throw if an async function returns a value and reply.error() is also called', (t) => {
+  t.plan(3)
 
-  const server = medley()
-  const payload = {hello: 'world2'}
+  const app = medley()
 
-  server.get('/', async function awaitMyFunc(req, reply) {
-    reply.send(payload)
-    return {hello: 'world'}
-  })
-
-  t.tearDown(server.close.bind(server))
-
-  server.listen(0, (err) => {
-    t.error(err)
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + server.server.address().port + '/',
-    }, (err, res, body) => {
-      t.error(err)
-      t.deepEqual(payload, JSON.parse(body))
-      t.strictEqual(res.statusCode, 200)
+  app.get('/', async (request, reply) => {
+    setImmediate(() => {
+      try {
+        reply.error()
+      } catch (err) {
+        t.equal(err.message, 'Cannot call reply.error() when a response has already been sent')
+      }
     })
-  })
-})
-
-test('ignore the result of the promise if reply.send is called beforehand (undefined)', (t) => {
-  t.plan(4)
-
-  const server = medley()
-  const payload = {hello: 'world'}
-
-  server.get('/', async function awaitMyFunc(req, reply) {
-    reply.send(payload)
+    return 'value'
   })
 
-  t.tearDown(server.close.bind(server))
-
-  server.listen(0, (err) => {
+  app.inject('/', (err, res) => {
     t.error(err)
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + server.server.address().port + '/',
-    }, (err, res, body) => {
-      t.error(err)
-      t.deepEqual(payload, JSON.parse(body))
-      t.strictEqual(res.statusCode, 200)
-    })
-  })
-})
-
-test('ignore the result of the promise if reply.send is called beforehand (object)', (t) => {
-  t.plan(4)
-
-  const server = medley()
-  const payload = {hello: 'world2'}
-
-  server.get('/', async function awaitMyFunc(req, reply) {
-    reply.send(payload)
-    return {hello: 'world'}
-  })
-
-  t.tearDown(server.close.bind(server))
-
-  server.listen(0, (err) => {
-    t.error(err)
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + server.server.address().port + '/',
-    }, (err, res, body) => {
-      t.error(err)
-      t.deepEqual(payload, JSON.parse(body))
-      t.strictEqual(res.statusCode, 200)
-    })
+    t.equal(res.payload, 'value')
   })
 })
 
