@@ -4,7 +4,7 @@ const t = require('tap')
 const test = t.test
 const medley = require('..')
 
-test('pretty print - static routes', (t) => {
+test('printRoutes() - static routes', (t) => {
   t.plan(2)
 
   const app = medley()
@@ -26,7 +26,7 @@ test('pretty print - static routes', (t) => {
   })
 })
 
-test('pretty print - parametric routes', (t) => {
+test('printRoutes() - parametric routes', (t) => {
   t.plan(2)
 
   const app = medley()
@@ -50,7 +50,7 @@ test('pretty print - parametric routes', (t) => {
   })
 })
 
-test('pretty print - mixed parametric routes', (t) => {
+test('printRoutes() - mixed parametric routes', (t) => {
   t.plan(2)
 
   const app = medley()
@@ -75,7 +75,7 @@ test('pretty print - mixed parametric routes', (t) => {
   })
 })
 
-test('pretty print - wildcard routes', (t) => {
+test('printRoutes() - wildcard routes', (t) => {
   t.plan(2)
 
   const app = medley()
