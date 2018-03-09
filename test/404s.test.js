@@ -859,19 +859,12 @@ test('404 inside onSend', (t) => {
 
   const app = medley()
 
-  var called = false
-
   app.get('/', function(request, reply) {
     reply.send({hello: 'world'})
   })
 
   app.addHook('onSend', function(request, reply, next) {
-    if (called) {
-      next()
-    } else {
-      called = true
-      next(new errors.NotFound())
-    }
+    next(new errors.NotFound())
   })
 
   t.tearDown(app.close.bind(app))

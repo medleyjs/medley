@@ -79,6 +79,7 @@ app.addHook('onSend', (request, reply, next) => {
 ```
 
 It is possible to modify the payload before it is sent by changing the `reply.payload` property.
+The payload may only be changed to a `string`, a `Buffer`, a `stream`, `null`, or `undefined`.
 
 ```js
 app.addHook('onSend', (request, reply, next) => {
@@ -87,7 +88,10 @@ app.addHook('onSend', (request, reply, next) => {
 })
 ```
 
-Note: The payload may only be changed to a `string`, a `Buffer`, a `stream`, `null`, or `undefined`.
+**Note:** `onSend` hooks are only run once per request. If an `onSend` hook forwards an error
+(with `next(error)` or by throwing in an `async` function), the hooks will not be executed
+again when the error response is sent. Because of this, it is best to handle errors in the
+hook when possible rather than forwarding the error.
 
 #### The `onResponse` Hook
 
