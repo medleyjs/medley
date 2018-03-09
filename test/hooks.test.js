@@ -866,67 +866,6 @@ test('onSend hook throws', (t) => {
   })
 })
 
-test('onSend hook should receive valid request and reply objects if onRequest hook fails', (t) => {
-  t.plan(4)
-  const app = medley()
-
-  app.decorateRequest('testDecorator', 'testDecoratorVal')
-  app.decorateReply('testDecorator', 'testDecoratorVal')
-
-  app.addHook('onRequest', function(req, res, next) {
-    next(new Error('onRequest hook failed'))
-  })
-
-  app.addHook('onSend', function(request, reply, next) {
-    t.strictEqual(request.testDecorator, 'testDecoratorVal')
-    t.strictEqual(reply.testDecorator, 'testDecoratorVal')
-    next()
-  })
-
-  app.get('/', (req, reply) => {
-    reply.send('hello')
-  })
-
-  app.inject({
-    method: 'GET',
-    url: '/',
-  }, (err, res) => {
-    t.error(err)
-    t.strictEqual(res.statusCode, 500)
-  })
-})
-
-test('onSend hook should receive valid request and reply objects if a custom body parser fails', (t) => {
-  t.plan(4)
-  const app = medley()
-
-  app.decorateRequest('testDecorator', 'testDecoratorVal')
-  app.decorateReply('testDecorator', 'testDecoratorVal')
-
-  app.addBodyParser('*', function(req, done) {
-    done(new Error('body parser failed'))
-  })
-
-  app.addHook('onSend', function(request, reply, next) {
-    t.strictEqual(request.testDecorator, 'testDecoratorVal')
-    t.strictEqual(reply.testDecorator, 'testDecoratorVal')
-    next()
-  })
-
-  app.get('/', (req, reply) => {
-    reply.send('hello')
-  })
-
-  app.inject({
-    method: 'POST',
-    url: '/',
-    payload: 'body',
-  }, (err, res) => {
-    t.error(err)
-    t.strictEqual(res.statusCode, 500)
-  })
-})
-
 test('cannot add hook after listening', (t) => {
   t.plan(2)
   const app = medley()
