@@ -11,7 +11,7 @@ Request is a core Medley object that is passed as the second argument to hooks a
 **Methods:**
 
 + [`.code(statusCode)`](#code)
-+ [`.header(name, value)`](#header)
++ [`.setHeader(name, value)`](#set-header)
 + [`.type(contentType)`](#type)
 + [`.redirect([statusCode,] url)`](#redirect)
 + [`.error(err)`](#error)
@@ -47,8 +47,8 @@ A boolean value that indicates whether or not a response has already been sent.
 Sets the HTTP status code for the response. If not set, the status code for
 the response defaults to `200`.
 
-<a id="header"></a>
-### `reply.header(name, value)`
+<a id="set-header"></a>
+### `reply.setHeader(name, value)`
 
 + `name` (string)
 + `value` (string|string[])
@@ -56,7 +56,7 @@ the response defaults to `200`.
 Sets a response header.
 
 ```js
-reply.header('Content-Encoding', 'gzip')
+reply.setHeader('Content-Encoding', 'gzip')
 ```
 
 For more information, see [`http.ServerResponse#setHeader`](https://nodejs.org/dist/latest/docs/api/http.html#http_response_setheader_name_value).
@@ -72,7 +72,7 @@ Sets the `Content-Type` header for the response.
 reply.type('text/html')
 ```
 
-This is a shortcut for: `reply.header('Content-Type', contentType)`.
+This is a shortcut for: `reply.setHeader('Content-Type', contentType)`.
 
 <a id="redirect"></a>
 ### `reply.redirect([statusCode,] url)`

@@ -81,7 +81,7 @@ test('within a sub app', (t) => {
   const app = require('../..')()
 
   app.get('/', function(req, reply) {
-    reply.header('Content-Type', 'text/plain')
+    reply.setHeader('Content-Type', 'text/plain')
     reply.send('hello world!')
   })
 
@@ -104,7 +104,7 @@ test('within a sub app', (t) => {
 
   app.register(function(subApp, options, next) {
     app.addHook('onSend', function(request, reply, next) {
-      reply.header('x-onsend', 'yes')
+      reply.setHeader('x-onsend', 'yes')
       next()
     })
     app.get('/redirect-onsend', function(req, reply) {
@@ -240,7 +240,7 @@ test('buffer with content type should not send application/octet-stream', (t) =>
   const app = require('../..')()
 
   app.get('/', function(req, reply) {
-    reply.header('Content-Type', 'text/plain')
+    reply.setHeader('Content-Type', 'text/plain')
     reply.send(Buffer.alloc(1024))
   })
 

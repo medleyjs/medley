@@ -58,7 +58,7 @@ test('should trigger the onSend hook', (t) => {
 
   app.addHook('onSend', (request, reply, next) => {
     t.ok(reply.payload._readableState)
-    reply.header('Content-Type', 'application/javascript')
+    reply.setHeader('Content-Type', 'application/javascript')
     next()
   })
 
@@ -108,7 +108,7 @@ test('onSend hook stream', (t) => {
   app.addHook('onSend', (req, reply, next) => {
     const gzStream = zlib.createGzip()
 
-    reply.header('Content-Encoding', 'gzip')
+    reply.setHeader('Content-Encoding', 'gzip')
     pump(
       fs.createReadStream(__filename, 'utf8'),
       gzStream,
