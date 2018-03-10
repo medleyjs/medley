@@ -75,8 +75,8 @@ test('onRequest hook error handling with external done', (t) => {
   const app = medley()
   const err = new Error('winter is coming')
 
-  app.addHook('onRequest', (req, res, done) => {
-    res.statusCode = 400
+  app.addHook('onRequest', (request, reply, done) => {
+    reply.code(400)
     done(err)
   })
 

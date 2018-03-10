@@ -13,9 +13,9 @@ Incoming Request
               |     |     │
               |     |     ├─▶ beforeHandler
               |     |     |     │
-        Error └ ─ ─ ┴ ─ ─ ┼ ─ ─ ┼─▶ Route Handler / Not-Found Handler / Error Handler
-                          |     |     │
-               Early Send └ ─ ─ ┴ ─ ─ ┴─▶ Serialize Payload
+        Error ├ ─ ─ ┴ ─ ─ ┼ ─ ─ ┼─▶ Route Handler / Not-Found Handler / Error Handler
+              |           |     |     │
+       send() └ ─ ─ ─ ─ ─ ┴ ─ ─ ┴ ─ ─ ┴─▶ Serialize Payload
                                             │
                                             └─▶ onSend Hook
                                                   │

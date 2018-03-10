@@ -12,17 +12,21 @@ app.addHook(hookName, hookHandler)
 
 The possible `hookName` values are:
 
-+ `'onRequest'`
-+ `'preHandler'`
-+ `'onSend'`
-+ `'onResponse'`
++ [`'onRequest'`](#onRequest-preHandler-hooks)
++ [`'preHandler'`](#onRequest-preHandler-hooks)
++ [`'onSend'`](#onSend-hook)
++ [`'onResponse'`](#onResponse-hook)
 
 Check out the [lifecycle docs](Lifecycle.md) to see where each hook is executed in the request lifecycle.
 
-Example:
+Hooks are affected by Medley's encapsulation, and can thus be scoped to selected routes.
+See the [Scopes](#scope) section for more information.
+
+<a id="onRequest-preHandler-hooks"></a> 
+### The `onRequest` and `preHandler` Hooks
 
 ```js
-app.addHook('onRequest', (req, res, next) => {
+app.addHook('onRequest', (request, reply, next) => {
   // Handle onRequest
   next()
 })
@@ -31,28 +35,39 @@ app.addHook('preHandler', (request, reply, next) => {
   // Handle preHandler
   next()
 })
+```
 
-app.addHook('onSend', (request, reply, next) => {
-  // Handle onSend
-  next()
-})
++ `request` - Medley [Request](Request.md) object
++ `reply` - Medley [Reply](Reply.md) object
++ `next([error])` - Function to continue with the request
 
-app.addHook('onResponse', (res) => {
-  // Handle onResponse
+`onRequest` hooks are executed at the very beginning of each request and `preHandler` hooks are
+executed before the route handler is invoked (see the [Lifecycle docs](Lifecycle.md) for details).
+
+These hooks are similar to Express middleware.
+
+#### `beforeHandler`
+
+Functions passed as the `beforeHandler` option to [`app.route()`](Routes.md#route-method)
+have exactly the same signature as `preHandler` hooks and are executed immediately after
+any `preHandler` hooks. This is similar to route-level middleware in Express.
+
+#### Sending a Response
+
+It is possible to respond to a request within the `onRequest` and `preHandler` hooks. This will skip the rest of the `onRequest` and `preHandler` hooks and the route handler.
+
+```js
+app.addHook('preHandler', (request, reply, next) => {
+  reply.send({ early: 'response' })
 })
 ```
 
-| Parameter | Description |
-|-----------|-------------|
-| `req` | Node.js [IncomingMessage](https://nodejs.org/api/http.html#http_class_http_incomingmessage) |
-| `res` | Node.js [ServerResponse](https://nodejs.org/api/http.html#http_class_http_serverresponse) |
-| `request` | Medley [Request](Request.md) object |
-| `reply` | Medley [Reply](Reply.md) object |
-| `next([error])` | Function to continue with the request |
+If sending a response from inside a hook, **`next()` must not be called**.
 
-Note that in the `'preHandler'` and `'onSend'` hook, the `request` and `reply` objects are different from `'onRequest'` because the two arguments are [`request`](Request.md) and [`reply`](Reply.md) core Medley objects.
+#### Handling Errors
 
-If an error occurs during the execution of a hook, it should be passed to `next()` to end the hook execution and trigger an error response.
+If an error occurs during the execution of a hook, it should be passed to `next()` to end
+the hook execution and trigger an error response.
 
 ```js
 app.addHook('onRequest', (req, res, next) => {
@@ -60,11 +75,21 @@ app.addHook('onRequest', (req, res, next) => {
 })
 ```
 
-*The error will be handled by [`Reply`](Reply.md#errorerr).*
+The error will be handled by [`Reply#error`](Reply.md#error).
 
-Hooks are affected by Medley's encapsulation, and can thus be scoped to selected routes. See the [Scopes](#scope) section for more information.
+<a id="onSend-hook"></a> 
+### The `onSend` Hook
 
-#### The `onSend` Hook
+```js
+app.addHook('onSend', (request, reply, next) => {
+  // Handle onSend
+  next()
+})
+```
+
++ `request` - Medley [Request](Request.md) object
++ `reply` - Medley [Reply](Reply.md) object
++ `next([error])` - Function to continue with the request
 
 Inside the `onSend` hook, the serialized payload will be available as the `payload` property on the `reply` object.
 
@@ -72,6 +97,7 @@ Inside the `onSend` hook, the serialized payload will be available as the `paylo
 app.get('/', (request, reply) => {
   reply.send({ hello: 'world' })  
 })
+
 app.addHook('onSend', (request, reply, next) => {
   console.log(reply.payload) // '{"hello":"world"}'
   next()
@@ -88,14 +114,28 @@ app.addHook('onSend', (request, reply, next) => {
 })
 ```
 
-**Note:** `onSend` hooks are only run once per request. If an `onSend` hook forwards an error
-(with `next(error)` or by throwing in an `async` function), the hooks will not be executed
-again when the error response is sent. Because of this, it is best to handle errors in the
-hook when possible rather than forwarding the error.
+#### `onSend` Hooks and Errors
 
-#### The `onResponse` Hook
+`onSend` hooks are only run once per request. If an `onSend` hook forwards an error
+(with `next(error)` or by throwing in an `async` function), the hooks will not be
+executed again when the error response is sent. Because of this, it is best to
+handle errors in the hook when possible rather than forwarding the error.
 
-The `onResponse` is different from the other hooks. It only receives the `res` object and is executed synchronously. Any errors that occur during this hook must be handled manually.
+<a id="onResponse-hook"></a> 
+### The `onResponse` Hook
+
+```js
+app.addHook('onResponse', (res) => {
+  // Handle onResponse
+})
+```
+
++ `res` - Node.js [http.ServerResponse](https://nodejs.org/api/http.html#http_class_http_serverresponse) object
+
+The `onResponse` hook is different from the other hooks. It only receives the
+[`res`](https://nodejs.org/api/http.html#http_class_http_serverresponse) object
+and is executed synchronously. Any errors that occur during this hook must be
+handled manually.
 
 ```js
 app.addHook('onResponse', async (res) => {
@@ -118,22 +158,6 @@ app.addHook('preHandler', async (request, reply, next) => {
   next()
 })
 ```
-
-### Sending a response from a hook
-
-It is possible to respond to a request within `onRequest` and `preHandler` hooks. This will skip the rest of the `onRequest` and `preHandler` hooks and the route handler.
-
-```js
-app.addHook('onRequest', (req, res, next) => {
-  res.end('early response')
-})
-
-app.addHook('preHandler', (request, reply, next) => {
-  reply.send({ early: 'response' })
-})
-```
-
-If sending a response from inside a hook, **`next()` must not be called** (otherwise the rest of the hooks and then the route handler will be run).
 
 ## Application Hooks
 
