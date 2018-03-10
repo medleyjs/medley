@@ -10,7 +10,7 @@ const Reply = require('../../lib/Reply')
 const medley = require('../..')
 
 test('Once called, Reply should return an object with methods', (t) => {
-  t.plan(8)
+  t.plan(6)
   const res = {}
   const request = {}
   const config = {}
@@ -21,21 +21,19 @@ test('Once called, Reply should return an object with methods', (t) => {
   t.equal(reply.res, res)
   t.equal(reply.request, request)
   t.equal(reply.config, config)
-  t.equal(reply._context, context)
   t.equal(reply.sent, false)
-  t.equal(reply._customError, false)
   t.equal(reply.payload, undefined)
 })
 
 test('reply.getHeader/setHeader() get and set the response headers', (t) => {
-  t.plan(6)
+  t.plan(8)
 
   const app = medley()
 
   app.get('/', (request, reply) => {
     t.equal(reply.getHeader('X-Custom-Header'), undefined)
 
-    reply.setHeader('X-Custom-Header', 'custom header')
+    t.equal(reply.setHeader('X-Custom-Header', 'custom header'), reply)
     t.equal(reply.getHeader('X-Custom-Header'), 'custom header')
 
     reply.setHeader('Content-Type', 'custom/type')
@@ -44,6 +42,7 @@ test('reply.getHeader/setHeader() get and set the response headers', (t) => {
 
   app.inject('/', (err, res) => {
     t.error(err)
+    t.equal(res.statusCode, 200)
     t.equal(res.headers['x-custom-header'], 'custom header')
     t.equal(res.headers['content-type'], 'custom/type')
     t.equal(res.payload, 'text')
@@ -51,7 +50,7 @@ test('reply.getHeader/setHeader() get and set the response headers', (t) => {
 })
 
 test('reply.appendHeader() adds to existing headers', (t) => {
-  t.plan(9)
+  t.plan(13)
 
   const app = medley()
 
@@ -59,10 +58,10 @@ test('reply.appendHeader() adds to existing headers', (t) => {
     reply.appendHeader('X-Custom-Header', 'first')
     t.equal(reply.getHeader('X-Custom-Header'), 'first')
 
-    reply.appendHeader('X-Custom-Header', 'second')
+    t.equal(reply.appendHeader('X-Custom-Header', 'second'), reply)
     t.deepEqual(reply.getHeader('X-Custom-Header'), ['first', 'second'])
 
-    reply.appendHeader('X-Custom-Header', ['3', '4'])
+    t.equal(reply.appendHeader('X-Custom-Header', ['3', '4']), reply)
     t.deepEqual(reply.getHeader('X-Custom-Header'), ['first', 'second', '3', '4'])
 
     reply.send()
@@ -80,12 +79,43 @@ test('reply.appendHeader() adds to existing headers', (t) => {
 
   app.inject('/', (err, res) => {
     t.error(err)
+    t.equal(res.statusCode, 200)
     t.deepEqual(res.headers['x-custom-header'], ['first', 'second', '3', '4'])
   })
 
   app.inject('/append-multiple-to-string', (err, res) => {
     t.error(err)
+    t.equal(res.statusCode, 200)
     t.deepEqual(res.headers['x-custom-header'], ['first', 'second', 'third'])
+  })
+})
+
+test('reply.removeHeader() removes response headers', (t) => {
+  t.plan(8)
+
+  const app = medley()
+
+  app.get('/', (request, reply) => {
+    reply.setHeader('X-Custom-Header', 'custom header')
+    t.equal(reply.getHeader('X-Custom-Header'), 'custom header')
+
+    t.equal(reply.removeHeader('X-Custom-Header'), reply)
+    t.equal(reply.getHeader('X-Custom-Header'), undefined)
+
+    reply
+      .setHeader('X-Custom-Header-2', ['a', 'b'])
+      .removeHeader('X-Custom-Header-2')
+
+    t.equal(reply.getHeader('X-Custom-Header-2'), undefined)
+
+    reply.send()
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.notOk('x-custom-header' in res.headers)
+    t.notOk('x-custom-header-2' in res.headers)
   })
 })
 

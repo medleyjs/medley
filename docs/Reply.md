@@ -14,6 +14,7 @@ Request is a core Medley object that is passed as the second argument to hooks a
 + [`.getHeader(name)`](#get-header)
 + [`.setHeader(name, value)`](#set-header)
 + [`.appendHeader(name, value)`](#append-header)
++ [`.removeHeader(name)`](#remove-header)
 + [`.type(contentType)`](#type)
 + [`.redirect([statusCode,] url)`](#redirect)
 + [`.error(err)`](#error)
@@ -89,6 +90,17 @@ reply.getHeader('Set-Cookie') // ['foo=bar', 'bar=baz; Path=/; HttpOnly']
 ```
 
 This is only needed for setting multiple `Set-Cookie` headers.
+
+<a id="remove-header"></a>
+### `reply.removeHeader(name)`
+
++ `name` (string)
+
+Removes a response header.
+
+```js
+reply.removeHeader('Content-Type')
+```
 
 <a id="type"></a>
 ### `reply.type(contentType)`
