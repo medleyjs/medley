@@ -13,6 +13,7 @@ Request is a core Medley object that is passed as the second argument to hooks a
 + [`.code(statusCode)`](#code)
 + [`.getHeader(name)`](#get-header)
 + [`.setHeader(name, value)`](#set-header)
++ [`.appendHeader(name, value)`](#append-header)
 + [`.type(contentType)`](#type)
 + [`.redirect([statusCode,] url)`](#redirect)
 + [`.error(err)`](#error)
@@ -24,9 +25,7 @@ Request is a core Medley object that is passed as the second argument to hooks a
 ### `reply.config`
 
 The value of the `config` option passed to [`app.route()`](Reply.md#options)
-(or one of it's shorthand methods).
-
-Defaults to an empty object (`{}`).
+(or one of it's shorthand methods). Defaults to an empty object `{}`.
 
 ### `reply.res`
 
@@ -73,6 +72,23 @@ reply.setHeader('Content-Encoding', 'gzip')
 ```
 
 For more information, see [`http.ServerResponse#setHeader`](https://nodejs.org/dist/latest/docs/api/http.html#http_response_setheader_name_value).
+
+<a id="append-header"></a>
+### `reply.appendHeader(name, value)`
+
++ `name` (string)
++ `value` (string|string[])
+
+Sets a response header if not already set. Appends the value to the header as an array if it already exists.
+
+```js
+reply.appendHeader('Set-Cookie', 'foo=bar')
+reply.getHeader('Set-Cookie') // 'foo=bar'
+reply.appendHeader('Set-Cookie', 'bar=baz; Path=/; HttpOnly')
+reply.getHeader('Set-Cookie') // ['foo=bar', 'bar=baz; Path=/; HttpOnly']
+```
+
+This is only needed for setting multiple `Set-Cookie` headers.
 
 <a id="type"></a>
 ### `reply.type(contentType)`

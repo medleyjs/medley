@@ -50,6 +50,45 @@ test('reply.getHeader/setHeader() get and set the response headers', (t) => {
   })
 })
 
+test('reply.appendHeader() adds to existing headers', (t) => {
+  t.plan(9)
+
+  const app = medley()
+
+  app.get('/', (request, reply) => {
+    reply.appendHeader('X-Custom-Header', 'first')
+    t.equal(reply.getHeader('X-Custom-Header'), 'first')
+
+    reply.appendHeader('X-Custom-Header', 'second')
+    t.deepEqual(reply.getHeader('X-Custom-Header'), ['first', 'second'])
+
+    reply.appendHeader('X-Custom-Header', ['3', '4'])
+    t.deepEqual(reply.getHeader('X-Custom-Header'), ['first', 'second', '3', '4'])
+
+    reply.send()
+  })
+
+  app.get('/append-multiple-to-string', (request, reply) => {
+    reply.appendHeader('X-Custom-Header', 'first')
+    t.equal(reply.getHeader('X-Custom-Header'), 'first')
+
+    reply.appendHeader('X-Custom-Header', ['second', 'third'])
+    t.deepEqual(reply.getHeader('X-Custom-Header'), ['first', 'second', 'third'])
+
+    reply.send()
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.deepEqual(res.headers['x-custom-header'], ['first', 'second', '3', '4'])
+  })
+
+  app.inject('/append-multiple-to-string', (err, res) => {
+    t.error(err)
+    t.deepEqual(res.headers['x-custom-header'], ['first', 'second', 'third'])
+  })
+})
+
 test('reply.send() throws with circular JSON', (t) => {
   t.plan(1)
   const reply = new Reply({}, {}, {})
