@@ -11,6 +11,7 @@ Request is a core Medley object that is passed as the second argument to hooks a
 **Methods:**
 
 + [`.code(statusCode)`](#code)
++ [`.getHeader(name)`](#get-header)
 + [`.setHeader(name, value)`](#set-header)
 + [`.type(contentType)`](#type)
 + [`.redirect([statusCode,] url)`](#redirect)
@@ -46,6 +47,18 @@ A boolean value that indicates whether or not a response has already been sent.
 
 Sets the HTTP status code for the response. If not set, the status code for
 the response defaults to `200`.
+
+<a id="get-header"></a>
+### `reply.getHeader(name)`
+
++ `name` (string)
++ Returns: (string|string[])
+
+Gets a response header.
+
+```js
+reply.getHeader('Content-Type') // 'application/json'
+```
 
 <a id="set-header"></a>
 ### `reply.setHeader(name, value)`

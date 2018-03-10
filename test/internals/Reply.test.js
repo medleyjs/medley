@@ -27,6 +27,29 @@ test('Once called, Reply should return an object with methods', (t) => {
   t.equal(reply.payload, undefined)
 })
 
+test('reply.getHeader/setHeader() get and set the response headers', (t) => {
+  t.plan(6)
+
+  const app = medley()
+
+  app.get('/', (request, reply) => {
+    t.equal(reply.getHeader('X-Custom-Header'), undefined)
+
+    reply.setHeader('X-Custom-Header', 'custom header')
+    t.equal(reply.getHeader('X-Custom-Header'), 'custom header')
+
+    reply.setHeader('Content-Type', 'custom/type')
+    reply.send('text')
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.headers['x-custom-header'], 'custom header')
+    t.equal(res.headers['content-type'], 'custom/type')
+    t.equal(res.payload, 'text')
+  })
+})
+
 test('reply.send() throws with circular JSON', (t) => {
   t.plan(1)
   const reply = new Reply({}, {}, {})
