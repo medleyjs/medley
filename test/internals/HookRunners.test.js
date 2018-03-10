@@ -9,60 +9,57 @@ const {
 } = require('../../lib/HookRunners')
 
 test('onRequestPreHandlerHookRunner - Basic', (t) => {
-  t.plan(8)
+  t.plan(7)
 
-  const originalState = {a: 'a', b: 'b'}
+  const originalRequest = {}
+  const originalReply = {request: originalRequest}
 
-  runOnReqHooks([fn1, fn2, fn3], iterator, originalState, done)
+  runOnReqHooks([fn1, fn2, fn3], originalReply, done)
 
-  function iterator(fn, state, next) {
-    return fn(state.a, state.b, next)
-  }
-
-  function fn1(a, b, next) {
-    t.strictEqual(a, 'a')
-    t.strictEqual(b, 'b')
+  function fn1(request, reply, next) {
+    t.equal(request, originalRequest)
+    t.equal(reply, originalReply)
     next()
   }
 
-  function fn2(a, b, next) {
-    t.strictEqual(a, 'a')
-    t.strictEqual(b, 'b')
+  function fn2(request, reply, next) {
+    t.equal(request, originalRequest)
+    t.equal(reply, originalReply)
     next()
   }
 
-  function fn3(a, b, next) {
-    t.strictEqual(a, 'a')
-    t.strictEqual(b, 'b')
+  function fn3(request, reply, next) {
+    t.equal(request, originalRequest)
+    t.equal(reply, originalReply)
     next()
   }
 
-  function done(err, state) {
-    t.error(err)
-    t.strictEqual(state, originalState)
+  function done(reply) {
+    t.equal(reply, originalReply)
   }
 })
 
-test('onRequestPreHandlerHookRunner - In case of error should skip to done', (t) => {
-  t.plan(6)
+test('onRequestPreHandlerHookRunner - In case of error should call reply.error()', (t) => {
+  t.plan(5)
 
-  const originalState = {a: 'a', b: 'b'}
-
-  runOnReqHooks([fn1, fn2, fn3], iterator, originalState, done)
-
-  function iterator(fn, state, next) {
-    return fn(state.a, state.b, next)
+  function error(err) {
+    t.equal(err.message, 'kaboom')
   }
 
-  function fn1(a, b, next) {
-    t.strictEqual(a, 'a')
-    t.strictEqual(b, 'b')
+  const originalRequest = {}
+  const originalReply = {request: originalRequest, error}
+
+  runOnReqHooks([fn1, fn2, fn3], originalReply, done)
+
+  function fn1(request, reply, next) {
+    t.equal(request, originalRequest)
+    t.equal(reply, originalReply)
     next()
   }
 
-  function fn2(a, b, next) {
-    t.strictEqual(a, 'a')
-    t.strictEqual(b, 'b')
+  function fn2(request, reply, next) {
+    t.equal(request, originalRequest)
+    t.equal(reply, originalReply)
     next(new Error('kaboom'))
   }
 
@@ -70,9 +67,8 @@ test('onRequestPreHandlerHookRunner - In case of error should skip to done', (t)
     t.fail('We should not be here')
   }
 
-  function done(err, state) {
-    t.strictEqual(err.message, 'kaboom')
-    t.strictEqual(state, originalState)
+  function done() {
+    t.fail('should not be called')
   }
 })
 
@@ -81,64 +77,61 @@ function asyncFunc() {
 }
 
 test('onRequestPreHandlerHookRunner - Should handle async functions', (t) => {
-  t.plan(8)
+  t.plan(7)
 
-  const originalState = {a: 'a', b: 'b'}
+  const originalRequest = {}
+  const originalReply = {request: originalRequest}
 
-  runOnReqHooks([fn1, fn2, fn3], iterator, originalState, done)
+  runOnReqHooks([fn1, fn2, fn3], originalReply, done)
 
-  function iterator(fn, state, next) {
-    return fn(state.a, state.b, next)
-  }
-
-  async function fn1(a, b, next) {
-    t.strictEqual(a, 'a')
-    t.strictEqual(b, 'b')
+  async function fn1(request, reply, next) {
+    t.equal(request, originalRequest)
+    t.equal(reply, originalReply)
     await asyncFunc()
     next()
   }
 
-  async function fn2(a, b, next) {
-    t.strictEqual(a, 'a')
-    t.strictEqual(b, 'b')
+  async function fn2(request, reply, next) {
+    t.equal(request, originalRequest)
+    t.equal(reply, originalReply)
     await asyncFunc()
     next()
   }
 
-  async function fn3(a, b, next) {
-    t.strictEqual(a, 'a')
-    t.strictEqual(b, 'b')
+  async function fn3(request, reply, next) {
+    t.equal(request, originalRequest)
+    t.equal(reply, originalReply)
     await asyncFunc()
     next()
   }
 
-  function done(err, state) {
-    t.error(err)
-    t.strictEqual(state, originalState)
+  function done(reply) {
+    t.strictEqual(reply, originalReply)
   }
 })
 
-test('onRequestPreHandlerHookRunner - Should catch rejected primises and skip to done', (t) => {
-  t.plan(6)
+test('onRequestPreHandlerHookRunner - Should catch rejected promises and call reply.error()', (t) => {
+  t.plan(5)
 
-  const originalState = {a: 'a', b: 'b'}
-
-  runOnReqHooks([fn1, fn2, fn3], iterator, originalState, done)
-
-  function iterator(fn, state, next) {
-    return fn(state.a, state.b, next)
+  function error(err) {
+    t.equal(err.message, 'kaboom')
   }
 
-  async function fn1(a, b, next) {
-    t.strictEqual(a, 'a')
-    t.strictEqual(b, 'b')
+  const originalRequest = {}
+  const originalReply = {request: originalRequest, error}
+
+  runOnReqHooks([fn1, fn2, fn3], originalReply, done)
+
+  async function fn1(request, reply, next) {
+    t.equal(request, originalRequest)
+    t.equal(reply, originalReply)
     await asyncFunc()
     next()
   }
 
-  async function fn2(a, b) {
-    t.strictEqual(a, 'a')
-    t.strictEqual(b, 'b')
+  async function fn2(request, reply) {
+    t.equal(request, originalRequest)
+    t.equal(reply, originalReply)
     await asyncFunc()
     throw new Error('kaboom')
   }
@@ -147,25 +140,22 @@ test('onRequestPreHandlerHookRunner - Should catch rejected primises and skip to
     t.fail('We should not be here')
   }
 
-  function done(err, state) {
-    t.strictEqual(err.message, 'kaboom')
-    t.strictEqual(state, originalState)
+  function done() {
+    t.fail('should not be called')
   }
 })
 
 test('onRequestPreHandlerHookRunner - Hooks do not continue if next() is never called', (t) => {
-  t.plan(1)
+  t.plan(2)
 
-  const originalState = {a: 'a', b: 'b'}
+  const originalRequest = {}
+  const originalReply = {request: originalRequest}
 
-  runOnReqHooks([fn1, fn2], iterator, originalState, done)
+  runOnReqHooks([fn1, fn2], originalReply, done)
 
-  function iterator(fn, state, next) {
-    return fn(state, next)
-  }
-
-  async function fn1(state) {
-    t.strictEqual(state, originalState)
+  async function fn1(request, reply) {
+    t.equal(request, originalRequest)
+    t.equal(reply, originalReply)
     await asyncFunc()
     return undefined
   }
@@ -180,40 +170,39 @@ test('onRequestPreHandlerHookRunner - Hooks do not continue if next() is never c
 })
 
 test('onRequestPreHandlerHookRunner - Promises that resolve to a value do not change the state', (t) => {
-  t.plan(5)
+  t.plan(7)
 
-  const originalState = {a: 'a', b: 'b'}
+  const originalRequest = {}
+  const originalReply = {request: originalRequest}
 
-  runOnReqHooks([fn1, fn2, fn3], iterator, originalState, done)
+  runOnReqHooks([fn1, fn2, fn3], originalReply, done)
 
-  function iterator(fn, state, next) {
-    return fn(state, next)
-  }
-
-  async function fn1(state, next) {
-    t.strictEqual(state, originalState)
+  async function fn1(request, reply, next) {
+    t.equal(request, originalRequest)
+    t.equal(reply, originalReply)
     await asyncFunc()
     next()
     return null
   }
 
-  async function fn2(state, next) {
-    t.strictEqual(state, originalState)
+  async function fn2(request, reply, next) {
+    t.equal(request, originalRequest)
+    t.equal(reply, originalReply)
     await asyncFunc()
     next()
     return 'string'
   }
 
-  async function fn3(state, next) {
-    t.strictEqual(state, originalState)
+  async function fn3(request, reply, next) {
+    t.equal(request, originalRequest)
+    t.equal(reply, originalReply)
     await asyncFunc()
     next()
     return {object: true}
   }
 
-  function done(err, state) {
-    t.error(err)
-    t.strictEqual(state, originalState)
+  function done(reply) {
+    t.equal(reply, originalReply)
   }
 })
 
