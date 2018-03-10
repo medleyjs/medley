@@ -81,7 +81,7 @@ The error will be handled by [`Reply#error`](Reply.md#error).
 ### The `onSend` Hook
 
 ```js
-app.addHook('onSend', (request, reply, next) => {
+app.addHook('onSend', (request, reply, payload, next) => {
   // Handle onSend
   next()
 })
@@ -89,30 +89,33 @@ app.addHook('onSend', (request, reply, next) => {
 
 + `request` - Medley [Request](Request.md) object
 + `reply` - Medley [Reply](Reply.md) object
-+ `next([error])` - Function to continue with the request
++ `payload` - The serialized payload
++ `next([error, [payload]])` - Function to continue with the request
 
-Inside the `onSend` hook, the serialized payload will be available as the `payload` property on the `reply` object.
+The `onSend` hooks provide a great opportunity to save application state
+(e.g. sessions) and set extra headers before the response is sent.
+
+#### Modifying the Payload
+
+It is possible to modify the payload before it is sent by passing the modified
+payload as the second argument to `next()`. The payload may only be changed
+to a `string`, a `Buffer`, a `stream`, or `null`.
 
 ```js
 app.get('/', (request, reply) => {
   reply.send({ hello: 'world' })  
 })
 
-app.addHook('onSend', (request, reply, next) => {
-  console.log(reply.payload) // '{"hello":"world"}'
-  next()
+app.addHook('onSend', (request, reply, payload, next) => {{
+  console.log(payload) // '{"hello":"world"}'
+  const newPayload = Buffer.from(payload)
+  next(null, newPayload)
 })
 ```
 
-It is possible to modify the payload before it is sent by changing the `reply.payload` property.
-The payload may only be changed to a `string`, a `Buffer`, a `stream`, `null`, or `undefined`.
-
-```js
-app.addHook('onSend', (request, reply, next) => {
-  reply.payload = reply.payload.replace('world', 'everyone!')
-  next()
-})
-```
+Changing the payload is mainly intended to be used for encoding the payload
+(e.g. compressing it) or clearing the payload by setting it to `null` for a
+`304 Not Modified` response.
 
 #### `onSend` Hooks and Errors
 

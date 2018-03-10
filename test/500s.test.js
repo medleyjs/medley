@@ -136,7 +136,7 @@ test('encapsulated 500', (t) => {
 })
 
 test('custom 500 with hooks', (t) => {
-  t.plan(7)
+  t.plan(8)
 
   const app = medley()
 
@@ -151,12 +151,16 @@ test('custom 500 with hooks', (t) => {
       .send('an error happened: ' + err.message)
   })
 
-  app.addHook('onSend', (request, reply, next) => {
-    t.ok('called', 'onSend')
+  app.addHook('onRequest', (request, reply, next) => {
+    t.ok('called', 'onRequest')
     next()
   })
-  app.addHook('onRequest', (request, res, next) => {
-    t.ok('called', 'onRequest')
+  app.addHook('preHandler', (request, reply, next) => {
+    t.ok('called', 'preHandler')
+    next()
+  })
+  app.addHook('onSend', (request, reply, payload, next) => {
+    t.ok('called', 'onSend')
     next()
   })
   app.addHook('onResponse', () => {

@@ -3,10 +3,10 @@
 const app = require('..')()
 
 app
-  .addHook('onRequest', (req, res, next) => {
+  .addHook('onRequest', (request, reply, next) => {
     next()
   })
-  .addHook('onRequest', (req, res, next) => {
+  .addHook('onRequest', (request, reply, next) => {
     next()
   })
 
@@ -22,7 +22,7 @@ app
   })
 
 app
-  .addHook('onSend', (request, reply, next) => {
+  .addHook('onSend', (request, reply, payload, next) => {
     next()
   })
 

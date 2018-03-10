@@ -10,7 +10,7 @@ const Reply = require('../../lib/Reply')
 const medley = require('../..')
 
 test('Once called, Reply should return an object with methods', (t) => {
-  t.plan(6)
+  t.plan(5)
   const res = {}
   const request = {}
   const config = {}
@@ -22,7 +22,6 @@ test('Once called, Reply should return an object with methods', (t) => {
   t.equal(reply.request, request)
   t.equal(reply.config, config)
   t.equal(reply.sent, false)
-  t.equal(reply.payload, undefined)
 })
 
 test('reply.getHeader/setHeader() get and set the response headers', (t) => {
@@ -195,7 +194,7 @@ test('within a sub app', (t) => {
   })
 
   app.register(function(subApp, options, next) {
-    app.addHook('onSend', function(request, reply, next) {
+    app.addHook('onSend', function(request, reply, payload, next) {
       reply.setHeader('x-onsend', 'yes')
       next()
     })
@@ -518,7 +517,7 @@ test('undefined payload should be sent as-is', (t) => {
 
   const app = require('../..')()
 
-  app.addHook('onSend', function(request, reply, next) {
+  app.addHook('onSend', function(request, reply, payload, next) {
     t.strictEqual(reply.payload, undefined)
     next()
   })

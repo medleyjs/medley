@@ -436,7 +436,7 @@ test('run hooks on default 404', (t) => {
     next()
   })
 
-  app.addHook('onSend', function(request, reply, next) {
+  app.addHook('onSend', function(request, reply, payload, next) {
     t.pass('onSend called')
     next()
   })
@@ -482,7 +482,7 @@ test('run non-encapsulated plugin hooks on default 404', (t) => {
       next()
     })
 
-    subApp.addHook('onSend', function(request, reply, next) {
+    subApp.addHook('onSend', function(request, reply, payload, next) {
       t.pass('onSend called')
       next()
     })
@@ -524,7 +524,7 @@ test('run non-encapsulated plugin hooks on custom 404', (t) => {
       next()
     })
 
-    subApp.addHook('onSend', function(request, reply, next) {
+    subApp.addHook('onSend', function(request, reply, payload, next) {
       t.pass('onSend called')
       next()
     })
@@ -570,7 +570,7 @@ test('run hooks with encapsulated 404', (t) => {
     next()
   })
 
-  app.addHook('onSend', function(request, reply, next) {
+  app.addHook('onSend', function(request, reply, payload, next) {
     t.pass('onSend called')
     next()
   })
@@ -594,7 +594,7 @@ test('run hooks with encapsulated 404', (t) => {
       next()
     })
 
-    f.addHook('onSend', function(request, reply, next) {
+    f.addHook('onSend', function(request, reply, payload, next) {
       t.pass('onSend 2 called')
       next()
     })
@@ -643,7 +643,7 @@ test('encapsulated custom 404 without prefix has the right encapsulation context
       t.equal(request.bar, 84)
       next()
     })
-    subApp.addHook('onSend', (request, reply, next) => {
+    subApp.addHook('onSend', (request, reply, payload, next) => {
       t.equal(request.foo, 42)
       t.equal(request.bar, 84)
       next()
@@ -677,7 +677,7 @@ test('hooks check 404', (t) => {
     reply.send({hello: 'world'})
   })
 
-  app.addHook('onSend', (request, reply, next) => {
+  app.addHook('onSend', (request, reply, payload, next) => {
     t.deepEqual(request.query, {foo: 'asd'})
     t.ok('called', 'onSend')
     next()
@@ -863,7 +863,7 @@ test('404 inside onSend', (t) => {
     reply.send({hello: 'world'})
   })
 
-  app.addHook('onSend', function(request, reply, next) {
+  app.addHook('onSend', function(request, reply, payload, next) {
     next(new errors.NotFound())
   })
 

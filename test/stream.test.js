@@ -56,8 +56,8 @@ test('should trigger the onSend hook', (t) => {
     reply.send(fs.createReadStream(__filename, 'utf8'))
   })
 
-  app.addHook('onSend', (request, reply, next) => {
-    t.ok(reply.payload._readableState)
+  app.addHook('onSend', (request, reply, payload, next) => {
+    t.ok(payload._readableState)
     reply.setHeader('Content-Type', 'application/javascript')
     next()
   })
@@ -80,8 +80,8 @@ test('should trigger the onSend hook only once if pumping the stream fails', (t)
     reply.send(fs.createReadStream('not-existing-file', 'utf8'))
   })
 
-  app.addHook('onSend', (request, reply, next) => {
-    t.ok(reply.payload._readableState)
+  app.addHook('onSend', (request, reply, payload, next) => {
+    t.ok(payload._readableState)
     next()
   })
 
@@ -101,11 +101,11 @@ test('onSend hook stream', (t) => {
   t.plan(4)
   const app = medley()
 
-  app.get('/', function(req, reply) {
+  app.get('/', (request, reply) => {
     reply.send({hello: 'world'})
   })
 
-  app.addHook('onSend', (req, reply, next) => {
+  app.addHook('onSend', (request, reply, payload, next) => {
     const gzStream = zlib.createGzip()
 
     reply.setHeader('Content-Encoding', 'gzip')
@@ -114,8 +114,7 @@ test('onSend hook stream', (t) => {
       gzStream,
       t.error
     )
-    reply.payload = gzStream
-    next()
+    next(null, gzStream)
   })
 
   app.inject({

@@ -19,7 +19,7 @@ t.test('onSend hook error sets the right status code - default', (t) => {
     reply.code(505).error(new Error('reply error'))
   })
 
-  app.addHook('onSend', (request, reply, next) => {
+  app.addHook('onSend', (request, reply, payload, next) => {
     next(new Error('onSend error'))
   })
 
@@ -39,7 +39,7 @@ t.test('onSend hook error sets the right status code - custom code', (t) => {
     reply.code(505).error(new Error('reply error'))
   })
 
-  app.addHook('onSend', (request, reply, next) => {
+  app.addHook('onSend', (request, reply, payload, next) => {
     next(new StatusError(502, 'onSend error'))
   })
 
@@ -60,7 +60,7 @@ t.test('onSend hooks do not run again if they errored before - reply.send() star
   })
 
   var onSendCalled = false
-  app.addHook('onSend', (request, reply, next) => {
+  app.addHook('onSend', (request, reply, payload, next) => {
     t.equal(onSendCalled, false, 'onSend called twice')
     onSendCalled = true
     next(new Error('onSend error'))
@@ -83,7 +83,7 @@ t.test('onSend hooks do not run again if they errored before - reply.error() sta
   })
 
   var onSendCalled = false
-  app.addHook('onSend', (request, reply, next) => {
+  app.addHook('onSend', (request, reply, payload, next) => {
     t.equal(onSendCalled, false, 'onSend called twice')
     onSendCalled = true
     next(new Error('onSend error'))
@@ -106,7 +106,7 @@ t.test('onSend hooks do not run again if they errored before - Not-found handler
   })
 
   var onSendCalled = false
-  app.addHook('onSend', (request, reply, next) => {
+  app.addHook('onSend', (request, reply, payload, next) => {
     t.equal(onSendCalled, false, 'onSend called twice')
     onSendCalled = true
     next(new Error('onSend error'))
@@ -129,7 +129,7 @@ t.test('onSend hooks do not run again if they errored before - reply.send() star
   })
 
   var onSendCalled = false
-  app.addHook('onSend', (request, reply, next) => {
+  app.addHook('onSend', (request, reply, payload, next) => {
     t.equal(onSendCalled, false, 'onSend called twice')
     onSendCalled = true
     next(new Error('onSend error'))
@@ -158,7 +158,7 @@ t.test('onSend hooks do not run again if they errored before - reply.error() sta
   })
 
   var onSendCalled = false
-  app.addHook('onSend', (request, reply, next) => {
+  app.addHook('onSend', (request, reply, payload, next) => {
     t.equal(onSendCalled, false, 'onSend called twice')
     onSendCalled = true
     next(new Error('onSend error'))
@@ -187,7 +187,7 @@ t.test('onSend hooks do not run again if they errored before - Not-found handler
   })
 
   var onSendCalled = false
-  app.addHook('onSend', (request, reply, next) => {
+  app.addHook('onSend', (request, reply, payload, next) => {
     t.equal(onSendCalled, false, 'onSend called twice')
     onSendCalled = true
     next(new Error('onSend error'))
@@ -216,7 +216,7 @@ t.test('onSend hooks do not run again if they errored before - reply.send() star
   })
 
   var onSendCalled = false
-  app.addHook('onSend', (request, reply, next) => {
+  app.addHook('onSend', (request, reply, payload, next) => {
     t.equal(onSendCalled, false, 'onSend called twice')
     onSendCalled = true
     next(new Error('onSend error'))
@@ -245,7 +245,7 @@ t.test('onSend hooks do not run again if they errored before - reply.error() sta
   })
 
   var onSendCalled = false
-  app.addHook('onSend', (request, reply, next) => {
+  app.addHook('onSend', (request, reply, payload, next) => {
     t.equal(onSendCalled, false, 'onSend called twice')
     onSendCalled = true
     next(new Error('onSend error'))
@@ -274,7 +274,7 @@ t.test('onSend hooks do not run again if they errored before - Not-found handler
   })
 
   var onSendCalled = false
-  app.addHook('onSend', (request, reply, next) => {
+  app.addHook('onSend', (request, reply, payload, next) => {
     t.equal(onSendCalled, false, 'onSend called twice')
     onSendCalled = true
     next(new Error('onSend error'))

@@ -32,7 +32,7 @@ test('async hooks', (t) => {
     next()
   })
 
-  app.addHook('onSend', async (request, reply, next) => {
+  app.addHook('onSend', async (request, reply, payload, next) => {
     await sleep(1)
     t.ok('onSend called')
     next()
@@ -98,23 +98,21 @@ test('onSend hooks can modify payload', (t) => {
   const modifiedPayload = {hello: 'modified'}
   const anotherPayload = '"winter is coming"'
 
-  app.addHook('onSend', async (request, reply, next) => {
+  app.addHook('onSend', async (request, reply, serializedPayload, next) => {
     t.ok('onSend called')
-    t.deepEqual(JSON.parse(reply.payload), payload)
-    reply.payload = reply.payload.replace('world', 'modified')
-    next()
+    t.deepEqual(JSON.parse(serializedPayload), payload)
+    next(null, serializedPayload.replace('world', 'modified'))
   })
 
-  app.addHook('onSend', async (request, reply, next) => {
+  app.addHook('onSend', async (request, reply, serializedPayload, next) => {
     t.ok('onSend called')
-    t.deepEqual(JSON.parse(reply.payload), modifiedPayload)
-    reply.payload = anotherPayload
-    next()
+    t.deepEqual(JSON.parse(serializedPayload), modifiedPayload)
+    next(null, anotherPayload)
   })
 
-  app.addHook('onSend', async (request, reply, next) => {
+  app.addHook('onSend', async (request, reply, serializedPayload, next) => {
     t.ok('onSend called')
-    t.strictEqual(reply.payload, anotherPayload)
+    t.strictEqual(serializedPayload, anotherPayload)
     next()
   })
 
@@ -149,8 +147,8 @@ test('onRequest hooks should be able to send a response', (t) => {
     t.fail('this should not be called')
   })
 
-  app.addHook('onSend', async (request, reply, next) => {
-    t.equal(reply.payload, 'hello')
+  app.addHook('onSend', async (request, reply, payload, next) => {
+    t.equal(payload, 'hello')
     next()
   })
 
@@ -184,8 +182,8 @@ test('preHandler hooks should be able to send a response', (t) => {
     t.fail('this should not be called')
   })
 
-  app.addHook('onSend', async (request, reply, next) => {
-    t.equal(reply.payload, 'hello')
+  app.addHook('onSend', async (request, reply, payload, next) => {
+    t.equal(payload, 'hello')
     next()
   })
 

@@ -118,7 +118,7 @@ See the [`reply.send()`](Reply.md#send) and [Serialization](Serialization.md) do
 Next, the `onSend` hooks are run.
 
 ```js
-app.addHook('onSend', (request, reply, next) => {
+app.addHook('onSend', (request, reply, payload, next) => {
   next()
 })
 ```
