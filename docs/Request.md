@@ -43,7 +43,7 @@ request.headers
 
 ### `request.method`
 
-**Read-only**
+*Read-only*
 
 The request's HTTP method as a string.
 
@@ -56,9 +56,9 @@ request.method // 'GET'
 An object of the parameters matched in the URL.
 
 ```js
-app.get('/:user', (request, reply) => {
-  // If the request URL is '/100'
-  request.params.user // '100'
+app.get('/path/:user/:foo', (request, reply) => {
+  // URL: /path/100/bar
+  request.params // { user: '100', foo: 'bar' }
 })
 ```
 
@@ -67,7 +67,7 @@ app.get('/:user', (request, reply) => {
 Object parsed from the query string. If there was no query string, the object will be empty.
 
 ```js
-// If the URL path is '/path?a=1&b=value'
+// URL: /path?a=1&b=value
 request.query // { a: '1', b: 'value' }
 ```
 
@@ -86,12 +86,12 @@ app.addHook('onRequest', (request, reply, next) => {
 
 ### `request.querystring`
 
-**Read-only**
+*Read-only*
 
 The query string found in the request's URL.
 
 ```js
-// If the URL path is '/path?a=1&b=value'
+// URL: /path?a=1&b=value
 request.querystring // 'a=1&b=value'
 ```
 
@@ -102,7 +102,7 @@ object from Node core.
 
 ### `request.url`
 
-**Read-only**
+*Read-only*
 
 Request URL string. This contains only the URL that is present in the actual HTTP request.
 
