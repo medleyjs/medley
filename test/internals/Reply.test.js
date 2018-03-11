@@ -13,10 +13,10 @@ test('Reply properties', (t) => {
   t.plan(4)
   const res = {}
   const request = {}
-  const context = {}
   const config = {}
+  const context = {config}
 
-  const reply = new Reply(res, request, context, config)
+  const reply = new Reply(res, request, context)
   t.type(reply, Reply)
   t.equal(reply.res, res)
   t.equal(reply.config, config)
