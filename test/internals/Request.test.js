@@ -2,7 +2,7 @@
 
 const t = require('tap')
 const medley = require('../..')
-const Request = require('../../lib/Request')
+const Request = require('../../lib/Request').buildRequest()
 
 t.test('Request object', (t) => {
   t.plan(5)

@@ -36,37 +36,44 @@ test('.decorateRequest() should not allow decorating Medley values', (t) => {
 
   try {
     app.decorateRequest('req', null)
-    t.fail()
+    t.fail('should not allow decorating Request with `req`')
   } catch (err) {
     t.equal(err.message, "The decorator 'req' has been already added to Request!")
   }
 
   try {
     app.decorateRequest('headers', null)
-    t.fail()
+    t.fail('should not allow decorating Request with `headers`')
   } catch (err) {
     t.equal(err.message, "The decorator 'headers' has been already added to Request!")
   }
 
   try {
     app.decorateRequest('params', null)
-    t.fail()
+    t.fail('should not allow decorating Request with `params`')
   } catch (err) {
     t.equal(err.message, "The decorator 'params' has been already added to Request!")
   }
 
   try {
-    app.decorateRequest('query', null)
-    t.fail()
+    app.decorateRequest('body', null)
+    t.fail('should not allow decorating Request with `body`')
   } catch (err) {
-    t.equal(err.message, "The decorator 'query' has been already added to Request!")
+    t.equal(err.message, "The decorator 'body' has been already added to Request!")
   }
 
   try {
-    app.decorateRequest('body', null)
-    t.fail()
+    app.decorateRequest('_query', null)
+    t.fail('should not allow decorating Request with `_query`')
   } catch (err) {
-    t.equal(err.message, "The decorator 'body' has been already added to Request!")
+    t.equal(err.message, "The decorator '_query' has been already added to Request!")
+  }
+
+  try {
+    app.decorateRequest('query', null)
+    t.fail('should not allow decorating Request with `query`')
+  } catch (err) {
+    t.equal(err.message, "The decorator 'query' has been already added to Request!")
   }
 
   t.end()
@@ -77,49 +84,49 @@ test('.decorateReply() should not allow decorating Medley values', (t) => {
 
   try {
     app.decorateReply('res', null)
-    t.fail()
+    t.fail('should not allow decorating Reply with `res`')
   } catch (err) {
     t.equal(err.message, "The decorator 'res' has been already added to Reply!")
   }
 
   try {
     app.decorateReply('_request', null)
-    t.fail()
+    t.fail('should not allow decorating Reply with `_request`')
   } catch (err) {
     t.equal(err.message, "The decorator '_request' has been already added to Reply!")
   }
 
   try {
     app.decorateReply('config', null)
-    t.fail()
+    t.fail('should not allow decorating Reply with `config`')
   } catch (err) {
     t.equal(err.message, "The decorator 'config' has been already added to Reply!")
   }
 
   try {
     app.decorateReply('_context', null)
-    t.fail()
+    t.fail('should not allow decorating Reply with `_context`')
   } catch (err) {
     t.equal(err.message, "The decorator '_context' has been already added to Reply!")
   }
 
   try {
     app.decorateReply('sent', null)
-    t.fail()
+    t.fail('should not allow decorating Reply with `sent`')
   } catch (err) {
     t.equal(err.message, "The decorator 'sent' has been already added to Reply!")
   }
 
   try {
     app.decorateReply('_customError', null)
-    t.fail()
+    t.fail('should not allow decorating Reply with `_customError`')
   } catch (err) {
     t.equal(err.message, "The decorator '_customError' has been already added to Reply!")
   }
 
   try {
     app.decorateReply('_ranHooks', null)
-    t.fail()
+    t.fail('should not allow decorating Reply with `_ranHooks`')
   } catch (err) {
     t.equal(err.message, "The decorator '_ranHooks' has been already added to Reply!")
   }

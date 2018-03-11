@@ -64,7 +64,7 @@ function medley(options) {
     server = http.createServer(httpHandler)
   }
 
-  const _Request = Request.buildRequest(Request)
+  const _Request = Request.buildRequest()
   const _Reply = Reply.buildReply(Reply)
 
   const app = {
