@@ -4,12 +4,12 @@ const t = require('tap')
 const test = t.test
 const sget = require('simple-get').concat
 const http = require('http')
-const NotFound = require('http-errors').NotFound
-const Reply = require('../../lib/Reply')
-
 const medley = require('../..')
 
-test('Once called, Reply should return an object with methods', (t) => {
+const NotFound = require('http-errors').NotFound
+const Reply = require('../../lib/Reply').buildReply()
+
+test('Reply properties', (t) => {
   t.plan(4)
   const res = {}
   const request = {}

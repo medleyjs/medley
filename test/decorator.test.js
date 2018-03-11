@@ -97,17 +97,17 @@ test('.decorateReply() should not allow decorating Medley values', (t) => {
   }
 
   try {
-    app.decorateReply('config', null)
-    t.fail('should not allow decorating Reply with `config`')
-  } catch (err) {
-    t.equal(err.message, "The decorator 'config' has been already added to Reply!")
-  }
-
-  try {
     app.decorateReply('_context', null)
     t.fail('should not allow decorating Reply with `_context`')
   } catch (err) {
     t.equal(err.message, "The decorator '_context' has been already added to Reply!")
+  }
+
+  try {
+    app.decorateReply('config', null)
+    t.fail('should not allow decorating Reply with `config`')
+  } catch (err) {
+    t.equal(err.message, "The decorator 'config' has been already added to Reply!")
   }
 
   try {

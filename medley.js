@@ -64,9 +64,6 @@ function medley(options) {
     server = http.createServer(httpHandler)
   }
 
-  const _Request = Request.buildRequest()
-  const _Reply = Reply.buildReply(Reply)
-
   const app = {
     printRoutes: router.prettyPrint.bind(router),
     server,
@@ -112,8 +109,8 @@ function medley(options) {
 
     inject, // Fake HTTP injection
 
-    _Request,
-    _Reply,
+    _Request: Request.buildRequest(),
+    _Reply: Reply.buildReply(),
     _subApps: [],
     [pluginUtils.registeredPlugins]: [], // For storing plugins
   }
@@ -122,7 +119,7 @@ function medley(options) {
     autostart: false,
     expose: {use: 'register'},
   })
-  appLoader.override = override // Override to allow plugin incapsulation
+  appLoader.override = override // Override to allow plugin encapsulation
 
   var ready = false // true when plugins and sub apps have loaded
   var listening = false // true when server is listening
