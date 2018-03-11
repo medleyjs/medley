@@ -5,7 +5,6 @@ const findMyWay = require('find-my-way')
 const http = require('http')
 const https = require('https')
 const lightMyRequest = require('light-my-request')
-const querystring = require('querystring')
 
 const BodyParser = require('./lib/BodyParser')
 const Context = require('./lib/Context')
@@ -44,10 +43,6 @@ function medley(options) {
 
   validateBodyLimitOption(options.bodyLimit)
 
-  if (options.queryParser !== undefined && typeof options.queryParser !== 'function') {
-    throw new TypeError(`'queryParser' option must be an function. Got '${options.queryParser}'`)
-  }
-
   const notFoundRouter = findMyWay({defaultRoute: notFoundFallbackHandler})
   const router = findMyWay({
     defaultRoute: notFoundRouter.lookup.bind(notFoundRouter),
@@ -71,8 +66,6 @@ function medley(options) {
 
   const _Request = Request.buildRequest(Request)
   const _Reply = Reply.buildReply(Reply)
-
-  _Request.prototype._queryParser = options.queryParser || querystring.parse
 
   const app = {
     printRoutes: router.prettyPrint.bind(router),

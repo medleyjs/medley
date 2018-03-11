@@ -9,6 +9,7 @@ Request is a core Medley object that is passed as the first argument to hooks an
 + [`.method`](#requestmethod)
 + [`.params`](#requestparams)
 + [`.query`](#requestquery)
++ [`.querystring`](#requestquerystring)
 + [`.req`](#requestreq)
 + [`.url`](#requesturl)
 
@@ -68,6 +69,30 @@ Object parsed from the query string. If there was no query string, the object wi
 ```js
 // If the URL path is '/path?a=1&b=value'
 request.query // { a: '1', b: 'value' }
+```
+
+By default the query string is parsed with [`querystring.parse`](https://nodejs.org/dist/latest/docs/api/querystring.html#querystring_querystring_parse_str_sep_eq_options).
+To use a different query string parser (such as [`qs`](https://github.com/ljharb/qs)),
+add an `onRequest` hook that parses `request.querystring` like so:
+
+```js
+const qs = require('qs')
+
+app.addHook('onRequest', (request, reply, next) => {
+  request.query = qs.parse(request.querystring)
+  next()  
+})
+```
+
+### `request.querystring`
+
+**Read-only**
+
+The query string found in the request's URL.
+
+```js
+// If the URL path is '/path?a=1&b=value'
+request.querystring // 'a=1&b=value'
 ```
 
 ### `request.req`

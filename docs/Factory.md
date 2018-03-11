@@ -65,11 +65,3 @@ This can be useful especially if you have some regex based route, protecting you
 Defines the maximum payload, in bytes, the server is allowed to accept.
 
 + Default: `1048576` (1MiB)
-
-### `queryParser`
-
-A custom query string parsing function who's result will be set to [`request.query`](Request.md). It will receive the complete query string and must return an object of query keys and their values.
-
-+ Default: [`querystring.parse`](https://nodejs.org/dist/latest/docs/api/querystring.html#querystring_querystring_parse_str_sep_eq_options)
-
-Note: The function will not be called if the request URL does not have a query string. In this case, `request.query` is automatically set to an empty object.

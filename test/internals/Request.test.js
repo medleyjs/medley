@@ -42,6 +42,19 @@ t.test('request.query - set', (t) => {
   t.end()
 })
 
+t.test('request.querystring - get', (t) => {
+  t.equal(new Request({url: '/'}).querystring, '')
+  t.equal(new Request({url: '/no-query'}).querystring, '')
+  t.equal(new Request({url: '/?'}).querystring, '')
+  t.equal(new Request({url: '/path?'}).querystring, '')
+  t.equal(new Request({url: '/path?search=1'}).querystring, 'search=1')
+  t.equal(new Request({url: '/?qu?ery'}).querystring, 'qu?ery')
+  t.equal(new Request({url: '/??query'}).querystring, '?query')
+  t.equal(new Request({url: '/?query?'}).querystring, 'query?')
+  t.equal(new Request({url: '/?a&b=1%23-&c='}).querystring, 'a&b=1%23-&c=')
+  t.end()
+})
+
 t.test('request.body should be available in onSend hooks and undefined in onFinished hooks', (t) => {
   t.plan(4)
 
