@@ -38,9 +38,9 @@ test('hooks', (t) => {
     next()
   })
 
-  app.addHook('onResponse', function(res) {
+  app.addHook('onResponse', function(reply) {
     t.ok('onResponse called')
-    t.ok(res.finished)
+    t.ok(reply.res.finished)
   })
 
   app.get('/', function(request, reply) {
@@ -465,12 +465,12 @@ test('onResponse hook should support encapsulation / 1', (t) => {
   const app = medley()
 
   app.register((subApp, opts, next) => {
-    subApp.addHook('onResponse', (res) => {
-      t.strictEqual(res.plugin, true)
+    subApp.addHook('onResponse', (reply) => {
+      t.strictEqual(reply.plugin, true)
     })
 
     subApp.get('/plugin', (request, reply) => {
-      reply.res.plugin = true
+      reply.plugin = true
       reply.send()
     })
 
@@ -516,8 +516,8 @@ test('onResponse hook should support encapsulation / 3', (t) => {
   t.plan(12)
   const app = medley()
 
-  app.addHook('onResponse', function() {
-    t.ok('onResponse called')
+  app.addHook('onResponse', (reply) => {
+    t.ok(reply, 'onResponse called')
   })
 
   app.get('/first', (req, reply) => {
@@ -525,8 +525,8 @@ test('onResponse hook should support encapsulation / 3', (t) => {
   })
 
   app.register((subApp, opts, next) => {
-    subApp.addHook('onResponse', function() {
-      t.ok('onResponse called')
+    subApp.addHook('onResponse', (reply) => {
+      t.ok(reply, 'onResponse called')
     })
 
     subApp.get('/second', (req, reply) => {
@@ -1270,9 +1270,9 @@ test('onResponse hooks should run in the order in which they are defined', (t) =
   const app = medley()
 
   app.register(function(subApp, opts, next) {
-    subApp.addHook('onResponse', function(res) {
-      t.strictEqual(res.previous, undefined)
-      res.previous = 1
+    subApp.addHook('onResponse', function(reply) {
+      t.strictEqual(reply.previous, undefined)
+      reply.previous = 1
     })
 
     subApp.get('/', function(request, reply) {
@@ -1280,9 +1280,9 @@ test('onResponse hooks should run in the order in which they are defined', (t) =
     })
 
     subApp.register(fp(function(i, opts, next) {
-      i.addHook('onResponse', function(res) {
-        t.strictEqual(res.previous, 1)
-        res.previous = 2
+      i.addHook('onResponse', function(reply) {
+        t.strictEqual(reply.previous, 1)
+        reply.previous = 2
       })
       next()
     }))
@@ -1291,21 +1291,21 @@ test('onResponse hooks should run in the order in which they are defined', (t) =
   })
 
   app.register(fp(function(subApp, opts, next) {
-    subApp.addHook('onResponse', function(res) {
-      t.strictEqual(res.previous, 2)
-      res.previous = 3
+    subApp.addHook('onResponse', function(reply) {
+      t.strictEqual(reply.previous, 2)
+      reply.previous = 3
     })
 
     subApp.register(fp(function(i, opts, next) {
-      i.addHook('onResponse', function(res) {
-        t.strictEqual(res.previous, 3)
-        res.previous = 4
+      i.addHook('onResponse', function(reply) {
+        t.strictEqual(reply.previous, 3)
+        reply.previous = 4
       })
       next()
     }))
 
-    subApp.addHook('onResponse', function(res) {
-      t.strictEqual(res.previous, 4)
+    subApp.addHook('onResponse', function(reply) {
+      t.strictEqual(reply.previous, 4)
     })
 
     next()

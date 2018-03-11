@@ -441,8 +441,8 @@ test('run hooks on default 404', (t) => {
     next()
   })
 
-  app.addHook('onResponse', () => {
-    t.pass('onResponse called')
+  app.addHook('onResponse', (reply) => {
+    t.ok(reply, 'onResponse called')
   })
 
   app.get('/', (request, reply) => {
@@ -487,8 +487,8 @@ test('run non-encapsulated plugin hooks on default 404', (t) => {
       next()
     })
 
-    subApp.addHook('onResponse', () => {
-      t.pass('onResponse called')
+    subApp.addHook('onResponse', (reply) => {
+      t.ok(reply, 'onResponse called')
     })
 
     next()
@@ -529,8 +529,8 @@ test('run non-encapsulated plugin hooks on custom 404', (t) => {
       next()
     })
 
-    subApp.addHook('onResponse', () => {
-      t.pass('onResponse called')
+    subApp.addHook('onResponse', (reply) => {
+      t.ok(reply, 'onResponse called')
     })
 
     next()
@@ -575,8 +575,8 @@ test('run hooks with encapsulated 404', (t) => {
     next()
   })
 
-  app.addHook('onResponse', () => {
-    t.pass('onResponse called')
+  app.addHook('onResponse', (reply) => {
+    t.ok(reply, 'onResponse called')
   })
 
   app.register(function(f, opts, next) {
@@ -599,8 +599,8 @@ test('run hooks with encapsulated 404', (t) => {
       next()
     })
 
-    f.addHook('onResponse', () => {
-      t.pass('onResponse 2 called')
+    f.addHook('onResponse', (reply) => {
+      t.ok(reply, 'onResponse 2 called')
     })
 
     next()
@@ -624,32 +624,36 @@ test('run hooks with encapsulated 404', (t) => {
 })
 
 test('encapsulated custom 404 without prefix has the right encapsulation context', (t) => {
-  t.plan(12)
+  t.plan(15)
 
   const app = medley()
 
   app.decorateRequest('foo', 42)
+  app.decorateReply('foo', 42)
 
   app.register((subApp, opts, next) => {
     subApp.decorateRequest('bar', 84)
 
-    subApp.addHook('onRequest', (req, res, next) => {
-      t.ok(req)
-      t.ok(res)
+    subApp.addHook('onRequest', (request, reply, next) => {
+      t.equal(request.foo, 42)
+      t.equal(request.bar, 84)
+      t.equal(reply.foo, 42)
       next()
     })
     subApp.addHook('preHandler', (request, reply, next) => {
       t.equal(request.foo, 42)
       t.equal(request.bar, 84)
+      t.equal(reply.foo, 42)
       next()
     })
     subApp.addHook('onSend', (request, reply, payload, next) => {
       t.equal(request.foo, 42)
       t.equal(request.bar, 84)
+      t.equal(reply.foo, 42)
       next()
     })
-    subApp.addHook('onResponse', (res) => {
-      t.ok(res)
+    subApp.addHook('onResponse', (reply) => {
+      t.equal(reply.foo, 42)
     })
 
     subApp.setNotFoundHandler((request, reply) => {
@@ -669,7 +673,7 @@ test('encapsulated custom 404 without prefix has the right encapsulation context
 })
 
 test('hooks check 404', (t) => {
-  t.plan(13)
+  t.plan(11)
 
   const app = medley()
 
@@ -677,17 +681,18 @@ test('hooks check 404', (t) => {
     reply.send({hello: 'world'})
   })
 
+  app.addHook('onRequest', (request, reply, next) => {
+    t.deepEqual(request.query, {foo: 'asd'})
+    next()
+  })
+
   app.addHook('onSend', (request, reply, payload, next) => {
     t.deepEqual(request.query, {foo: 'asd'})
-    t.ok('called', 'onSend')
     next()
   })
-  app.addHook('onRequest', (req, res, next) => {
-    t.ok('called', 'onRequest')
-    next()
-  })
-  app.addHook('onResponse', () => {
-    t.ok('called', 'onResponse')
+
+  app.addHook('onResponse', (reply) => {
+    t.ok(reply, 'called onResponse')
   })
 
   t.tearDown(app.close.bind(app))

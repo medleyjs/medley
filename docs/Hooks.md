@@ -128,20 +128,19 @@ handle errors in the hook when possible rather than forwarding the error.
 ### The `onResponse` Hook
 
 ```js
-app.addHook('onResponse', (res) => {
+app.addHook('onResponse', (reply) => {
   // Handle onResponse
 })
 ```
 
-+ `res` - Node.js [http.ServerResponse](https://nodejs.org/api/http.html#http_class_http_serverresponse) object
++ `reply` - Medley [Reply](Reply.md) object
 
 The `onResponse` hook is different from the other hooks. It only receives the
-[`res`](https://nodejs.org/api/http.html#http_class_http_serverresponse) object
-and is executed synchronously. Any errors that occur during this hook must be
-handled manually.
+[`reply`](Reply.md) object and is executed synchronously. Any errors that occur
+during this hook must be handled manually.
 
 ```js
-app.addHook('onResponse', async (res) => {
+app.addHook('onResponse', async (reply) => {
   try {
     await asyncFunction()
   } catch (error) {

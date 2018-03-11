@@ -127,14 +127,14 @@ If an error occurs during a hook, the rest of the hooks are skipped and the erro
 
 ## Send Response
 
-The serialized payload is sent to the client. Medley handles this internally for you.
+The serialized payload is sent to the client. Medley automatically handles this step.
 
 ## `onResponse` Hook
 
 Finally, the `onResponse` hooks are run.
 
 ```js
-app.addHook('onResponse', (res) => {
+app.addHook('onResponse', (reply) => {
   // Do something like log the response time
 })
 ```
