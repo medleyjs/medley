@@ -289,3 +289,37 @@ test('should support send module 200 and 404', (t) => {
     })
   })
 })
+
+test('should handle destroying a stream if headers are already sent', (t) => {
+  t.plan(5)
+
+  const app = medley()
+
+  app.get('/', (request, reply) => {
+    t.pass('Received request')
+
+    const chunk = Buffer.alloc(100, 'c')
+    const streamUntilHeaders = new Readable({
+      read() {
+        if (reply.res.headersSent) {
+          this.emit('error', new Error('stream error'))
+          t.pass('emitted error')
+        } else {
+          this.push(chunk)
+        }
+      },
+    })
+
+    reply.send(streamUntilHeaders)
+  })
+
+  app.listen(0, (err) => {
+    t.error(err)
+    app.server.unref()
+
+    sget(`http://localhost:${app.server.address().port}`, (err) => {
+      t.type(err, Error)
+      t.equal(err.code, 'ECONNRESET')
+    })
+  })
+})

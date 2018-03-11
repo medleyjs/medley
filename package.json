@@ -30,6 +30,7 @@
   "dependencies": {
     "avvio": "^5.4.0",
     "compile-json-stringify": "^0.1.1",
+    "destroy": "^1.0.4",
     "end-of-stream": "^1.4.1",
     "find-my-way": "^1.10.1",
     "flatstr": "^1.0.5",
@@ -51,7 +52,7 @@
     "pump": "^3.0.0",
     "send": "^0.16.1",
     "simple-get": "^2.7.0",
-    "streaming-json-stringify": "~3.1.0",
+    "streaming-json-stringify": "^3.1.0",
     "tap": "^11.1.0",
     "then-sleep": "^1.0.1"
   },
