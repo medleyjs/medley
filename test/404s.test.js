@@ -441,7 +441,7 @@ test('run hooks on default 404', (t) => {
     next()
   })
 
-  app.addHook('onResponse', (reply) => {
+  app.addHook('onResponse', (request, reply) => {
     t.ok(reply, 'onResponse called')
   })
 
@@ -487,7 +487,7 @@ test('run non-encapsulated plugin hooks on default 404', (t) => {
       next()
     })
 
-    subApp.addHook('onResponse', (reply) => {
+    subApp.addHook('onResponse', (request, reply) => {
       t.ok(reply, 'onResponse called')
     })
 
@@ -529,7 +529,7 @@ test('run non-encapsulated plugin hooks on custom 404', (t) => {
       next()
     })
 
-    subApp.addHook('onResponse', (reply) => {
+    subApp.addHook('onResponse', (request, reply) => {
       t.ok(reply, 'onResponse called')
     })
 
@@ -575,7 +575,7 @@ test('run hooks with encapsulated 404', (t) => {
     next()
   })
 
-  app.addHook('onResponse', (reply) => {
+  app.addHook('onResponse', (request, reply) => {
     t.ok(reply, 'onResponse called')
   })
 
@@ -599,7 +599,7 @@ test('run hooks with encapsulated 404', (t) => {
       next()
     })
 
-    f.addHook('onResponse', (reply) => {
+    f.addHook('onResponse', (request, reply) => {
       t.ok(reply, 'onResponse 2 called')
     })
 
@@ -624,7 +624,7 @@ test('run hooks with encapsulated 404', (t) => {
 })
 
 test('encapsulated custom 404 without prefix has the right encapsulation context', (t) => {
-  t.plan(15)
+  t.plan(17)
 
   const app = medley()
 
@@ -652,7 +652,9 @@ test('encapsulated custom 404 without prefix has the right encapsulation context
       t.equal(reply.foo, 42)
       next()
     })
-    subApp.addHook('onResponse', (reply) => {
+    subApp.addHook('onResponse', (request, reply) => {
+      t.equal(request.foo, 42)
+      t.equal(request.bar, 84)
       t.equal(reply.foo, 42)
     })
 
@@ -673,7 +675,7 @@ test('encapsulated custom 404 without prefix has the right encapsulation context
 })
 
 test('hooks check 404', (t) => {
-  t.plan(11)
+  t.plan(13)
 
   const app = medley()
 
@@ -691,7 +693,8 @@ test('hooks check 404', (t) => {
     next()
   })
 
-  app.addHook('onResponse', (reply) => {
+  app.addHook('onResponse', (request, reply) => {
+    t.deepEqual(request.query, {foo: 'asd'})
     t.ok(reply, 'called onResponse')
   })
 

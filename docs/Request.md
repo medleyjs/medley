@@ -26,6 +26,9 @@ app.post('/user', (request, reply) => {
 
 See the [`Body Parser`](BodyParser.md) documentation for information on how to implement custom body parsers.
 
+Note that `request.body` is set back to `undefined` when the response is sent
+(after `onSend` hooks) to save memory.
+
 ### `request.headers`
 
 The request's HTTP headers. It is an object mapping header names to values. Header names are lower-cased.

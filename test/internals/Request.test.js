@@ -1,6 +1,7 @@
 'use strict'
 
 const t = require('tap')
+const medley = require('../..')
 const Request = require('../../lib/Request')
 
 t.test('Request object', (t) => {
@@ -39,4 +40,29 @@ t.test('request.query - set', (t) => {
   t.equal(request.query, 'string')
 
   t.end()
+})
+
+t.test('request.body should be available in onSend hooks and undefined in onResponse hooks', (t) => {
+  t.plan(4)
+
+  const app = medley()
+
+  app.get('/', (request, reply) => {
+    request.body = 'body'
+    reply.send()
+  })
+
+  app.addHook('onSend', (request, reply, payload, next) => {
+    t.equal(request.body, 'body')
+    next()
+  })
+
+  app.addHook('onResponse', (request) => {
+    t.equal(request.body, undefined)
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+  })
 })

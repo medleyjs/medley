@@ -128,11 +128,12 @@ handle errors in the hook when possible rather than forwarding the error.
 ### The `onResponse` Hook
 
 ```js
-app.addHook('onResponse', (reply) => {
+app.addHook('onResponse', (request, reply) => {
   // Handle onResponse
 })
 ```
 
++ `request` - Medley [Request](Request.md) object
 + `reply` - Medley [Reply](Reply.md) object
 
 The `onResponse` hook is different from the other hooks. It only receives the
@@ -140,7 +141,7 @@ The `onResponse` hook is different from the other hooks. It only receives the
 during this hook must be handled manually.
 
 ```js
-app.addHook('onResponse', async (reply) => {
+app.addHook('onResponse', async (request, reply) => {
   try {
     await asyncFunction()
   } catch (error) {

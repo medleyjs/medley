@@ -134,7 +134,7 @@ The serialized payload is sent to the client. Medley automatically handles this 
 Finally, the `onResponse` hooks are run.
 
 ```js
-app.addHook('onResponse', (reply) => {
+app.addHook('onResponse', (request, reply) => {
   // Do something like log the response time
 })
 ```
