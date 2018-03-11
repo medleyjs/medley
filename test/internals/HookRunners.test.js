@@ -12,7 +12,7 @@ test('onRequestPreHandlerHookRunner - Basic', (t) => {
   t.plan(7)
 
   const originalRequest = {}
-  const originalReply = {request: originalRequest}
+  const originalReply = {_request: originalRequest}
 
   runOnReqHooks([fn1, fn2, fn3], originalReply, done)
 
@@ -47,7 +47,7 @@ test('onRequestPreHandlerHookRunner - In case of error should call reply.error()
   }
 
   const originalRequest = {}
-  const originalReply = {request: originalRequest, error}
+  const originalReply = {_request: originalRequest, error}
 
   runOnReqHooks([fn1, fn2, fn3], originalReply, done)
 
@@ -80,7 +80,7 @@ test('onRequestPreHandlerHookRunner - Should handle async functions', (t) => {
   t.plan(7)
 
   const originalRequest = {}
-  const originalReply = {request: originalRequest}
+  const originalReply = {_request: originalRequest}
 
   runOnReqHooks([fn1, fn2, fn3], originalReply, done)
 
@@ -118,7 +118,7 @@ test('onRequestPreHandlerHookRunner - Should catch rejected promises and call re
   }
 
   const originalRequest = {}
-  const originalReply = {request: originalRequest, error}
+  const originalReply = {_request: originalRequest, error}
 
   runOnReqHooks([fn1, fn2, fn3], originalReply, done)
 
@@ -149,7 +149,7 @@ test('onRequestPreHandlerHookRunner - Hooks do not continue if next() is never c
   t.plan(2)
 
   const originalRequest = {}
-  const originalReply = {request: originalRequest}
+  const originalReply = {_request: originalRequest}
 
   runOnReqHooks([fn1, fn2], originalReply, done)
 
@@ -173,7 +173,7 @@ test('onRequestPreHandlerHookRunner - Promises that resolve to a value do not ch
   t.plan(7)
 
   const originalRequest = {}
-  const originalReply = {request: originalRequest}
+  const originalReply = {_request: originalRequest}
 
   runOnReqHooks([fn1, fn2, fn3], originalReply, done)
 
@@ -209,27 +209,28 @@ test('onRequestPreHandlerHookRunner - Promises that resolve to a value do not ch
 test('onSendHookRunner - Basic', (t) => {
   t.plan(12)
 
-  const originalReply = {request: {}}
+  const originalRequest = {}
+  const originalReply = {_request: originalRequest}
   const originalPayload = 'payload'
 
   runOnSendHooks([fn1, fn2, fn3], originalReply, originalPayload, done)
 
   function fn1(request, reply, payload, next) {
-    t.strictEqual(request, originalReply.request)
+    t.strictEqual(request, originalRequest)
     t.strictEqual(reply, originalReply)
     t.strictEqual(payload, originalPayload)
     next()
   }
 
   function fn2(request, reply, payload, next) {
-    t.strictEqual(request, originalReply.request)
+    t.strictEqual(request, originalRequest)
     t.strictEqual(reply, originalReply)
     t.strictEqual(payload, originalPayload)
     next()
   }
 
   function fn3(request, reply, payload, next) {
-    t.strictEqual(request, originalReply.request)
+    t.strictEqual(request, originalRequest)
     t.strictEqual(reply, originalReply)
     t.strictEqual(payload, originalPayload)
     next()
@@ -245,7 +246,8 @@ test('onSendHookRunner - Basic', (t) => {
 test('onSendHookRunner - Can change the payload', (t) => {
   t.plan(12)
 
-  const originalReply = {request: {}}
+  const originalRequest = {}
+  const originalReply = {_request: originalRequest}
   const v1 = {hello: 'world'}
   const v2 = {ciao: 'mondo'}
   const v3 = {winter: 'is coming'}
@@ -254,21 +256,21 @@ test('onSendHookRunner - Can change the payload', (t) => {
   runOnSendHooks([fn1, fn2, fn3], originalReply, v1, done)
 
   function fn1(request, reply, payload, next) {
-    t.strictEqual(request, originalReply.request)
+    t.strictEqual(request, originalRequest)
     t.strictEqual(reply, originalReply)
     t.strictEqual(payload, v1)
     next(null, v2)
   }
 
   function fn2(request, reply, payload, next) {
-    t.strictEqual(request, originalReply.request)
+    t.strictEqual(request, originalRequest)
     t.strictEqual(reply, originalReply)
     t.strictEqual(payload, v2)
     next(null, v3)
   }
 
   function fn3(request, reply, payload, next) {
-    t.strictEqual(request, originalReply.request)
+    t.strictEqual(request, originalRequest)
     t.strictEqual(reply, originalReply)
     t.strictEqual(payload, v3)
     next(null, v4)
@@ -284,21 +286,22 @@ test('onSendHookRunner - Can change the payload', (t) => {
 test('onSendHookRunner - In case of error should skip to done', (t) => {
   t.plan(9)
 
-  const originalReply = {request: {}}
+  const originalRequest = {}
+  const originalReply = {_request: originalRequest}
   const v1 = {hello: 'world'}
   const v2 = {ciao: 'mondo'}
 
   runOnSendHooks([fn1, fn2, fn3], originalReply, v1, done)
 
   function fn1(request, reply, payload, next) {
-    t.strictEqual(request, originalReply.request)
+    t.strictEqual(request, originalRequest)
     t.strictEqual(reply, originalReply)
     t.strictEqual(payload, v1)
     next(null, v2)
   }
 
   function fn2(request, reply, payload, next) {
-    t.strictEqual(request, originalReply.request)
+    t.strictEqual(request, originalRequest)
     t.strictEqual(reply, originalReply)
     t.strictEqual(payload, v2)
     next(new Error('kaboom'))
@@ -318,27 +321,28 @@ test('onSendHookRunner - In case of error should skip to done', (t) => {
 test('onSendHookRunner - Should handle promises', (t) => {
   t.plan(12)
 
-  const originalReply = {request: {}}
+  const originalRequest = {}
+  const originalReply = {_request: originalRequest}
   const originalPayload = 'hello world'
 
   runOnSendHooks([fn1, fn2, fn3], originalReply, originalPayload, done)
 
   function fn1(request, reply, payload, next) {
-    t.strictEqual(request, originalReply.request)
+    t.strictEqual(request, originalRequest)
     t.strictEqual(reply, originalReply)
     t.strictEqual(payload, originalPayload)
     return Promise.resolve().then(next)
   }
 
   function fn2(request, reply, payload, next) {
-    t.strictEqual(request, originalReply.request)
+    t.strictEqual(request, originalRequest)
     t.strictEqual(reply, originalReply)
     t.strictEqual(payload, originalPayload)
     return Promise.resolve().then(next)
   }
 
   function fn3(request, reply, payload, next) {
-    t.strictEqual(request, originalReply.request)
+    t.strictEqual(request, originalRequest)
     t.strictEqual(reply, originalReply)
     t.strictEqual(payload, originalPayload)
     return Promise.resolve().then(next)
@@ -354,21 +358,22 @@ test('onSendHookRunner - Should handle promises', (t) => {
 test('onSendHookRunner - In case of error should skip to done (with promises)', (t) => {
   t.plan(9)
 
-  const originalReply = {request: {}}
+  const originalRequest = {}
+  const originalReply = {_request: originalRequest}
   const v1 = {hello: 'world'}
   const v2 = {ciao: 'mondo'}
 
   runOnSendHooks([fn1, fn2, fn3], originalReply, v1, done)
 
   function fn1(request, reply, payload, next) {
-    t.strictEqual(request, originalReply.request)
+    t.strictEqual(request, originalRequest)
     t.strictEqual(reply, originalReply)
     t.strictEqual(payload, v1)
     return Promise.resolve().then(() => next(null, v2))
   }
 
   function fn2(request, reply, payload) {
-    t.strictEqual(request, originalReply.request)
+    t.strictEqual(request, originalRequest)
     t.strictEqual(reply, originalReply)
     t.strictEqual(payload, v2)
     return Promise.reject(new Error('kaboom'))
@@ -388,21 +393,22 @@ test('onSendHookRunner - In case of error should skip to done (with promises)', 
 test('onSendHookRunner - Be able to exit before its natural end', (t) => {
   t.plan(6)
 
-  const originalReply = {request: {}}
+  const originalRequest = {}
+  const originalReply = {_request: originalRequest}
   const v1 = {hello: 'world'}
   const v2 = {ciao: 'mondo'}
 
   runOnSendHooks([fn1, fn2, fn3], originalReply, v1, done)
 
   function fn1(request, reply, payload, next) {
-    t.strictEqual(request, originalReply.request)
+    t.strictEqual(request, originalRequest)
     t.strictEqual(reply, originalReply)
     t.strictEqual(payload, v1)
     next(null, v2)
   }
 
   function fn2(request, reply, payload) {
-    t.strictEqual(request, originalReply.request)
+    t.strictEqual(request, originalRequest)
     t.strictEqual(reply, originalReply)
     t.strictEqual(payload, v2)
   }

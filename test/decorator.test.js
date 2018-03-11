@@ -83,10 +83,10 @@ test('.decorateReply() should not allow decorating Medley values', (t) => {
   }
 
   try {
-    app.decorateReply('request', null)
+    app.decorateReply('_request', null)
     t.fail()
   } catch (err) {
-    t.equal(err.message, "The decorator 'request' has been already added to Reply!")
+    t.equal(err.message, "The decorator '_request' has been already added to Reply!")
   }
 
   try {

@@ -10,16 +10,15 @@ const Reply = require('../../lib/Reply')
 const medley = require('../..')
 
 test('Once called, Reply should return an object with methods', (t) => {
-  t.plan(5)
+  t.plan(4)
   const res = {}
   const request = {}
-  const config = {}
   const context = {}
+  const config = {}
 
-  const reply = new Reply(res, request, config, context)
+  const reply = new Reply(res, request, context, config)
   t.type(reply, Reply)
   t.equal(reply.res, res)
-  t.equal(reply.request, request)
   t.equal(reply.config, config)
   t.equal(reply.sent, false)
 })
