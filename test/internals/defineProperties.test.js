@@ -109,3 +109,37 @@ t.test('should define getters and setters', (t) => {
     },
   })
 })
+
+t.test('should define regular properties', (t) => {
+  t.plan(supportsGetOwnPropertyDescriptor ? 3 : 2)
+
+  const obj = {}
+  const properties = {
+    string: 'a',
+    nul: null,
+  }
+
+  defineProperties(obj, properties)
+
+  t.equal(obj.string, 'a')
+  t.equal(obj.nul, null)
+
+  if (!supportsGetOwnPropertyDescriptor) {
+    return
+  }
+
+  t.strictDeepEqual(Object.getOwnPropertyDescriptors(obj), {
+    string: {
+      value: 'a',
+      configurable: true,
+      enumerable: true,
+      writable: true,
+    },
+    nul: {
+      value: null,
+      configurable: true,
+      enumerable: true,
+      writable: true,
+    },
+  })
+})
