@@ -13,7 +13,7 @@ test('hooks should have 4 array with the registered hooks', (t) => {
   t.ok(Array.isArray(hooks.onRequest))
   t.ok(Array.isArray(hooks.onSend))
   t.ok(Array.isArray(hooks.preHandler))
-  t.ok(Array.isArray(hooks.onResponse))
+  t.ok(Array.isArray(hooks.onFinished))
 })
 
 test('hooks.add should add a hook to the given hook', (t) => {
@@ -27,9 +27,9 @@ test('hooks.add should add a hook to the given hook', (t) => {
   t.is(hooks.preHandler.length, 1)
   t.is(typeof hooks.preHandler[0], 'function')
 
-  hooks.add('onResponse', noop)
-  t.is(hooks.onResponse.length, 1)
-  t.is(typeof hooks.onResponse[0], 'function')
+  hooks.add('onFinished', noop)
+  t.is(hooks.onFinished.length, 1)
+  t.is(typeof hooks.onFinished[0], 'function')
 
   hooks.add('onSend', noop)
   t.is(hooks.onSend.length, 1)

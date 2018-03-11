@@ -441,8 +441,8 @@ test('run hooks on default 404', (t) => {
     next()
   })
 
-  app.addHook('onResponse', (request, reply) => {
-    t.ok(reply, 'onResponse called')
+  app.addHook('onFinished', (request, reply) => {
+    t.ok(reply, 'onFinished called')
   })
 
   app.get('/', (request, reply) => {
@@ -487,8 +487,8 @@ test('run non-encapsulated plugin hooks on default 404', (t) => {
       next()
     })
 
-    subApp.addHook('onResponse', (request, reply) => {
-      t.ok(reply, 'onResponse called')
+    subApp.addHook('onFinished', (request, reply) => {
+      t.ok(reply, 'onFinished called')
     })
 
     next()
@@ -529,8 +529,8 @@ test('run non-encapsulated plugin hooks on custom 404', (t) => {
       next()
     })
 
-    subApp.addHook('onResponse', (request, reply) => {
-      t.ok(reply, 'onResponse called')
+    subApp.addHook('onFinished', (request, reply) => {
+      t.ok(reply, 'onFinished called')
     })
 
     next()
@@ -575,8 +575,8 @@ test('run hooks with encapsulated 404', (t) => {
     next()
   })
 
-  app.addHook('onResponse', (request, reply) => {
-    t.ok(reply, 'onResponse called')
+  app.addHook('onFinished', (request, reply) => {
+    t.ok(reply, 'onFinished called')
   })
 
   app.register(function(f, opts, next) {
@@ -599,8 +599,8 @@ test('run hooks with encapsulated 404', (t) => {
       next()
     })
 
-    f.addHook('onResponse', (request, reply) => {
-      t.ok(reply, 'onResponse 2 called')
+    f.addHook('onFinished', (request, reply) => {
+      t.ok(reply, 'onFinished 2 called')
     })
 
     next()
@@ -652,7 +652,7 @@ test('encapsulated custom 404 without prefix has the right encapsulation context
       t.equal(reply.foo, 42)
       next()
     })
-    subApp.addHook('onResponse', (request, reply) => {
+    subApp.addHook('onFinished', (request, reply) => {
       t.equal(request.foo, 42)
       t.equal(request.bar, 84)
       t.equal(reply.foo, 42)
@@ -693,9 +693,9 @@ test('hooks check 404', (t) => {
     next()
   })
 
-  app.addHook('onResponse', (request, reply) => {
+  app.addHook('onFinished', (request, reply) => {
     t.deepEqual(request.query, {foo: 'asd'})
-    t.ok(reply, 'called onResponse')
+    t.ok(reply, 'called onFinished')
   })
 
   t.tearDown(app.close.bind(app))

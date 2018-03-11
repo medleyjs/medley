@@ -38,9 +38,9 @@ test('async hooks', (t) => {
     next()
   })
 
-  app.addHook('onResponse', async function() {
+  app.addHook('onFinished', async function() {
     await sleep(1)
-    t.ok('onResponse called')
+    t.ok('onFinished called')
   })
 
   app.get('/', function(request, reply) {
@@ -152,7 +152,7 @@ test('onRequest hooks should be able to send a response', (t) => {
     next()
   })
 
-  app.addHook('onResponse', async () => {
+  app.addHook('onFinished', async () => {
     t.ok('called')
   })
 
@@ -187,7 +187,7 @@ test('preHandler hooks should be able to send a response', (t) => {
     next()
   })
 
-  app.addHook('onResponse', async () => {
+  app.addHook('onFinished', async () => {
     t.ok('called')
   })
 

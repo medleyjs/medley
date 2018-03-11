@@ -15,7 +15,7 @@ The possible `hookName` values are:
 + [`'onRequest'`](#onRequest-preHandler-hooks)
 + [`'preHandler'`](#onRequest-preHandler-hooks)
 + [`'onSend'`](#onSend-hook)
-+ [`'onResponse'`](#onResponse-hook)
++ [`'onFinished'`](#onFinished-hook)
 
 Check out the [lifecycle docs](Lifecycle.md) to see where each hook is executed in the request lifecycle.
 
@@ -92,7 +92,8 @@ app.addHook('onSend', (request, reply, payload, next) => {
 + `payload` - The serialized payload
 + `next([error, [payload]])` - Function to continue with the request
 
-The `onSend` hooks provide a great opportunity to save application state
+The `onSend` hooks are run right after `reply.send()` is called and the payload
+has been serialized. They provide a great opportunity to save application state
 (e.g. sessions) and set extra headers before the response is sent.
 
 #### Modifying the Payload
@@ -124,24 +125,24 @@ Changing the payload is mainly intended to be used for encoding the payload
 executed again when the error response is sent. Because of this, it is best to
 handle errors in the hook when possible rather than forwarding the error.
 
-<a id="onResponse-hook"></a> 
-### The `onResponse` Hook
+<a id="onFinished-hook"></a> 
+### The `onFinished` Hook
 
 ```js
-app.addHook('onResponse', (request, reply) => {
-  // Handle onResponse
+app.addHook('onFinished', (request, reply) => {
+  // Handle onFinished
 })
 ```
 
 + `request` - Medley [Request](Request.md) object
 + `reply` - Medley [Reply](Reply.md) object
 
-The `onResponse` hook is different from the other hooks. It only receives the
-[`reply`](Reply.md) object and is executed synchronously. Any errors that occur
-during this hook must be handled manually.
+The `onFinished` hook is different from the other hooks. It only receives the
+[`request`](Request.md) and [`reply`](Reply.md) object and is executed synchronously.
+Any errors that occur during this hook must be handled manually.
 
 ```js
-app.addHook('onResponse', async (request, reply) => {
+app.addHook('onFinished', async (request, reply) => {
   try {
     await asyncFunction()
   } catch (error) {
@@ -150,9 +151,13 @@ app.addHook('onResponse', async (request, reply) => {
 })
 ```
 
+`onFinished` hooks are run once the response has finished sending (or if the underlying
+connection was terminated before the response could finish sending).
+
 ### Using async-await
 
-Hooks may be an `async` function. For convenience, all hooks (except for the `onResponse` hook) will automatically catch errors thrown in an `async` function and call `next(error)` for you.
+Hooks may be an `async` function. For convenience, all hooks (except for the `onFinished` hook)
+will automatically catch errors thrown in an `async` function and call `next(error)` for you.
 
 ```js
 app.addHook('preHandler', async (request, reply, next) => {

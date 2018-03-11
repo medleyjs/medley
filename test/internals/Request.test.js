@@ -42,7 +42,7 @@ t.test('request.query - set', (t) => {
   t.end()
 })
 
-t.test('request.body should be available in onSend hooks and undefined in onResponse hooks', (t) => {
+t.test('request.body should be available in onSend hooks and undefined in onFinished hooks', (t) => {
   t.plan(4)
 
   const app = medley()
@@ -57,7 +57,7 @@ t.test('request.body should be available in onSend hooks and undefined in onResp
     next()
   })
 
-  app.addHook('onResponse', (request) => {
+  app.addHook('onFinished', (request) => {
     t.equal(request.body, undefined)
   })
 

@@ -21,7 +21,7 @@ Incoming Request
                                                   │
                                                   └─▶ Send Response
                                                         │
-                                                        └─▶ onResponse Hook
+                                                        └─▶ onFinished Hook
 ```
 
 **Table of Contents:**
@@ -35,7 +35,7 @@ Incoming Request
 1. [Serialize Payload](#serialize-payload)
 1. [onSend Hook](#onsend-hook)
 1. [Send Response](#send-response)
-1. [onResponse Hook](#onresponse-hook)
+1. [onFinished Hook](#onfinished-hook)
 
 ## Routing
 
@@ -55,7 +55,7 @@ app.addHook('onRequest', (req, res, next) => {
 })
 ```
 
-These hooks may send an early response with `res.end()`. If a hooks does this, the rest of the lifecycle will be skipped except for the `onResponse` hooks.
+These hooks may send an early response with `res.end()`. If a hooks does this, the rest of the lifecycle will be skipped except for the `onFinished` hooks.
 
 If an error occurs during a hook, the rest of the lifecycle up to the *Route Handler* is skipped and the error handler is invoked as the *Route Handler*.
 
@@ -129,12 +129,13 @@ If an error occurs during a hook, the rest of the hooks are skipped and the erro
 
 The serialized payload is sent to the client. Medley automatically handles this step.
 
-## `onResponse` Hook
+## `onFinished` Hook
 
-Finally, the `onResponse` hooks are run.
+Finally, the `onFinished` hooks are run once the response has finished sending (or if
+the underlying connection was terminated before the response could finish sending).
 
 ```js
-app.addHook('onResponse', (request, reply) => {
+app.addHook('onFinished', (request, reply) => {
   // Do something like log the response time
 })
 ```

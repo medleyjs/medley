@@ -163,8 +163,8 @@ test('custom 500 with hooks', (t) => {
     t.ok('called', 'onSend')
     next()
   })
-  app.addHook('onResponse', () => {
-    t.ok('called', 'onResponse')
+  app.addHook('onFinished', () => {
+    t.ok('called', 'onFinished')
   })
 
   app.inject('/', (err, res) => {

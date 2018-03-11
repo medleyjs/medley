@@ -38,7 +38,7 @@ test('hooks', (t) => {
     next()
   })
 
-  app.addHook('onResponse', function(request, reply) {
+  app.addHook('onFinished', function(request, reply) {
     t.equal(request.onRequestVal, 'the request is coming')
     t.equal(reply.res.finished, true)
   })
@@ -265,12 +265,12 @@ test('preHandler hook should support encapsulation / 5', (t) => {
   })
 })
 
-test('onResponse hook should support encapsulation / 1', (t) => {
+test('onFinished hook should support encapsulation / 1', (t) => {
   t.plan(5)
   const app = medley()
 
   app.register((subApp, opts, next) => {
-    subApp.addHook('onResponse', (request, reply) => {
+    subApp.addHook('onFinished', (request, reply) => {
       t.strictEqual(reply.plugin, true)
     })
 
@@ -297,31 +297,31 @@ test('onResponse hook should support encapsulation / 1', (t) => {
   })
 })
 
-test('onResponse hook should support encapsulation / 2', (t) => {
+test('onFinished hook should support encapsulation / 2', (t) => {
   t.plan(3)
   const app = medley()
   var pluginInstance
 
-  app.addHook('onResponse', () => {})
+  app.addHook('onFinished', () => {})
 
   app.register((subApp, opts, next) => {
-    subApp.addHook('onResponse', () => {})
+    subApp.addHook('onFinished', () => {})
     pluginInstance = subApp
     next()
   })
 
   app.ready((err) => {
     t.error(err)
-    t.is(app._hooks.onResponse.length, 1)
-    t.is(pluginInstance._hooks.onResponse.length, 2)
+    t.is(app._hooks.onFinished.length, 1)
+    t.is(pluginInstance._hooks.onFinished.length, 2)
   })
 })
 
-test('onResponse hook should support encapsulation / 3', (t) => {
+test('onFinished hook should support encapsulation / 3', (t) => {
   t.plan(15)
   const app = medley()
 
-  app.addHook('onResponse', (request, reply) => {
+  app.addHook('onFinished', (request, reply) => {
     t.ok(request)
     t.ok(reply)
   })
@@ -331,7 +331,7 @@ test('onResponse hook should support encapsulation / 3', (t) => {
   })
 
   app.register((subApp, opts, next) => {
-    subApp.addHook('onResponse', (request, reply) => {
+    subApp.addHook('onFinished', (request, reply) => {
       t.ok(request)
       t.ok(reply)
     })
@@ -369,12 +369,12 @@ test('onResponse hook should support encapsulation / 3', (t) => {
   })
 })
 
-test('onResponse hook should run if the client closes the connection', (t) => {
+test('onFinished hook should run if the client closes the connection', (t) => {
   t.plan(4)
 
   const app = medley()
 
-  app.addHook('onResponse', (request, reply) => {
+  app.addHook('onFinished', (request, reply) => {
     t.equal(request.method, 'GET')
     t.equal(reply.res.finished, false)
   })
@@ -740,7 +740,7 @@ test('onRequest hooks should be able to send a response', (t) => {
     next()
   })
 
-  app.addHook('onResponse', () => {
+  app.addHook('onFinished', () => {
     t.ok('called')
   })
 
@@ -775,7 +775,7 @@ test('preHandler hooks should be able to send a response', (t) => {
     next()
   })
 
-  app.addHook('onResponse', () => {
+  app.addHook('onFinished', () => {
     t.ok('called')
   })
 
@@ -908,7 +908,7 @@ test('Register hooks inside a plugin after an encapsulated plugin', (t) => {
       next()
     })
 
-    subApp.addHook('onResponse', function() {
+    subApp.addHook('onFinished', function() {
       t.ok('called')
     })
 
@@ -1100,12 +1100,12 @@ test('onSend hooks should run in the order in which they are defined', (t) => {
   })
 })
 
-test('onResponse hooks should run in the order in which they are defined', (t) => {
+test('onFinished hooks should run in the order in which they are defined', (t) => {
   t.plan(8)
   const app = medley()
 
   app.register(function(subApp, opts, next) {
-    subApp.addHook('onResponse', (request, reply) => {
+    subApp.addHook('onFinished', (request, reply) => {
       t.strictEqual(reply.previous, undefined)
       reply.previous = 1
     })
@@ -1115,7 +1115,7 @@ test('onResponse hooks should run in the order in which they are defined', (t) =
     })
 
     subApp.register(fp(function(i, opts, next) {
-      i.addHook('onResponse', (request, reply) => {
+      i.addHook('onFinished', (request, reply) => {
         t.strictEqual(reply.previous, 1)
         reply.previous = 2
       })
@@ -1126,20 +1126,20 @@ test('onResponse hooks should run in the order in which they are defined', (t) =
   })
 
   app.register(fp(function(subApp, opts, next) {
-    subApp.addHook('onResponse', (request, reply) => {
+    subApp.addHook('onFinished', (request, reply) => {
       t.strictEqual(reply.previous, 2)
       reply.previous = 3
     })
 
     subApp.register(fp(function(i, opts, next) {
-      i.addHook('onResponse', (request, reply) => {
+      i.addHook('onFinished', (request, reply) => {
         t.strictEqual(reply.previous, 3)
         reply.previous = 4
       })
       next()
     }))
 
-    subApp.addHook('onResponse', (request, reply) => {
+    subApp.addHook('onFinished', (request, reply) => {
       t.strictEqual(reply.previous, 4)
     })
 

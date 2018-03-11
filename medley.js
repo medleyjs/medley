@@ -393,14 +393,14 @@ function medley(options) {
       // update the context object accordingly.
       appLoader.once('preReady', () => {
         const onRequest = this._hooks.onRequest
-        const onResponse = this._hooks.onResponse
+        const onFinished = this._hooks.onFinished
         const onSend = this._hooks.onSend
         const preHandler = this._hooks.preHandler.concat(opts.beforeHandler || [])
 
         context.onRequest = onRequest.length ? onRequest : null
         context.preHandler = preHandler.length ? preHandler : null
         context.onSend = onSend.length ? onSend : null
-        context.onResponse = onResponse.length ? onResponse : null
+        context.onFinished = onFinished.length ? onFinished : null
 
         // Must store the not-found Context in 'preReady' because it is only guaranteed
         // to be available after all of the plugins and routes have been loaded.
@@ -569,12 +569,12 @@ function medley(options) {
       const onRequest = this._hooks.onRequest
       const preHandler = this._hooks.preHandler
       const onSend = this._hooks.onSend
-      const onResponse = this._hooks.onResponse
+      const onFinished = this._hooks.onFinished
 
       notFoundContext.onRequest = onRequest.length ? onRequest : null
       notFoundContext.preHandler = preHandler.length ? preHandler : null
       notFoundContext.onSend = onSend.length ? onSend : null
-      notFoundContext.onResponse = onResponse.length ? onResponse : null
+      notFoundContext.onFinished = onFinished.length ? onFinished : null
     })
 
     if (replaceDefault404) { // Replace the default 404 handler
