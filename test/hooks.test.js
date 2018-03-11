@@ -367,6 +367,33 @@ test('onResponse hook should support encapsulation / 3', (t) => {
   })
 })
 
+test('onResponse hook should run if the client closes the connection', (t) => {
+  t.plan(3)
+
+  const app = medley()
+
+  app.addHook('onResponse', (reply) => {
+    t.equal(reply.res.finished, false)
+  })
+
+  app.get('/', () => {
+    // Don't send anything to force the client to terminate the request
+  })
+
+  app.listen(0, (err) => {
+    t.error(err)
+    app.server.unref()
+
+    sget({
+      method: 'GET',
+      url: `http://localhost:${app.server.address().port}`,
+      timeout: 10,
+    }, (err) => {
+      t.type(err, Error)
+    })
+  })
+})
+
 test('onSend hook should support encapsulation / 1', (t) => {
   t.plan(3)
   const app = medley()
