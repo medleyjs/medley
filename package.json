@@ -51,10 +51,13 @@
     "pump": "^3.0.0",
     "send": "^0.16.1",
     "simple-get": "^2.7.0",
+    "streaming-json-stringify": "~3.1.0",
     "tap": "^11.1.0",
     "then-sleep": "^1.0.1"
   },
-  "pre-commit": ["lint"],
+  "pre-commit": [
+    "lint"
+  ],
   "scripts": {
     "bench": "branchcmp -r 2 -g -s \"npm run benchmark\"",
     "benchmark": "concurrently -k -s first \"node ./benchmarks/basic.js\" \"npm run cannon\"",

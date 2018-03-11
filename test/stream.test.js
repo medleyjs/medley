@@ -10,6 +10,7 @@ const medley = require('..')
 const errors = require('http-errors')
 const JSONStream = require('JSONStream')
 const send = require('send')
+const StreamingJSONStringify = require('streaming-json-stringify')
 const Readable = require('stream').Readable
 
 test('should respond with a stream', (t) => {
@@ -171,12 +172,36 @@ test('Destroying streams prematurely', (t) => {
   })
 })
 
-test('should respond with a stream1', (t) => {
+test('should support stream1 streams', (t) => {
   t.plan(5)
   const app = medley()
 
   app.get('/', function(request, reply) {
     const stream = JSONStream.stringify()
+    reply.type('application/json').send(stream)
+    stream.write({hello: 'world'})
+    stream.end({a: 42})
+  })
+
+  app.listen(0, (err) => {
+    t.error(err)
+    app.server.unref()
+
+    sget(`http://localhost:${app.server.address().port}`, function(err, response, body) {
+      t.error(err)
+      t.strictEqual(response.headers['content-type'], 'application/json')
+      t.strictEqual(response.statusCode, 200)
+      t.deepEqual(JSON.parse(body), [{hello: 'world'}, {a: 42}])
+    })
+  })
+})
+
+test('should support stream2 streams', (t) => {
+  t.plan(5)
+  const app = medley()
+
+  app.get('/', function(request, reply) {
+    const stream = new StreamingJSONStringify()
     reply.type('application/json').send(stream)
     stream.write({hello: 'world'})
     stream.end({a: 42})
@@ -203,7 +228,7 @@ test('return a 404 if the stream emits a 404 error', (t) => {
   app.get('/', function(request, reply) {
     t.pass('Received request')
 
-    var reallyLongStream = new Readable({
+    const errorStream = new Readable({
       read() {
         setImmediate(() => {
           this.emit('error', new errors.NotFound())
@@ -211,14 +236,14 @@ test('return a 404 if the stream emits a 404 error', (t) => {
       },
     })
 
-    reply.send(reallyLongStream)
+    reply.send(errorStream)
   })
 
   app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
-    var port = app.server.address().port
+    const port = app.server.address().port
 
     sget(`http://localhost:${port}`, function(err, response, body) {
       t.error(err)
