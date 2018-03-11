@@ -43,7 +43,8 @@ A boolean value that indicates whether or not a response has already been sent.
 <a id="code"></a>
 ### `reply.code(statusCode)`
 
-+ `statusCode` (number)
++ `statusCode` *(number)*
++ Chainable
 
 Sets the HTTP status code for the response. If not set, the status code for
 the response defaults to `200`.
@@ -51,8 +52,8 @@ the response defaults to `200`.
 <a id="get-header"></a>
 ### `reply.getHeader(name)`
 
-+ `name` (string)
-+ Returns: (string|string[])
++ `name` *(string)*
++ Returns: *(string|string[])*
 
 Gets a response header.
 
@@ -63,8 +64,9 @@ reply.getHeader('Content-Type') // 'application/json'
 <a id="set-header"></a>
 ### `reply.setHeader(name, value)`
 
-+ `name` (string)
-+ `value` (string|string[])
++ `name` *(string)*
++ `value` *(string|string[])*
++ Chainable
 
 Sets a response header.
 
@@ -77,8 +79,9 @@ For more information, see [`http.ServerResponse#setHeader`](https://nodejs.org/d
 <a id="append-header"></a>
 ### `reply.appendHeader(name, value)`
 
-+ `name` (string)
-+ `value` (string|string[])
++ `name` *(string)*
++ `value` *(string|string[])*
++ Chainable
 
 Sets a response header if not already set. Appends the value to the header as an array if it already exists.
 
@@ -94,7 +97,8 @@ This is only needed for setting multiple `Set-Cookie` headers.
 <a id="remove-header"></a>
 ### `reply.removeHeader(name)`
 
-+ `name` (string)
++ `name` *(string)*
++ Chainable
 
 Removes a response header.
 
@@ -105,7 +109,8 @@ reply.removeHeader('Content-Type')
 <a id="type"></a>
 ### `reply.type(contentType)`
 
-+ `contentType` (string)
++ `contentType` *(string)*
++ Chainable
 
 Sets the `Content-Type` header for the response.
 
@@ -118,8 +123,8 @@ This is a shortcut for: `reply.setHeader('Content-Type', contentType)`.
 <a id="redirect"></a>
 ### `reply.redirect([statusCode,] url)`
 
-+ `statusCode` (number) - The HTTP status code for the response. Defaults to `302`.
-+ `url` (string) - The URL to which the client will be redirected.
++ `statusCode` *(number)* - The HTTP status code for the response. Defaults to `302`.
++ `url` *(string)* - The URL to which the client will be redirected.
 
 Redirects a request to the specified URL.
 
@@ -134,7 +139,7 @@ reply.redirect(301, '/moved-permanently')
 <a id="error"></a>
 ### `reply.error(err)`
 
-+ `err` ([Error](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error))
++ `err` *([Error](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error))*
 
 Sends an error response.
 
