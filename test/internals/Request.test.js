@@ -79,3 +79,24 @@ t.test('request.body should be available in onSend hooks and undefined in onFini
     t.equal(res.statusCode, 200)
   })
 })
+
+t.test('request.body should be undefined in onFinished hooks if the default error response is sent', (t) => {
+  t.plan(4)
+
+  const app = medley()
+
+  app.get('/', (request, response) => {
+    request.body = 'body'
+    response.error(new Error('Manual error'))
+  })
+
+  app.addHook('onFinished', (request) => {
+    t.equal(request.body, undefined)
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 500)
+    t.equal(JSON.parse(res.payload).message, 'Manual error')
+  })
+})
