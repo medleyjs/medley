@@ -8,8 +8,8 @@ t.test('501', (t) => {
 
   const app = medley()
 
-  app.all('/', (request, reply) => {
-    reply.send({hello: 'world'})
+  app.all('/', (request, response) => {
+    response.send({hello: 'world'})
   })
 
   app.inject({

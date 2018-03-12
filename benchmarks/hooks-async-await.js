@@ -24,8 +24,8 @@ app.get('/', {
       hello: {type: 'string'},
     },
   },
-}, (request, reply) => {
-  reply.send({hello: 'world'})
+}, (request, response) => {
+  response.send({hello: 'world'})
 })
 
 app.listen(3000, (err) => {

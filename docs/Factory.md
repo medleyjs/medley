@@ -43,12 +43,12 @@ const app = require('@medley/medley')({
 })
 
 // registers both "/foo" and "/foo/"
-app.get('/foo/', function (req, reply) {
+app.get('/foo/', (request, response) => {
   res.send('foo')
 })
 
 // registers both "/bar" and "/bar/"
-app.get('/bar', function (req, reply) {
+app.get('/bar', (request, response) => {
   res.send('bar')
 })
 ```

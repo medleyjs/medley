@@ -74,12 +74,12 @@ If an error occurs while parsing the request body (including the `415` error men
 Next, the `preHandler` hooks are run.
 
 ```js
-app.addHook('preHandler', (request, reply, next) => {
+app.addHook('preHandler', (request, response, next) => {
   next()
 })
 ```
 
-These hooks may send an early response with `reply.send()`. If a hooks does this, the rest of the hooks will be skipped and the lifecycle will go straight to the [*Serialize Payload*](#serialize-payload) step.
+These hooks may send an early response with `response.send()`. If a hooks does this, the rest of the hooks will be skipped and the lifecycle will go straight to the [*Serialize Payload*](#serialize-payload) step.
 
 If an error occurs during a hook, the rest of the lifecycle up to the *Route Handler* is skipped and the error handler is invoked as the *Route Handler*.
 
@@ -89,10 +89,10 @@ The *beforeHandlers* are treated exactly the same as the `preHandler` hooks. The
 
 ```js
 app.get('/', {
-  beforeHandler: (request, reply, next) => {
+  beforeHandler: (request, response, next) => {
     next()
   }
-}, (request, reply) => { ... })
+}, (request, response) => { ... })
 ```
 
 ## Route Handler
@@ -100,8 +100,8 @@ app.get('/', {
 This is the main handler for the route. The route handler sends the response payload.
 
 ```js
-app.get('/', (request, reply) => {
-  reply.send('payload')
+app.get('/', (request, response) => {
+  response.send('payload')
 })
 ```
 
@@ -109,16 +109,16 @@ app.get('/', (request, reply) => {
 
 ## Serialize Payload
 
-In this step, the payload that was passed to `reply.send()` is serialized (if it needs to be) and an appropriate `Content-Type` for the payload is set (if one was not already set).
+In this step, the payload that was passed to `response.send()` is serialized (if it needs to be) and an appropriate `Content-Type` for the payload is set (if one was not already set).
 
-See the [`reply.send()`](Reply.md#send) and [Serialization](Serialization.md) documentation for more information.
+See the [`response.send()`](Response.md#send) and [Serialization](Serialization.md) documentation for more information.
 
 ## `onSend` Hook
 
 Next, the `onSend` hooks are run.
 
 ```js
-app.addHook('onSend', (request, reply, payload, next) => {
+app.addHook('onSend', (request, response, payload, next) => {
   next()
 })
 ```
@@ -127,7 +127,7 @@ If an error occurs during a hook, the rest of the hooks are skipped and the erro
 
 ## Send Response
 
-The serialized payload is sent to the client. Medley automatically handles this step.
+The serialized payload is sent to the client. Medley handles this step automatically.
 
 ## `onFinished` Hook
 
@@ -135,7 +135,7 @@ Finally, the `onFinished` hooks are run once the response has finished sending (
 the underlying connection was terminated before the response could finish sending).
 
 ```js
-app.addHook('onFinished', (request, reply) => {
+app.addHook('onFinished', (request, response) => {
   // Do something like log the response time
 })
 ```

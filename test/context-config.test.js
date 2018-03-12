@@ -12,8 +12,8 @@ const routeOptions = {
   },
 }
 
-function handler(request, reply) {
-  reply.send(reply.config)
+function handler(request, response) {
+  response.send(response.config)
 }
 
 test('config', (t) => {

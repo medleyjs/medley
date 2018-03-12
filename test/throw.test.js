@@ -138,15 +138,15 @@ test('Should throw on duplicate request decorator', (t) => {
   }
 })
 
-test('Should throw on duplicate reply decorator', (t) => {
+test('Should throw on duplicate response decorator', (t) => {
   t.plan(1)
 
   const app = medley()
   const fooObj = {}
 
-  app.decorateReply('foo', fooObj)
+  app.decorateResponse('foo', fooObj)
   try {
-    app.decorateReply('foo', fooObj)
+    app.decorateResponse('foo', fooObj)
     t.fail()
   } catch (e) {
     t.ok(/has been already added/.test(e.message))

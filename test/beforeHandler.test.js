@@ -9,12 +9,12 @@ test('beforeHandler', (t) => {
   const app = medley()
 
   app.post('/', {
-    beforeHandler: (req, reply, done) => {
+    beforeHandler: (req, response, done) => {
       req.body.beforeHandler = true
       done()
     },
-  }, (req, reply) => {
-    reply.send(req.body)
+  }, (req, response) => {
+    response.send(req.body)
   })
 
   app.inject({
@@ -32,18 +32,18 @@ test('beforeHandler should be called after preHandler hook', (t) => {
   t.plan(2)
   const app = medley()
 
-  app.addHook('preHandler', (req, reply, next) => {
+  app.addHook('preHandler', (req, response, next) => {
     req.body.check = 'a'
     next()
   })
 
   app.post('/', {
-    beforeHandler: (req, reply, done) => {
+    beforeHandler: (req, response, done) => {
       req.body.check += 'b'
       done()
     },
-  }, (req, reply) => {
-    reply.send(req.body)
+  }, (req, response) => {
+    response.send(req.body)
   })
 
   app.inject({
@@ -62,16 +62,16 @@ test('beforeHandler should be unique per route', (t) => {
   const app = medley()
 
   app.post('/', {
-    beforeHandler: (req, reply, done) => {
+    beforeHandler: (req, response, done) => {
       req.body.hello = 'earth'
       done()
     },
-  }, (req, reply) => {
-    reply.send(req.body)
+  }, (req, response) => {
+    response.send(req.body)
   })
 
-  app.post('/no', (req, reply) => {
-    reply.send(req.body)
+  app.post('/no', (req, response) => {
+    response.send(req.body)
   })
 
   app.inject({
@@ -100,11 +100,11 @@ test('beforeHandler should handle errors', (t) => {
   const app = medley()
 
   app.post('/', {
-    beforeHandler: (req, reply, done) => {
+    beforeHandler: (req, response, done) => {
       done(new Error('kaboom'))
     },
-  }, (req, reply) => {
-    reply.send(req.body)
+  }, (req, response) => {
+    response.send(req.body)
   })
 
   app.inject({
@@ -128,12 +128,12 @@ test('beforeHandler should handle errors with custom status code', (t) => {
   const app = medley()
 
   app.post('/', {
-    beforeHandler: (req, reply, done) => {
-      reply.code(401)
+    beforeHandler: (req, response, done) => {
+      response.code(401)
       done(new Error('go away'))
     },
-  }, (req, reply) => {
-    reply.send(req.body)
+  }, (req, response) => {
+    response.send(req.body)
   })
 
   app.inject({
@@ -157,12 +157,12 @@ test('beforeHandler should handle errors with custom status code in shorthand fo
   const app = medley()
 
   app.post('/', {
-    beforeHandler: (req, reply, done) => {
-      reply.code(401)
+    beforeHandler: (req, response, done) => {
+      response.code(401)
       done(new Error('go away'))
     },
-  }, (req, reply) => {
-    reply.send(req.body)
+  }, (req, response) => {
+    response.send(req.body)
   })
 
   app.inject({
@@ -187,17 +187,17 @@ test('beforeHandler could accept an array of functions', (t) => {
 
   app.post('/', {
     beforeHandler: [
-      (req, reply, done) => {
+      (req, response, done) => {
         req.body.beforeHandler = 'a'
         done()
       },
-      (req, reply, done) => {
+      (req, response, done) => {
         req.body.beforeHandler += 'b'
         done()
       },
     ],
-  }, (req, reply) => {
-    reply.send(req.body)
+  }, (req, response) => {
+    response.send(req.body)
   })
 
   app.inject({
@@ -215,22 +215,22 @@ test('beforeHandler does not interfere with preHandler', (t) => {
   t.plan(4)
   const app = medley()
 
-  app.addHook('preHandler', (req, reply, next) => {
+  app.addHook('preHandler', (req, response, next) => {
     req.body.check = 'a'
     next()
   })
 
   app.post('/', {
-    beforeHandler: (req, reply, done) => {
+    beforeHandler: (req, response, done) => {
       req.body.check += 'b'
       done()
     },
-  }, (req, reply) => {
-    reply.send(req.body)
+  }, (req, response) => {
+    response.send(req.body)
   })
 
-  app.post('/no', (req, reply) => {
-    reply.send(req.body)
+  app.post('/no', (req, response) => {
+    response.send(req.body)
   })
 
   app.inject({

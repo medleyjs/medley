@@ -15,8 +15,8 @@ test('default 404', (t) => {
 
   const app = medley()
 
-  app.get('/', function(req, reply) {
-    reply.send({hello: 'world'})
+  app.get('/', function(req, response) {
+    response.send({hello: 'world'})
   })
 
   app.inject({
@@ -45,16 +45,16 @@ test('customized 404', (t) => {
 
   const app = medley()
 
-  app.get('/', function(req, reply) {
-    reply.send({hello: 'world'})
+  app.get('/', function(req, response) {
+    response.send({hello: 'world'})
   })
 
-  app.get('/with-error', function(req, reply) {
-    reply.error(new errors.NotFound())
+  app.get('/with-error', function(req, response) {
+    response.error(new errors.NotFound())
   })
 
-  app.setNotFoundHandler(function(req, reply) {
-    reply.code(404).send('this was not found')
+  app.setNotFoundHandler(function(req, response) {
+    response.code(404).send('this was not found')
   })
 
   t.tearDown(app.close.bind(app))
@@ -107,8 +107,8 @@ test('has a 404 handler for all supported HTTP methods', (t) => {
 
   const app = medley()
 
-  app.all('/', (request, reply) => {
-    reply.send('Found')
+  app.all('/', (request, response) => {
+    response.send('Found')
   })
 
   Object.keys(methodHandlers).forEach((method) => {
@@ -126,12 +126,12 @@ test('has a custom 404 handler for all supported HTTP methods', (t) => {
 
   const app = medley()
 
-  app.all('/', (request, reply) => {
-    reply.send('Found')
+  app.all('/', (request, response) => {
+    response.send('Found')
   })
 
-  app.setNotFoundHandler((request, reply) => {
-    reply.code(404).send(`Custom Not Found: ${request.method} ${request.url}`)
+  app.setNotFoundHandler((request, response) => {
+    response.code(404).send(`Custom Not Found: ${request.method} ${request.url}`)
   })
 
   Object.keys(methodHandlers).forEach((method) => {
@@ -281,31 +281,31 @@ test('encapsulated 404', (t) => {
 
   const app = medley()
 
-  app.get('/', function(req, reply) {
-    reply.send({hello: 'world'})
+  app.get('/', function(req, response) {
+    response.send({hello: 'world'})
   })
 
-  app.setNotFoundHandler(function(req, reply) {
-    reply.code(404).send('this was not found')
+  app.setNotFoundHandler(function(req, response) {
+    response.code(404).send('this was not found')
   })
 
   app.register(function(f, opts, next) {
-    f.setNotFoundHandler(function(req, reply) {
-      reply.code(404).send('this was not found 2')
+    f.setNotFoundHandler(function(req, response) {
+      response.code(404).send('this was not found 2')
     })
     next()
   }, {prefix: '/test'})
 
   app.register(function(f, opts, next) {
-    f.setNotFoundHandler(function(req, reply) {
-      reply.code(404).send('this was not found 3')
+    f.setNotFoundHandler(function(req, response) {
+      response.code(404).send('this was not found 3')
     })
     next()
   }, {prefix: '/test2'})
 
   app.register(function(f, opts, next) {
-    f.setNotFoundHandler(function(request, reply) {
-      reply.code(404).send('this was not found 4')
+    f.setNotFoundHandler(function(request, response) {
+      response.code(404).send('this was not found 4')
     })
     next()
   }, {prefix: '/test3/'})
@@ -431,22 +431,22 @@ test('run hooks on default 404', (t) => {
     next()
   })
 
-  app.addHook('preHandler', function(request, reply, next) {
+  app.addHook('preHandler', function(request, response, next) {
     t.pass('preHandler called')
     next()
   })
 
-  app.addHook('onSend', function(request, reply, payload, next) {
+  app.addHook('onSend', function(request, response, payload, next) {
     t.pass('onSend called')
     next()
   })
 
-  app.addHook('onFinished', (request, reply) => {
-    t.ok(reply, 'onFinished called')
+  app.addHook('onFinished', (request, response) => {
+    t.ok(response, 'onFinished called')
   })
 
-  app.get('/', (request, reply) => {
-    reply.send({hello: 'world'})
+  app.get('/', (request, response) => {
+    response.send({hello: 'world'})
   })
 
   t.tearDown(app.close.bind(app))
@@ -477,25 +477,25 @@ test('run non-encapsulated plugin hooks on default 404', (t) => {
       next()
     })
 
-    subApp.addHook('preHandler', function(request, reply, next) {
+    subApp.addHook('preHandler', function(request, response, next) {
       t.pass('preHandler called')
       next()
     })
 
-    subApp.addHook('onSend', function(request, reply, payload, next) {
+    subApp.addHook('onSend', function(request, response, payload, next) {
       t.pass('onSend called')
       next()
     })
 
-    subApp.addHook('onFinished', (request, reply) => {
-      t.ok(reply, 'onFinished called')
+    subApp.addHook('onFinished', (request, response) => {
+      t.ok(response, 'onFinished called')
     })
 
     next()
   }))
 
-  app.get('/', (request, reply) => {
-    reply.send({hello: 'world'})
+  app.get('/', (request, response) => {
+    response.send({hello: 'world'})
   })
 
   app.inject({
@@ -519,18 +519,18 @@ test('run non-encapsulated plugin hooks on custom 404', (t) => {
       next()
     })
 
-    subApp.addHook('preHandler', function(request, reply, next) {
+    subApp.addHook('preHandler', function(request, response, next) {
       t.pass('preHandler called')
       next()
     })
 
-    subApp.addHook('onSend', function(request, reply, payload, next) {
+    subApp.addHook('onSend', function(request, response, payload, next) {
       t.pass('onSend called')
       next()
     })
 
-    subApp.addHook('onFinished', (request, reply) => {
-      t.ok(reply, 'onFinished called')
+    subApp.addHook('onFinished', (request, response) => {
+      t.ok(response, 'onFinished called')
     })
 
     next()
@@ -538,12 +538,12 @@ test('run non-encapsulated plugin hooks on custom 404', (t) => {
 
   app.register(plugin)
 
-  app.get('/', (request, reply) => {
-    reply.send({hello: 'world'})
+  app.get('/', (request, response) => {
+    response.send({hello: 'world'})
   })
 
-  app.setNotFoundHandler((request, reply) => {
-    reply.code(404).send('this was not found')
+  app.setNotFoundHandler((request, response) => {
+    response.code(404).send('this was not found')
   })
 
   app.register(plugin) // Registering plugin after handler also works
@@ -565,23 +565,23 @@ test('run hooks with encapsulated 404', (t) => {
     next()
   })
 
-  app.addHook('preHandler', function(request, reply, next) {
+  app.addHook('preHandler', function(request, response, next) {
     t.pass('preHandler called')
     next()
   })
 
-  app.addHook('onSend', function(request, reply, payload, next) {
+  app.addHook('onSend', function(request, response, payload, next) {
     t.pass('onSend called')
     next()
   })
 
-  app.addHook('onFinished', (request, reply) => {
-    t.ok(reply, 'onFinished called')
+  app.addHook('onFinished', (request, response) => {
+    t.ok(response, 'onFinished called')
   })
 
   app.register(function(f, opts, next) {
-    f.setNotFoundHandler((request, reply) => {
-      reply.code(404).send('this was not found 2')
+    f.setNotFoundHandler((request, response) => {
+      response.code(404).send('this was not found 2')
     })
 
     f.addHook('onRequest', function(req, res, next) {
@@ -589,18 +589,18 @@ test('run hooks with encapsulated 404', (t) => {
       next()
     })
 
-    f.addHook('preHandler', function(request, reply, next) {
+    f.addHook('preHandler', function(request, response, next) {
       t.pass('preHandler 2 called')
       next()
     })
 
-    f.addHook('onSend', function(request, reply, payload, next) {
+    f.addHook('onSend', function(request, response, payload, next) {
       t.pass('onSend 2 called')
       next()
     })
 
-    f.addHook('onFinished', (request, reply) => {
-      t.ok(reply, 'onFinished 2 called')
+    f.addHook('onFinished', (request, response) => {
+      t.ok(response, 'onFinished 2 called')
     })
 
     next()
@@ -629,39 +629,39 @@ test('encapsulated custom 404 without prefix has the right encapsulation context
   const app = medley()
 
   app.decorateRequest('foo', 42)
-  app.decorateReply('foo', 42)
+  app.decorateResponse('foo', 42)
 
   app.register((subApp, opts, next) => {
     subApp.decorateRequest('bar', 84)
 
-    subApp.addHook('onRequest', (request, reply, next) => {
+    subApp.addHook('onRequest', (request, response, next) => {
       t.equal(request.foo, 42)
       t.equal(request.bar, 84)
-      t.equal(reply.foo, 42)
+      t.equal(response.foo, 42)
       next()
     })
-    subApp.addHook('preHandler', (request, reply, next) => {
+    subApp.addHook('preHandler', (request, response, next) => {
       t.equal(request.foo, 42)
       t.equal(request.bar, 84)
-      t.equal(reply.foo, 42)
+      t.equal(response.foo, 42)
       next()
     })
-    subApp.addHook('onSend', (request, reply, payload, next) => {
+    subApp.addHook('onSend', (request, response, payload, next) => {
       t.equal(request.foo, 42)
       t.equal(request.bar, 84)
-      t.equal(reply.foo, 42)
+      t.equal(response.foo, 42)
       next()
     })
-    subApp.addHook('onFinished', (request, reply) => {
+    subApp.addHook('onFinished', (request, response) => {
       t.equal(request.foo, 42)
       t.equal(request.bar, 84)
-      t.equal(reply.foo, 42)
+      t.equal(response.foo, 42)
     })
 
-    subApp.setNotFoundHandler((request, reply) => {
+    subApp.setNotFoundHandler((request, response) => {
       t.equal(request.foo, 42)
       t.equal(request.bar, 84)
-      reply.code(404).send('custom not found')
+      response.code(404).send('custom not found')
     })
 
     next()
@@ -679,23 +679,23 @@ test('hooks check 404', (t) => {
 
   const app = medley()
 
-  app.get('/', function(req, reply) {
-    reply.send({hello: 'world'})
+  app.get('/', function(req, response) {
+    response.send({hello: 'world'})
   })
 
-  app.addHook('onRequest', (request, reply, next) => {
+  app.addHook('onRequest', (request, response, next) => {
     t.deepEqual(request.query, {foo: 'asd'})
     next()
   })
 
-  app.addHook('onSend', (request, reply, payload, next) => {
+  app.addHook('onSend', (request, response, payload, next) => {
     t.deepEqual(request.query, {foo: 'asd'})
     next()
   })
 
-  app.addHook('onFinished', (request, reply) => {
+  app.addHook('onFinished', (request, response) => {
     t.deepEqual(request.query, {foo: 'asd'})
-    t.ok(reply, 'called onFinished')
+    t.ok(response, 'called onFinished')
   })
 
   t.tearDown(app.close.bind(app))
@@ -728,16 +728,16 @@ test('setNotFoundHandler should not suppress duplicated routes checking', (t) =>
 
   const app = medley()
 
-  app.get('/', function(request, reply) {
-    reply.send({hello: 'world'})
+  app.get('/', function(request, response) {
+    response.send({hello: 'world'})
   })
 
-  app.get('/', function(request, reply) {
-    reply.send({hello: 'world'})
+  app.get('/', function(request, response) {
+    response.send({hello: 'world'})
   })
 
-  app.setNotFoundHandler(function(request, reply) {
-    reply.code(404).send('this was not found')
+  app.setNotFoundHandler(function(request, response) {
+    response.code(404).send('this was not found')
   })
 
   app.listen(0, (err) => {
@@ -750,8 +750,8 @@ test('recognizes errors from the http-errors module', (t) => {
 
   const app = medley()
 
-  app.get('/', function(request, reply) {
-    reply.error(httpErrors.NotFound())
+  app.get('/', function(request, response) {
+    response.error(httpErrors.NotFound())
   })
 
   app.inject('/', (err, res) => {
@@ -768,8 +768,8 @@ test('the default 404 handler can be invoked inside a prefixed plugin', (t) => {
   const app = medley()
 
   app.register((subApp, opts, next) => {
-    subApp.get('/path', (request, reply) => {
-      reply.error(httpErrors.NotFound())
+    subApp.get('/path', (request, response) => {
+      response.error(httpErrors.NotFound())
     })
 
     next()
@@ -788,13 +788,13 @@ test('an inherited custom 404 handler can be invoked inside a prefixed plugin', 
 
   const app = medley()
 
-  app.setNotFoundHandler((request, reply) => {
-    reply.code(404).send('custom handler')
+  app.setNotFoundHandler((request, response) => {
+    response.code(404).send('custom handler')
   })
 
   app.register((subApp, opts, next) => {
-    subApp.get('/path', (request, reply) => {
-      reply.error(httpErrors.NotFound())
+    subApp.get('/path', (request, response) => {
+      response.error(httpErrors.NotFound())
     })
 
     next()
@@ -813,8 +813,8 @@ test('encapsulated custom 404 handler without a prefix is the handler for the en
   const app = medley()
 
   app.register((subApp, opts, next) => {
-    subApp.setNotFoundHandler((request, reply) => {
-      reply.code(404).send('custom handler')
+    subApp.setNotFoundHandler((request, response) => {
+      response.code(404).send('custom handler')
     })
 
     next()
@@ -822,8 +822,8 @@ test('encapsulated custom 404 handler without a prefix is the handler for the en
 
   app.register((subApp, opts, next) => {
     subApp.register((subApp2, opts, next) => {
-      subApp2.setNotFoundHandler((request, reply) => {
-        reply.code(404).send('custom handler 2')
+      subApp2.setNotFoundHandler((request, response) => {
+        response.code(404).send('custom handler 2')
       })
       next()
     })
@@ -867,11 +867,11 @@ test('404 inside onSend', (t) => {
 
   const app = medley()
 
-  app.get('/', function(request, reply) {
-    reply.send({hello: 'world'})
+  app.get('/', function(request, response) {
+    response.send({hello: 'world'})
   })
 
-  app.addHook('onSend', function(request, reply, payload, next) {
+  app.addHook('onSend', function(request, response, payload, next) {
     next(new errors.NotFound())
   })
 

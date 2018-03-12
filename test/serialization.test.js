@@ -23,25 +23,25 @@ const opts = {
   },
 }
 
-app.get('/string', opts, (request, reply) => {
-  reply.send({hello: 'world'})
+app.get('/string', opts, (request, response) => {
+  response.send({hello: 'world'})
 })
 
-app.get('/number', opts, (request, reply) => {
-  reply.code(201).send({hello: 55})
+app.get('/number', opts, (request, response) => {
+  response.code(201).send({hello: 55})
 })
 
-app.get('/wrong-object-for-schema', opts, (request, reply) => {
-  reply.code(201).send({uno: 1}) // Will send { }
+app.get('/wrong-object-for-schema', opts, (request, response) => {
+  response.code(201).send({uno: 1}) // Will send { }
 })
 
 // No checks
-app.get('/empty', opts, (request, reply) => {
-  reply.code(204).send()
+app.get('/empty', opts, (request, response) => {
+  response.code(204).send()
 })
 
-app.get('/400', opts, (request, reply) => {
-  reply.code(400).send({hello: 'DOOM'})
+app.get('/400', opts, (request, response) => {
+  response.code(400).send({hello: 'DOOM'})
 })
 
 app.listen(0, (err) => {

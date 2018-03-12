@@ -40,8 +40,8 @@ Medley's plugin model is fully reentrant and graph-based, it handles without any
 Inside a plugin you can do whatever you want, register routes, utilities (we'll see this in a moment) and do nested registers, just remember to call `next` when everything is set up!
 ```js
 module.exports = function(app, options, next) {
-  app.get('/plugin', (request, reply) => {
-    reply.send({ hello: 'world' })
+  app.get('/plugin', (request, response) => {
+    response.send({ hello: 'world' })
   })
 
   next()
@@ -109,30 +109,30 @@ app.register((subApp2, opts, next) => {
 ```
 *Take home message: if you need that an utility is available in every part of your application, pay attention that is declared at the root scope of your application. Otherwise you can use `fastify-plugin` utility as described [here](#distribution).*
 
-`decorate` is not the unique api that you can use to extend the server functionalities, you can also use `decorateRequest` and `decorateReply`.
+`decorate` is not the unique api that you can use to extend the server functionalities, you can also use `decorateRequest` and `decorateResponse`.
 
-*`decorateRequest` and `decorateReply`? Why do we need them if we already have `decorate`?*<br>
+*`decorateRequest` and `decorateResponse`? Why do we need them if we already have `decorate`?*<br>
 Good question, we added them to make Medley more developer-friendly. Let's see an example:
 ```js
 app.decorate('html', payload => {
   return generateHtml(payload)
 })
 
-app.get('/html', (request, reply) => {
-  reply
+app.get('/html', (request, response) => {
+  response
     .type('text/html')
     .send(app.html({ hello: 'world' }))
 })
 ```
 It works, but it can be way better!
 ```js
-app.decorateReply('html', function (payload) {
-  this.type('text/html') // this is the 'Reply' object
+app.decorateResponse('html', function (payload) {
+  this.type('text/html') // this is the 'Response' object
   this.send(generateHtml(payload))
 })
 
-app.get('/html', (request, reply) => {
-  reply.html({ hello: 'world' })
+app.get('/html', (request, response) => {
+  response.html({ hello: 'world' })
 })
 ```
 
@@ -142,13 +142,13 @@ app.decorate('getHeader', (request, header) => {
   return request.headers[header]
 })
 
-app.addHook('preHandler', (request, reply, done) => {
+app.addHook('preHandler', (request, response, done) => {
   request.isHappy = app.getHeader(request, 'happy')
   done()
 })
 
-app.get('/happiness', (request, reply) => {
-  reply.send({ happy: request.isHappy })
+app.get('/happiness', (request, response) => {
+  response.send({ happy: request.isHappy })
 })
 ```
 Again, it works, but it can be way better!
@@ -159,13 +159,13 @@ app.decorateRequest('setHeader', function (header) {
 
 app.decorateRequest('isHappy', false) // this will be added to the Request object prototype, yay speed!
 
-app.addHook('preHandler', (request, reply, done) => {
+app.addHook('preHandler', (request, response, done) => {
   request.setHeader('happy')
   done()
 })
 
-app.get('/happiness', (request, reply) => {
-  reply.send({ happy: request.isHappy })
+app.get('/happiness', (request, response) => {
+  response.send({ happy: request.isHappy })
 })
 ```
 
@@ -177,14 +177,14 @@ You just built an amazing utility, but now you need to execute that for every re
 ```js
 app.decorate('util', (request, key, value) => { request.key = value })
 
-app.get('/plugin1', (request, reply) => {
+app.get('/plugin1', (request, response) => {
   app.util(request, 'timestamp', new Date())
-  reply.send(request)
+  response.send(request)
 })
 
-app.get('/plugin2', (request, reply) => {
+app.get('/plugin2', (request, response) => {
   app.util(request, 'timestamp', new Date())
-  reply.send(request)
+  response.send(request)
 })
 ```
 I think we all agree that this is terrible. Code repeat, awful readability and it cannot scale.
@@ -193,17 +193,17 @@ So what can you do to avoid this annoying issue? Yes, you are right, use an [hoo
 ```js
 app.decorate('util', (request, key, value) => { request.key = value })
 
-app.addHook('preHandler', (request, reply, done) => {
+app.addHook('preHandler', (request, response, done) => {
   app.util(request, 'timestamp', new Date())
   done()
 })
 
-app.get('/plugin1', (request, reply) => {
-  reply.send(request)
+app.get('/plugin1', (request, response) => {
+  response.send(request)
 })
 
-app.get('/plugin2', (request, reply) => {
-  reply.send(request)
+app.get('/plugin2', (request, response) => {
+  response.send(request)
 })
 ```
 Now for every request you will run your utility, it is obvious that you can register as many hooks as you need.<br>
@@ -213,20 +213,20 @@ It can happen that you want a hook that must be executed just for a subset of ro
 app.register((subApp, opts, next) => {
   subApp.decorate('util', (request, key, value) => { request.key = value })
 
-  subApp.addHook('preHandler', (request, reply, done) => {
+  subApp.addHook('preHandler', (request, response, done) => {
     subApp.util(request, 'timestamp', new Date())
     done()
   })
 
-  subApp.get('/plugin1', (request, reply) => {
-    reply.send(request)
+  subApp.get('/plugin1', (request, response) => {
+    response.send(request)
   })
 
   next()
 })
 
-app.get('/plugin2', (request, reply) => {
-  reply.send(request)
+app.get('/plugin2', (request, response) => {
+  response.send(request)
 })
 ```
 Now your hook will run just for the first route!

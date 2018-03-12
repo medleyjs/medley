@@ -101,7 +101,7 @@ Method to add routes to the server, it also have shorthands functions, check [he
 
 <a name="decorate"></a>
 #### decorate*
-Function useful if you need to decorate the app, Reply or Request, check [here](Decorators.md).
+Function useful if you need to decorate the app, Response or Request, check [here](Decorators.md).
 
 <a name="register"></a>
 #### register
@@ -139,15 +139,15 @@ Fake http injection (for testing purposes) [here](Testing.md#inject).
 <a name="not-found-handler"></a>
 #### setNotFoundHandler
 
-`app.setNotFoundHandler(handler(request, reply))`: set the 404 handler. This call is encapsulated by prefix, so different plugins can set different not found handlers if a different [`prefix` option](Plugins.md#route-prefixing-option) is passed to `app.register()`. The handler is treated like a regular route handler so requests will go through the full [Medley lifecycle](Lifecycle.md#lifecycle).
+`app.setNotFoundHandler(handler(request, response))`: set the 404 handler. This call is encapsulated by prefix, so different plugins can set different not found handlers if a different [`prefix` option](Plugins.md#route-prefixing-option) is passed to `app.register()`. The handler is treated like a regular route handler so requests will go through the full [Medley lifecycle](Lifecycle.md#lifecycle).
 
 ```js
-app.setNotFoundHandler((request, reply) => {
+app.setNotFoundHandler((request, response) => {
   // Default not found handler
 })
 
 app.register((subApp, options, next) => {
-  subApp.setNotFoundHandler(function (request, reply) {
+  subApp.setNotFoundHandler((request, response) => {
     // Handle not found request to URLs that begin with '/v1'
   })
   next()
@@ -157,10 +157,10 @@ app.register((subApp, options, next) => {
 <a name="set-error-handler"></a>
 #### setErrorHandler
 
-`app.setErrorHandler(handler(error, request, reply))`: Set a function that will be called whenever an error happens. The handler is fully encapsulated, so different plugins can set different error handlers. *async-await* is supported as well.
+`app.setErrorHandler(handler(error, request, response))`: Set a function that will be called whenever an error happens. The handler is fully encapsulated, so different plugins can set different error handlers. *async-await* is supported as well.
 
 ```js
-app.setErrorHandler(function (error, request, reply) {
+app.setErrorHandler((error, request, response) => {
   // Send error response
 })
 ```

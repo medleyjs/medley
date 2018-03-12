@@ -11,13 +11,13 @@ codes.forEach((code) => {
 })
 
 function helper(code) {
-  test('Reply error handling - code: ' + code, (t) => {
+  test('Response error handling - code: ' + code, (t) => {
     t.plan(4)
     const app = medley()
     const err = new Error('winter is coming')
 
-    app.get('/', (req, reply) => {
-      reply
+    app.get('/', (req, response) => {
+      response
         .code(Number(code))
         .error(err)
     })
@@ -46,8 +46,8 @@ test('preHandler hook error handling with external code', (t) => {
   const app = medley()
   const err = new Error('winter is coming')
 
-  app.addHook('preHandler', (req, reply, done) => {
-    reply.code(400)
+  app.addHook('preHandler', (req, response, done) => {
+    response.code(400)
     done(err)
   })
 
@@ -75,8 +75,8 @@ test('onRequest hook error handling with external done', (t) => {
   const app = medley()
   const err = new Error('winter is coming')
 
-  app.addHook('onRequest', (request, reply, done) => {
-    reply.code(400)
+  app.addHook('onRequest', (request, response, done) => {
+    response.code(400)
     done(err)
   })
 
@@ -204,13 +204,13 @@ test('Support rejection with values that are not Error instances', (t) => {
         return Promise.reject(nonErr)
       })
 
-      app.setErrorHandler((err, request, reply) => {
+      app.setErrorHandler((err, request, response) => {
         if (typeof err === 'object') {
           t.deepEqual(err, nonErr)
         } else {
           t.strictEqual(err, nonErr)
         }
-        reply.send('error')
+        response.send('error')
       })
 
       app.inject({
@@ -229,16 +229,16 @@ test('should set the status code from the error object (from route handler)', (t
   t.plan(6)
   const app = medley()
 
-  app.get('/status', (req, reply) => {
+  app.get('/status', (req, response) => {
     const error = new Error('kaboom')
     error.status = 400
-    reply.error(error)
+    response.error(error)
   })
 
-  app.get('/statusCode', (req, reply) => {
+  app.get('/statusCode', (req, response) => {
     const error = new Error('kaboom')
     error.statusCode = 400
-    reply.error(error)
+    response.error(error)
   })
 
   app.inject({
@@ -272,18 +272,18 @@ test('should set the status code from the error object (from custom error handle
   t.plan(5)
   const app = medley()
 
-  app.get('/', (req, reply) => {
+  app.get('/', (req, response) => {
     const error = new Error('ouch')
     error.statusCode = 401
-    reply.error(error)
+    response.error(error)
   })
 
-  app.setErrorHandler((err, request, reply) => {
+  app.setErrorHandler((err, request, response) => {
     t.is(err.message, 'ouch')
-    t.is(reply.res.statusCode, 401)
+    t.is(response.res.statusCode, 401)
     const error = new Error('kaboom')
     error.statusCode = 400
-    reply.error(error)
+    response.error(error)
   })
 
   app.inject({
@@ -304,10 +304,10 @@ test('should throw an error if the payload does not get serialized to a valid ty
   t.plan(2)
   const app = medley()
 
-  app.get('/', (request, reply) => {
-    reply.type('text/html')
+  app.get('/', (request, response) => {
+    response.type('text/html')
     try {
-      reply.send({})
+      response.send({})
     } catch (err) {
       t.type(err, TypeError)
       t.strictEqual(err.message, "Attempted to send payload of invalid type 'object'. Expected a string, Buffer, or stream.")

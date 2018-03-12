@@ -22,14 +22,14 @@ app.route(options)
 + `path`: The path to match the URL of the request.
 + `url`: Alias for `path`.
 + `responseSchema`: The schema for a JSON response. See the [`Serialization` documentation](Serialization.md).
-+ `beforeHandler(request, reply, next)`: A [function](Hooks.md#before-handler) or an array of functions called just before the request handler. `beforeHandler` functions are treated just like `preHandler` hooks.
-+ `handler(request, reply)`: The main function that will handle the request.
++ `beforeHandler(request, response, next)`: A [function](Hooks.md#before-handler) or an array of functions called just before the request handler. `beforeHandler` functions are treated just like `preHandler` hooks.
++ `handler(request, response)`: The main function that will handle the request.
 + `bodyLimit`: Limits request bodies to this number of bytes. Must be an integer. Used to override the `bodyLimit` option passed to the [`Medley factory function`](Factory.md#bodylimit).
 + `config`: Object used to store custom configuration. Defaults to an empty object (`{}`).
 
 `request` is defined in [Request](Request.md).
 
-`reply` is defined in [Reply](Reply.md).
+`response` is defined in [Response](Response.md).
 
 
 Example:
@@ -43,19 +43,19 @@ app.route({
       hello: { type: 'string' }
     }
   },
-  handler(request, reply) {
-    reply.send({ hello: 'world' })
+  handler(request, response) {
+    response.send({ hello: 'world' })
   }
 })
 
 app.route({
   method: ['POST', 'PUT'],
   path: '/comment',
-  beforeHandler(request, reply, next) {
+  beforeHandler: function(request, response, next) {
     // Validate the request
     next()  
   },
-  handler(request, reply) {
+  handler: function(request, response) {
     // Create a user comment
   }  
 })
@@ -77,11 +77,11 @@ Example:
 
 ```js
 const beforeHandler = [
-  function authenticate(request, reply, next) { ... },
-  function validate(request, reply, next) { ... },
+  function authenticate(request, response, next) { ... },
+  function validate(request, response, next) { ... },
 ]
-app.get('/', { beforeHandler }, (request, reply) => {
-  reply.send({ hello: 'world' })
+app.get('/', { beforeHandler }, (request, response) => {
+  response.send({ hello: 'world' })
 })
 ```
 
@@ -98,28 +98,28 @@ To register a **parametric** path, use the *colon* before the parameter name. Fo
 
 ```js
 // parametric
-app.get('/example/:userId', (request, reply) => {}))
-app.get('/example/:userId/:secretToken', (request, reply) => {}))
+app.get('/example/:userId', (request, response) => {}))
+app.get('/example/:userId/:secretToken', (request, response) => {}))
 
 // wildcard
-app.get('/example/*', (request, reply) => {}))
+app.get('/example/*', (request, response) => {}))
 ```
 
 Regular expression routes are supported as well, but pay attention, RegExp are very expensive in term of performance!
 ```js
 // parametric with regexp
-app.get('/example/:file(^\\d+).png', (request, reply) => {}))
+app.get('/example/:file(^\\d+).png', (request, response) => {}))
 ```
 
 It's possible to define more than one parameter within the same couple of slash ("/"). Such as:
 ```js
-app.get('/example/near/:lat-:lng/radius/:r', (request, reply) => {}))
+app.get('/example/near/:lat-:lng/radius/:r', (request, response) => {}))
 ```
 *Remember in this case to use the dash ("-") as parameters separator.*
 
 Finally it's possible to have multiple parameters with RegExp.
 ```js
-app.get('/example/at/:hour(^\\d{2})h:minute(^\\d{2})m', (request, reply) => {}))
+app.get('/example/at/:hour(^\\d{2})h:minute(^\\d{2})m', (request, response) => {}))
 ```
 In this case as parameter separator it's possible to use whatever character is not matched by the regular expression.
 
@@ -133,14 +133,14 @@ Medley has a convenient feature for `async` functions. If an `async` function re
 it will be sent automatically.
 
 ```js
-// Using reply.send()
-app.get('/', async (request, reply) => {
+// Using response.send()
+app.get('/', async (request, response) => {
   const data = await getDataAsync()
-  reply.send(data)
+  response.send(data)
 })
 
 // Using return
-app.get('/', async (request, reply) => {
+app.get('/', async (request, response) => {
   const data = await getDataAsync()
   return data
 })
@@ -150,24 +150,24 @@ This means that using `async-await` might not be needed at all since awaitable
 functions return a promise, which can be returned from a normal function:
 
 ```js
-app.get('/', (request, reply) => {
+app.get('/', (request, response) => {
   return getDataAsync()
 })
 ```
 
-The default status code for responses is `200`. If needed, use `reply.code()`
+The default status code for responses is `200`. If needed, use `response.code()`
 to set the status code before returning:
 
 ```js
-app.post('/user', (request, reply) => {
-  reply.code(201) // 201 Created
+app.post('/user', (request, response) => {
+  response.code(201) // 201 Created
   return createUserAsync()
 })
 ```
 
-Note that `reply.send()` will not be called automatically if the value returned from an `async` function is `undefined`. This is because returning `undefined` is the same as not returning anything all (see the [MDN `return` documentation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/return#wikiArticle)).
+Note that `response.send()` will not be called automatically if the value returned from an `async` function is `undefined`. This is because returning `undefined` is the same as not returning anything all (see the [MDN `return` documentation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/return#wikiArticle)).
 
-**Warning:** An error will be thrown if `return someValue` and `reply.send()` are used at the same time because a response cannot be sent twice.
+**Warning:** An error will be thrown if `return someValue` and `response.send()` are used at the same time because a response cannot be sent twice.
 
 ## Route Prefixing
 Sometimes you need to maintain two or more different versions of the same api, a classic approach is to prefix all the routes with the api version number, `/v1/user` for example.

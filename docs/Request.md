@@ -21,7 +21,7 @@ It is a wrapper around Node's [`http.IncomingMessage`][http.IncomingMessage] obj
 The parsed body of the request. Is `undefined` if there was no request body or if parsing the body failed.
 
 ```js
-app.post('/user', (request, reply) => {
+app.post('/user', (request, response) => {
   request.body // { name: 'medley', email: 'medley@example.com' }
 })
 ```
@@ -57,7 +57,7 @@ request.method // 'GET'
 An object of the parameters matched in the URL.
 
 ```js
-app.get('/path/:user/:foo', (request, reply) => {
+app.get('/path/:user/:foo', (request, response) => {
   // URL: /path/100/bar
   request.params // { user: '100', foo: 'bar' }
 })
@@ -79,7 +79,7 @@ add an `onRequest` hook that parses `request.querystring` like so:
 ```js
 const qs = require('qs')
 
-app.addHook('onRequest', (request, reply, next) => {
+app.addHook('onRequest', (request, response, next) => {
   request.query = qs.parse(request.querystring)
   next()  
 })

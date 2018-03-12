@@ -26,19 +26,19 @@ See the [Scopes](#scope) section for more information.
 ### The `onRequest` and `preHandler` Hooks
 
 ```js
-app.addHook('onRequest', (request, reply, next) => {
+app.addHook('onRequest', (request, response, next) => {
   // Handle onRequest
   next()
 })
 
-app.addHook('preHandler', (request, reply, next) => {
+app.addHook('preHandler', (request, response, next) => {
   // Handle preHandler
   next()
 })
 ```
 
 + `request` - Medley [Request](Request.md) object
-+ `reply` - Medley [Reply](Reply.md) object
++ `response` - Medley [Response](Response.md) object
 + `next([error])` - Function to continue with the request
 
 `onRequest` hooks are executed at the very beginning of each request and `preHandler` hooks are
@@ -57,8 +57,8 @@ any `preHandler` hooks. This is similar to route-level middleware in Express.
 It is possible to respond to a request within the `onRequest` and `preHandler` hooks. This will skip the rest of the `onRequest` and `preHandler` hooks and the route handler.
 
 ```js
-app.addHook('preHandler', (request, reply, next) => {
-  reply.send({ early: 'response' })
+app.addHook('preHandler', (request, response, next) => {
+  response.send({ early: 'response' })
 })
 ```
 
@@ -75,24 +75,24 @@ app.addHook('onRequest', (req, res, next) => {
 })
 ```
 
-The error will be handled by [`Reply#error`](Reply.md#error).
+The error will be handled by [`Response#error`](Response.md#error).
 
 <a id="onSend-hook"></a> 
 ### The `onSend` Hook
 
 ```js
-app.addHook('onSend', (request, reply, payload, next) => {
+app.addHook('onSend', (request, response, payload, next) => {
   // Handle onSend
   next()
 })
 ```
 
 + `request` - Medley [Request](Request.md) object
-+ `reply` - Medley [Reply](Reply.md) object
++ `response` - Medley [Response](Response.md) object
 + `payload` - The serialized payload
 + `next([error, [payload]])` - Function to continue with the request
 
-The `onSend` hooks are run right after `reply.send()` is called and the payload
+The `onSend` hooks are run right after `response.send()` is called and the payload
 has been serialized. They provide a great opportunity to save application state
 (e.g. sessions) and set extra headers before the response is sent.
 
@@ -103,11 +103,11 @@ payload as the second argument to `next()`. The payload may only be changed
 to a `string`, a `Buffer`, a `stream`, or `null`.
 
 ```js
-app.get('/', (request, reply) => {
-  reply.send({ hello: 'world' })  
+app.get('/', (request, response) => {
+  response.send({ hello: 'world' })  
 })
 
-app.addHook('onSend', (request, reply, payload, next) => {{
+app.addHook('onSend', (request, response, payload, next) => {{
   console.log(payload) // '{"hello":"world"}'
   const newPayload = Buffer.from(payload)
   next(null, newPayload)
@@ -129,20 +129,20 @@ handle errors in the hook when possible rather than forwarding the error.
 ### The `onFinished` Hook
 
 ```js
-app.addHook('onFinished', (request, reply) => {
+app.addHook('onFinished', (request, response) => {
   // Handle onFinished
 })
 ```
 
 + `request` - Medley [Request](Request.md) object
-+ `reply` - Medley [Reply](Reply.md) object
++ `response` - Medley [Response](Response.md) object
 
 The `onFinished` hook is different from the other hooks. It only receives the
-[`request`](Request.md) and [`reply`](Reply.md) object and is executed synchronously.
+[`request`](Request.md) and [`response`](Response.md) object and is executed synchronously.
 Any errors that occur during this hook must be handled manually.
 
 ```js
-app.addHook('onFinished', async (request, reply) => {
+app.addHook('onFinished', async (request, response) => {
   try {
     await asyncFunction()
   } catch (error) {
@@ -160,7 +160,7 @@ Hooks may be an `async` function. For convenience, all hooks (except for the `on
 will automatically catch errors thrown in an `async` function and call `next(error)` for you.
 
 ```js
-app.addHook('preHandler', async (request, reply, next) => {
+app.addHook('preHandler', async (request, response, next) => {
   const user = await loadUser() // No need to wrap in a try-catch
   request.user = user
   next()
@@ -211,7 +211,7 @@ Despite the name, `beforeHandler` is not a standard hook like `preHandler`, but 
 **`beforeHandler` is executed always after the `preHandler` hook.**
 
 ```js
-app.addHook('preHandler', (request, reply, done) => {
+app.addHook('preHandler', (request, response, done) => {
   // your code
   done()
 })
@@ -219,12 +219,12 @@ app.addHook('preHandler', (request, reply, done) => {
 app.route({
   method: 'GET',
   url: '/',
-  beforeHandler: function (request, reply, done) {
+  beforeHandler: function(request, response, done) {
     // your code
     done()
   },
-  handler: function (request, reply) {
-    reply.send({ hello: 'world' })
+  handler: function (request, response) {
+    response.send({ hello: 'world' })
   }
 })
 
@@ -232,17 +232,17 @@ app.route({
   method: 'GET',
   url: '/',
   beforeHandler: [
-    function first (request, reply, done) {
+    function first(request, response, done) {
       // your code
       done()
     },
-    function second (request, reply, done) {
+    function second(request, response, done) {
       // your code
       done()
     }
   ],
-  handler: function (request, reply) {
-    reply.send({ hello: 'world' })
+  handler: function(request, response) {
+    response.send({ hello: 'world' })
   }
 })
 ```

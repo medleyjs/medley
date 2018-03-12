@@ -38,8 +38,8 @@ test('Should honor maxParamLength option', (t) => {
   t.plan(4)
   const app = medley({maxParamLength: 10})
 
-  app.get('/test/:id', (req, reply) => {
-    reply.send({hello: 'world'})
+  app.get('/test/:id', (req, response) => {
+    response.send({hello: 'world'})
   })
 
   app.inject({

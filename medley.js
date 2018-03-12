@@ -9,7 +9,7 @@ const lightMyRequest = require('light-my-request')
 const BodyParser = require('./lib/BodyParser')
 const Context = require('./lib/Context')
 const Hooks = require('./lib/Hooks')
-const Reply = require('./lib/Reply')
+const Response = require('./lib/Response')
 const Request = require('./lib/Request')
 
 const pluginUtils = require('./lib/pluginUtils')
@@ -72,7 +72,7 @@ function medley(options) {
     // Decorator methods
     decorate: decorateApp,
     decorateRequest,
-    decorateReply,
+    decorateResponse,
 
     // Routing
     route,
@@ -110,7 +110,7 @@ function medley(options) {
     inject, // Fake HTTP injection
 
     _Request: Request.buildRequest(),
-    _Reply: Reply.buildReply(),
+    _Response: Response.buildResponse(),
     _subApps: [],
     [pluginUtils.registeredPlugins]: [], // For storing plugins
   }
@@ -168,12 +168,12 @@ function medley(options) {
     return this
   }
 
-  function decorateReply(name, fn) {
-    if (name in this._Reply.prototype) {
-      throw new Error(`The decorator '${name}' has been already added to Reply!`)
+  function decorateResponse(name, fn) {
+    if (name in this._Response.prototype) {
+      throw new Error(`The decorator '${name}' has been already added to Response!`)
     }
 
-    this._Reply.prototype[name] = fn
+    this._Response.prototype[name] = fn
     return this
   }
 
@@ -241,7 +241,7 @@ function medley(options) {
     parentApp._subApps.push(subApp)
     subApp._subApps = []
     subApp._Request = Request.buildRequest(subApp._Request)
-    subApp._Reply = Reply.buildReply(subApp._Reply)
+    subApp._Response = Response.buildResponse(subApp._Response)
     subApp._bodyParser = subApp._bodyParser.clone()
     subApp._hooks = Hooks.buildHooks(subApp._hooks)
     subApp._routePrefix = buildRoutePrefix(parentApp._routePrefix, opts.prefix)

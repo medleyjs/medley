@@ -24,10 +24,10 @@ test('.decorateRequest() should be chainable', (t) => {
   t.end()
 })
 
-test('.decorateReply() should be chainable', (t) => {
+test('.decorateResponse() should be chainable', (t) => {
   medley()
-    .decorateReply('a', 'aVal')
-    .decorateReply('b', 'bVal')
+    .decorateResponse('a', 'aVal')
+    .decorateResponse('b', 'bVal')
   t.end()
 })
 
@@ -79,56 +79,56 @@ test('.decorateRequest() should not allow decorating Medley values', (t) => {
   t.end()
 })
 
-test('.decorateReply() should not allow decorating Medley values', (t) => {
+test('.decorateResponse() should not allow decorating Medley values', (t) => {
   const app = medley()
 
   try {
-    app.decorateReply('res', null)
-    t.fail('should not allow decorating Reply with `res`')
+    app.decorateResponse('res', null)
+    t.fail('should not allow decorating Response with `res`')
   } catch (err) {
-    t.equal(err.message, "The decorator 'res' has been already added to Reply!")
+    t.equal(err.message, "The decorator 'res' has been already added to Response!")
   }
 
   try {
-    app.decorateReply('_request', null)
-    t.fail('should not allow decorating Reply with `_request`')
+    app.decorateResponse('_request', null)
+    t.fail('should not allow decorating Response with `_request`')
   } catch (err) {
-    t.equal(err.message, "The decorator '_request' has been already added to Reply!")
+    t.equal(err.message, "The decorator '_request' has been already added to Response!")
   }
 
   try {
-    app.decorateReply('_context', null)
-    t.fail('should not allow decorating Reply with `_context`')
+    app.decorateResponse('_context', null)
+    t.fail('should not allow decorating Response with `_context`')
   } catch (err) {
-    t.equal(err.message, "The decorator '_context' has been already added to Reply!")
+    t.equal(err.message, "The decorator '_context' has been already added to Response!")
   }
 
   try {
-    app.decorateReply('config', null)
-    t.fail('should not allow decorating Reply with `config`')
+    app.decorateResponse('config', null)
+    t.fail('should not allow decorating Response with `config`')
   } catch (err) {
-    t.equal(err.message, "The decorator 'config' has been already added to Reply!")
+    t.equal(err.message, "The decorator 'config' has been already added to Response!")
   }
 
   try {
-    app.decorateReply('sent', null)
-    t.fail('should not allow decorating Reply with `sent`')
+    app.decorateResponse('sent', null)
+    t.fail('should not allow decorating Response with `sent`')
   } catch (err) {
-    t.equal(err.message, "The decorator 'sent' has been already added to Reply!")
+    t.equal(err.message, "The decorator 'sent' has been already added to Response!")
   }
 
   try {
-    app.decorateReply('_customError', null)
-    t.fail('should not allow decorating Reply with `_customError`')
+    app.decorateResponse('_customError', null)
+    t.fail('should not allow decorating Response with `_customError`')
   } catch (err) {
-    t.equal(err.message, "The decorator '_customError' has been already added to Reply!")
+    t.equal(err.message, "The decorator '_customError' has been already added to Response!")
   }
 
   try {
-    app.decorateReply('_ranHooks', null)
-    t.fail('should not allow decorating Reply with `_ranHooks`')
+    app.decorateResponse('_ranHooks', null)
+    t.fail('should not allow decorating Response with `_ranHooks`')
   } catch (err) {
-    t.equal(err.message, "The decorator '_ranHooks' has been already added to Reply!")
+    t.equal(err.message, "The decorator '_ranHooks' has been already added to Response!")
   }
 
   t.end()
@@ -149,25 +149,25 @@ test('server methods should be incapsulated via .register', (t) => {
   })
 })
 
-test('decorateReply inside register', (t) => {
+test('decorateResponse inside register', (t) => {
   t.plan(12)
   const app = medley()
 
   app.register((subApp, opts, next) => {
-    subApp.decorateReply('test', 'test')
-    t.ok(subApp._Reply.prototype.test)
+    subApp.decorateResponse('test', 'test')
+    t.ok(subApp._Response.prototype.test)
 
-    subApp.get('/yes', (req, reply) => {
-      t.ok(reply.test, 'test exists')
-      reply.send({hello: 'world'})
+    subApp.get('/yes', (req, response) => {
+      t.ok(response.test, 'test exists')
+      response.send({hello: 'world'})
     })
 
     next()
   })
 
-  app.get('/no', (req, reply) => {
-    t.notOk(reply.test)
-    reply.send({hello: 'world'})
+  app.get('/no', (req, response) => {
+    t.notOk(response.test)
+    response.send({hello: 'world'})
   })
 
   app.listen(0, (err) => {
@@ -196,26 +196,26 @@ test('decorateReply inside register', (t) => {
   })
 })
 
-test('decorateReply as plugin (inside .after)', (t) => {
+test('decorateResponse as plugin (inside .after)', (t) => {
   t.plan(11)
   const app = medley()
 
   app.register((subApp, opts, next) => {
     subApp.register(fp((i, o, n) => {
-      subApp.decorateReply('test', 'test')
+      subApp.decorateResponse('test', 'test')
       n()
     })).after(() => {
-      subApp.get('/yes', (req, reply) => {
-        t.ok(reply.test)
-        reply.send({hello: 'world'})
+      subApp.get('/yes', (req, response) => {
+        t.ok(response.test)
+        response.send({hello: 'world'})
       })
     })
     next()
   })
 
-  app.get('/no', (req, reply) => {
-    t.notOk(reply.test)
-    reply.send({hello: 'world'})
+  app.get('/no', (req, response) => {
+    t.notOk(response.test)
+    response.send({hello: 'world'})
   })
 
   app.listen(0, (err) => {
@@ -244,26 +244,26 @@ test('decorateReply as plugin (inside .after)', (t) => {
   })
 })
 
-test('decorateReply as plugin (outside .after)', (t) => {
+test('decorateResponse as plugin (outside .after)', (t) => {
   t.plan(11)
   const app = medley()
 
   app.register((subApp, opts, next) => {
     subApp.register(fp((i, o, n) => {
-      subApp.decorateReply('test', 'test')
+      subApp.decorateResponse('test', 'test')
       n()
     }))
 
-    subApp.get('/yes', (req, reply) => {
-      t.ok(reply.test)
-      reply.send({hello: 'world'})
+    subApp.get('/yes', (req, response) => {
+      t.ok(response.test)
+      response.send({hello: 'world'})
     })
     next()
   })
 
-  app.get('/no', (req, reply) => {
-    t.notOk(reply.test)
-    reply.send({hello: 'world'})
+  app.get('/no', (req, response) => {
+    t.notOk(response.test)
+    response.send({hello: 'world'})
   })
 
   app.listen(0, (err) => {
@@ -300,17 +300,17 @@ test('decorateRequest inside register', (t) => {
     subApp.decorateRequest('test', 'test')
     t.ok(subApp._Request.prototype.test)
 
-    subApp.get('/yes', (req, reply) => {
+    subApp.get('/yes', (req, response) => {
       t.ok(req.test, 'test exists')
-      reply.send({hello: 'world'})
+      response.send({hello: 'world'})
     })
 
     next()
   })
 
-  app.get('/no', (req, reply) => {
+  app.get('/no', (req, response) => {
     t.notOk(req.test)
-    reply.send({hello: 'world'})
+    response.send({hello: 'world'})
   })
 
   app.listen(0, (err) => {
@@ -348,17 +348,17 @@ test('decorateRequest as plugin (inside .after)', (t) => {
       subApp.decorateRequest('test', 'test')
       n()
     })).after(() => {
-      subApp.get('/yes', (req, reply) => {
+      subApp.get('/yes', (req, response) => {
         t.ok(req.test)
-        reply.send({hello: 'world'})
+        response.send({hello: 'world'})
       })
     })
     next()
   })
 
-  app.get('/no', (req, reply) => {
+  app.get('/no', (req, response) => {
     t.notOk(req.test)
-    reply.send({hello: 'world'})
+    response.send({hello: 'world'})
   })
 
   app.listen(0, (err) => {
@@ -397,16 +397,16 @@ test('decorateRequest as plugin (outside .after)', (t) => {
       n()
     }))
 
-    subApp.get('/yes', (req, reply) => {
+    subApp.get('/yes', (req, response) => {
       t.ok(req.test)
-      reply.send({hello: 'world'})
+      response.send({hello: 'world'})
     })
     next()
   })
 
-  app.get('/no', (req, reply) => {
+  app.get('/no', (req, response) => {
     t.notOk(req.test)
-    reply.send({hello: 'world'})
+    response.send({hello: 'world'})
   })
 
   app.listen(0, (err) => {
@@ -447,8 +447,8 @@ test('decorators should be app-independant', (t) => {
   app1.decorateRequest('test', 'foo')
   app2.decorateRequest('test', 'foo')
 
-  app1.decorateReply('test', 'foo')
-  app2.decorateReply('test', 'foo')
+  app1.decorateResponse('test', 'foo')
+  app2.decorateResponse('test', 'foo')
 
   t.pass()
 })

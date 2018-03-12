@@ -11,8 +11,8 @@ t.test('onRoute hook should be called / 1', (t) => {
     subApp.addHook('onRoute', () => {
       t.pass()
     })
-    subApp.get('/', opts, function(req, reply) {
-      reply.send()
+    subApp.get('/', opts, function(req, response) {
+      response.send()
     })
     next()
   })
@@ -37,8 +37,8 @@ t.test('onRoute hook should be called / 2', (t) => {
       t.pass()
       secondHandler++
     })
-    subApp.get('/', opts, function(req, reply) {
-      reply.send()
+    subApp.get('/', opts, function(req, response) {
+      response.send()
     })
     next()
   })
@@ -56,8 +56,8 @@ t.test('onRoute hook should be called / 3', (t) => {
   t.plan(6)
   const app = medley()
 
-  function handler(req, reply) {
-    reply.send()
+  function handler(req, response) {
+    response.send()
   }
 
   app.addHook('onRoute', () => {
@@ -99,8 +99,8 @@ t.test('onRoute hook should pass correct route', (t) => {
       t.strictEqual(route.url, '/')
       t.strictEqual(route.path, '/')
     })
-    subApp.get('/', opts, function(req, reply) {
-      reply.send()
+    subApp.get('/', opts, function(req, response) {
+      response.send()
     })
     next()
   })
@@ -127,8 +127,8 @@ t.test('onRoute hook should pass correct route with custom prefix', (t) => {
       t.strictEqual(route.path, '/v1/foo')
       t.strictEqual(route.prefix, '/v1')
     })
-    subApp.get('/foo', opts, function(req, reply) {
-      reply.send()
+    subApp.get('/foo', opts, function(req, response) {
+      response.send()
     })
     next()
   }, {prefix: '/v1'})
@@ -147,8 +147,8 @@ t.test('onRoute hook should pass correct route with custom options', (t) => {
       t.strictEqual(route.url, '/foo')
       t.strictEqual(route.bodyLimit, 100)
     })
-    subApp.get('/foo', {bodyLimit: 100}, (request, reply) => {
-      reply.send()
+    subApp.get('/foo', {bodyLimit: 100}, (request, response) => {
+      response.send()
     })
     next()
   })
@@ -167,8 +167,8 @@ t.test('onRoute hook should receive any route option', (t) => {
       t.strictEqual(route.url, '/foo')
       t.strictEqual(route.auth, 'basic')
     })
-    subApp.get('/foo', {auth: 'basic'}, function(req, reply) {
-      reply.send()
+    subApp.get('/foo', {auth: 'basic'}, function(req, response) {
+      response.send()
     })
     next()
   })
@@ -187,8 +187,8 @@ t.test('onRoute hook should preserve system route configuration', (t) => {
       t.strictEqual(route.url, '/foo')
       t.strictEqual(route.handler.length, 2)
     })
-    subApp.get('/foo', {url: '/bar', method: 'POST', handler: () => {}}, function(req, reply) {
-      reply.send()
+    subApp.get('/foo', {url: '/bar', method: 'POST', handler: () => {}}, function(req, response) {
+      response.send()
     })
     next()
   })

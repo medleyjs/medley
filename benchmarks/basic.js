@@ -9,8 +9,8 @@ const responseSchema = {
   },
 }
 
-app.get('/', {responseSchema}, (request, reply) => {
-  reply.send({hello: 'world'})
+app.get('/', {responseSchema}, (request, response) => {
+  response.send({hello: 'world'})
 })
 
 app.listen(3000, (err) => {

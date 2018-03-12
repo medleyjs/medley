@@ -3,26 +3,26 @@
 const app = require('..')()
 
 app
-  .addHook('onRequest', (request, reply, next) => {
+  .addHook('onRequest', (request, response, next) => {
     next()
   })
-  .addHook('onRequest', (request, reply, next) => {
+  .addHook('onRequest', (request, response, next) => {
     next()
   })
 
 app
-  .addHook('preHandler', (request, reply, next) => {
+  .addHook('preHandler', (request, response, next) => {
     next()
   })
-  .addHook('preHandler', (request, reply, next) => {
+  .addHook('preHandler', (request, response, next) => {
     setImmediate(next)
   })
-  .addHook('preHandler', (request, reply, next) => {
+  .addHook('preHandler', (request, response, next) => {
     next()
   })
 
 app
-  .addHook('onSend', (request, reply, payload, next) => {
+  .addHook('onSend', (request, response, payload, next) => {
     next()
   })
 
@@ -32,8 +32,8 @@ app.get('/', {
       hello: {type: 'string'},
     },
   },
-}, (request, reply) => {
-  reply.send({hello: 'world'})
+}, (request, response) => {
+  response.send({hello: 'world'})
 })
 
 app.listen(3000, (err) => {

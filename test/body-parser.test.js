@@ -17,12 +17,12 @@ test('addBodyParser should add a custom parser', (t) => {
   t.plan(3)
   const app = medley()
 
-  app.post('/', (req, reply) => {
-    reply.send(req.body)
+  app.post('/', (req, response) => {
+    response.send(req.body)
   })
 
-  app.options('/', (req, reply) => {
-    reply.send(req.body)
+  app.options('/', (req, response) => {
+    response.send(req.body)
   })
 
   app.addBodyParser('application/jsoff', function(req, done) {
@@ -76,12 +76,12 @@ test('bodyParser should handle multiple custom parsers', (t) => {
   t.plan(7)
   const app = medley()
 
-  app.post('/', (req, reply) => {
-    reply.send(req.body)
+  app.post('/', (req, response) => {
+    response.send(req.body)
   })
 
-  app.post('/hello', (req, reply) => {
-    reply.send(req.body)
+  app.post('/hello', (req, response) => {
+    response.send(req.body)
   })
 
   function customParser(req, done) {
@@ -129,8 +129,8 @@ test('bodyParser should handle errors', (t) => {
   t.plan(3)
   const app = medley()
 
-  app.post('/', (req, reply) => {
-    reply.send(req.body)
+  app.post('/', (req, response) => {
+    response.send(req.body)
   })
 
   app.addBodyParser('application/jsoff', function(req, done) {
@@ -185,8 +185,8 @@ test('bodyParser should support encapsulation, second try', (t) => {
   const app = medley()
 
   app.register((subApp, opts, next) => {
-    subApp.post('/', (req, reply) => {
-      reply.send(req.body)
+    subApp.post('/', (req, response) => {
+      response.send(req.body)
     })
 
     subApp.addBodyParser('application/jsoff', function(req, done) {
@@ -221,8 +221,8 @@ test('bodyParser shouldn\'t support request with undefined "Content-Type"', (t) 
   t.plan(3)
   const app = medley()
 
-  app.post('/', (req, reply) => {
-    reply.send(req.body)
+  app.post('/', (req, response) => {
+    response.send(req.body)
   })
 
   app.addBodyParser('application/jsoff', function(req, done) {
@@ -289,8 +289,8 @@ test('catch all body parser', (t) => {
   t.plan(7)
   const app = medley()
 
-  app.post('/', (req, reply) => {
-    reply.send(req.body)
+  app.post('/', (req, response) => {
+    response.send(req.body)
   })
 
   app.addBodyParser('*', function(req, done) {
@@ -339,8 +339,8 @@ test('catch all body parser should not interfere with other conte type parsers',
   t.plan(7)
   const app = medley()
 
-  app.post('/', (req, reply) => {
-    reply.send(req.body)
+  app.post('/', (req, response) => {
+    response.send(req.body)
   })
 
   app.addBodyParser('*', function(req, done) {
@@ -458,8 +458,8 @@ test('Can override the default json parser', (t) => {
   t.plan(5)
   const app = medley()
 
-  app.post('/', (req, reply) => {
-    reply.send(req.body)
+  app.post('/', (req, response) => {
+    response.send(req.body)
   })
 
   app.addBodyParser('application/json', function(req, done) {
@@ -514,8 +514,8 @@ test('Should get the body as string', (t) => {
   t.plan(6)
   const app = medley()
 
-  app.post('/', (req, reply) => {
-    reply.send(req.body)
+  app.post('/', (req, response) => {
+    response.send(req.body)
   })
 
   app.addBodyParser('application/json', {parseAs: 'string'}, function(req, body, done) {
@@ -553,8 +553,8 @@ test('Should get the body as buffer', (t) => {
   t.plan(6)
   const app = medley()
 
-  app.post('/', (req, reply) => {
-    reply.send(req.body)
+  app.post('/', (req, response) => {
+    response.send(req.body)
   })
 
   app.addBodyParser('application/json', {parseAs: 'buffer'}, function(req, body, done) {
@@ -592,8 +592,8 @@ test('The charset should not interfere with the content type handling', (t) => {
   t.plan(5)
   const app = medley()
 
-  app.post('/', (req, reply) => {
-    reply.send(req.body)
+  app.post('/', (req, response) => {
+    response.send(req.body)
   })
 
   app.addBodyParser('application/json', function(req, done) {
@@ -671,8 +671,8 @@ test('should allow defining the bodyLimit per parser', (t) => {
   const app = medley()
   t.tearDown(() => app.close())
 
-  app.post('/', (req, reply) => {
-    reply.send(req.body)
+  app.post('/', (req, response) => {
+    response.send(req.body)
   })
 
   app.addBodyParser(
@@ -711,8 +711,8 @@ test('route bodyLimit should take precedence over a custom parser bodyLimit', (t
   const app = medley()
   t.tearDown(() => app.close())
 
-  app.post('/', {bodyLimit: 5}, (request, reply) => {
-    reply.send(request.body)
+  app.post('/', {bodyLimit: 5}, (request, response) => {
+    response.send(request.body)
   })
 
   app.addBodyParser(

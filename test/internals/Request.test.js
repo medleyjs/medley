@@ -60,12 +60,12 @@ t.test('request.body should be available in onSend hooks and undefined in onFini
 
   const app = medley()
 
-  app.get('/', (request, reply) => {
+  app.get('/', (request, response) => {
     request.body = 'body'
-    reply.send()
+    response.send()
   })
 
-  app.addHook('onSend', (request, reply, payload, next) => {
+  app.addHook('onSend', (request, response, payload, next) => {
     t.equal(request.body, 'body')
     next()
   })

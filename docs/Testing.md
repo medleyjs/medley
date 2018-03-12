@@ -55,8 +55,8 @@ const medley = require('@medley/medley')
 function buildMedley () {
   const app = medley()
 
-  app.get('/', function (request, reply) {
-    reply.send({ hello: 'world' })
+  app.get('/', (request, response) => {
+    response.send({ hello: 'world' })
   })
   
   return app

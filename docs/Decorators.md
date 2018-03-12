@@ -30,11 +30,11 @@ console.log(app.conf.db)
 
 Decorators are not *overwritable*. If you try to declare a decorator that was previously declared *(in other words, use the same name)*, `decorate` will throw an exception.
 
-<a name="decorate-reply"></a>
-**decorateReply**
-As the name suggests, this API is needed if you want to add new methods to the `Reply` core object. Just call the `decorateReply` API and pass the name of the new property and its value:
+<a name="decorate-response"></a>
+**decorateResponse**
+As the name suggests, this API is needed if you want to add new methods to the `Response` core object. Just call the `decorateResponse` API and pass the name of the new property and its value:
 ```js
-app.decorateReply('utility', function () {
+app.decorateResponse('utility', function () {
   // something very useful
 })
 ```

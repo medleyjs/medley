@@ -22,8 +22,8 @@ test('route - get', (t) => {
         },
       },
     },
-    handler(request, reply) {
-      reply.send({hello: 'world'})
+    handler(request, response) {
+      response.send({hello: 'world'})
     },
   })
 
@@ -42,8 +42,8 @@ test('missing schema - route', (t) => {
   app.route({
     method: 'GET',
     url: '/missing',
-    handler(request, reply) {
-      reply.send({hello: 'world'})
+    handler(request, response) {
+      response.send({hello: 'world'})
     },
   })
 
@@ -62,8 +62,8 @@ test('Multiple methods', (t) => {
   app.route({
     method: ['GET', 'DELETE'],
     url: '/multiple',
-    handler(request, reply) {
-      reply.send({hello: 'world'})
+    handler(request, response) {
+      response.send({hello: 'world'})
     },
   })
 
@@ -88,15 +88,15 @@ test('Add multiple methods', (t) => {
 
   const app = medley()
 
-  app.get('/add-multiple', (request, reply) => {
-    reply.send({hello: 'Bob!'})
+  app.get('/add-multiple', (request, response) => {
+    response.send({hello: 'Bob!'})
   })
 
   app.route({
     method: ['PUT', 'DELETE'],
     url: '/add-multiple',
-    handler(request, reply) {
-      reply.send({hello: 'world'})
+    handler(request, response) {
+      response.send({hello: 'world'})
     },
   })
 
@@ -135,8 +135,8 @@ test('cannot add another route after server is listening', (t) => {
   app.route({
     method: 'GET',
     url: '/1',
-    handler(request, reply) {
-      reply.send(1)
+    handler(request, response) {
+      response.send(1)
     },
   })
 
@@ -164,8 +164,8 @@ test('path can be specified in place of uri', (t) => {
   app.route({
     method: 'GET',
     path: '/path',
-    handler(request, reply) {
-      reply.send({hello: 'world'})
+    handler(request, response) {
+      response.send({hello: 'world'})
     },
   })
 

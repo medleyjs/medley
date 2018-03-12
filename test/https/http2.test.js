@@ -16,8 +16,8 @@ t.test('plain', (t) => {
     http2: true,
   })
 
-  app.get('/', function(req, reply) {
-    reply.send(msg)
+  app.get('/', function(req, response) {
+    response.send(msg)
   })
 
   app.listen(0, async (err) => {
@@ -45,8 +45,8 @@ t.test('secure', (t) => {
     },
   })
 
-  app.get('/', function(req, reply) {
-    reply.send(msg)
+  app.get('/', function(req, response) {
+    response.send(msg)
   })
 
   app.listen(0, async (err) => {
@@ -74,12 +74,12 @@ t.test('secure with fallback', (t) => {
     },
   })
 
-  app.get('/', function(req, reply) {
-    reply.send(msg)
+  app.get('/', function(req, response) {
+    response.send(msg)
   })
 
-  app.post('/', function(req, reply) {
-    reply.send(req.body)
+  app.post('/', function(req, response) {
+    response.send(req.body)
   })
 
   app.get('/error', async function() {

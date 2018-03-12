@@ -12,27 +12,27 @@ test('async hooks', (t) => {
   t.plan(19)
 
   const app = medley()
-  app.addHook('onRequest', async (request, reply, next) => {
+  app.addHook('onRequest', async (request, response, next) => {
     await sleep(1)
     request.onRequestVal = 'the request is coming'
-    reply.onRequestVal = 'the reply has come'
+    response.onRequestVal = 'the response has come'
     if (request.method === 'DELETE') {
       throw new Error('some error')
     }
     next()
   })
 
-  app.addHook('preHandler', async (request, reply, next) => {
+  app.addHook('preHandler', async (request, response, next) => {
     await sleep(1)
     request.preHandlerVal = 'the request is coming'
-    reply.preHandlerVal = 'the reply has come'
+    response.preHandlerVal = 'the response has come'
     if (request.req.method === 'HEAD') {
       throw new Error('some error')
     }
     next()
   })
 
-  app.addHook('onSend', async (request, reply, payload, next) => {
+  app.addHook('onSend', async (request, response, payload, next) => {
     await sleep(1)
     t.ok('onSend called')
     next()
@@ -43,20 +43,20 @@ test('async hooks', (t) => {
     t.ok('onFinished called')
   })
 
-  app.get('/', function(request, reply) {
+  app.get('/', function(request, response) {
     t.is(request.onRequestVal, 'the request is coming')
-    t.is(reply.onRequestVal, 'the reply has come')
+    t.is(response.onRequestVal, 'the response has come')
     t.is(request.preHandlerVal, 'the request is coming')
-    t.is(reply.preHandlerVal, 'the reply has come')
-    reply.send({hello: 'world'})
+    t.is(response.preHandlerVal, 'the response has come')
+    response.send({hello: 'world'})
   })
 
-  app.head('/', function(req, reply) {
-    reply.send({hello: 'world'})
+  app.head('/', function(req, response) {
+    response.send({hello: 'world'})
   })
 
-  app.delete('/', function(req, reply) {
-    reply.send({hello: 'world'})
+  app.delete('/', function(req, response) {
+    response.send({hello: 'world'})
   })
 
   app.listen(0, (err) => {
@@ -98,26 +98,26 @@ test('onSend hooks can modify payload', (t) => {
   const modifiedPayload = {hello: 'modified'}
   const anotherPayload = '"winter is coming"'
 
-  app.addHook('onSend', async (request, reply, serializedPayload, next) => {
+  app.addHook('onSend', async (request, response, serializedPayload, next) => {
     t.ok('onSend called')
     t.deepEqual(JSON.parse(serializedPayload), payload)
     next(null, serializedPayload.replace('world', 'modified'))
   })
 
-  app.addHook('onSend', async (request, reply, serializedPayload, next) => {
+  app.addHook('onSend', async (request, response, serializedPayload, next) => {
     t.ok('onSend called')
     t.deepEqual(JSON.parse(serializedPayload), modifiedPayload)
     next(null, anotherPayload)
   })
 
-  app.addHook('onSend', async (request, reply, serializedPayload, next) => {
+  app.addHook('onSend', async (request, response, serializedPayload, next) => {
     t.ok('onSend called')
     t.strictEqual(serializedPayload, anotherPayload)
     next()
   })
 
-  app.get('/', (req, reply) => {
-    reply.send(payload)
+  app.get('/', (req, response) => {
+    response.send(payload)
   })
 
   app.inject({
@@ -135,8 +135,8 @@ test('onRequest hooks should be able to send a response', (t) => {
   t.plan(5)
   const app = medley()
 
-  app.addHook('onRequest', async (request, reply) => {
-    reply.send('hello')
+  app.addHook('onRequest', async (request, response) => {
+    response.send('hello')
   })
 
   app.addHook('onRequest', async () => {
@@ -147,7 +147,7 @@ test('onRequest hooks should be able to send a response', (t) => {
     t.fail('this should not be called')
   })
 
-  app.addHook('onSend', async (request, reply, payload, next) => {
+  app.addHook('onSend', async (request, response, payload, next) => {
     t.equal(payload, 'hello')
     next()
   })
@@ -174,15 +174,15 @@ test('preHandler hooks should be able to send a response', (t) => {
   t.plan(5)
   const app = medley()
 
-  app.addHook('preHandler', async (req, reply) => {
-    reply.send('hello')
+  app.addHook('preHandler', async (req, response) => {
+    response.send('hello')
   })
 
   app.addHook('preHandler', async () => {
     t.fail('this should not be called')
   })
 
-  app.addHook('onSend', async (request, reply, payload, next) => {
+  app.addHook('onSend', async (request, response, payload, next) => {
     t.equal(payload, 'hello')
     next()
   })

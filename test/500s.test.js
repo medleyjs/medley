@@ -9,8 +9,8 @@ test('default 500', (t) => {
 
   const app = medley()
 
-  app.get('/', function(req, reply) {
-    reply.error(new Error('kaboom'))
+  app.get('/', function(req, response) {
+    response.error(new Error('kaboom'))
   })
 
   app.inject({
@@ -33,14 +33,14 @@ test('custom 500', (t) => {
 
   const app = medley()
 
-  app.get('/', function(req, reply) {
-    reply.error(new Error('kaboom'))
+  app.get('/', function(req, response) {
+    response.error(new Error('kaboom'))
   })
 
-  app.setErrorHandler(function(err, request, reply) {
+  app.setErrorHandler(function(err, request, response) {
     t.type(request, 'object')
     t.type(request, app._Request)
-    reply
+    response
       .code(500)
       .type('text/plain')
       .send('an error happened: ' + err.message)
@@ -89,19 +89,19 @@ test('encapsulated 500', (t) => {
 
   const app = medley()
 
-  app.get('/', function(req, reply) {
-    reply.error(new Error('kaboom'))
+  app.get('/', function(req, response) {
+    response.error(new Error('kaboom'))
   })
 
   app.register(function(f, opts, next) {
-    f.get('/', function(req, reply) {
-      reply.error(new Error('kaboom'))
+    f.get('/', function(req, response) {
+      response.error(new Error('kaboom'))
     })
 
-    f.setErrorHandler(function(err, request, reply) {
+    f.setErrorHandler(function(err, request, response) {
       t.type(request, 'object')
       t.type(request, f._Request)
-      reply
+      response
         .code(500)
         .type('text/plain')
         .send('an error happened: ' + err.message)
@@ -140,26 +140,26 @@ test('custom 500 with hooks', (t) => {
 
   const app = medley()
 
-  app.get('/', (request, reply) => {
-    reply.error(new Error('kaboom'))
+  app.get('/', (request, response) => {
+    response.error(new Error('kaboom'))
   })
 
-  app.setErrorHandler((err, request, reply) => {
-    reply
+  app.setErrorHandler((err, request, response) => {
+    response
       .code(500)
       .type('text/plain')
       .send('an error happened: ' + err.message)
   })
 
-  app.addHook('onRequest', (request, reply, next) => {
+  app.addHook('onRequest', (request, response, next) => {
     t.ok('called', 'onRequest')
     next()
   })
-  app.addHook('preHandler', (request, reply, next) => {
+  app.addHook('preHandler', (request, response, next) => {
     t.ok('called', 'preHandler')
     next()
   })
-  app.addHook('onSend', (request, reply, payload, next) => {
+  app.addHook('onSend', (request, response, payload, next) => {
     t.ok('called', 'onSend')
     next()
   })

@@ -70,17 +70,17 @@ test('async await', (t) => {
   })
 })
 
-test('should throw if an async function returns a value and reply.send() is also called', (t) => {
+test('should throw if an async function returns a value and response.send() is also called', (t) => {
   t.plan(3)
 
   const app = medley()
 
-  app.get('/', async (request, reply) => {
+  app.get('/', async (request, response) => {
     setImmediate(() => {
       try {
-        reply.send()
+        response.send()
       } catch (err) {
-        t.equal(err.message, 'Cannot call reply.send() when a response has already been sent')
+        t.equal(err.message, 'Cannot call response.send() when a response has already been sent')
       }
     })
     return 'value'
@@ -92,17 +92,17 @@ test('should throw if an async function returns a value and reply.send() is also
   })
 })
 
-test('should throw if an async function returns a value and reply.error() is also called', (t) => {
+test('should throw if an async function returns a value and response.error() is also called', (t) => {
   t.plan(3)
 
   const app = medley()
 
-  app.get('/', async (request, reply) => {
+  app.get('/', async (request, response) => {
     setImmediate(() => {
       try {
-        reply.error()
+        response.error()
       } catch (err) {
-        t.equal(err.message, 'Cannot call reply.error() when a response has already been sent')
+        t.equal(err.message, 'Cannot call response.error() when a response has already been sent')
       }
     })
     return 'value'
@@ -114,20 +114,20 @@ test('should throw if an async function returns a value and reply.error() is als
   })
 })
 
-test('support reply decorators with await', (t) => {
+test('support response decorators with await', (t) => {
   t.plan(2)
 
   const app = medley()
 
-  app.decorateReply('wow', function() {
+  app.decorateResponse('wow', function() {
     setImmediate(() => {
       this.send({hello: 'world'})
     })
   })
 
-  app.get('/', async (req, reply) => {
+  app.get('/', async (req, response) => {
     await sleep(1)
-    reply.wow()
+    response.wow()
   })
 
   app.inject({
@@ -145,8 +145,8 @@ test('inject async await', async (t) => {
 
   const app = medley()
 
-  app.get('/', (req, reply) => {
-    reply.send({hello: 'world'})
+  app.get('/', (req, response) => {
+    response.send({hello: 'world'})
   })
 
   try {
@@ -162,8 +162,8 @@ test('inject async await - when the server is up', async (t) => {
 
   const app = medley()
 
-  app.get('/', (req, reply) => {
-    reply.send({hello: 'world'})
+  app.get('/', (req, response) => {
+    response.send({hello: 'world'})
   })
 
   try {
@@ -189,8 +189,8 @@ test('async await plugin', async (t) => {
   const app = medley()
 
   app.register(async (subApp) => {
-    subApp.get('/', (req, reply) => {
-      reply.send({hello: 'world'})
+    subApp.get('/', (req, response) => {
+      response.send({hello: 'world'})
     })
 
     await sleep(200)

@@ -21,21 +21,21 @@ module.exports.payloadMethod = function(method, t) {
         },
       },
     },
-  }, function(request, reply) {
-    reply.send(request.body)
+  }, function(request, response) {
+    response.send(request.body)
   })
 
-  app[loMethod]('/no-schema', function(request, reply) {
-    reply.send(request.body)
+  app[loMethod]('/no-schema', function(request, response) {
+    response.send(request.body)
   })
 
-  app[loMethod]('/with-query', function(request, reply) {
+  app[loMethod]('/with-query', function(request, response) {
     request.body.hello += request.query.foo
-    reply.send(request.body)
+    response.send(request.body)
   })
 
-  app[loMethod]('/with-limit', {bodyLimit: 1}, function(request, reply) {
-    reply.send(request.body)
+  app[loMethod]('/with-limit', {bodyLimit: 1}, function(request, response) {
+    response.send(request.body)
   })
 
   app.listen(0, function(err) {

@@ -29,8 +29,8 @@ const nullSchema = {
 test('shorthand - get', (t) => {
   t.plan(1)
   try {
-    app.get('/', stringSchema, function(req, reply) {
-      reply.send({hello: 'world'})
+    app.get('/', stringSchema, function(req, response) {
+      response.send({hello: 'world'})
     })
     t.pass()
   } catch (e) {
@@ -41,8 +41,8 @@ test('shorthand - get', (t) => {
 test('shorthand - get (return null)', (t) => {
   t.plan(1)
   try {
-    app.get('/null', nullSchema, function(req, reply) {
-      reply.send(null)
+    app.get('/null', nullSchema, function(req, response) {
+      response.send(null)
     })
     t.pass()
   } catch (e) {
@@ -53,8 +53,8 @@ test('shorthand - get (return null)', (t) => {
 test('missing schema - get', (t) => {
   t.plan(1)
   try {
-    app.get('/missing', function(req, reply) {
-      reply.send({hello: 'world'})
+    app.get('/missing', function(req, response) {
+      response.send({hello: 'world'})
     })
     t.pass()
   } catch (e) {
@@ -65,8 +65,8 @@ test('missing schema - get', (t) => {
 test('empty response', (t) => {
   t.plan(1)
   try {
-    app.get('/empty', function(req, reply) {
-      reply.send()
+    app.get('/empty', function(req, response) {
+      response.send()
     })
     t.pass()
   } catch (e) {
@@ -77,8 +77,8 @@ test('empty response', (t) => {
 test('send a falsy boolean', (t) => {
   t.plan(1)
   try {
-    app.get('/boolean', function(req, reply) {
-      reply.send(false)
+    app.get('/boolean', function(req, response) {
+      response.send(false)
     })
     t.pass()
   } catch (e) {

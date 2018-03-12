@@ -16,8 +16,8 @@ Let's write our first server:
 const app = require('@medley/medley')()
 
 // Declare a route
-app.get('/', function (request, reply) {
-  reply.send({ hello: 'world' })
+app.get('/', (request, response) => {
+  response.send({ hello: 'world' })
 })
 
 // Run the server!
@@ -34,7 +34,7 @@ Do you prefer to use `async/await`? Medley supports it out-of-the-box.<br>
 ```js
 const app = require('@medley/medley')()
 
-app.get('/', async (request, reply) => {
+app.get('/', async (request, response) => {
   return { hello: 'world' }
 })
 
@@ -91,7 +91,7 @@ app.listen(3000, function (err) {
 // our-first-route.js
 
 async function routes (app, options) {
-  app.get('/', async (request, reply) => {
+  app.get('/', async (request, response) => {
     return { hello: 'world' }
   })
 }
@@ -148,11 +148,11 @@ async function routes (app, options) {
   const database = app.mongo.db('db')
   const collection = database.collection('test')
 
-  app.get('/', async (request, reply) => {
+  app.get('/', async (request, response) => {
     return { hello: 'world' }
   })
 
-  app.get('/search/:id', async (request, reply) => {
+  app.get('/search/:id', async (request, response) => {
     try {
       return await collection.findOne({ id: request.params.id })
     } catch (err) {
@@ -220,8 +220,8 @@ const responseSchema = {
   }
 }
 
-app.get('/', { responseSchema }, (request, reply) => {
-  reply.send({ hello: 'world' })
+app.get('/', { responseSchema }, (request, response) => {
+  response.send({ hello: 'world' })
 })
 ```
 

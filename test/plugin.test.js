@@ -24,9 +24,9 @@ test('app.register with fastify-plugin should not incapsulate his code', (t) => 
       t.ok(subApp.test)
     })
 
-    subApp.get('/', (req, reply) => {
+    subApp.get('/', (req, response) => {
       t.ok(subApp.test)
-      reply.send({hello: 'world'})
+      response.send({hello: 'world'})
     })
 
     next()
@@ -73,9 +73,9 @@ test('app.register with fastify-plugin registers root level plugins', (t) => {
     t.ok(subApp.test)
     subApp.register(fp(innerPlugin))
 
-    subApp.get('/test2', (req, reply) => {
+    subApp.get('/test2', (req, response) => {
       t.ok(subApp.test2)
-      reply.send({test2: subApp.test2})
+      response.send({test2: subApp.test2})
     })
 
     next()
@@ -86,9 +86,9 @@ test('app.register with fastify-plugin registers root level plugins', (t) => {
     t.notOk(app.test2)
   })
 
-  app.get('/', (req, reply) => {
+  app.get('/', (req, response) => {
     t.ok(app.test)
-    reply.send({test: app.test})
+    response.send({test: app.test})
   })
 
   app.listen(0, (err) => {
@@ -139,10 +139,10 @@ test('check dependencies - should not throw', (t) => {
       }
     }))
 
-    subApp.get('/', (req, reply) => {
+    subApp.get('/', (req, response) => {
       t.ok(subApp.test)
       t.ok(subApp.otherTest)
-      reply.send({hello: 'world'})
+      response.send({hello: 'world'})
     })
 
     next()
@@ -179,8 +179,8 @@ test('plugin incapsulation', (t) => {
       n()
     }))
 
-    subApp.get('/first', (req, reply) => {
-      reply.send({plugin: subApp.test})
+    subApp.get('/first', (req, response) => {
+      response.send({plugin: subApp.test})
     })
 
     next()
@@ -192,8 +192,8 @@ test('plugin incapsulation', (t) => {
       n()
     }))
 
-    subApp.get('/second', (req, reply) => {
-      reply.send({plugin: subApp.test})
+    subApp.get('/second', (req, response) => {
+      response.send({plugin: subApp.test})
     })
 
     next()
@@ -260,8 +260,8 @@ test('add hooks after route declaration', (t) => {
       next()
     })
 
-    subApp.get('/', (req, reply) => {
-      reply.send(req.check)
+    subApp.get('/', (req, response) => {
+      response.send(req.check)
     })
 
     subApp.addHook('preHandler', function c(req, res, next) {
@@ -300,15 +300,15 @@ test('nested plugins', (t) => {
 
   app.register(function(subApp, opts, next) {
     subApp.register((subApp2, opts, next) => {
-      subApp2.get('/', function(req, reply) {
-        reply.send('I am child 1')
+      subApp2.get('/', function(req, response) {
+        response.send('I am child 1')
       })
       next()
     }, {prefix: '/child1'})
 
     subApp.register((subApp3, opts, next) => {
-      subApp3.get('/', function(req, reply) {
-        reply.send('I am child 2')
+      subApp3.get('/', function(req, response) {
+        response.send('I am child 2')
       })
       next()
     }, {prefix: '/child2'})

@@ -17,14 +17,14 @@ test('should respond with a stream', (t) => {
   t.plan(8)
   const app = medley()
 
-  app.get('/', function(req, reply) {
+  app.get('/', function(req, response) {
     const stream = fs.createReadStream(__filename, 'utf8')
-    reply.send(stream)
+    response.send(stream)
   })
 
-  app.get('/error', function(req, reply) {
+  app.get('/error', function(req, response) {
     const stream = fs.createReadStream('not-existing-file', 'utf8')
-    reply.send(stream)
+    response.send(stream)
   })
 
   app.listen(0, (err) => {
@@ -53,13 +53,13 @@ test('should trigger the onSend hook', (t) => {
   t.plan(4)
   const app = medley()
 
-  app.get('/', (req, reply) => {
-    reply.send(fs.createReadStream(__filename, 'utf8'))
+  app.get('/', (req, response) => {
+    response.send(fs.createReadStream(__filename, 'utf8'))
   })
 
-  app.addHook('onSend', (request, reply, payload, next) => {
+  app.addHook('onSend', (request, response, payload, next) => {
     t.ok(payload._readableState)
-    reply.setHeader('Content-Type', 'application/javascript')
+    response.setHeader('Content-Type', 'application/javascript')
     next()
   })
 
@@ -77,11 +77,11 @@ test('should trigger the onSend hook only once if pumping the stream fails', (t)
   t.plan(4)
   const app = medley()
 
-  app.get('/', (req, reply) => {
-    reply.send(fs.createReadStream('not-existing-file', 'utf8'))
+  app.get('/', (req, response) => {
+    response.send(fs.createReadStream('not-existing-file', 'utf8'))
   })
 
-  app.addHook('onSend', (request, reply, payload, next) => {
+  app.addHook('onSend', (request, response, payload, next) => {
     t.ok(payload._readableState)
     next()
   })
@@ -102,14 +102,14 @@ test('onSend hook stream', (t) => {
   t.plan(4)
   const app = medley()
 
-  app.get('/', (request, reply) => {
-    reply.send({hello: 'world'})
+  app.get('/', (request, response) => {
+    response.send({hello: 'world'})
   })
 
-  app.addHook('onSend', (request, reply, payload, next) => {
+  app.addHook('onSend', (request, response, payload, next) => {
     const gzStream = zlib.createGzip()
 
-    reply.setHeader('Content-Encoding', 'gzip')
+    response.setHeader('Content-Encoding', 'gzip')
     pump(
       fs.createReadStream(__filename, 'utf8'),
       gzStream,
@@ -138,7 +138,7 @@ test('Destroying streams prematurely', (t) => {
   const stream = require('stream')
   const http = require('http')
 
-  app.get('/', function(request, reply) {
+  app.get('/', function(request, response) {
     t.pass('Received request')
 
     var sent = false
@@ -151,7 +151,7 @@ test('Destroying streams prematurely', (t) => {
       },
     })
 
-    reply.send(reallyLongStream)
+    response.send(reallyLongStream)
   })
 
   app.listen(0, (err) => {
@@ -176,9 +176,9 @@ test('should support stream1 streams', (t) => {
   t.plan(5)
   const app = medley()
 
-  app.get('/', function(request, reply) {
+  app.get('/', function(request, response) {
     const stream = JSONStream.stringify()
-    reply.type('application/json').send(stream)
+    response.type('application/json').send(stream)
     stream.write({hello: 'world'})
     stream.end({a: 42})
   })
@@ -200,9 +200,9 @@ test('should support stream2 streams', (t) => {
   t.plan(5)
   const app = medley()
 
-  app.get('/', function(request, reply) {
+  app.get('/', function(request, response) {
     const stream = new StreamingJSONStringify()
-    reply.type('application/json').send(stream)
+    response.type('application/json').send(stream)
     stream.write({hello: 'world'})
     stream.end({a: 42})
   })
@@ -225,7 +225,7 @@ test('return a 404 if the stream emits a 404 error', (t) => {
 
   const app = medley()
 
-  app.get('/', function(request, reply) {
+  app.get('/', function(request, response) {
     t.pass('Received request')
 
     const errorStream = new Readable({
@@ -236,7 +236,7 @@ test('return a 404 if the stream emits a 404 error', (t) => {
       },
     })
 
-    reply.send(errorStream)
+    response.send(errorStream)
   })
 
   app.listen(0, (err) => {
@@ -258,14 +258,14 @@ test('should support send module 200 and 404', (t) => {
   t.plan(8)
   const app = medley()
 
-  app.get('/', function(req, reply) {
+  app.get('/', function(req, response) {
     const stream = send(req.req, __filename)
-    reply.send(stream)
+    response.send(stream)
   })
 
-  app.get('/error', function(req, reply) {
+  app.get('/error', function(req, response) {
     const stream = send(req.req, 'non-existing-file')
-    reply.send(stream)
+    response.send(stream)
   })
 
   app.listen(0, (err) => {
@@ -295,13 +295,13 @@ test('should handle destroying a stream if headers are already sent', (t) => {
 
   const app = medley()
 
-  app.get('/', (request, reply) => {
+  app.get('/', (request, response) => {
     t.pass('Received request')
 
     const chunk = Buffer.alloc(100, 'c')
     const streamUntilHeaders = new Readable({
       read() {
-        if (reply.res.headersSent) {
+        if (response.res.headersSent) {
           this.emit('error', new Error('stream error'))
           t.pass('emitted error')
         } else {
@@ -310,7 +310,7 @@ test('should handle destroying a stream if headers are already sent', (t) => {
       },
     })
 
-    reply.send(streamUntilHeaders)
+    response.send(streamUntilHeaders)
   })
 
   app.listen(0, (err) => {

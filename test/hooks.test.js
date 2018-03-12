@@ -13,9 +13,9 @@ test('hooks', (t) => {
   const payload = {hello: 'world'}
   const app = medley()
 
-  app.addHook('onRequest', function(request, reply, next) {
+  app.addHook('onRequest', function(request, response, next) {
     request.onRequestVal = 'the request is coming'
-    reply.onRequestVal = 'the reply has come'
+    response.onRequestVal = 'the response has come'
     if (request.method === 'DELETE') {
       next(new Error('some error'))
     } else {
@@ -23,9 +23,9 @@ test('hooks', (t) => {
     }
   })
 
-  app.addHook('preHandler', function(request, reply, next) {
+  app.addHook('preHandler', function(request, response, next) {
     request.preHandlerVal = 'the request is coming'
-    reply.preHandlerVal = 'the reply has come'
+    response.preHandlerVal = 'the response has come'
     if (request.req.method === 'HEAD') {
       next(new Error('some error'))
     } else {
@@ -33,30 +33,30 @@ test('hooks', (t) => {
     }
   })
 
-  app.addHook('onSend', function(request, reply, _payload, next) {
+  app.addHook('onSend', function(request, response, _payload, next) {
     t.ok('onSend called')
     next()
   })
 
-  app.addHook('onFinished', function(request, reply) {
+  app.addHook('onFinished', function(request, response) {
     t.equal(request.onRequestVal, 'the request is coming')
-    t.equal(reply.res.finished, true)
+    t.equal(response.res.finished, true)
   })
 
-  app.get('/', function(request, reply) {
+  app.get('/', function(request, response) {
     t.is(request.onRequestVal, 'the request is coming')
-    t.is(reply.onRequestVal, 'the reply has come')
+    t.is(response.onRequestVal, 'the response has come')
     t.is(request.preHandlerVal, 'the request is coming')
-    t.is(reply.preHandlerVal, 'the reply has come')
-    reply.send(payload)
+    t.is(response.preHandlerVal, 'the response has come')
+    response.send(payload)
   })
 
-  app.head('/', function(req, reply) {
-    reply.send(payload)
+  app.head('/', function(req, response) {
+    response.send(payload)
   })
 
-  app.delete('/', function(req, reply) {
-    reply.send(payload)
+  app.delete('/', function(req, response) {
+    response.send(payload)
   })
 
   app.listen(0, (err) => {
@@ -96,21 +96,21 @@ test('onRequest hook should support encapsulation / 1', (t) => {
   const app = medley()
 
   app.register((subApp, opts, next) => {
-    subApp.addHook('onRequest', (request, reply, next) => {
+    subApp.addHook('onRequest', (request, response, next) => {
       t.equal(request.url, '/plugin')
-      t.equal(reply.sent, false)
+      t.equal(response.sent, false)
       next()
     })
 
-    subApp.get('/plugin', (request, reply) => {
-      reply.send()
+    subApp.get('/plugin', (request, response) => {
+      response.send()
     })
 
     next()
   })
 
-  app.get('/root', (request, reply) => {
-    reply.send()
+  app.get('/root', (request, response) => {
+    response.send()
   })
 
   app.inject('/root', (err, res) => {
@@ -148,27 +148,27 @@ test('onRequest hook should support encapsulation / 3', (t) => {
   t.plan(13)
   const app = medley()
 
-  app.addHook('onRequest', (request, reply, next) => {
+  app.addHook('onRequest', (request, response, next) => {
     request.first = true
     next()
   })
 
-  app.get('/first', (request, reply) => {
+  app.get('/first', (request, response) => {
     t.equal(request.first, true)
     t.equal(request.second, undefined)
-    reply.send({hello: 'world'})
+    response.send({hello: 'world'})
   })
 
   app.register((subApp, opts, next) => {
-    subApp.addHook('onRequest', (request, reply, next) => {
+    subApp.addHook('onRequest', (request, response, next) => {
       request.second = true
       next()
     })
 
-    subApp.get('/second', (request, reply) => {
+    subApp.get('/second', (request, response) => {
       t.equal(request.first, true)
       t.equal(request.second, true)
-      reply.send({hello: 'world'})
+      response.send({hello: 'world'})
     })
 
     next()
@@ -206,34 +206,34 @@ test('preHandler hook should support encapsulation / 5', (t) => {
 
   app.decorateRequest('hello', 'world')
 
-  app.addHook('preHandler', function(request, reply, next) {
+  app.addHook('preHandler', function(request, response, next) {
     t.equal(request.hello, 'world')
     request.first = true
     next()
   })
 
-  app.get('/first', (request, reply) => {
+  app.get('/first', (request, response) => {
     t.equal(request.hello, 'world')
     t.equal(request.hello2, undefined)
     t.ok(request.first)
     t.notOk(request.second)
-    reply.send({hello: 'world'})
+    response.send({hello: 'world'})
   })
 
   app.register((subApp, opts, next) => {
     subApp.decorateRequest('hello2', 'world')
 
-    subApp.addHook('preHandler', function(request, reply, next) {
+    subApp.addHook('preHandler', function(request, response, next) {
       t.equal(request.hello, 'world')
       t.equal(request.hello2, 'world')
       request.second = true
       next()
     })
 
-    subApp.get('/second', (request, reply) => {
+    subApp.get('/second', (request, response) => {
       t.ok(request.first)
       t.ok(request.second)
-      reply.send({hello: 'world'})
+      response.send({hello: 'world'})
     })
 
     next()
@@ -270,20 +270,20 @@ test('onFinished hook should support encapsulation / 1', (t) => {
   const app = medley()
 
   app.register((subApp, opts, next) => {
-    subApp.addHook('onFinished', (request, reply) => {
-      t.strictEqual(reply.plugin, true)
+    subApp.addHook('onFinished', (request, response) => {
+      t.strictEqual(response.plugin, true)
     })
 
-    subApp.get('/plugin', (request, reply) => {
-      reply.plugin = true
-      reply.send()
+    subApp.get('/plugin', (request, response) => {
+      response.plugin = true
+      response.send()
     })
 
     next()
   })
 
-  app.get('/root', (request, reply) => {
-    reply.send()
+  app.get('/root', (request, response) => {
+    response.send()
   })
 
   app.inject('/root', (err, res) => {
@@ -321,23 +321,23 @@ test('onFinished hook should support encapsulation / 3', (t) => {
   t.plan(15)
   const app = medley()
 
-  app.addHook('onFinished', (request, reply) => {
+  app.addHook('onFinished', (request, response) => {
     t.ok(request)
-    t.ok(reply)
+    t.ok(response)
   })
 
-  app.get('/first', (req, reply) => {
-    reply.send({hello: 'world'})
+  app.get('/first', (req, response) => {
+    response.send({hello: 'world'})
   })
 
   app.register((subApp, opts, next) => {
-    subApp.addHook('onFinished', (request, reply) => {
+    subApp.addHook('onFinished', (request, response) => {
       t.ok(request)
-      t.ok(reply)
+      t.ok(response)
     })
 
-    subApp.get('/second', (req, reply) => {
-      reply.send({hello: 'world'})
+    subApp.get('/second', (req, response) => {
+      response.send({hello: 'world'})
     })
 
     next()
@@ -374,9 +374,9 @@ test('onFinished hook should run if the client closes the connection', (t) => {
 
   const app = medley()
 
-  app.addHook('onFinished', (request, reply) => {
+  app.addHook('onFinished', (request, response) => {
     t.equal(request.method, 'GET')
-    t.equal(reply.res.finished, false)
+    t.equal(response.res.finished, false)
   })
 
   app.get('/', () => {
@@ -423,30 +423,30 @@ test('onSend hook should support encapsulation / 2', (t) => {
 
   app.decorateRequest('hello', 'world')
 
-  app.addHook('onSend', (request, reply, payload, next) => {
+  app.addHook('onSend', (request, response, payload, next) => {
     t.equal(request.hello, 'world')
     t.ok('onSend called')
     next()
   })
 
-  app.get('/first', (request, reply) => {
+  app.get('/first', (request, response) => {
     t.equal(request.hello, 'world')
     t.equal(request.hello2, undefined)
-    reply.send({hello: 'world'})
+    response.send({hello: 'world'})
   })
 
   app.register((subApp, opts, next) => {
     subApp.decorateRequest('hello2', 'world')
 
-    subApp.addHook('onSend', (request, reply, payload, next) => {
+    subApp.addHook('onSend', (request, response, payload, next) => {
       t.equal(request.hello, 'world')
       t.equal(request.hello2, 'world')
       t.ok('onSend called')
       next()
     })
 
-    subApp.get('/second', (request, reply) => {
-      reply.send({hello: 'world'})
+    subApp.get('/second', (request, response) => {
+      response.send({hello: 'world'})
     })
 
     next()
@@ -485,28 +485,28 @@ test('onSend hook is called after payload is serialized and headers are set', (t
   app.register((subApp, opts, next) => {
     const payload = {hello: 'world'}
 
-    subApp.addHook('onSend', (request, reply, serializedPayload, next) => {
+    subApp.addHook('onSend', (request, response, serializedPayload, next) => {
       t.deepEqual(JSON.parse(serializedPayload), payload)
-      t.strictEqual(reply.res.getHeader('Content-Type'), 'application/json')
+      t.strictEqual(response.res.getHeader('Content-Type'), 'application/json')
       next()
     })
 
-    subApp.get('/json', (request, reply) => {
-      reply.send(payload)
+    subApp.get('/json', (request, response) => {
+      response.send(payload)
     })
 
     next()
   })
 
   app.register((subApp, opts, next) => {
-    subApp.addHook('onSend', (request, reply, serializedPayload, next) => {
+    subApp.addHook('onSend', (request, response, serializedPayload, next) => {
       t.strictEqual(serializedPayload, 'some text')
-      t.strictEqual(reply.res.getHeader('Content-Type'), 'text/plain')
+      t.strictEqual(response.res.getHeader('Content-Type'), 'text/plain')
       next()
     })
 
-    subApp.get('/text', (request, reply) => {
-      reply.send('some text')
+    subApp.get('/text', (request, response) => {
+      response.send('some text')
     })
 
     next()
@@ -515,14 +515,14 @@ test('onSend hook is called after payload is serialized and headers are set', (t
   app.register((subApp, opts, next) => {
     const payload = Buffer.from('buffer payload')
 
-    subApp.addHook('onSend', (request, reply, serializedPayload, next) => {
+    subApp.addHook('onSend', (request, response, serializedPayload, next) => {
       t.strictEqual(serializedPayload, payload)
-      t.strictEqual(reply.res.getHeader('Content-Type'), 'application/octet-stream')
+      t.strictEqual(response.res.getHeader('Content-Type'), 'application/octet-stream')
       next()
     })
 
-    subApp.get('/buffer', (request, reply) => {
-      reply.send(payload)
+    subApp.get('/buffer', (request, response) => {
+      response.send(payload)
     })
 
     next()
@@ -537,14 +537,14 @@ test('onSend hook is called after payload is serialized and headers are set', (t
       },
     })
 
-    subApp.addHook('onSend', (request, reply, serializedPayload, next) => {
+    subApp.addHook('onSend', (request, response, serializedPayload, next) => {
       t.strictEqual(serializedPayload, payload)
-      t.strictEqual(reply.res.getHeader('Content-Type'), 'application/octet-stream')
+      t.strictEqual(response.res.getHeader('Content-Type'), 'application/octet-stream')
       next()
     })
 
-    subApp.get('/stream', (request, reply) => {
-      reply.send(payload)
+    subApp.get('/stream', (request, response) => {
+      response.send(payload)
     })
 
     next()
@@ -598,26 +598,26 @@ test('onSend hooks can modify payload', (t) => {
   const modifiedPayload = {hello: 'modified'}
   const anotherPayload = '"winter is coming"'
 
-  app.addHook('onSend', (request, reply, serializedPayload, next) => {
+  app.addHook('onSend', (request, response, serializedPayload, next) => {
     t.ok('onSend called')
     t.deepEqual(JSON.parse(serializedPayload), payload)
     next(null, serializedPayload.replace('world', 'modified'))
   })
 
-  app.addHook('onSend', (request, reply, serializedPayload, next) => {
+  app.addHook('onSend', (request, response, serializedPayload, next) => {
     t.ok('onSend called')
     t.deepEqual(JSON.parse(serializedPayload), modifiedPayload)
     next(null, anotherPayload)
   })
 
-  app.addHook('onSend', (request, reply, serializedPayload, next) => {
+  app.addHook('onSend', (request, response, serializedPayload, next) => {
     t.ok('onSend called')
     t.strictEqual(serializedPayload, anotherPayload)
     next()
   })
 
-  app.get('/', (req, reply) => {
-    reply.send(payload)
+  app.get('/', (req, response) => {
+    response.send(payload)
   })
 
   app.inject({
@@ -635,14 +635,14 @@ test('onSend hooks can clear payload', (t) => {
   t.plan(6)
   const app = medley()
 
-  app.addHook('onSend', (request, reply, payload, next) => {
+  app.addHook('onSend', (request, response, payload, next) => {
     t.ok('onSend called')
-    reply.code(304)
+    response.code(304)
     next(null, null)
   })
 
-  app.get('/', (req, reply) => {
-    reply.send({hello: 'world'})
+  app.get('/', (req, response) => {
+    response.send({hello: 'world'})
   })
 
   app.inject({
@@ -660,7 +660,7 @@ test('onSend hooks can clear payload', (t) => {
 test('onSend hook throws', (t) => {
   t.plan(7)
   const app = medley()
-  app.addHook('onSend', (request, reply, payload, next) => {
+  app.addHook('onSend', (request, response, payload, next) => {
     if (request.req.method === 'DELETE') {
       next(new Error('some error'))
       return
@@ -668,12 +668,12 @@ test('onSend hook throws', (t) => {
     next()
   })
 
-  app.get('/', (req, reply) => {
-    reply.send({hello: 'world'})
+  app.get('/', (req, response) => {
+    response.send({hello: 'world'})
   })
 
-  app.delete('/', (req, reply) => {
-    reply.send({hello: 'world'})
+  app.delete('/', (req, response) => {
+    response.send({hello: 'world'})
   })
 
   app.listen(0, (err) => {
@@ -702,8 +702,8 @@ test('cannot add hook after listening', (t) => {
   t.plan(2)
   const app = medley()
 
-  app.get('/', function(request, reply) {
-    reply.send({hello: 'world'})
+  app.get('/', function(request, response) {
+    response.send({hello: 'world'})
   })
 
   app.listen(0, (err) => {
@@ -723,8 +723,8 @@ test('onRequest hooks should be able to send a response', (t) => {
   t.plan(5)
   const app = medley()
 
-  app.addHook('onRequest', (request, reply) => {
-    reply.send('hello')
+  app.addHook('onRequest', (request, response) => {
+    response.send('hello')
   })
 
   app.addHook('onRequest', () => {
@@ -735,7 +735,7 @@ test('onRequest hooks should be able to send a response', (t) => {
     t.fail('this should not be called')
   })
 
-  app.addHook('onSend', (request, reply, payload, next) => {
+  app.addHook('onSend', (request, response, payload, next) => {
     t.equal(payload, 'hello')
     next()
   })
@@ -762,15 +762,15 @@ test('preHandler hooks should be able to send a response', (t) => {
   t.plan(5)
   const app = medley()
 
-  app.addHook('preHandler', (req, reply) => {
-    reply.send('hello')
+  app.addHook('preHandler', (req, response) => {
+    response.send('hello')
   })
 
   app.addHook('preHandler', () => {
     t.fail('this should not be called')
   })
 
-  app.addHook('onSend', (request, reply, payload, next) => {
+  app.addHook('onSend', (request, response, payload, next) => {
     t.equal(payload, 'hello')
     next()
   })
@@ -798,25 +798,25 @@ test('Register a hook after a plugin inside a plugin', (t) => {
   const app = medley()
 
   app.register(fp(function(subApp, opts, next) {
-    subApp.addHook('preHandler', function(req, reply, next) {
+    subApp.addHook('preHandler', function(req, response, next) {
       t.ok('called')
       next()
     })
 
-    subApp.get('/', function(request, reply) {
-      reply.send({hello: 'world'})
+    subApp.get('/', function(request, response) {
+      response.send({hello: 'world'})
     })
 
     next()
   }))
 
   app.register(fp(function(subApp, opts, next) {
-    subApp.addHook('preHandler', function(req, reply, next) {
+    subApp.addHook('preHandler', function(req, response, next) {
       t.ok('called')
       next()
     })
 
-    subApp.addHook('preHandler', function(req, reply, next) {
+    subApp.addHook('preHandler', function(req, response, next) {
       t.ok('called')
       next()
     })
@@ -839,30 +839,30 @@ test('Register a hook after a plugin inside a plugin (with beforeHandler)', (t) 
   const app = medley()
 
   app.register(fp(function(subApp, opts, next) {
-    subApp.addHook('preHandler', function(req, reply, next) {
+    subApp.addHook('preHandler', function(req, response, next) {
       t.ok('called')
       next()
     })
 
     subApp.get('/', {
-      beforeHandler: (req, reply, next) => {
+      beforeHandler: (req, response, next) => {
         t.ok('called')
         next()
       },
-    }, function(request, reply) {
-      reply.send({hello: 'world'})
+    }, function(request, response) {
+      response.send({hello: 'world'})
     })
 
     next()
   }))
 
   app.register(fp(function(subApp, opts, next) {
-    subApp.addHook('preHandler', function(req, reply, next) {
+    subApp.addHook('preHandler', function(req, response, next) {
       t.ok('called')
       next()
     })
 
-    subApp.addHook('preHandler', function(req, reply, next) {
+    subApp.addHook('preHandler', function(req, response, next) {
       t.ok('called')
       next()
     })
@@ -885,25 +885,25 @@ test('Register hooks inside a plugin after an encapsulated plugin', (t) => {
   const app = medley()
 
   app.register(function(subApp, opts, next) {
-    subApp.get('/', function(request, reply) {
-      reply.send({hello: 'world'})
+    subApp.get('/', function(request, response) {
+      response.send({hello: 'world'})
     })
 
     next()
   })
 
   app.register(fp(function(subApp, opts, next) {
-    subApp.addHook('onRequest', function(request, reply, next) {
+    subApp.addHook('onRequest', function(request, response, next) {
       t.ok('called')
       next()
     })
 
-    subApp.addHook('preHandler', function(request, reply, next) {
+    subApp.addHook('preHandler', function(request, response, next) {
       t.ok('called')
       next()
     })
 
-    subApp.addHook('onSend', function(request, reply, payload, next) {
+    subApp.addHook('onSend', function(request, response, payload, next) {
       t.ok('called')
       next()
     })
@@ -927,19 +927,19 @@ test('onRequest hooks should run in the order in which they are defined', (t) =>
   const app = medley()
 
   app.register(function(subApp, opts, next) {
-    subApp.addHook('onRequest', (request, reply, next) => {
+    subApp.addHook('onRequest', (request, response, next) => {
       t.strictEqual(request.previous, undefined)
       request.previous = 1
       next()
     })
 
-    subApp.get('/', (request, reply) => {
+    subApp.get('/', (request, response) => {
       t.strictEqual(request.previous, 5)
-      reply.send({hello: 'world'})
+      response.send({hello: 'world'})
     })
 
     subApp.register(fp(function(i, opts, next) {
-      i.addHook('onRequest', (request, reply, next) => {
+      i.addHook('onRequest', (request, response, next) => {
         t.strictEqual(request.previous, 1)
         request.previous = 2
         next()
@@ -951,14 +951,14 @@ test('onRequest hooks should run in the order in which they are defined', (t) =>
   })
 
   app.register(fp(function(subApp, opts, next) {
-    subApp.addHook('onRequest', (request, reply, next) => {
+    subApp.addHook('onRequest', (request, response, next) => {
       t.strictEqual(request.previous, 2)
       request.previous = 3
       next()
     })
 
     subApp.register(fp(function(i, opts, next) {
-      i.addHook('onRequest', (request, reply, next) => {
+      i.addHook('onRequest', (request, response, next) => {
         t.strictEqual(request.previous, 3)
         request.previous = 4
         next()
@@ -966,7 +966,7 @@ test('onRequest hooks should run in the order in which they are defined', (t) =>
       next()
     }))
 
-    subApp.addHook('onRequest', (request, reply, next) => {
+    subApp.addHook('onRequest', (request, response, next) => {
       t.strictEqual(request.previous, 4)
       request.previous = 5
       next()
@@ -987,19 +987,19 @@ test('preHandler hooks should run in the order in which they are defined', (t) =
   const app = medley()
 
   app.register(function(subApp, opts, next) {
-    subApp.addHook('preHandler', function(request, reply, next) {
+    subApp.addHook('preHandler', function(request, response, next) {
       t.strictEqual(request.previous, undefined)
       request.previous = 1
       next()
     })
 
-    subApp.get('/', function(request, reply) {
+    subApp.get('/', function(request, response) {
       t.strictEqual(request.previous, 5)
-      reply.send({hello: 'world'})
+      response.send({hello: 'world'})
     })
 
     subApp.register(fp(function(i, opts, next) {
-      i.addHook('preHandler', function(request, reply, next) {
+      i.addHook('preHandler', function(request, response, next) {
         t.strictEqual(request.previous, 1)
         request.previous = 2
         next()
@@ -1011,14 +1011,14 @@ test('preHandler hooks should run in the order in which they are defined', (t) =
   })
 
   app.register(fp(function(subApp, opts, next) {
-    subApp.addHook('preHandler', function(request, reply, next) {
+    subApp.addHook('preHandler', function(request, response, next) {
       t.strictEqual(request.previous, 2)
       request.previous = 3
       next()
     })
 
     subApp.register(fp(function(i, opts, next) {
-      i.addHook('preHandler', function(request, reply, next) {
+      i.addHook('preHandler', function(request, response, next) {
         t.strictEqual(request.previous, 3)
         request.previous = 4
         next()
@@ -1026,7 +1026,7 @@ test('preHandler hooks should run in the order in which they are defined', (t) =
       next()
     }))
 
-    subApp.addHook('preHandler', function(request, reply, next) {
+    subApp.addHook('preHandler', function(request, response, next) {
       t.strictEqual(request.previous, 4)
       request.previous = 5
       next()
@@ -1047,18 +1047,18 @@ test('onSend hooks should run in the order in which they are defined', (t) => {
   const app = medley()
 
   app.register(function(subApp, opts, next) {
-    subApp.addHook('onSend', function(request, reply, payload, next) {
+    subApp.addHook('onSend', function(request, response, payload, next) {
       t.strictEqual(request.previous, undefined)
       request.previous = 1
       next()
     })
 
-    subApp.get('/', function(request, reply) {
-      reply.send({})
+    subApp.get('/', function(request, response) {
+      response.send({})
     })
 
     subApp.register(fp(function(i, opts, next) {
-      i.addHook('onSend', function(request, reply, payload, next) {
+      i.addHook('onSend', function(request, response, payload, next) {
         t.strictEqual(request.previous, 1)
         request.previous = 2
         next()
@@ -1070,14 +1070,14 @@ test('onSend hooks should run in the order in which they are defined', (t) => {
   })
 
   app.register(fp(function(subApp, opts, next) {
-    subApp.addHook('onSend', function(request, reply, payload, next) {
+    subApp.addHook('onSend', function(request, response, payload, next) {
       t.strictEqual(request.previous, 2)
       request.previous = 3
       next()
     })
 
     subApp.register(fp(function(i, opts, next) {
-      i.addHook('onSend', function(request, reply, payload, next) {
+      i.addHook('onSend', function(request, response, payload, next) {
         t.strictEqual(request.previous, 3)
         request.previous = 4
         next()
@@ -1085,7 +1085,7 @@ test('onSend hooks should run in the order in which they are defined', (t) => {
       next()
     }))
 
-    subApp.addHook('onSend', function(request, reply, payload, next) {
+    subApp.addHook('onSend', function(request, response, payload, next) {
       t.strictEqual(request.previous, 4)
       next(null, '5')
     })
@@ -1105,19 +1105,19 @@ test('onFinished hooks should run in the order in which they are defined', (t) =
   const app = medley()
 
   app.register(function(subApp, opts, next) {
-    subApp.addHook('onFinished', (request, reply) => {
-      t.strictEqual(reply.previous, undefined)
-      reply.previous = 1
+    subApp.addHook('onFinished', (request, response) => {
+      t.strictEqual(response.previous, undefined)
+      response.previous = 1
     })
 
-    subApp.get('/', function(request, reply) {
-      reply.send({hello: 'world'})
+    subApp.get('/', function(request, response) {
+      response.send({hello: 'world'})
     })
 
     subApp.register(fp(function(i, opts, next) {
-      i.addHook('onFinished', (request, reply) => {
-        t.strictEqual(reply.previous, 1)
-        reply.previous = 2
+      i.addHook('onFinished', (request, response) => {
+        t.strictEqual(response.previous, 1)
+        response.previous = 2
       })
       next()
     }))
@@ -1126,21 +1126,21 @@ test('onFinished hooks should run in the order in which they are defined', (t) =
   })
 
   app.register(fp(function(subApp, opts, next) {
-    subApp.addHook('onFinished', (request, reply) => {
-      t.strictEqual(reply.previous, 2)
-      reply.previous = 3
+    subApp.addHook('onFinished', (request, response) => {
+      t.strictEqual(response.previous, 2)
+      response.previous = 3
     })
 
     subApp.register(fp(function(i, opts, next) {
-      i.addHook('onFinished', (request, reply) => {
-        t.strictEqual(reply.previous, 3)
-        reply.previous = 4
+      i.addHook('onFinished', (request, response) => {
+        t.strictEqual(response.previous, 3)
+        response.previous = 4
       })
       next()
     }))
 
-    subApp.addHook('onFinished', (request, reply) => {
-      t.strictEqual(reply.previous, 4)
+    subApp.addHook('onFinished', (request, response) => {
+      t.strictEqual(response.previous, 4)
     })
 
     next()

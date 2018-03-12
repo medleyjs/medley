@@ -6,7 +6,7 @@ both over HTTPS or over plaintext.
 
 Currently none of the HTTP2-specific APIs are available through
 _Medley_, but Node's `req` and `res` can be access through our
-`Request` and `Reply` interface. PRs are welcome.
+`Request` and `Response` interface. PRs are welcome.
 
 ### Secure (HTTPS)
 
@@ -26,8 +26,8 @@ const app = require('@medley/medley')({
   }
 })
 
-app.get('/', function (request, reply) {
-  reply.send({ hello: 'world' })
+app.get('/', (request, response) => {
+  response.send({ hello: 'world' })
 })
 
 app.listen(3000)
@@ -53,8 +53,8 @@ const app = require('@medley/medley')({
 })
 
 // this route can be accessed through both protocols
-app.get('/', function (request, reply) {
-  reply.send({ hello: 'world' })
+app.get('/', (request, response) => {
+  response.send({ hello: 'world' })
 })
 
 app.listen(3000)
@@ -78,8 +78,8 @@ const app = require('@medley/medley')({
   http2: true
 })
 
-app.get('/', function (request, reply) {
-  reply.send({ hello: 'world' })
+app.get('/', (request, response) => {
+  response.send({ hello: 'world' })
 })
 
 app.listen(3000)

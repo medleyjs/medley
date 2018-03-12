@@ -7,35 +7,35 @@ const http = require('http')
 const medley = require('../..')
 
 const NotFound = require('http-errors').NotFound
-const Reply = require('../../lib/Reply').buildReply()
+const Response = require('../../lib/Response').buildResponse()
 
-test('Reply properties', (t) => {
+test('Response properties', (t) => {
   t.plan(4)
   const res = {}
   const request = {}
   const config = {}
   const context = {config}
 
-  const reply = new Reply(res, request, context)
-  t.type(reply, Reply)
-  t.equal(reply.res, res)
-  t.equal(reply.config, config)
-  t.equal(reply.sent, false)
+  const response = new Response(res, request, context)
+  t.type(response, Response)
+  t.equal(response.res, res)
+  t.equal(response.config, config)
+  t.equal(response.sent, false)
 })
 
-test('reply.getHeader/setHeader() get and set the response headers', (t) => {
+test('response.getHeader/setHeader() get and set the response headers', (t) => {
   t.plan(8)
 
   const app = medley()
 
-  app.get('/', (request, reply) => {
-    t.equal(reply.getHeader('X-Custom-Header'), undefined)
+  app.get('/', (request, response) => {
+    t.equal(response.getHeader('X-Custom-Header'), undefined)
 
-    t.equal(reply.setHeader('X-Custom-Header', 'custom header'), reply)
-    t.equal(reply.getHeader('X-Custom-Header'), 'custom header')
+    t.equal(response.setHeader('X-Custom-Header', 'custom header'), response)
+    t.equal(response.getHeader('X-Custom-Header'), 'custom header')
 
-    reply.setHeader('Content-Type', 'custom/type')
-    reply.send('text')
+    response.setHeader('Content-Type', 'custom/type')
+    response.send('text')
   })
 
   app.inject('/', (err, res) => {
@@ -47,32 +47,32 @@ test('reply.getHeader/setHeader() get and set the response headers', (t) => {
   })
 })
 
-test('reply.appendHeader() adds to existing headers', (t) => {
+test('response.appendHeader() adds to existing headers', (t) => {
   t.plan(13)
 
   const app = medley()
 
-  app.get('/', (request, reply) => {
-    reply.appendHeader('X-Custom-Header', 'first')
-    t.equal(reply.getHeader('X-Custom-Header'), 'first')
+  app.get('/', (request, response) => {
+    response.appendHeader('X-Custom-Header', 'first')
+    t.equal(response.getHeader('X-Custom-Header'), 'first')
 
-    t.equal(reply.appendHeader('X-Custom-Header', 'second'), reply)
-    t.deepEqual(reply.getHeader('X-Custom-Header'), ['first', 'second'])
+    t.equal(response.appendHeader('X-Custom-Header', 'second'), response)
+    t.deepEqual(response.getHeader('X-Custom-Header'), ['first', 'second'])
 
-    t.equal(reply.appendHeader('X-Custom-Header', ['3', '4']), reply)
-    t.deepEqual(reply.getHeader('X-Custom-Header'), ['first', 'second', '3', '4'])
+    t.equal(response.appendHeader('X-Custom-Header', ['3', '4']), response)
+    t.deepEqual(response.getHeader('X-Custom-Header'), ['first', 'second', '3', '4'])
 
-    reply.send()
+    response.send()
   })
 
-  app.get('/append-multiple-to-string', (request, reply) => {
-    reply.appendHeader('X-Custom-Header', 'first')
-    t.equal(reply.getHeader('X-Custom-Header'), 'first')
+  app.get('/append-multiple-to-string', (request, response) => {
+    response.appendHeader('X-Custom-Header', 'first')
+    t.equal(response.getHeader('X-Custom-Header'), 'first')
 
-    reply.appendHeader('X-Custom-Header', ['second', 'third'])
-    t.deepEqual(reply.getHeader('X-Custom-Header'), ['first', 'second', 'third'])
+    response.appendHeader('X-Custom-Header', ['second', 'third'])
+    t.deepEqual(response.getHeader('X-Custom-Header'), ['first', 'second', 'third'])
 
-    reply.send()
+    response.send()
   })
 
   app.inject('/', (err, res) => {
@@ -88,25 +88,25 @@ test('reply.appendHeader() adds to existing headers', (t) => {
   })
 })
 
-test('reply.removeHeader() removes response headers', (t) => {
+test('response.removeHeader() removes response headers', (t) => {
   t.plan(8)
 
   const app = medley()
 
-  app.get('/', (request, reply) => {
-    reply.setHeader('X-Custom-Header', 'custom header')
-    t.equal(reply.getHeader('X-Custom-Header'), 'custom header')
+  app.get('/', (request, response) => {
+    response.setHeader('X-Custom-Header', 'custom header')
+    t.equal(response.getHeader('X-Custom-Header'), 'custom header')
 
-    t.equal(reply.removeHeader('X-Custom-Header'), reply)
-    t.equal(reply.getHeader('X-Custom-Header'), undefined)
+    t.equal(response.removeHeader('X-Custom-Header'), response)
+    t.equal(response.getHeader('X-Custom-Header'), undefined)
 
-    reply
+    response
       .setHeader('X-Custom-Header-2', ['a', 'b'])
       .removeHeader('X-Custom-Header-2')
 
-    t.equal(reply.getHeader('X-Custom-Header-2'), undefined)
+    t.equal(response.getHeader('X-Custom-Header-2'), undefined)
 
-    reply.send()
+    response.send()
   })
 
   app.inject('/', (err, res) => {
@@ -117,27 +117,27 @@ test('reply.removeHeader() removes response headers', (t) => {
   })
 })
 
-test('reply.send() throws with circular JSON', (t) => {
+test('response.send() throws with circular JSON', (t) => {
   t.plan(1)
-  const reply = new Reply({}, {}, {})
+  const response = new Response({}, {}, {})
   t.throws(() => {
     var obj = {}
     obj.obj = obj
-    reply.send(JSON.stringify(obj))
+    response.send(JSON.stringify(obj))
   })
 })
 
-test('reply.send() throws if called after response is sent', (t) => {
+test('response.send() throws if called after response is sent', (t) => {
   t.plan(3)
 
   const app = medley()
 
-  app.get('/', (request, reply) => {
-    reply.send('first')
+  app.get('/', (request, response) => {
+    response.send('first')
     try {
-      reply.send('second')
+      response.send('second')
     } catch (err) {
-      t.equal(err.message, 'Cannot call reply.send() when a response has already been sent')
+      t.equal(err.message, 'Cannot call response.send() when a response has already been sent')
     }
   })
 
@@ -147,17 +147,17 @@ test('reply.send() throws if called after response is sent', (t) => {
   })
 })
 
-test('reply.error() throws if called after response is sent', (t) => {
+test('response.error() throws if called after response is sent', (t) => {
   t.plan(3)
 
   const app = medley()
 
-  app.get('/', (request, reply) => {
-    reply.send('send')
+  app.get('/', (request, response) => {
+    response.send('send')
     try {
-      reply.error(new Error())
+      response.error(new Error())
     } catch (err) {
-      t.equal(err.message, 'Cannot call reply.error() when a response has already been sent')
+      t.equal(err.message, 'Cannot call response.error() when a response has already been sent')
     }
   })
 
@@ -170,35 +170,35 @@ test('reply.error() throws if called after response is sent', (t) => {
 test('within a sub app', (t) => {
   const app = require('../..')()
 
-  app.get('/', function(req, reply) {
-    reply.setHeader('Content-Type', 'text/plain')
-    reply.send('hello world!')
+  app.get('/', function(req, response) {
+    response.setHeader('Content-Type', 'text/plain')
+    response.send('hello world!')
   })
 
-  app.get('/auto-type', function(req, reply) {
-    reply.type('text/plain')
-    reply.send('hello world!')
+  app.get('/auto-type', function(req, response) {
+    response.type('text/plain')
+    response.send('hello world!')
   })
 
-  app.get('/auto-status-code', function(req, reply) {
-    reply.send('hello world!')
+  app.get('/auto-status-code', function(req, response) {
+    response.send('hello world!')
   })
 
-  app.get('/redirect', function(req, reply) {
-    reply.redirect('/')
+  app.get('/redirect', function(req, response) {
+    response.redirect('/')
   })
 
-  app.get('/redirect-code', function(req, reply) {
-    reply.redirect(301, '/')
+  app.get('/redirect-code', function(req, response) {
+    response.redirect(301, '/')
   })
 
   app.register(function(subApp, options, next) {
-    app.addHook('onSend', function(request, reply, payload, next) {
-      reply.setHeader('x-onsend', 'yes')
+    app.addHook('onSend', function(request, response, payload, next) {
+      response.setHeader('x-onsend', 'yes')
       next()
     })
-    app.get('/redirect-onsend', function(req, reply) {
-      reply.redirect('/')
+    app.get('/redirect-onsend', function(req, response) {
+      response.redirect('/')
     })
     next()
   })
@@ -305,8 +305,8 @@ test('buffer without content type should send a application/octet-stream and raw
 
   const app = require('../..')()
 
-  app.get('/', function(req, reply) {
-    reply.send(Buffer.alloc(1024))
+  app.get('/', function(req, response) {
+    response.send(Buffer.alloc(1024))
   })
 
   app.listen(0, (err) => {
@@ -329,9 +329,9 @@ test('buffer with content type should not send application/octet-stream', (t) =>
 
   const app = require('../..')()
 
-  app.get('/', function(req, reply) {
-    reply.setHeader('Content-Type', 'text/plain')
-    reply.send(Buffer.alloc(1024))
+  app.get('/', function(req, response) {
+    response.setHeader('Content-Type', 'text/plain')
+    response.send(Buffer.alloc(1024))
   })
 
   app.listen(0, (err) => {
@@ -354,8 +354,8 @@ test('plain string without content type should send a text/plain', (t) => {
 
   const app = require('../..')()
 
-  app.get('/', function(req, reply) {
-    reply.send('hello world!')
+  app.get('/', function(req, response) {
+    response.send('hello world!')
   })
 
   app.listen(0, (err) => {
@@ -378,8 +378,8 @@ test('plain string with content type should be sent unmodified', (t) => {
 
   const app = require('../..')()
 
-  app.get('/', function(req, reply) {
-    reply.type('text/css').send('hello world!')
+  app.get('/', function(req, response) {
+    response.type('text/css').send('hello world!')
   })
 
   app.listen(0, (err) => {
@@ -402,8 +402,8 @@ test('plain string with content type application/json should be serialized as js
 
   const app = require('../..')()
 
-  app.get('/', function(req, reply) {
-    reply.type('application/json').send('hello world!')
+  app.get('/', function(req, response) {
+    response.type('application/json').send('hello world!')
   })
 
   app.listen(0, (err) => {
@@ -421,25 +421,25 @@ test('plain string with content type application/json should be serialized as js
   })
 })
 
-test('reply.error(err) should work with any err value', (t) => {
+test('response.error(err) should work with any err value', (t) => {
   t.plan(8)
 
   const app = require('../..')()
 
-  app.get('/string', (request, reply) => {
-    reply.error('string')
+  app.get('/string', (request, response) => {
+    response.error('string')
   })
 
-  app.get('/undefined', (request, reply) => {
-    reply.error()
+  app.get('/undefined', (request, response) => {
+    response.error()
   })
 
-  app.get('/array', (request, reply) => {
-    reply.error([1, 2])
+  app.get('/array', (request, response) => {
+    response.error([1, 2])
   })
 
-  app.get('/object', (request, reply) => {
-    reply.error({message: 'object message'})
+  app.get('/object', (request, response) => {
+    response.error({message: 'object message'})
   })
 
   app.inject('/string', (err, res) => {
@@ -479,17 +479,17 @@ test('reply.error(err) should work with any err value', (t) => {
   })
 })
 
-test('reply.error(err) should use err.status or err.statusCode', (t) => {
+test('response.error(err) should use err.status or err.statusCode', (t) => {
   t.plan(4)
 
   const app = require('../..')()
 
-  app.get('/501', (request, reply) => {
-    reply.error({status: 501, message: '501'})
+  app.get('/501', (request, response) => {
+    response.error({status: 501, message: '501'})
   })
 
-  app.get('/502', (request, reply) => {
-    reply.error({status: 502, message: '502'})
+  app.get('/502', (request, response) => {
+    response.error({status: 502, message: '502'})
   })
 
   app.inject('/501', (err, res) => {
@@ -516,13 +516,13 @@ test('undefined payload should be sent as-is', (t) => {
 
   const app = require('../..')()
 
-  app.addHook('onSend', function(request, reply, payload, next) {
-    t.strictEqual(reply.payload, undefined)
+  app.addHook('onSend', function(request, response, payload, next) {
+    t.strictEqual(response.payload, undefined)
     next()
   })
 
-  app.get('/', function(req, reply) {
-    reply.code(204).send()
+  app.get('/', function(req, response) {
+    response.code(204).send()
   })
 
   app.listen(0, (err) => {
@@ -541,22 +541,22 @@ test('undefined payload should be sent as-is', (t) => {
   })
 })
 
-test('reply.error(new NotFound()) should invoke the 404 handler', (t) => {
+test('response.error(new NotFound()) should invoke the 404 handler', (t) => {
   t.plan(9)
 
   const app = require('../..')()
 
-  app.get('/not-found', function(req, reply) {
-    reply.error(new NotFound())
+  app.get('/not-found', function(req, response) {
+    response.error(new NotFound())
   })
 
   app.register(function(subApp, options, next) {
-    subApp.get('/not-found', function(req, reply) {
-      reply.error(new NotFound())
+    subApp.get('/not-found', function(req, response) {
+      response.error(new NotFound())
     })
 
-    subApp.setNotFoundHandler(function(req, reply) {
-      reply.code(404).send('Custom not found response')
+    subApp.setNotFoundHandler(function(req, response) {
+      response.code(404).send('Custom not found response')
     })
 
     next()
@@ -589,17 +589,17 @@ test('reply.error(new NotFound()) should invoke the 404 handler', (t) => {
   })
 })
 
-test('reply.error(new NotFound()) should send a basic response if called inside a 404 handler', (t) => {
+test('response.error(new NotFound()) should send a basic response if called inside a 404 handler', (t) => {
   t.plan(5)
 
   const app = require('../..')()
 
-  app.get('/not-found', function(req, reply) {
-    reply.error(new NotFound())
+  app.get('/not-found', function(req, response) {
+    response.error(new NotFound())
   })
 
-  app.setNotFoundHandler(function(req, reply) {
-    reply.error(new NotFound())
+  app.setNotFoundHandler(function(req, response) {
+    response.error(new NotFound())
   })
 
   app.listen(0, (err) => {
@@ -624,14 +624,14 @@ test('error with a Content-Type that is not application/json should work', (t) =
 
   const app = require('../..')()
 
-  app.get('/text', (request, reply) => {
-    reply.type('text/plain')
-    reply.error(new Error('some application error'))
+  app.get('/text', (request, response) => {
+    response.type('text/plain')
+    response.error(new Error('some application error'))
   })
 
-  app.get('/html', (request, reply) => {
-    reply.type('text/html')
-    reply.error(new Error('some application error'))
+  app.get('/html', (request, response) => {
+    response.type('text/html')
+    response.error(new Error('some application error'))
   })
 
   app.inject('/text', (err, res) => {
@@ -662,13 +662,13 @@ test('the Content-Type header should be unset before calling a not-found handler
 
   const app = require('../..')()
 
-  app.get('/', (request, reply) => {
-    reply.type('application/json')
-    reply.error(new NotFound()) // Cause the not-found handler to be invoked
+  app.get('/', (request, response) => {
+    response.type('application/json')
+    response.error(new NotFound()) // Cause the not-found handler to be invoked
   })
 
-  app.setNotFoundHandler((request, reply) => {
-    reply.code(404).send('plain text')
+  app.setNotFoundHandler((request, response) => {
+    response.code(404).send('plain text')
   })
 
   app.inject('/', (err, res) => {
@@ -684,13 +684,13 @@ test('the Content-Type header should be unset before calling a custom error hand
 
   const app = require('../..')()
 
-  app.get('/', (request, reply) => {
-    reply.type('application/json')
-    reply.error(new Error('error message')) // Cause the error handler to be invoked
+  app.get('/', (request, response) => {
+    response.type('application/json')
+    response.error(new Error('error message')) // Cause the error handler to be invoked
   })
 
-  app.setErrorHandler((err, request, reply) => {
-    reply.code(500).send(err.message)
+  app.setErrorHandler((err, request, response) => {
+    response.code(500).send(err.message)
   })
 
   app.inject('/', (err, res) => {

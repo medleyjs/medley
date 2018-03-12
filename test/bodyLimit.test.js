@@ -24,8 +24,8 @@ test('bodyLimit', (t) => {
 
   const app = medley({bodyLimit: 1})
 
-  app.post('/', (request, reply) => {
-    reply.send({error: 'handler should not be called'})
+  app.post('/', (request, response) => {
+    response.send({error: 'handler should not be called'})
   })
 
   app.listen(0, function(err) {

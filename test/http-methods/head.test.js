@@ -16,8 +16,8 @@ const options = {
 test('shorthand - head', (t) => {
   t.plan(1)
   try {
-    app.head('/', options, function(req, reply) {
-      reply.send(null)
+    app.head('/', options, function(req, response) {
+      response.send(null)
     })
     t.pass()
   } catch (e) {
@@ -28,8 +28,8 @@ test('shorthand - head', (t) => {
 test('missing schema - head', (t) => {
   t.plan(1)
   try {
-    app.head('/missing', function(req, reply) {
-      reply.send(null)
+    app.head('/missing', function(req, response) {
+      response.send(null)
     })
     t.pass()
   } catch (e) {

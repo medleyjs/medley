@@ -19,8 +19,8 @@ test('should wait for the ready event', (t) => {
   const payload = {hello: 'world'}
 
   app.register((subApp, opts, next) => {
-    subApp.get('/', (req, reply) => {
-      reply.send(payload)
+    subApp.get('/', (req, response) => {
+      response.send(payload)
     })
 
     setTimeout(next, 500)
@@ -42,8 +42,8 @@ test('inject get request', (t) => {
   const app = medley()
   const payload = {hello: 'world'}
 
-  app.get('/', (req, reply) => {
-    reply.send(payload)
+  app.get('/', (req, response) => {
+    response.send(payload)
   })
 
   app.inject({
@@ -62,8 +62,8 @@ test('inject get request - code check', (t) => {
   const app = medley()
   const payload = {hello: 'world'}
 
-  app.get('/', (req, reply) => {
-    reply.code(201).send(payload)
+  app.get('/', (req, response) => {
+    response.code(201).send(payload)
   })
 
   app.inject({
@@ -81,8 +81,8 @@ test('inject get request - headers check', (t) => {
   t.plan(4)
   const app = medley()
 
-  app.get('/', (req, reply) => {
-    reply.send('')
+  app.get('/', (req, response) => {
+    response.send('')
   })
 
   app.inject({
@@ -100,8 +100,8 @@ test('inject get request - querystring', (t) => {
   t.plan(4)
   const app = medley()
 
-  app.get('/', (req, reply) => {
-    reply.send(req.query)
+  app.get('/', (req, response) => {
+    response.send(req.query)
   })
 
   app.inject({
@@ -119,8 +119,8 @@ test('inject get request - params', (t) => {
   t.plan(4)
   const app = medley()
 
-  app.get('/:hello', (req, reply) => {
-    reply.send(req.params)
+  app.get('/:hello', (req, response) => {
+    response.send(req.params)
   })
 
   app.inject({
@@ -138,8 +138,8 @@ test('inject get request - wildcard', (t) => {
   t.plan(4)
   const app = medley()
 
-  app.get('/test/*', (req, reply) => {
-    reply.send(req.params)
+  app.get('/test/*', (req, response) => {
+    response.send(req.params)
   })
 
   app.inject({
@@ -157,8 +157,8 @@ test('inject get request - headers', (t) => {
   t.plan(4)
   const app = medley()
 
-  app.get('/', (req, reply) => {
-    reply.send(req.headers)
+  app.get('/', (req, response) => {
+    response.send(req.headers)
   })
 
   app.inject({
@@ -178,8 +178,8 @@ test('inject post request', (t) => {
   const app = medley()
   const payload = {hello: 'world'}
 
-  app.post('/', (req, reply) => {
-    reply.send(req.body)
+  app.post('/', (req, response) => {
+    response.send(req.body)
   })
 
   app.inject({
@@ -198,8 +198,8 @@ test('inject post request - send stream', (t) => {
   t.plan(4)
   const app = medley()
 
-  app.post('/', (req, reply) => {
-    reply.send(req.body)
+  app.post('/', (req, response) => {
+    response.send(req.body)
   })
 
   app.inject({
@@ -215,12 +215,12 @@ test('inject post request - send stream', (t) => {
   })
 })
 
-test('inject get request - reply stream', (t) => {
+test('inject get request - response stream', (t) => {
   t.plan(3)
   const app = medley()
 
-  app.get('/', (req, reply) => {
-    reply.send(getStream())
+  app.get('/', (req, response) => {
+    response.send(getStream())
   })
 
   app.inject({
@@ -238,8 +238,8 @@ test('inject promisify - waiting for ready event', (t) => {
   const app = medley()
   const payload = {hello: 'world'}
 
-  app.get('/', (req, reply) => {
-    reply.send(payload)
+  app.get('/', (req, response) => {
+    response.send(payload)
   })
 
   const injectParams = {
@@ -258,8 +258,8 @@ test('inject promisify - after the ready event', (t) => {
   const app = medley()
   const payload = {hello: 'world'}
 
-  app.get('/', (req, reply) => {
-    reply.send(payload)
+  app.get('/', (req, response) => {
+    response.send(payload)
   })
 
   app.ready((err) => {
@@ -282,8 +282,8 @@ test('inject promisify - when the server is up', (t) => {
   const app = medley()
   const payload = {hello: 'world'}
 
-  app.get('/', (req, reply) => {
-    reply.send(payload)
+  app.get('/', (req, response) => {
+    response.send(payload)
   })
 
   app.ready((err) => {

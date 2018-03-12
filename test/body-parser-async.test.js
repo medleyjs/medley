@@ -9,12 +9,12 @@ test('bodyParser should add a custom async parser', (t) => {
   t.plan(3)
   const app = medley()
 
-  app.post('/', (req, reply) => {
-    reply.send(req.body)
+  app.post('/', (req, response) => {
+    response.send(req.body)
   })
 
-  app.options('/', (req, reply) => {
-    reply.send(req.body)
+  app.options('/', (req, response) => {
+    response.send(req.body)
   })
 
   app.addBodyParser('application/jsoff', async function(req) {
