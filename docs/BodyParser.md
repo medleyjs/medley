@@ -1,6 +1,6 @@
 # Body Parser
 
-Medley comes with a body parser for the `application/json` Content-Type. To parse different content types, `app.addBodyParser()` can be used to add more body parsers. The parsed request body is added to the [Medley request](Request.md) object as `request.body`.
+Medley comes with a body parser for the `application/json` Content-Type. To parse different content types, `app.addBodyParser()` can be used to add more body parsers. The parsed request body is added to the [Medley `request`](Request.md) object as `request.body`.
 
 As with the other APIs, `addBodyParser` is encapsulated in the scope in which it is declared. This means that if a parser is declared in the root scope, it will be available everywhere, whereas if it is declared inside a sub app, it will be available only in that scope and its children.
 
@@ -14,18 +14,31 @@ If needed, the default JSON parser can be overridden by adding a parser with the
 app.addBodyParser(contentType, parser(req, done))
 ```
 
-Example:
++ `contentType` *(string)* - The Content-Type to parse.
++ `parser` *(function)* - A function to parse the request body that takes the following parameters:
+  + `req` - The native [`http.IncomingMessage`][http.IncomingMessage] object.
+  + `done(error, body)` - Callback to call when done parsing the body or if an error occurred.
+
+Example that uses [`raw-body`](https://github.com/stream-utils/raw-body):
 
 ```js
-app.addBodyParser('application/jsoff', (req, done) => {
-  jsoffParser(req, function (err, body) {
-    done(err, body)
-  })
-})
+const rawBody = require('raw-body')
 
-// Promises (and async-await) are also supported
-app.addBodyParser('application/jsoff', async (req) => {
-  const body = await jsoffParser(req)
+app.addBodyParser('text/html', (req, done) => {
+  rawBody(req, {
+    length: req.headers['content-length'],
+    limit: '1mb',
+    encoding: 'utf8',
+  }, done)
+})
+```
+
+If using an `async` function, return the parsed body instead of calling the `done` callback:
+
+```js
+app.addBodyParser('application/octet-stream', async (req) => {
+  const buffer = await bufferParser(req)
+  const body = customParser(buffer)
   return body
 })
 ```
@@ -36,24 +49,28 @@ app.addBodyParser('application/jsoff', async (req) => {
 app.addBodyParser(contentType, options, parser(req, body, done))
 ```
 
-By using the `parseAs` option, the request body will be collected and then passed to the `parser` callback as the second argument.
++ `contentType` *(string)* - The Content-Type to parse.
++ `options` *(object)* - Options object that can have the following options:
+  + `parseAs` *(string)* - Either `'buffer'` or `'string'` to indicate how the incoming data should be collected. Defaults to `undefined`.
+  + `bodyLimit` *(number)* - The maximum payload size (in bytes) that the custom parser will accept. Defaults to the global body limit passed to the [`Medley factory function`](Factory.md#bodylimit). If the limit is exceeded, the `parser` function will not be invoked.
++ `parser` *(function)* - A function to parse the request body that takes the following parameters:
+  + `req` - The native [`http.IncomingMessage`][http.IncomingMessage] object.
+  + `body` *(buffer|string)* - The collected body. The type depends on the `parseAs` option.
+  + `done(error, body)` - Callback to call when done parsing the body or if an error occurred.
 
-##### Options
-
-+ `parseAs` (string): Either `'buffer'` or `'string'` to designate how the incoming data should be collected. Default: `undefined`.
-+ `bodyLimit` (number): The maximum payload size, in bytes, that the custom parser will accept. Defaults to the global body limit passed to the [`Medley factory function`](Factory.md#bodylimit). If the limit is exceeded the `parser` function will not be invoked.
-
-Example:
+By using the `parseAs` option, the request body will be collected as either a `buffer`
+or a `string` and then passed to the `parser` function as the second argument.
 
 ```js
-app.addBodyParser('application/json', { parseAs: 'string' }, function (req, body, done) {
+app.addBodyParser('application/json', { parseAs: 'string' }, (req, body, done) => {
+  var json
   try {
-    var json = JSON.parse(body)
-    done(null, json)
+    json = JSON.parse(body)
   } catch (err) {
     err.statusCode = 400
-    done(err, undefined)
+    return done(err)
   }
+  done(null, json)
 })
 ```
 
@@ -80,3 +97,5 @@ if (!app.hasBodyParser('application/jsoff')){
   app.addBodyParser('application/jsoff', jsoffParser)
 }
 ```
+
+[http.IncomingMessage]: https://nodejs.org/dist/latest/docs/api/http.html#http_class_http_incomingmessage
