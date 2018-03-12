@@ -98,23 +98,28 @@ test('listen twice on the same port', (t) => {
 })
 
 // https://nodejs.org/api/net.html#net_ipc_support
-if (os.platform() !== 'win32') {
-  test('listen on socket', (t) => {
-    t.plan(2)
-    const app = medley()
-    const sockFile = path.join(os.tmpdir(), 'server.sock')
-    try {
-      fs.unlinkSync(sockFile)
-    } catch (err) {
+test('listen on socket', (t) => {
+  t.plan(2)
+
+  const app = medley()
+  const sockFile = os.platform() === 'win32'
+    ? path.join('\\\\?\\pipe', process.cwd(), 'medley-pipe')
+    : path.join(os.tmpdir(), 'server.sock')
+
+  try {
+    fs.unlinkSync(sockFile)
+  } catch (err) {
+    if (err.code !== 'ENOENT') {
       t.fail(err)
     }
-    app.listen(sockFile, (err) => {
-      t.error(err)
-      t.equal(sockFile, app.server.address())
-      app.close()
-    })
+  }
+
+  app.listen(sockFile, (err) => {
+    t.error(err)
+    t.equal(sockFile, app.server.address())
+    app.close()
   })
-}
+})
 
 test('listen without callback', (t) => {
   t.plan(1)
