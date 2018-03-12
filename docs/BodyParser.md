@@ -36,10 +36,28 @@ app.addBodyParser('text/html', (req, done) => {
 If using an `async` function, return the parsed body instead of calling the `done` callback:
 
 ```js
-app.addBodyParser('application/octet-stream', async (req) => {
-  const buffer = await bufferParser(req)
-  const body = customParser(buffer)
+const rawBody = require('raw-body')
+
+app.addBodyParser('text/html', async (req) => {
+  const body = await rawBody(req, {
+    length: req.headers['content-length'],
+    limit: '1mb',
+    encoding: 'utf8',
+  })
   return body
+})
+```
+
+Note that since there is only a single `await` in the example above,
+it could be simplified to just return the promise:
+
+```js
+app.addBodyParser('text/html', (req) => {
+  return rawBody(req, {
+    length: req.headers['content-length'],
+    limit: '1mb',
+    encoding: 'utf8',
+  })
 })
 ```
 
