@@ -11,15 +11,15 @@ It is a wrapper around Node's [`http.ServerResponse`][http.ServerResponse] objec
 
 **Methods:**
 
-+ [`.code(statusCode)`](#code)
-+ [`.getHeader(name)`](#get-header)
-+ [`.setHeader(name, value)`](#set-header)
 + [`.appendHeader(name, value)`](#append-header)
-+ [`.removeHeader(name)`](#remove-header)
-+ [`.type(contentType)`](#type)
-+ [`.redirect([statusCode,] url)`](#redirect)
++ [`.code(statusCode)`](#code)
 + [`.error(err)`](#error)
++ [`.getHeader(name)`](#get-header)
++ [`.redirect([statusCode,] url)`](#redirect)
++ [`.removeHeader(name)`](#remove-header)
 + [`.send([payload])`](#send)
++ [`.setHeader(name, value)`](#set-header)
++ [`.type(contentType)`](#type)
 
 
 ## Properties
@@ -40,42 +40,6 @@ A boolean value that indicates whether or not a response has already been sent.
 
 ## Methods
 
-<a id="code"></a>
-### `response.code(statusCode)`
-
-+ `statusCode` *(number)*
-+ Chainable
-
-Sets the HTTP status code for the response. If not set, the status code for
-the response defaults to `200`.
-
-<a id="get-header"></a>
-### `response.getHeader(name)`
-
-+ `name` *(string)*
-+ Returns: *(string|string[])*
-
-Gets a response header.
-
-```js
-response.getHeader('Content-Type') // 'application/json'
-```
-
-<a id="set-header"></a>
-### `response.setHeader(name, value)`
-
-+ `name` *(string)*
-+ `value` *(string|string[])*
-+ Chainable
-
-Sets a response header.
-
-```js
-response.setHeader('Content-Encoding', 'gzip')
-```
-
-For more information, see [`http.ServerResponse#setHeader`](https://nodejs.org/dist/latest/docs/api/http.html#http_response_setheader_name_value).
-
 <a id="append-header"></a>
 ### `response.appendHeader(name, value)`
 
@@ -92,49 +56,14 @@ response.appendHeader('Set-Cookie', 'bar=baz; Path=/; HttpOnly')
 response.getHeader('Set-Cookie') // ['foo=bar', 'bar=baz; Path=/; HttpOnly']
 ```
 
-This is only needed for setting multiple `Set-Cookie` headers.
+<a id="code"></a>
+### `response.code(statusCode)`
 
-<a id="remove-header"></a>
-### `response.removeHeader(name)`
-
-+ `name` *(string)*
++ `statusCode` *(number)*
 + Chainable
 
-Removes a response header.
-
-```js
-response.removeHeader('Content-Type')
-```
-
-<a id="type"></a>
-### `response.type(contentType)`
-
-+ `contentType` *(string)*
-+ Chainable
-
-Sets the `Content-Type` header for the response.
-
-```js
-response.type('text/html')
-```
-
-This is a shortcut for: `response.setHeader('Content-Type', contentType)`.
-
-<a id="redirect"></a>
-### `response.redirect([statusCode,] url)`
-
-+ `statusCode` *(number)* - The HTTP status code for the response. Defaults to `302`.
-+ `url` *(string)* - The URL to which the client will be redirected.
-
-Redirects a request to the specified URL.
-
-```js
-// "302 Found" redirect
-response.redirect('/home')
-
-// With statusCode
-response.redirect(301, '/moved-permanently')
-```
+Sets the HTTP status code for the response. If not set, the status code for
+the response defaults to `200`.
 
 <a id="error"></a>
 ### `response.error(err)`
@@ -192,6 +121,46 @@ app.setNotFoundHandler((request, response) => {
 app.get('/', (request, response) => {
   response.error(new httpErrors.NotFound())
 })
+```
+
+<a id="get-header"></a>
+### `response.getHeader(name)`
+
++ `name` *(string)*
++ Returns: *(string|string[])*
+
+Gets a response header.
+
+```js
+response.getHeader('Content-Type') // 'application/json'
+```
+
+<a id="redirect"></a>
+### `response.redirect([statusCode,] url)`
+
++ `statusCode` *(number)* - The HTTP status code for the response. Defaults to `302`.
++ `url` *(string)* - The URL to which the client will be redirected.
+
+Redirects a request to the specified URL.
+
+```js
+// "302 Found" redirect
+response.redirect('/home')
+
+// With statusCode
+response.redirect(301, '/moved-permanently')
+```
+
+<a id="remove-header"></a>
+### `response.removeHeader(name)`
+
++ `name` *(string)*
++ Chainable
+
+Removes a response header.
+
+```js
+response.removeHeader('Content-Type')
 ```
 
 <a id="send"></a>
@@ -336,5 +305,34 @@ app.get('/', (request, response) => {
 ```
 
 See [Routes#async-await](Routes.md#async-await) for more examples.
+
+<a id="set-header"></a>
+### `response.setHeader(name, value)`
+
++ `name` *(string)*
++ `value` *(string|string[])*
++ Chainable
+
+Sets a response header.
+
+```js
+response.setHeader('Content-Encoding', 'gzip')
+```
+
+For more information, see [`http.ServerResponse#setHeader`](https://nodejs.org/dist/latest/docs/api/http.html#http_response_setheader_name_value).
+
+<a id="type"></a>
+### `response.type(contentType)`
+
++ `contentType` *(string)*
++ Chainable
+
+Sets the `Content-Type` header for the response.
+
+```js
+response.type('text/html')
+```
+
+This is a shortcut for: `response.setHeader('Content-Type', contentType)`.
 
 [http.ServerResponse]: https://nodejs.org/dist/latest/docs/api/http.html#http_class_http_serverresponse
