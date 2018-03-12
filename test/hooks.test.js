@@ -6,6 +6,7 @@ if (require('./testUtils.js').supportsAsyncAwait) {
 
 const t = require('tap')
 const test = t.test
+const http = require('http')
 const sget = require('simple-get').concat
 const stream = require('stream')
 const medley = require('..')
@@ -374,7 +375,7 @@ test('onFinished hook should support encapsulation / 3', (t) => {
 })
 
 test('onFinished hook should run if the client closes the connection', (t) => {
-  t.plan(4)
+  t.plan(6)
 
   const app = medley()
 
@@ -383,20 +384,22 @@ test('onFinished hook should run if the client closes the connection', (t) => {
     t.equal(response.res.finished, false)
   })
 
+  var clientRequest
+
   app.get('/', () => {
-    // Don't send anything to force the client to terminate the request
+    clientRequest.abort()
+    t.pass('aborted request')
   })
 
   app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
-    sget({
-      method: 'GET',
-      url: `http://localhost:${app.server.address().port}`,
-      timeout: 10,
-    }, (err) => {
+    clientRequest = http.get(`http://localhost:${app.server.address().port}`)
+
+    clientRequest.on('error', (err) => {
       t.type(err, Error)
+      t.equal(err.code, 'ECONNRESET')
     })
   })
 })
