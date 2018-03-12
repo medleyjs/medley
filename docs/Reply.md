@@ -1,6 +1,7 @@
 # Reply
 
 Request is a core Medley object that is passed as the second argument to hooks and handlers.
+It is a wrapper around Node's [`http.ServerResponse`][http.ServerResponse] object.
 
 **Properties:**
 
@@ -30,8 +31,7 @@ The value of the `config` option passed to [`app.route()`](Reply.md#options)
 
 ### `reply.res`
 
-The native [`http.ServerResponse`](https://nodejs.org/dist/latest/docs/api/http.html#http_class_http_serverresponse)
-from Node core.
+The native [`http.ServerResponse`][http.ServerResponse] object from Node core.
 
 ### `reply.sent`
 
@@ -336,3 +336,5 @@ app.get('/', (request, reply) => {
 ```
 
 See [Routes#async-await](Routes.md#async-await) for more examples.
+
+[http.ServerResponse]: https://nodejs.org/dist/latest/docs/api/http.html#http_class_http_serverresponse

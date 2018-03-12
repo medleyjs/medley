@@ -1,6 +1,7 @@
 # Request
 
 Request is a core Medley object that is passed as the first argument to hooks and handlers.
+It is a wrapper around Node's [`http.IncomingMessage`][http.IncomingMessage] object.
 
 **Properties:**
 
@@ -97,8 +98,7 @@ request.querystring // 'a=1&b=value'
 
 ### `request.req`
 
-The [`http.IncomingMessage`](https://nodejs.org/dist/latest/docs/api/http.html#http_class_http_incomingmessage)
-object from Node core.
+The native [`http.IncomingMessage`][http.IncomingMessage] object from Node core.
 
 ### `request.url`
 
@@ -119,3 +119,5 @@ Then `request.url` will be:
 ```js
 '/status/user?name=medley'
 ```
+
+[http.IncomingMessage]: https://nodejs.org/dist/latest/docs/api/http.html#http_class_http_incomingmessage
