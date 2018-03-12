@@ -8,7 +8,7 @@
     "medley": "medley"
   },
   "engines": {
-    "node": ">=8"
+    "node": ">=6"
   },
   "author": "Nathan Woltman <nwoltman@outlook.com>",
   "license": "MIT",
@@ -64,7 +64,7 @@
     "benchmark": "concurrently -k -s first \"node ./benchmarks/basic.js\" \"npm run cannon\"",
     "cannon": "autocannon -c 100 -d 5 -p 10 localhost:3000/",
     "lint": "eslint --cache --cache-location node_modules/.cache/.eslintcache .",
-    "test": "tap -j4 -t5 test/**/*.test.js",
+    "test": "tap -j4 -t5 test/*.test.js test/*/*.test.js",
     "ci": "npm run lint && npm run test"
   }
 }

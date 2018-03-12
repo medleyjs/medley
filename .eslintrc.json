@@ -23,7 +23,7 @@
       "objects": "always-multiline",
       "imports": "always-multiline",
       "exports": "always-multiline",
-      "functions": "only-multiline"
+      "functions": "never"
     }],
     "comma-spacing": 2,
     "comma-style": 2,

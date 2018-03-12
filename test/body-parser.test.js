@@ -1,5 +1,9 @@
 'use strict'
 
+if (require('./testUtils.js').supportsAsyncAwait) {
+  require('./body-parser.async')
+}
+
 const fs = require('fs')
 const t = require('tap')
 const test = t.test

@@ -368,7 +368,7 @@ function medley(options) {
         methodHandler,
         opts.handler,
         opts.config || {},
-        opts.bodyLimit,
+        opts.bodyLimit
       )
 
       try {
@@ -550,7 +550,7 @@ function medley(options) {
       methodHandler,
       handler,
       opts.config || {},
-      opts.bodyLimit,
+      opts.bodyLimit
     )
 
     appLoader.once('preReady', () => {
