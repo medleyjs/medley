@@ -192,3 +192,52 @@ test('cannot set errorHandler after binding', (t) => {
     }
   })
 })
+
+test('custom error handler can response with a promise', (t) => {
+  t.plan(4)
+
+  const app = medley()
+
+  app.get('/', (request, response) => {
+    response.error(new Error('kaboom'))
+  })
+
+  app.setErrorHandler((err) => {
+    return Promise.resolve('Error: ' + err.message)
+  })
+
+  app.inject({
+    method: 'GET',
+    url: '/',
+  }, (err, res) => {
+    t.error(err)
+    t.strictEqual(res.statusCode, 500)
+    t.strictEqual(res.headers['content-type'], 'text/plain')
+    t.deepEqual(res.payload.toString(), 'Error: kaboom')
+  })
+})
+
+test('async custom error handler can still use .send()', (t) => {
+  t.plan(4)
+
+  const app = medley()
+
+  app.get('/', (request, response) => {
+    response.error(new Error('kaboom'))
+  })
+
+  app.setErrorHandler((err, request, response) => {
+    response.send('Error: ' + err.message)
+    return Promise.resolve()
+  })
+
+  app.inject({
+    method: 'GET',
+    url: '/',
+  }, (err, res) => {
+    t.error(err)
+    t.strictEqual(res.statusCode, 500)
+    t.strictEqual(res.headers['content-type'], 'text/plain')
+    t.deepEqual(res.payload.toString(), 'Error: kaboom')
+  })
+})
