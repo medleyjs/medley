@@ -889,3 +889,24 @@ test('404 inside onSend', (t) => {
     })
   })
 })
+
+test('async not-found handler triggered by response.error(404)', (t) => {
+  t.plan(3)
+
+  const app = medley()
+
+  app.get('/', function(request, response) {
+    response.error(404, null)
+  })
+
+  app.setNotFoundHandler((request, response) => {
+    response.code(404)
+    return Promise.resolve('Custom 404')
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 404)
+    t.equal(res.payload, 'Custom 404')
+  })
+})
