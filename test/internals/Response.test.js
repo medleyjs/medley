@@ -614,7 +614,7 @@ test('response.error(new NotFound()) should send a basic response if called insi
       t.error(err)
       t.strictEqual(response.statusCode, 404)
       t.strictEqual(response.headers['content-type'], 'text/plain')
-      t.deepEqual(body.toString(), '404 Not Found')
+      t.deepEqual(body.toString(), 'Not Found: GET /not-found')
     })
   })
 })
