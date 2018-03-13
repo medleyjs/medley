@@ -232,3 +232,25 @@ test('async custom error handler can still use .send()', (t) => {
     t.deepEqual(res.payload.toString(), 'Error: kaboom')
   })
 })
+
+test('the Content-Type header should be unset before calling a custom error handler', (t) => {
+  t.plan(4)
+
+  const app = medley()
+
+  app.get('/', (request, response) => {
+    response.type('application/json')
+    response.error(new Error('error message')) // Cause the error handler to be invoked
+  })
+
+  app.setErrorHandler((err, request, response) => {
+    response.status(500).send(err.message)
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 500)
+    t.equal(res.headers['content-type'], 'text/plain')
+    t.equal(res.payload, 'error message')
+  })
+})

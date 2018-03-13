@@ -910,3 +910,25 @@ test('async not-found handler triggered by response.error(404)', (t) => {
     t.equal(res.payload, 'Custom 404')
   })
 })
+
+test('the Content-Type header should be unset before calling a not-found handler', (t) => {
+  t.plan(4)
+
+  const app = medley()
+
+  app.get('/', (request, response) => {
+    response.type('application/json')
+    response.error(404, null)
+  })
+
+  app.setNotFoundHandler((request, response) => {
+    response.status(404).send('plain text')
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 404)
+    t.equal(res.headers['content-type'], 'text/plain')
+    t.equal(res.payload, 'plain text')
+  })
+})
