@@ -13,7 +13,7 @@ It is a wrapper around Node's [`http.ServerResponse`][http.ServerResponse] objec
 
 + [`.appendHeader(name, value)`](#append-header)
 + [`.code(statusCode)`](#code)
-+ [`.error(err)`](#error)
++ [`.error([statusCode,] error)`](#error)
 + [`.getHeader(name)`](#get-header)
 + [`.redirect([statusCode,] url)`](#redirect)
 + [`.removeHeader(name)`](#remove-header)
@@ -66,9 +66,10 @@ Sets the HTTP status code for the response. If not set, the status code for
 the response defaults to `200`.
 
 <a id="error"></a>
-### `response.error(err)`
+### `response.error([statusCode,] error)`
 
-+ `err` *([Error](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error))*
++ `error` *([Error](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error))*
++ `statusCode` *(number)* - The status code for the response. See below for the default value.
 
 Sends an error response.
 
@@ -84,6 +85,12 @@ app.get('/', function(request, response) {
 })
 ```
 
+With a specific status code:
+
+```js
+response.error(400, error)
+```
+
 If a custom error handler (set with [`app.setErrorHandler()`](Server-Methods.md#seterrorhandler)) is
 associated with the route, it is invoked. Otherwise the following default JSON response will be sent:
 
@@ -97,30 +104,21 @@ associated with the route, it is invoked. Otherwise the following default JSON r
 
 The status code for the response is chosen in the following order:
 
-1. The `status` property on the error object if it is >= `400`.
-1. The `statusCode` property on the error object if it is >= `400`.
-1. The current status code for the request (set with `response.code()`) if it is >= `400`.
+1. The `statusCode` parameter passed to the method.
+1. The `status` property on the error object.
+1. The `statusCode` property on the error object.
 1. If none of the above, `500` is used.
 
-Tip: The [`http-errors`](https://npm.im/http-errors) module can be used to simplify generating errors:
+If the `statusCode` is `404`, the not-found handler (either the default, or a custom
+handler set with [`app.setNotFoundHandler()`](Server-Methods.md#setnotfoundhandler))
+will be invoked instead of the error handler.
 
 ```js
-app.get('/', (request, response) => {
-  response.error(httpErrors.Gone())
-})
-```
+// Using the http-errors module (https://www.npmjs.com/package/http-errors)
+response.error(new httpErrors.NotFound())
 
-Errors with a `status` or `statusCode` property equal to `404` cause the not-found handler
-(set with [`app.setNotFoundHandler()`](Server-Methods.md#setnotfoundhandler)) to be invoked.
-
-```js
-app.setNotFoundHandler((request, response) => {
-  response.code(404).send('Custom 404 response')
-})
-
-app.get('/', (request, response) => {
-  response.error(new httpErrors.NotFound())
-})
+// Just the statusCode
+response.error(404, null) // Pass `null` as the error since it cannot be `undefined`
 ```
 
 <a id="get-header"></a>

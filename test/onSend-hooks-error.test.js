@@ -16,7 +16,7 @@ t.test('onSend hook error sets the right status code - default', (t) => {
   const app = medley()
 
   app.get('/', (request, response) => {
-    response.code(505).error(new Error('response error'))
+    response.error(505, new Error('response error'))
   })
 
   app.addHook('onSend', (request, response, payload, next) => {
@@ -36,7 +36,7 @@ t.test('onSend hook error sets the right status code - custom code', (t) => {
   const app = medley()
 
   app.get('/', (request, response) => {
-    response.code(505).error(new Error('response error'))
+    response.error(505, new Error('response error'))
   })
 
   app.addHook('onSend', (request, response, payload, next) => {

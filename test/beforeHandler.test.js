@@ -128,38 +128,8 @@ test('beforeHandler should handle errors with custom status code', (t) => {
   const app = medley()
 
   app.post('/', {
-    beforeHandler: (req, response, done) => {
-      response.code(401)
-      done(new Error('go away'))
-    },
-  }, (req, response) => {
-    response.send(req.body)
-  })
-
-  app.inject({
-    method: 'POST',
-    url: '/',
-    payload: {hello: 'world'},
-  }, (err, res) => {
-    t.error(err)
-    var payload = JSON.parse(res.payload)
-    t.equal(res.statusCode, 401)
-    t.deepEqual(payload, {
-      message: 'go away',
-      error: 'Unauthorized',
-      statusCode: 401,
-    })
-  })
-})
-
-test('beforeHandler should handle errors with custom status code in shorthand form', (t) => {
-  t.plan(3)
-  const app = medley()
-
-  app.post('/', {
-    beforeHandler: (req, response, done) => {
-      response.code(401)
-      done(new Error('go away'))
+    beforeHandler: (request, response, done) => {
+      done(Object.assign(new Error('go away'), {status: 401}))
     },
   }, (req, response) => {
     response.send(req.body)

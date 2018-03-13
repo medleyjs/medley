@@ -7,7 +7,8 @@ const statusCodes = require('http').STATUS_CODES
 
 const codes = Object.keys(statusCodes)
 codes.forEach((code) => {
-  if (Number(code) >= 400) helper(code)
+  code = Number(code)
+  if (code >= 400 && code !== 404) helper(code)
 })
 
 function helper(code) {
@@ -17,9 +18,7 @@ function helper(code) {
     const err = new Error('winter is coming')
 
     app.get('/', (req, response) => {
-      response
-        .code(Number(code))
-        .error(err)
+      response.error(code, err)
     })
 
     app.inject({
@@ -27,13 +26,13 @@ function helper(code) {
       url: '/',
     }, (error, res) => {
       t.error(error)
-      t.strictEqual(res.statusCode, Number(code))
+      t.equal(res.statusCode, code)
       t.equal(res.headers['content-type'], 'application/json')
-      t.deepEqual(
+      t.strictDeepEqual(
         {
           error: statusCodes[code],
           message: err.message,
-          statusCode: Number(code),
+          statusCode: code,
         },
         JSON.parse(res.payload)
       )
@@ -47,7 +46,7 @@ test('preHandler hook error handling with external code', (t) => {
   const err = new Error('winter is coming')
 
   app.addHook('preHandler', (req, response, done) => {
-    response.code(400)
+    err.status = 400
     done(err)
   })
 
@@ -76,7 +75,7 @@ test('onRequest hook error handling with external done', (t) => {
   const err = new Error('winter is coming')
 
   app.addHook('onRequest', (request, response, done) => {
-    response.code(400)
+    err.status = 400
     done(err)
   })
 
@@ -120,33 +119,6 @@ test('Error subApp sets HTTP status code', (t) => {
         error: statusCodes['418'],
         message: err.message,
         statusCode: 418,
-      },
-      JSON.parse(res.payload)
-    )
-  })
-})
-
-test('Error status code below 400 defaults to 500', (t) => {
-  t.plan(3)
-  const app = medley()
-  const err = new Error('winter is coming')
-  err.statusCode = 399
-
-  app.get('/', () => {
-    return Promise.reject(err)
-  })
-
-  app.inject({
-    method: 'GET',
-    url: '/',
-  }, (error, res) => {
-    t.error(error)
-    t.strictEqual(res.statusCode, 500)
-    t.deepEqual(
-      {
-        error: statusCodes['500'],
-        message: err.message,
-        statusCode: 500,
       },
       JSON.parse(res.payload)
     )
