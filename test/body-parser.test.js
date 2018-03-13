@@ -221,7 +221,7 @@ test('bodyParser should support encapsulation, second try', (t) => {
   })
 })
 
-test('bodyParser shouldn\'t support request with undefined "Content-Type"', (t) => {
+test('bodyParser should not by default support requests without a Content-Type', (t) => {
   t.plan(3)
   const app = medley()
 
@@ -244,6 +244,38 @@ test('bodyParser shouldn\'t support request with undefined "Content-Type"', (t) 
       body: 'unknown content type!',
       headers: {
         // 'Content-Type': undefined
+      },
+    }, (err, response) => {
+      t.error(err)
+      t.strictEqual(response.statusCode, 415)
+      app.close()
+    })
+  })
+})
+
+test('bodyParser should not by default support requests with an unknown Content-Type', (t) => {
+  t.plan(3)
+  const app = medley()
+
+  app.post('/', (req, response) => {
+    response.send(req.body)
+  })
+
+  app.addBodyParser('application/jsoff', function(req, done) {
+    jsonParser(req, function(err, body) {
+      done(err, body)
+    })
+  })
+
+  app.listen(0, (err) => {
+    t.error(err)
+
+    sget({
+      method: 'POST',
+      url: 'http://localhost:' + app.server.address().port,
+      body: 'unknown content type!',
+      headers: {
+        'Content-Type': 'unknown',
       },
     }, (err, response) => {
       t.error(err)
@@ -339,7 +371,7 @@ test('catch all body parser', (t) => {
   })
 })
 
-test('catch all body parser should not interfere with other conte type parsers', (t) => {
+test('catch all body parser should not interfere with other content type parsers', (t) => {
   t.plan(7)
   const app = medley()
 
@@ -395,7 +427,7 @@ test('catch all body parser should not interfere with other conte type parsers',
   })
 })
 
-// Issue 492 https://github.com/app/app/issues/492
+// Issue 492 https://github.com/fastify/fastify/issues/492
 test('\'*\' catch undefined Content-Type requests', (t) => {
   t.plan(4)
 
@@ -435,7 +467,7 @@ test('\'*\' catch undefined Content-Type requests', (t) => {
   })
 })
 
-test('cannot add custom parser after binding', (t) => {
+test('cannot add body parser after binding', (t) => {
   t.plan(2)
 
   const app = medley()
@@ -458,7 +490,27 @@ test('cannot add custom parser after binding', (t) => {
   })
 })
 
-test('Can override the default json parser', (t) => {
+test('BodyParser should support parsing JSON by default', (t) => {
+  t.plan(3)
+
+  const app = medley()
+
+  app.post('/', (request, response) => {
+    response.send(request.body)
+  })
+
+  app.inject({
+    method: 'POST',
+    url: '/',
+    payload: {json: 'body'},
+  }, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.strictDeepEqual(JSON.parse(res.payload), {json: 'body'})
+  })
+})
+
+test('Can override the default JSON parser', (t) => {
   t.plan(5)
   const app = medley()
 
@@ -492,7 +544,7 @@ test('Can override the default json parser', (t) => {
   })
 })
 
-test('Can\'t override the json parser multiple times', (t) => {
+test('Cannot override the JSON parser multiple times', (t) => {
   t.plan(1)
   const app = medley()
 
@@ -615,7 +667,7 @@ test('The charset should not interfere with the content type handling', (t) => {
       url: 'http://localhost:' + app.server.address().port,
       body: '{"hello":"world"}',
       headers: {
-        'Content-Type': 'application/json charset=utf-8',
+        'Content-Type': 'application/json; charset=utf-8',
       },
     }, (err, response, body) => {
       t.error(err)
