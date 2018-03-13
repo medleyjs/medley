@@ -67,12 +67,20 @@ function medley(options) {
   const app = {
     printRoutes: router.prettyPrint.bind(router),
     server,
-    listen,
 
     // Decorator methods
     decorate: decorateApp,
     decorateRequest,
     decorateResponse,
+
+    // Body parsing
+    addBodyParser,
+    hasBodyParser,
+    _bodyParser: new BodyParser(options.bodyLimit || DEFAULT_BODY_LIMIT),
+
+    // Hooks
+    addHook,
+    _hooks: new Hooks(),
 
     // Routing
     route,
@@ -98,15 +106,7 @@ function medley(options) {
     setErrorHandler,
     _errorHandler: null,
 
-    // Hooks
-    addHook,
-    _hooks: new Hooks(),
-
-    // Body parsing
-    addBodyParser,
-    hasBodyParser,
-    _bodyParser: new BodyParser(options.bodyLimit || DEFAULT_BODY_LIMIT),
-
+    listen, // Starts the HTTP server
     inject, // Fake HTTP injection
 
     _Request: Request.buildRequest(),
@@ -150,87 +150,6 @@ function medley(options) {
 
   return app
 
-  function decorateApp(name, fn) {
-    if (name in this) {
-      throw new Error(`The decorator '${name}' has been already added!`)
-    }
-
-    this[name] = fn
-    return this
-  }
-
-  function decorateRequest(name, fn) {
-    if (name in this._Request.prototype) {
-      throw new Error(`The decorator '${name}' has been already added to Request!`)
-    }
-
-    this._Request.prototype[name] = fn
-    return this
-  }
-
-  function decorateResponse(name, fn) {
-    if (name in this._Response.prototype) {
-      throw new Error(`The decorator '${name}' has been already added to Response!`)
-    }
-
-    this._Response.prototype[name] = fn
-    return this
-  }
-
-  function listen(port, host, backlog, cb) {
-    // Handle listen (port, cb)
-    if (typeof host === 'function') {
-      cb = host
-      host = undefined
-    }
-    host = host || '127.0.0.1'
-
-    // Handle listen (port, host, cb)
-    if (typeof backlog === 'function') {
-      cb = backlog
-      backlog = undefined
-    }
-
-    if (cb === undefined) {
-      return new Promise((resolve, reject) => {
-        this.listen(port, host, (err) => {
-          if (err) {
-            reject(err)
-          } else {
-            resolve()
-          }
-        })
-      })
-    }
-
-    this.ready((err) => {
-      if (err) {
-        cb(err)
-        return
-      }
-      if (listening) {
-        cb(new Error('app is already listening'))
-        return
-      }
-
-      function handleListening(err) {
-        server.removeListener('error', handleListening)
-        cb(err)
-      }
-
-      server.on('error', handleListening)
-      if (backlog) {
-        server.listen(port, host, backlog, handleListening)
-      } else {
-        server.listen(port, host, handleListening)
-      }
-
-      listening = true
-    })
-
-    return undefined
-  }
-
   function override(parentApp, fn, opts) {
     const shouldSkipOverride = pluginUtils.registerPlugin.call(parentApp, fn)
     if (shouldSkipOverride) {
@@ -271,6 +190,78 @@ function medley(options) {
     }
 
     return basePrefix + pluginPrefix
+  }
+
+  function decorateApp(name, fn) {
+    if (name in this) {
+      throw new Error(`The decorator '${name}' has been already added!`)
+    }
+
+    this[name] = fn
+    return this
+  }
+
+  function decorateRequest(name, fn) {
+    if (name in this._Request.prototype) {
+      throw new Error(`The decorator '${name}' has been already added to Request!`)
+    }
+
+    this._Request.prototype[name] = fn
+    return this
+  }
+
+  function decorateResponse(name, fn) {
+    if (name in this._Response.prototype) {
+      throw new Error(`The decorator '${name}' has been already added to Response!`)
+    }
+
+    this._Response.prototype[name] = fn
+    return this
+  }
+
+  function addBodyParser(contentType, opts, parser) {
+    throwIfAlreadyStarted('Cannot call "addBodyParser" when app is already loaded!')
+
+    if (parser === undefined) {
+      parser = opts
+      opts = {}
+    }
+
+    validateBodyLimitOption(opts.bodyLimit)
+
+    this._bodyParser.add(contentType, opts, parser)
+    return this
+  }
+
+  function hasBodyParser(contentType) {
+    return this._bodyParser.hasParser(contentType)
+  }
+
+  function addHook(name, fn) {
+    throwIfAlreadyStarted('Cannot call "addHook" when app is already loaded!')
+
+    if (name === 'onClose') {
+      this._hooks.validate(name, fn)
+      this.onClose(fn)
+    } else if (name === 'onRoute') {
+      this._hooks.validate(name, fn)
+      onRouteHooks.push(fn)
+    } else {
+      this.after((err, done) => {
+        if (err) {
+          done(err)
+          return
+        }
+        _addHook(this, name, fn)
+        done()
+      })
+    }
+    return this
+  }
+
+  function _addHook(appInstance, name, fn) {
+    appInstance._hooks.add(name, fn)
+    appInstance._subApps.forEach(child => _addHook(child, name, fn))
   }
 
   // Routing methods
@@ -399,78 +390,6 @@ function medley(options) {
 
       done()
     })
-  }
-
-  function inject(opts, cb) {
-    if (ready) {
-      return lightMyRequest(httpHandler, opts, cb)
-    }
-
-    if (!cb) {
-      return new Promise((resolve, reject) => {
-        this.ready((err) => {
-          if (err) {
-            reject(err)
-          } else {
-            resolve()
-          }
-        })
-      }).then(() => lightMyRequest(httpHandler, opts))
-    }
-
-    this.ready((err) => {
-      if (err) {
-        throw err
-      }
-      lightMyRequest(httpHandler, opts, cb)
-    })
-
-    return undefined
-  }
-
-  function addHook(name, fn) {
-    throwIfAlreadyStarted('Cannot call "addHook" when app is already loaded!')
-
-    if (name === 'onClose') {
-      this._hooks.validate(name, fn)
-      this.onClose(fn)
-    } else if (name === 'onRoute') {
-      this._hooks.validate(name, fn)
-      onRouteHooks.push(fn)
-    } else {
-      this.after((err, done) => {
-        if (err) {
-          done(err)
-          return
-        }
-        _addHook(this, name, fn)
-        done()
-      })
-    }
-    return this
-  }
-
-  function _addHook(appInstance, name, fn) {
-    appInstance._hooks.add(name, fn)
-    appInstance._subApps.forEach(child => _addHook(child, name, fn))
-  }
-
-  function addBodyParser(contentType, opts, parser) {
-    throwIfAlreadyStarted('Cannot call "addBodyParser" when app is already loaded!')
-
-    if (parser === undefined) {
-      parser = opts
-      opts = {}
-    }
-
-    validateBodyLimitOption(opts.bodyLimit)
-
-    this._bodyParser.add(contentType, opts, parser)
-    return this
-  }
-
-  function hasBodyParser(contentType) {
-    return this._bodyParser.hasParser(contentType)
   }
 
   function setNotFoundHandler(opts, handler) {
@@ -604,6 +523,87 @@ function medley(options) {
 
     this._errorHandler = handler
     return this
+  }
+
+  function listen(port, host, backlog, cb) {
+    // Handle listen (port, cb)
+    if (typeof host === 'function') {
+      cb = host
+      host = undefined
+    }
+    host = host || '127.0.0.1'
+
+    // Handle listen (port, host, cb)
+    if (typeof backlog === 'function') {
+      cb = backlog
+      backlog = undefined
+    }
+
+    if (cb === undefined) {
+      return new Promise((resolve, reject) => {
+        this.listen(port, host, (err) => {
+          if (err) {
+            reject(err)
+          } else {
+            resolve()
+          }
+        })
+      })
+    }
+
+    this.ready((err) => {
+      if (err) {
+        cb(err)
+        return
+      }
+      if (listening) {
+        cb(new Error('app is already listening'))
+        return
+      }
+
+      function handleListening(err) {
+        server.removeListener('error', handleListening)
+        cb(err)
+      }
+
+      server.on('error', handleListening)
+      if (backlog) {
+        server.listen(port, host, backlog, handleListening)
+      } else {
+        server.listen(port, host, handleListening)
+      }
+
+      listening = true
+    })
+
+    return undefined
+  }
+
+  function inject(opts, cb) {
+    if (ready) {
+      return lightMyRequest(httpHandler, opts, cb)
+    }
+
+    if (!cb) {
+      return new Promise((resolve, reject) => {
+        this.ready((err) => {
+          if (err) {
+            reject(err)
+          } else {
+            resolve()
+          }
+        })
+      }).then(() => lightMyRequest(httpHandler, opts))
+    }
+
+    this.ready((err) => {
+      if (err) {
+        throw err
+      }
+      lightMyRequest(httpHandler, opts, cb)
+    })
+
+    return undefined
   }
 }
 
