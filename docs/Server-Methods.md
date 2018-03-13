@@ -165,6 +165,10 @@ app.setErrorHandler((error, request, response) => {
 })
 ```
 
+Before the error handler is invoked, the response status code associated with the error
+is automatically set. See the [`Response#error`](Response.md#error-status-code) docs
+for more information on where this status code may come from.
+
 <a name="print-routes"></a>
 #### printRoutes
 

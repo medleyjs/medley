@@ -69,7 +69,7 @@ the response defaults to `200`.
 ### `response.error([statusCode,] error)`
 
 + `error` *([Error](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error))*
-+ `statusCode` *(number)* - The status code for the response. See below for the default value.
++ `statusCode` *(number)* - The status code for the response. See [below](#error-status-code) for the default value.
 
 Sends an error response.
 
@@ -101,6 +101,8 @@ associated with the route, it is invoked. Otherwise the following default JSON r
   statusCode: Number // The error status code
 }
 ```
+
+#### Error Status Code
 
 The status code for the response is chosen in the following order:
 
