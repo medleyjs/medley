@@ -143,7 +143,7 @@ tap.test('GET `/` route', async (t) => {
   const response = await supertest(app.server)
     .get('/')
     .expect(200)
-    .expect('Content-Type', 'application/json')
+    .expect('content-type', 'application/json')
   t.deepEqual(response.body, { hello: 'world' })
 })
 ```

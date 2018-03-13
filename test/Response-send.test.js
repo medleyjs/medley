@@ -43,7 +43,7 @@ test('within a sub app', (t) => {
   const app = medley()
 
   app.get('/', function(req, response) {
-    response.setHeader('Content-Type', 'text/plain')
+    response.setHeader('content-type', 'text/plain')
     response.send('hello world!')
   })
 
@@ -202,7 +202,7 @@ test('buffer with content type should not send application/octet-stream', (t) =>
   const app = medley()
 
   app.get('/', function(req, response) {
-    response.setHeader('Content-Type', 'text/plain')
+    response.setHeader('content-type', 'text/plain')
     response.send(Buffer.alloc(1024))
   })
 

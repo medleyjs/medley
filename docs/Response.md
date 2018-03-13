@@ -50,10 +50,10 @@ A boolean value that indicates whether or not a response has already been sent.
 Sets a response header if not already set. Appends the value to the header as an array if it already exists.
 
 ```js
-response.appendHeader('Set-Cookie', 'foo=bar')
-response.getHeader('Set-Cookie') // 'foo=bar'
-response.appendHeader('Set-Cookie', 'bar=baz; Path=/; HttpOnly')
-response.getHeader('Set-Cookie') // ['foo=bar', 'bar=baz; Path=/; HttpOnly']
+response.appendHeader('set-cookie', 'foo=bar')
+response.getHeader('set-cookie') // 'foo=bar'
+response.appendHeader('set-cookie', 'bar=baz; Path=/; HttpOnly')
+response.getHeader('set-cookie') // ['foo=bar', 'bar=baz; Path=/; HttpOnly']
 ```
 
 <a id="error"></a>
@@ -123,8 +123,11 @@ response.error(404, null) // Pass `null` as the error since it cannot be `undefi
 Gets a response header.
 
 ```js
-response.getHeader('Content-Type') // 'application/json'
+response.getHeader('content-type') // 'application/json'
 ```
+
+**Tip:** Always use lowercase header names for the best performance and for future
+compatibility with HTTP 2 (which requires header names to be lowercase).
 
 <a id="redirect"></a>
 ### `response.redirect([statusCode,] url)`
@@ -151,7 +154,7 @@ response.redirect(301, '/moved-permanently')
 Removes a response header.
 
 ```js
-response.removeHeader('Content-Type')
+response.removeHeader('content-type')
 ```
 
 <a id="send"></a>
@@ -304,13 +307,17 @@ See [Routes#async-await](Routes.md#async-await) for more examples.
 + `value` *(string|string[])*
 + Chainable
 
-Sets a response header.
+Sets a response header. If the header already exists, its value will be replaced.
+Use an array of strings to set multiple headers with the same name.
 
 ```js
-response.setHeader('Content-Encoding', 'gzip')
+response.setHeader('content-encoding', 'gzip')
+
+response.setHeader('set-cookie', ['user=medley', 'session=123456'])
 ```
 
-For more information, see [`http.ServerResponse#setHeader`](https://nodejs.org/dist/latest/docs/api/http.html#http_response_setheader_name_value).
+**Tip:** Always use lowercase header names for the best performance and for future
+compatibility with HTTP 2 (which requires header names to be lowercase).
 
 <a id="status"></a>
 ### `response.status(statusCode)`
@@ -336,6 +343,6 @@ Sets the `Content-Type` header for the response.
 response.type('text/html')
 ```
 
-This is a shortcut for: `response.setHeader('Content-Type', contentType)`.
+This is a shortcut for: `response.setHeader('content-type', contentType)`.
 
 [http.ServerResponse]: https://nodejs.org/dist/latest/docs/api/http.html#http_class_http_serverresponse
