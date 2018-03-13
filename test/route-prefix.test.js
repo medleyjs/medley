@@ -178,7 +178,7 @@ test('Prefix without /', (t) => {
 })
 
 test('Prefix with trailing /', (t) => {
-  t.plan(6)
+  t.plan(8)
   const app = medley()
 
   app.register(function(subApp, opts, next) {
@@ -195,6 +195,13 @@ test('Prefix with trailing /', (t) => {
       })
       next()
     }, {prefix: '/inner/'})
+
+    subApp.register(function(subApp2, opts, next) {
+      subApp2.get('/route4', (request, response) => {
+        response.send({hello: 'world4'})
+      })
+      next()
+    }, {prefix: 'inner2'})
 
     next()
   }, {prefix: '/v1/'})
@@ -221,6 +228,14 @@ test('Prefix with trailing /', (t) => {
   }, (err, res) => {
     t.error(err)
     t.same(JSON.parse(res.payload), {hello: 'world3'})
+  })
+
+  app.inject({
+    method: 'GET',
+    url: '/v1/inner2/route4',
+  }, (err, res) => {
+    t.error(err)
+    t.same(JSON.parse(res.payload), {hello: 'world4'})
   })
 })
 

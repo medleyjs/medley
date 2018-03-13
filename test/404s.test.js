@@ -102,6 +102,21 @@ test('customized 404', (t) => {
   })
 })
 
+test('custom 404 handler accepts options', (t) => {
+  t.plan(2)
+
+  const app = medley()
+
+  app.setNotFoundHandler({config: {a: 1}}, (request, response) => {
+    response.send(response.config)
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.strictDeepEqual(JSON.parse(res.payload), {a: 1})
+  })
+})
+
 test('has a 404 handler for all supported HTTP methods', (t) => {
   t.plan(28)
 

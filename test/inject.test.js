@@ -317,10 +317,27 @@ test('should reject in error case', (t) => {
   app.inject({
     method: 'GET',
     url: '/',
+  }).catch((e) => {
+    t.strictEqual(e, error)
   })
-    .catch((e) => {
-      t.strictEqual(e, error)
-    })
+})
+
+test('should pass any error to the callback', (t) => {
+  t.plan(1)
+
+  const app = medley()
+  const error = new Error('DOOM!')
+
+  app.register((subApp, opts, next) => {
+    setTimeout(next, 500, error)
+  })
+
+  app.inject({
+    method: 'GET',
+    url: '/',
+  }, (err) => {
+    t.equal(err, error)
+  })
 })
 
 // https://github.com/hapijs/shot/blob/master/test/index.js#L836

@@ -506,7 +506,7 @@ function medley(options) {
     )
     notFoundRouter.on(
       methods,
-      prefix || '/',
+      prefix,
       routeHandler,
       context
     )
@@ -598,8 +598,10 @@ function medley(options) {
 
     this.ready((err) => {
       if (err) {
-        throw err
+        cb(err)
+        return
       }
+
       lightMyRequest(httpHandler, opts, cb)
     })
 
@@ -610,7 +612,7 @@ function medley(options) {
 function http2() {
   try {
     return require('http2')
-  } catch (err) {
+  } catch (err) /* istanbul ignore next */ {
     console.error('http2 is available only from node >= 8.8.1') // eslint-disable-line no-console
     return undefined
   }

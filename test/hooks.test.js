@@ -1159,3 +1159,20 @@ test('onFinished hooks should run in the order in which they are defined', (t) =
     t.deepEqual(JSON.parse(res.payload), {hello: 'world'})
   })
 })
+
+test('.addHook() should not alter errors from other sub apps', (t) => {
+  t.plan(1)
+
+  const app = medley()
+  const subAppError = new Error('sub app error')
+
+  app.register((subApp, opts, next) => {
+    next(subAppError)
+  })
+
+  app.addHook('onRequest', () => {})
+
+  app.ready((err) => {
+    t.equal(err, subAppError)
+  })
+})
