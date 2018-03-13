@@ -92,9 +92,20 @@ app.addBodyParser('application/json', { parseAs: 'string' }, (req, body, done) =
 })
 ```
 
+Medley supports parsing `application/json` by default though, so here's an
+example of how to add a `text/plain` body parser:
+
+```js
+app.addBodyParser('text/plain', { parseAs: 'string' }, (req, body, done) => {
+  done(null, body)
+})
+```
+
 #### Catch All
 
-There are some cases where you need to handle requests that do not have a corresponding body parser (such as when a request does not have a `Content-Type` header). This can be done by setting a parser for the `'*'` content type.
+Sometimes it may be necessary to handle requests that do not have a corresponding
+body parser (such as when a request does not have a `Content-Type` header). This
+can be done by setting a parser for the `'*'` content type.
 
 ```js
 app.addBodyParser('*', (req, done) => {
