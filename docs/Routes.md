@@ -155,12 +155,12 @@ app.get('/', (request, response) => {
 })
 ```
 
-The default status code for responses is `200`. If needed, use `response.code()`
+The default status code for responses is `200`. If needed, use `response.status()`
 to set the status code before returning:
 
 ```js
 app.post('/user', (request, response) => {
-  response.code(201) // 201 Created
+  response.status(201) // 201 Created
   return createUserAsync()
 })
 ```

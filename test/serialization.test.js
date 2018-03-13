@@ -28,20 +28,20 @@ app.get('/string', opts, (request, response) => {
 })
 
 app.get('/number', opts, (request, response) => {
-  response.code(201).send({hello: 55})
+  response.status(201).send({hello: 55})
 })
 
 app.get('/wrong-object-for-schema', opts, (request, response) => {
-  response.code(201).send({uno: 1}) // Will send { }
+  response.status(201).send({uno: 1}) // Will send { }
 })
 
 // No checks
 app.get('/empty', opts, (request, response) => {
-  response.code(204).send()
+  response.status(204).send()
 })
 
 app.get('/400', opts, (request, response) => {
-  response.code(400).send({hello: 'DOOM'})
+  response.status(400).send({hello: 'DOOM'})
 })
 
 app.listen(0, (err) => {

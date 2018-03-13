@@ -23,6 +23,26 @@ test('Response properties', (t) => {
   t.equal(response.sent, false)
 })
 
+test('response.status() should set the status code', (t) => {
+  t.plan(4)
+
+  const app = medley()
+
+  app.get('/', (request, response) => {
+    t.equal(response.res.statusCode, 200)
+
+    response.status(300)
+    t.equal(response.res.statusCode, 300)
+
+    response.status(204).send()
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 204)
+  })
+})
+
 test('response.getHeader/setHeader() get and set the response headers', (t) => {
   t.plan(8)
 
@@ -522,7 +542,7 @@ test('undefined payload should be sent as-is', (t) => {
   })
 
   app.get('/', function(req, response) {
-    response.code(204).send()
+    response.status(204).send()
   })
 
   app.listen(0, (err) => {
@@ -556,7 +576,7 @@ test('response.error(new NotFound()) should invoke the 404 handler', (t) => {
     })
 
     subApp.setNotFoundHandler(function(req, response) {
-      response.code(404).send('Custom not found response')
+      response.status(404).send('Custom not found response')
     })
 
     next()
@@ -668,7 +688,7 @@ test('the Content-Type header should be unset before calling a not-found handler
   })
 
   app.setNotFoundHandler((request, response) => {
-    response.code(404).send('plain text')
+    response.status(404).send('plain text')
   })
 
   app.inject('/', (err, res) => {
@@ -690,7 +710,7 @@ test('the Content-Type header should be unset before calling a custom error hand
   })
 
   app.setErrorHandler((err, request, response) => {
-    response.code(500).send(err.message)
+    response.status(500).send(err.message)
   })
 
   app.inject('/', (err, res) => {

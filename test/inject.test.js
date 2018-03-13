@@ -63,7 +63,7 @@ test('inject get request - code check', (t) => {
   const payload = {hello: 'world'}
 
   app.get('/', (req, response) => {
-    response.code(201).send(payload)
+    response.status(201).send(payload)
   })
 
   app.inject({

@@ -21,8 +21,6 @@ app.get('/', { responseSchema }, (request, response) => {
 
 The structure of the schema is a mapping of a *status code* to a *`compile-json-stringify` schema*. Different schemas can be set for different status codes.
 
-**Example:**
-
 ```js
 const responseSchema = {
   200: {
@@ -44,7 +42,7 @@ const responseSchema = {
 app.post('/info', { responseSchema }, (request, response) => {
   if (request.body.createInfo) {
     // Create info ...
-    response.code(201).send({ success: true, error: null })
+    response.status(201).send({ success: true, error: null })
   } else {
     response.send({ value: 'medley', fast: true })
   }
@@ -56,8 +54,6 @@ For more information on how to define a response schema, see the [`compile-json-
 ## Object Shorthand
 
 Medley lets you use a "shorthand" format for object schema definitions. If the schema is missing the `type` and `properties` keyword properties, Medley will wrap it in a `{type: 'object', properties: yourSchema}` object so that it will be compiled properly.
-
-**Example:**
 
 ```js
 const responseSchema = {
@@ -74,8 +70,6 @@ app.get('/', { responseSchema }, (request, response) => {
 ## Incorrect Types in the Payload
 
 `compile-json-stringify` works just like `JSON.stringify()` ([mostly](https://github.com/nwoltman/compile-json-stringify#differences-from-jsonstringify)). If a part of the payload being sent doesn't match the schema, it will still be serialized.
-
-**Example:**
 
 ```js
 const responseSchema = {

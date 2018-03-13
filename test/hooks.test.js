@@ -644,7 +644,7 @@ test('onSend hooks can clear payload', (t) => {
 
   app.addHook('onSend', (request, response, payload, next) => {
     t.ok('onSend called')
-    response.code(304)
+    response.status(304)
     next(null, null)
   })
 

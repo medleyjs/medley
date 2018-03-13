@@ -40,10 +40,7 @@ test('custom 500', (t) => {
   app.setErrorHandler(function(err, request, response) {
     t.type(request, 'object')
     t.type(request, app._Request)
-    response
-      .code(500)
-      .type('text/plain')
-      .send('an error happened: ' + err.message)
+    response.send('an error happened: ' + err.message)
   })
 
   app.inject({
@@ -101,10 +98,7 @@ test('encapsulated 500', (t) => {
     f.setErrorHandler(function(err, request, response) {
       t.type(request, 'object')
       t.type(request, f._Request)
-      response
-        .code(500)
-        .type('text/plain')
-        .send('an error happened: ' + err.message)
+      response.send('an error happened: ' + err.message)
     })
 
     next()
@@ -145,10 +139,7 @@ test('custom 500 with hooks', (t) => {
   })
 
   app.setErrorHandler((err, request, response) => {
-    response
-      .code(500)
-      .type('text/plain')
-      .send('an error happened: ' + err.message)
+    response.send('an error happened: ' + err.message)
   })
 
   app.addHook('onRequest', (request, response, next) => {

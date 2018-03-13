@@ -54,7 +54,7 @@ test('customized 404', (t) => {
   })
 
   app.setNotFoundHandler(function(req, response) {
-    response.code(404).send('this was not found')
+    response.status(404).send('this was not found')
   })
 
   t.tearDown(app.close.bind(app))
@@ -131,7 +131,7 @@ test('has a custom 404 handler for all supported HTTP methods', (t) => {
   })
 
   app.setNotFoundHandler((request, response) => {
-    response.code(404).send(`Custom Not Found: ${request.method} ${request.url}`)
+    response.status(404).send(`Custom Not Found: ${request.method} ${request.url}`)
   })
 
   Object.keys(methodHandlers).forEach((method) => {
@@ -286,26 +286,26 @@ test('encapsulated 404', (t) => {
   })
 
   app.setNotFoundHandler(function(req, response) {
-    response.code(404).send('this was not found')
+    response.status(404).send('this was not found')
   })
 
   app.register(function(f, opts, next) {
     f.setNotFoundHandler(function(req, response) {
-      response.code(404).send('this was not found 2')
+      response.status(404).send('this was not found 2')
     })
     next()
   }, {prefix: '/test'})
 
   app.register(function(f, opts, next) {
     f.setNotFoundHandler(function(req, response) {
-      response.code(404).send('this was not found 3')
+      response.status(404).send('this was not found 3')
     })
     next()
   }, {prefix: '/test2'})
 
   app.register(function(f, opts, next) {
     f.setNotFoundHandler(function(request, response) {
-      response.code(404).send('this was not found 4')
+      response.status(404).send('this was not found 4')
     })
     next()
   }, {prefix: '/test3/'})
@@ -543,7 +543,7 @@ test('run non-encapsulated plugin hooks on custom 404', (t) => {
   })
 
   app.setNotFoundHandler((request, response) => {
-    response.code(404).send('this was not found')
+    response.status(404).send('this was not found')
   })
 
   app.register(plugin) // Registering plugin after handler also works
@@ -581,7 +581,7 @@ test('run hooks with encapsulated 404', (t) => {
 
   app.register(function(f, opts, next) {
     f.setNotFoundHandler((request, response) => {
-      response.code(404).send('this was not found 2')
+      response.status(404).send('this was not found 2')
     })
 
     f.addHook('onRequest', function(req, res, next) {
@@ -661,7 +661,7 @@ test('encapsulated custom 404 without prefix has the right encapsulation context
     subApp.setNotFoundHandler((request, response) => {
       t.equal(request.foo, 42)
       t.equal(request.bar, 84)
-      response.code(404).send('custom not found')
+      response.status(404).send('custom not found')
     })
 
     next()
@@ -737,7 +737,7 @@ test('setNotFoundHandler should not suppress duplicated routes checking', (t) =>
   })
 
   app.setNotFoundHandler(function(request, response) {
-    response.code(404).send('this was not found')
+    response.status(404).send('this was not found')
   })
 
   app.listen(0, (err) => {
@@ -789,7 +789,7 @@ test('an inherited custom 404 handler can be invoked inside a prefixed plugin', 
   const app = medley()
 
   app.setNotFoundHandler((request, response) => {
-    response.code(404).send('custom handler')
+    response.status(404).send('custom handler')
   })
 
   app.register((subApp, opts, next) => {
@@ -814,7 +814,7 @@ test('encapsulated custom 404 handler without a prefix is the handler for the en
 
   app.register((subApp, opts, next) => {
     subApp.setNotFoundHandler((request, response) => {
-      response.code(404).send('custom handler')
+      response.status(404).send('custom handler')
     })
 
     next()
@@ -823,7 +823,7 @@ test('encapsulated custom 404 handler without a prefix is the handler for the en
   app.register((subApp, opts, next) => {
     subApp.register((subApp2, opts, next) => {
       subApp2.setNotFoundHandler((request, response) => {
-        response.code(404).send('custom handler 2')
+        response.status(404).send('custom handler 2')
       })
       next()
     })
@@ -900,7 +900,7 @@ test('async not-found handler triggered by response.error(404)', (t) => {
   })
 
   app.setNotFoundHandler((request, response) => {
-    response.code(404)
+    response.status(404)
     return Promise.resolve('Custom 404')
   })
 

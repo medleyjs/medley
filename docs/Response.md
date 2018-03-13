@@ -12,13 +12,13 @@ It is a wrapper around Node's [`http.ServerResponse`][http.ServerResponse] objec
 **Methods:**
 
 + [`.appendHeader(name, value)`](#append-header)
-+ [`.code(statusCode)`](#code)
 + [`.error([statusCode,] error)`](#error)
 + [`.getHeader(name)`](#get-header)
 + [`.redirect([statusCode,] url)`](#redirect)
 + [`.removeHeader(name)`](#remove-header)
 + [`.send([payload])`](#send)
 + [`.setHeader(name, value)`](#set-header)
++ [`.status(statusCode)`](#status)
 + [`.type(contentType)`](#type)
 
 
@@ -55,15 +55,6 @@ response.getHeader('Set-Cookie') // 'foo=bar'
 response.appendHeader('Set-Cookie', 'bar=baz; Path=/; HttpOnly')
 response.getHeader('Set-Cookie') // ['foo=bar', 'bar=baz; Path=/; HttpOnly']
 ```
-
-<a id="code"></a>
-### `response.code(statusCode)`
-
-+ `statusCode` *(number)*
-+ Chainable
-
-Sets the HTTP status code for the response. If not set, the status code for
-the response defaults to `200`.
 
 <a id="error"></a>
 ### `response.error([statusCode,] error)`
@@ -320,6 +311,18 @@ response.setHeader('Content-Encoding', 'gzip')
 ```
 
 For more information, see [`http.ServerResponse#setHeader`](https://nodejs.org/dist/latest/docs/api/http.html#http_response_setheader_name_value).
+
+<a id="status"></a>
+### `response.status(statusCode)`
+
++ `statusCode` *(number)*
++ Chainable
+
+Sets the HTTP status code for the response. If not set, the status code for
+the response defaults to `200`.
+
+**Note:** The status code must be between `200` and `599` (inclusive) to be
+compatible with HTTP 2.
 
 <a id="type"></a>
 ### `response.type(contentType)`
