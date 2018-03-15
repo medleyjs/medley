@@ -1,6 +1,6 @@
 # Factory
 
-The Medley module exports a factory function that is used to create new [**`Medley app`**](Server-Methods.md)
+The Medley module exports a factory function that is used to create new [**Medley `app`**](App.md)
 instance. This factory function accepts an options object which is used to
 customize the resulting instance. This document describes the properties
 available in that options object.

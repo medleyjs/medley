@@ -41,7 +41,7 @@ Incoming Request
 
 The first step Medley takes after receiving a request is to look up a route that matches the URL of the request.
 
-If no route matches the request, a not-found handler that matches the URL is selected (or the default not-found handler if none set with [`app.setNotFoundHandler()`](Server-Methods.md#set-not-found-handler) were a match).
+If no route matches the request, a not-found handler that matches the URL is selected (or the default not-found handler if none set with [`app.setNotFoundHandler()`](App.md#set-not-found-handler) were a match).
 
 If the request method is not one of the [supported HTTP methods](Routes.md#options), a `501 Not Implemented` error response is sent immediately and the entire lifecycle is skipped. 
 
@@ -105,7 +105,7 @@ app.get('/', (request, response) => {
 })
 ```
 
-*Not-found handlers* (set with [`app.setNotFoundHandler()`](Server-Methods.md#set-not-found-handler)) and *error handlers* (set with [`app.setErrorHandler()`](Server-Methods.md#set-error-handler)) are also included in the part of the lifecycle.
+*Not-found handlers* (set with [`app.setNotFoundHandler()`](App.md#set-not-found-handler)) and *error handlers* (set with [`app.setErrorHandler()`](App.md#set-error-handler)) are also included in the part of the lifecycle.
 
 ## Serialize Payload
 

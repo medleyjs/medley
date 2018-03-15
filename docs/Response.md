@@ -87,7 +87,7 @@ With a specific status code:
 response.error(400, error)
 ```
 
-If a custom error handler (set with [`app.setErrorHandler()`](Server-Methods.md#seterrorhandler)) is
+If a custom error handler (set with [`app.setErrorHandler()`](App.md#set-error-handler)) is
 associated with the route, it is invoked. Otherwise the following default JSON response will be sent:
 
 ```js
@@ -108,7 +108,7 @@ The status code for the response is chosen in the following order:
 1. If none of the above, `500` is used.
 
 If the `statusCode` is `404`, the not-found handler (either the default, or a custom
-handler set with [`app.setNotFoundHandler()`](Server-Methods.md#setnotfoundhandler))
+handler set with [`app.setNotFoundHandler()`](App.md#set-not-found-handler))
 will be invoked instead of the error handler.
 
 ```js
