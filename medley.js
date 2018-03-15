@@ -128,7 +128,7 @@ function medley(options) {
     ready = true
   })
 
-  function throwIfAlreadyStarted(msg) {
+  function throwIfAppIsLoaded(msg) {
     if (ready) {
       throw new Error(msg)
     }
@@ -194,7 +194,7 @@ function medley(options) {
 
   function decorateApp(name, fn) {
     if (name in this) {
-      throw new Error(`The decorator '${name}' has been already added!`)
+      throw new Error(`A decorator called '${name}' has been already added`)
     }
 
     this[name] = fn
@@ -203,7 +203,7 @@ function medley(options) {
 
   function decorateRequest(name, fn) {
     if (name in this._Request.prototype) {
-      throw new Error(`The decorator '${name}' has been already added to Request!`)
+      throw new Error(`A decorator called '${name}' has been already added to Request`)
     }
 
     this._Request.prototype[name] = fn
@@ -212,7 +212,7 @@ function medley(options) {
 
   function decorateResponse(name, fn) {
     if (name in this._Response.prototype) {
-      throw new Error(`The decorator '${name}' has been already added to Response!`)
+      throw new Error(`A decorator called '${name}' has been already added to Response`)
     }
 
     this._Response.prototype[name] = fn
@@ -220,7 +220,7 @@ function medley(options) {
   }
 
   function addBodyParser(contentType, opts, parser) {
-    throwIfAlreadyStarted('Cannot call "addBodyParser" when app is already loaded!')
+    throwIfAppIsLoaded('Cannot call "addBodyParser()" when app is already loaded')
 
     if (parser === undefined) {
       parser = opts
@@ -238,7 +238,7 @@ function medley(options) {
   }
 
   function addHook(name, fn) {
-    throwIfAlreadyStarted('Cannot call "addHook" when app is already loaded!')
+    throwIfAppIsLoaded('Cannot call "addHook()" when app is already loaded')
 
     if (name === 'onClose') {
       this._hooks.validate(name, fn)
@@ -283,7 +283,7 @@ function medley(options) {
   }
 
   function route(opts) {
-    throwIfAlreadyStarted('Cannot add route when app is already loaded!')
+    throwIfAppIsLoaded('Cannot add route when app is already loaded')
 
     const methods = Array.isArray(opts.method) ? opts.method : [opts.method]
     const methodGroups = new Map()
@@ -393,7 +393,7 @@ function medley(options) {
   }
 
   function setNotFoundHandler(opts, handler) {
-    throwIfAlreadyStarted('Cannot call "setNotFoundHandler" when app is already loaded!')
+    throwIfAppIsLoaded('Cannot call "setNotFoundHandler()" when app is already loaded')
 
     const prefix = this._routePrefix || '/'
 
@@ -513,7 +513,7 @@ function medley(options) {
   }
 
   function setErrorHandler(handler) {
-    throwIfAlreadyStarted('Cannot call "setErrorHandler" when app is already loaded!')
+    throwIfAppIsLoaded('Cannot call "setErrorHandler()" when app is already loaded')
 
     if (typeof handler !== 'function') {
       throw new TypeError(

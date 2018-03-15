@@ -151,7 +151,7 @@ test('cannot add another route after server is listening', (t) => {
       })
       t.fail()
     } catch (err) {
-      t.equal(err.message, 'Cannot add route when app is already loaded!')
+      t.equal(err.message, 'Cannot add route when app is already loaded')
     }
   })
 })

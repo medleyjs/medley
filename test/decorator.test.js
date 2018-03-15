@@ -38,42 +38,42 @@ test('.decorateRequest() should not allow decorating Medley values', (t) => {
     app.decorateRequest('req', null)
     t.fail('should not allow decorating Request with `req`')
   } catch (err) {
-    t.equal(err.message, "The decorator 'req' has been already added to Request!")
+    t.equal(err.message, "A decorator called 'req' has been already added to Request")
   }
 
   try {
     app.decorateRequest('headers', null)
     t.fail('should not allow decorating Request with `headers`')
   } catch (err) {
-    t.equal(err.message, "The decorator 'headers' has been already added to Request!")
+    t.equal(err.message, "A decorator called 'headers' has been already added to Request")
   }
 
   try {
     app.decorateRequest('params', null)
     t.fail('should not allow decorating Request with `params`')
   } catch (err) {
-    t.equal(err.message, "The decorator 'params' has been already added to Request!")
+    t.equal(err.message, "A decorator called 'params' has been already added to Request")
   }
 
   try {
     app.decorateRequest('body', null)
     t.fail('should not allow decorating Request with `body`')
   } catch (err) {
-    t.equal(err.message, "The decorator 'body' has been already added to Request!")
+    t.equal(err.message, "A decorator called 'body' has been already added to Request")
   }
 
   try {
     app.decorateRequest('_query', null)
     t.fail('should not allow decorating Request with `_query`')
   } catch (err) {
-    t.equal(err.message, "The decorator '_query' has been already added to Request!")
+    t.equal(err.message, "A decorator called '_query' has been already added to Request")
   }
 
   try {
     app.decorateRequest('query', null)
     t.fail('should not allow decorating Request with `query`')
   } catch (err) {
-    t.equal(err.message, "The decorator 'query' has been already added to Request!")
+    t.equal(err.message, "A decorator called 'query' has been already added to Request")
   }
 
   t.end()
@@ -86,49 +86,49 @@ test('.decorateResponse() should not allow decorating Medley values', (t) => {
     app.decorateResponse('res', null)
     t.fail('should not allow decorating Response with `res`')
   } catch (err) {
-    t.equal(err.message, "The decorator 'res' has been already added to Response!")
+    t.equal(err.message, "A decorator called 'res' has been already added to Response")
   }
 
   try {
     app.decorateResponse('request', null)
     t.fail('should not allow decorating Response with `request`')
   } catch (err) {
-    t.equal(err.message, "The decorator 'request' has been already added to Response!")
+    t.equal(err.message, "A decorator called 'request' has been already added to Response")
   }
 
   try {
     app.decorateResponse('_context', null)
     t.fail('should not allow decorating Response with `_context`')
   } catch (err) {
-    t.equal(err.message, "The decorator '_context' has been already added to Response!")
+    t.equal(err.message, "A decorator called '_context' has been already added to Response")
   }
 
   try {
     app.decorateResponse('config', null)
     t.fail('should not allow decorating Response with `config`')
   } catch (err) {
-    t.equal(err.message, "The decorator 'config' has been already added to Response!")
+    t.equal(err.message, "A decorator called 'config' has been already added to Response")
   }
 
   try {
     app.decorateResponse('sent', null)
     t.fail('should not allow decorating Response with `sent`')
   } catch (err) {
-    t.equal(err.message, "The decorator 'sent' has been already added to Response!")
+    t.equal(err.message, "A decorator called 'sent' has been already added to Response")
   }
 
   try {
     app.decorateResponse('_customError', null)
     t.fail('should not allow decorating Response with `_customError`')
   } catch (err) {
-    t.equal(err.message, "The decorator '_customError' has been already added to Response!")
+    t.equal(err.message, "A decorator called '_customError' has been already added to Response")
   }
 
   try {
     app.decorateResponse('_ranHooks', null)
     t.fail('should not allow decorating Response with `_ranHooks`')
   } catch (err) {
-    t.equal(err.message, "The decorator '_ranHooks' has been already added to Response!")
+    t.equal(err.message, "A decorator called '_ranHooks' has been already added to Response")
   }
 
   t.end()
