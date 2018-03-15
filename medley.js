@@ -142,8 +142,6 @@ function medley(options) {
     }
   })
 
-  const onRouteHooks = []
-
   app._notFoundLevelApp = app
   app.setNotFoundHandler(defaultNotFoundHandler)
   app._canSetNotFoundHandler = true // Allowed to override the default 404 handler
@@ -240,19 +238,15 @@ function medley(options) {
   function addHook(name, fn) {
     throwIfAppIsLoaded('Cannot call "addHook()" when app is already loaded')
 
-    if (name === 'onRoute') {
-      this._hooks.validate(name, fn)
-      onRouteHooks.push(fn)
-    } else {
-      this.after((err, done) => {
-        if (err) {
-          done(err)
-          return
-        }
-        _addHook(this, name, fn)
-        done()
-      })
-    }
+    this.after((err, done) => {
+      if (err) {
+        done(err)
+        return
+      }
+      _addHook(this, name, fn)
+      done()
+    })
+
     return this
   }
 
@@ -335,11 +329,6 @@ function medley(options) {
       if (err) {
         done(err)
         return
-      }
-
-      // Run 'onRoute' hooks
-      for (const hook of onRouteHooks) {
-        hook(opts)
       }
 
       var serializers
