@@ -7,10 +7,10 @@ const https = require('https')
 const lightMyRequest = require('light-my-request')
 
 const BodyParser = require('./lib/BodyParser')
-const Context = require('./lib/Context')
 const Hooks = require('./lib/Hooks')
 const Response = require('./lib/Response')
 const Request = require('./lib/Request')
+const RouteContext = require('./lib/RouteContext')
 
 const pluginUtils = require('./lib/pluginUtils')
 
@@ -353,7 +353,7 @@ function medley(options) {
         return
       }
 
-      const context = Context.create(
+      const context = RouteContext.create(
         this,
         serializers,
         methodHandler,
@@ -383,7 +383,7 @@ function medley(options) {
         context.onSend = onSend.length ? onSend : null
         context.onFinished = onFinished.length ? onFinished : null
 
-        // Must store the not-found Context in 'preReady' because it is only guaranteed
+        // Must store the not-found RouteContext in 'preReady' because it is only guaranteed
         // to be available after all of the plugins and routes have been loaded.
         context.notFoundContext = this._notFoundContexts.get(methodHandler)
       })
@@ -463,7 +463,7 @@ function medley(options) {
     serializers,
     replaceDefault404
   ) {
-    const context = Context.create(
+    const context = RouteContext.create(
       this,
       serializers,
       methodHandler,
