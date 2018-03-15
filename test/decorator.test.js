@@ -90,10 +90,10 @@ test('.decorateResponse() should not allow decorating Medley values', (t) => {
   }
 
   try {
-    app.decorateResponse('_request', null)
-    t.fail('should not allow decorating Response with `_request`')
+    app.decorateResponse('request', null)
+    t.fail('should not allow decorating Response with `request`')
   } catch (err) {
-    t.equal(err.message, "The decorator '_request' has been already added to Response!")
+    t.equal(err.message, "The decorator 'request' has been already added to Response!")
   }
 
   try {

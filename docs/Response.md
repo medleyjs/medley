@@ -6,6 +6,7 @@ It is a wrapper around Node's [`http.ServerResponse`][http.ServerResponse] objec
 **Properties:**
 
 + [`.config`](#responseconfig)
++ [`.request`](#responserequest)
 + [`.res`](#responseres)
 + [`.sent`](#responsesent)
 
@@ -28,6 +29,10 @@ It is a wrapper around Node's [`http.ServerResponse`][http.ServerResponse] objec
 
 The value of the `config` option passed to [`app.route()`](Response.md#options)
 (or one of it's shorthand methods). Defaults to an empty object `{}`.
+
+### `response.request`
+
+A reference to the [`request`](Request.md) object for the current request.
 
 ### `response.res`
 

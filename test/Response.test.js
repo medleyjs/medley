@@ -7,7 +7,7 @@ const medley = require('..')
 const Response = require('../lib/Response').buildResponse()
 
 test('Response properties', (t) => {
-  t.plan(4)
+  t.plan(5)
   const res = {}
   const request = {}
   const config = {}
@@ -16,6 +16,7 @@ test('Response properties', (t) => {
   const response = new Response(res, request, context)
   t.type(response, Response)
   t.equal(response.res, res)
+  t.equal(response.request, request)
   t.equal(response.config, config)
   t.equal(response.sent, false)
 })
