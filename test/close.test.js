@@ -7,7 +7,7 @@ const medley = require('..')
 test('close callback', (t) => {
   t.plan(4)
   const app = medley()
-  app.addHook('onClose', onClose)
+  app.onClose(onClose)
 
   function onClose(subApp, done) {
     t.type(app, subApp)
@@ -28,7 +28,7 @@ test('inside register', (t) => {
   t.plan(5)
   const app = medley()
   app.register(function(f, opts, next) {
-    f.addHook('onClose', onClose)
+    f.onClose(onClose)
 
     function onClose(subApp, done) {
       t.ok(subApp.prototype === app.prototype)
@@ -55,7 +55,7 @@ test('close order', (t) => {
   const order = [1, 2, 3]
 
   app.register(function(f, opts, next) {
-    f.addHook('onClose', (subApp, done) => {
+    f.onClose((subApp, done) => {
       t.is(order.shift(), 1)
       done()
     })
@@ -63,7 +63,7 @@ test('close order', (t) => {
     next()
   })
 
-  app.addHook('onClose', (subApp, done) => {
+  app.onClose((subApp, done) => {
     t.is(order.shift(), 2)
     done()
   })
@@ -81,7 +81,7 @@ test('close order', (t) => {
 test('should not throw an error if the server is not listening', (t) => {
   t.plan(2)
   const app = medley()
-  app.addHook('onClose', onClose)
+  app.onClose(onClose)
 
   function onClose(subApp, done) {
     t.type(app, subApp)
@@ -100,7 +100,7 @@ test('onClose should keep the context', (t) => {
 
   function plugin(subApp, opts, next) {
     subApp.decorate('test', true)
-    subApp.addHook('onClose', onClose)
+    subApp.onClose(onClose)
     t.ok(subApp.prototype === app.prototype)
 
     function onClose(i, done) {

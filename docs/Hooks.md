@@ -171,19 +171,8 @@ app.addHook('preHandler', async (request, response, next) => {
 
 You are able to hook into the application-lifecycle as well. It's important to note that these hooks aren't fully encapsulated. The `this` inside the hooks are encapsulated but the handlers can respond to an event outside the encapsulation boundaries.
 
-- `'onClose'`
 - `'onRoute'`
 
-<a name="on-close"></a>
-**'onClose'**<br>
-Triggered when `app.close()` is invoked to stop the server. It is useful when [plugins](Plugins.md) need a "shutdown" event, such as a connection to a database.<br>
-The first argument is the app instance, the second one the `done` callback.
-```js
-app.addHook('onClose', (app, done) => {
-  // some code
-  done()
-})
-```
 <a name="on-route"></a>
 **'onRoute'**<br>
 Triggered when a new route is registered. Listeners are passed a `routeOptions` object as the sole parameter. The interface is synchronous, and, as such, the listeners do not get passed a callback.

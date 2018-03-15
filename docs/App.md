@@ -22,6 +22,8 @@ const app = medley()
 + [`.decorateResponse(name, value)`](#decorate-response)
 + [`.inject(options [, callback])`](#inject)
 + [`.listen(port [, host][, backlog][, callback])`](#listen)
++ [`.onClose(callback)`](#on-close)
++ [`.printRoutes()`](#print-routes)
 + [`.ready([callback])`](#ready)
 + [`.register()`](#register)
 + [`.route(options)`](#route)
@@ -136,6 +138,22 @@ app.listen(3000, '0.0.0.0')
     console.log('Error starting server:', err)
     process.exit(1)
   })
+```
+
+<a id="on-close"></a>
+### `app.onClose(handler)`
+
++ `handler(app, done)` *(function)* - Called when the `app` is shutting down. Receives the following parameters:
+  + `app` - The `app` instance that `.onClose()` was called on.
+  + `done([err])` *(function)* - A function that must be called when the `handler` is finished.
+
+Registers a function that will be called when the `app` is shutting down (triggered
+by [`app.close()`](#close)). Useful for things like releasing database connections.
+
+```js
+app.onClose(function(app, done) {
+  app.db.end(err => done(err))
+})
 ```
 
 <a id="print-routes"></a>

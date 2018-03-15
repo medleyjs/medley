@@ -240,10 +240,7 @@ function medley(options) {
   function addHook(name, fn) {
     throwIfAppIsLoaded('Cannot call "addHook()" when app is already loaded')
 
-    if (name === 'onClose') {
-      this._hooks.validate(name, fn)
-      this.onClose(fn)
-    } else if (name === 'onRoute') {
+    if (name === 'onRoute') {
       this._hooks.validate(name, fn)
       onRouteHooks.push(fn)
     } else {
