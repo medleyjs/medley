@@ -74,6 +74,33 @@ test('response.get/set() get and set the response headers', (t) => {
   })
 })
 
+test('response.set() accepts an object of headers', (t) => {
+  t.plan(8)
+
+  const app = medley()
+
+  app.get('/', (request, response) => {
+    response.set({
+      'X-Custom-Header1': 'custom header1',
+      'x-custom-header2': 'custom header2',
+    })
+    t.equal(response.get('x-custom-header1'), 'custom header1')
+    t.equal(response.get('x-custom-header2'), 'custom header2')
+
+    t.equal(response.set({}), response)
+
+    response.set({'content-type': 'custom/type'}).send()
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.headers['x-custom-header1'], 'custom header1')
+    t.equal(res.headers['x-custom-header2'], 'custom header2')
+    t.equal(res.headers['content-type'], 'custom/type')
+  })
+})
+
 test('response.append() sets headers and adds to existing headers', (t) => {
   t.plan(13)
 

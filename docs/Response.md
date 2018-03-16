@@ -18,7 +18,7 @@ It is a wrapper around Node's [`http.ServerResponse`][http.ServerResponse] objec
 + [`.redirect([statusCode,] url)`](#redirect)
 + [`.remove(field)`](#remove)
 + [`.send([payload])`](#send)
-+ [`.set(field, value)`](#set)
++ [`.set(field [, value])`](#set)
 + [`.status(statusCode)`](#status)
 + [`.type(contentType)`](#type)
 
@@ -315,9 +315,9 @@ app.get('/', (request, response) => {
 See [Routes#async-await](Routes.md#async-await) for more examples.
 
 <a id="set"></a>
-### `response.set(field, value)`
+### `response.set(field [, value])`
 
-+ `field` *(string)*
++ `field` *(string|object)*
 + `value` *(string|string[])*
 + Chainable
 + Alias: `response.setHeader()`
@@ -327,8 +327,16 @@ Use an array of strings to set multiple headers for the same field.
 
 ```js
 response.set('content-encoding', 'gzip')
-
 response.set('set-cookie', ['user=medley', 'session=123456'])
+```
+
+Multiple headers can be set at once by passing an object as the `field` parameter:
+
+```js
+response.set({
+  'content-type': 'text/plain',
+  'etag': '123456'
+});
 ```
 
 **Tip:** While not required, it is best to use lowercase header names for the best performance
