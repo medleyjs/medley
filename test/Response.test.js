@@ -50,6 +50,47 @@ test('response.status() should set the status code', (t) => {
   })
 })
 
+test('response.append() sets headers and adds to existing headers', (t) => {
+  t.plan(13)
+
+  const app = medley()
+
+  app.get('/', (request, response) => {
+    response.append('x-custom-header', 'first')
+    t.equal(response.get('x-custom-header'), 'first')
+
+    t.equal(response.append('x-custom-header', 'second'), response)
+    t.deepEqual(response.get('x-custom-header'), ['first', 'second'])
+
+    t.equal(response.append('x-custom-header', ['3', '4']), response)
+    t.deepEqual(response.get('x-custom-header'), ['first', 'second', '3', '4'])
+
+    response.send()
+  })
+
+  app.get('/append-multiple-to-string', (request, response) => {
+    response.append('x-custom-header', 'first')
+    t.equal(response.get('x-custom-header'), 'first')
+
+    response.append('x-custom-header', ['second', 'third'])
+    t.deepEqual(response.get('x-custom-header'), ['first', 'second', 'third'])
+
+    response.send()
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.deepEqual(res.headers['x-custom-header'], ['first', 'second', '3', '4'])
+  })
+
+  app.inject('/append-multiple-to-string', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.deepEqual(res.headers['x-custom-header'], ['first', 'second', 'third'])
+  })
+})
+
 test('response.get/set() get and set the response headers', (t) => {
   t.plan(8)
 
@@ -98,47 +139,6 @@ test('response.set() accepts an object of headers', (t) => {
     t.equal(res.headers['x-custom-header1'], 'custom header1')
     t.equal(res.headers['x-custom-header2'], 'custom header2')
     t.equal(res.headers['content-type'], 'custom/type')
-  })
-})
-
-test('response.append() sets headers and adds to existing headers', (t) => {
-  t.plan(13)
-
-  const app = medley()
-
-  app.get('/', (request, response) => {
-    response.append('x-custom-header', 'first')
-    t.equal(response.get('x-custom-header'), 'first')
-
-    t.equal(response.append('x-custom-header', 'second'), response)
-    t.deepEqual(response.get('x-custom-header'), ['first', 'second'])
-
-    t.equal(response.append('x-custom-header', ['3', '4']), response)
-    t.deepEqual(response.get('x-custom-header'), ['first', 'second', '3', '4'])
-
-    response.send()
-  })
-
-  app.get('/append-multiple-to-string', (request, response) => {
-    response.append('x-custom-header', 'first')
-    t.equal(response.get('x-custom-header'), 'first')
-
-    response.append('x-custom-header', ['second', 'third'])
-    t.deepEqual(response.get('x-custom-header'), ['first', 'second', 'third'])
-
-    response.send()
-  })
-
-  app.inject('/', (err, res) => {
-    t.error(err)
-    t.equal(res.statusCode, 200)
-    t.deepEqual(res.headers['x-custom-header'], ['first', 'second', '3', '4'])
-  })
-
-  app.inject('/append-multiple-to-string', (err, res) => {
-    t.error(err)
-    t.equal(res.statusCode, 200)
-    t.deepEqual(res.headers['x-custom-header'], ['first', 'second', 'third'])
   })
 })
 
