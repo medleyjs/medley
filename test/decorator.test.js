@@ -35,10 +35,10 @@ test('.decorateRequest() should not allow decorating Medley values', (t) => {
   const app = medley()
 
   try {
-    app.decorateRequest('req', null)
-    t.fail('should not allow decorating Request with `req`')
+    app.decorateRequest('stream', null)
+    t.fail('should not allow decorating Request with `stream`')
   } catch (err) {
-    t.equal(err.message, "A decorator called 'req' has been already added to Request")
+    t.equal(err.message, "A decorator called 'stream' has been already added to Request")
   }
 
   try {

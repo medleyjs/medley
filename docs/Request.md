@@ -11,7 +11,7 @@ It is a wrapper around Node's [`http.IncomingMessage`][http.IncomingMessage] obj
 + [`.params`](#requestparams)
 + [`.query`](#requestquery)
 + [`.querystring`](#requestquerystring)
-+ [`.req`](#requestreq)
++ [`.stream`](#requeststream)
 + [`.url`](#requesturl)
 
 ## Properties
@@ -96,9 +96,31 @@ The query string found in the request's URL.
 request.querystring // 'a=1&b=value'
 ```
 
-### `request.req`
+### `request.stream`
 
-The native [`http.IncomingMessage`][http.IncomingMessage] object from Node core.
+The [readable stream](https://nodejs.org/api/stream.html#stream_class_stream_readable)
+of the incoming request that can be used to read the request's body. This is the
+[`http.IncomingMessage`][http.IncomingMessage] object from Node core. If the
+server is using HTTP 2, this will instead be an instance of
+[`http2.Http2ServerRequest`](https://nodejs.org/api/http2.html#http2_class_http2_http2serverrequest).
+
+Example of writing the request body directly to a file:
+
+```js
+const fs = require('fs')
+const pump = require('pump') // https://www.npmjs.com/package/pump
+
+// Using GET because POST request bodies should already be handled by a body parser
+app.get('/', (request, response) => {
+  pump(request.stream, fs.createWriteStream('./reqBody.txt'), (err) => {
+    if (err) {
+      response.error(err)
+    } else {
+      response.send('Done!')
+    }
+  })
+})
+```
 
 ### `request.url`
 

@@ -6,9 +6,9 @@ const Request = require('../../lib/Request').buildRequest()
 
 t.test('Request object', (t) => {
   t.plan(5)
-  const request = new Request('req', 'headers', 'params')
+  const request = new Request('reqStream', 'headers', 'params')
   t.type(request, Request)
-  t.equal(request.req, 'req')
+  t.equal(request.stream, 'reqStream')
   t.equal(request.headers, 'headers')
   t.equal(request.params, 'params')
   t.equal(request.body, undefined)

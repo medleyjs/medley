@@ -26,7 +26,7 @@ test('async hooks', (t) => {
     await sleep(1)
     request.preHandlerVal = 'the request is coming'
     response.preHandlerVal = 'the response has come'
-    if (request.req.method === 'HEAD') {
+    if (request.method === 'HEAD') {
       throw new Error('some error')
     }
     next()

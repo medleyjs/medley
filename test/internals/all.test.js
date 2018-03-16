@@ -12,7 +12,7 @@ test('app.all should add all the methods to the same URL', (t) => {
   const app = medley()
 
   app.all('/', (request, response) => {
-    response.send({method: request.req.method})
+    response.send({method: request.method})
   })
 
   supportedMethods.forEach(injectRequest)

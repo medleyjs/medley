@@ -259,12 +259,12 @@ test('should support send module 200 and 404', (t) => {
   const app = medley()
 
   app.get('/', function(req, response) {
-    const stream = send(req.req, __filename)
+    const stream = send(req.stream, __filename)
     response.send(stream)
   })
 
   app.get('/error', function(req, response) {
-    const stream = send(req.req, 'non-existing-file')
+    const stream = send(req.stream, 'non-existing-file')
     response.send(stream)
   })
 

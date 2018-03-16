@@ -31,7 +31,7 @@ test('hooks', (t) => {
   app.addHook('preHandler', function(request, response, next) {
     request.preHandlerVal = 'the request is coming'
     response.preHandlerVal = 'the response has come'
-    if (request.req.method === 'HEAD') {
+    if (request.method === 'HEAD') {
       next(new Error('some error'))
     } else {
       next()
@@ -668,7 +668,7 @@ test('onSend hook throws', (t) => {
   t.plan(7)
   const app = medley()
   app.addHook('onSend', (request, response, payload, next) => {
-    if (request.req.method === 'DELETE') {
+    if (request.method === 'DELETE') {
       next(new Error('some error'))
       return
     }
