@@ -7,8 +7,7 @@ const medley = require('..')
 const Response = require('../lib/Response').buildResponse()
 
 test('Response properties', (t) => {
-  t.plan(5)
-  const res = {}
+  const res = {statusCode: 200}
   const request = {}
   const config = {}
   const context = {config}
@@ -19,6 +18,8 @@ test('Response properties', (t) => {
   t.equal(response.request, request)
   t.equal(response.config, config)
   t.equal(response.sent, false)
+  t.equal(response.statusCode, 200)
+  t.end()
 })
 
 test('Response aliases', (t) => {
@@ -28,6 +29,27 @@ test('Response aliases', (t) => {
   t.equal(response.removeHeader, response.remove)
   t.equal(response.setHeader, response.set)
   t.end()
+})
+
+test('.statusCode emulates res.statusCode', (t) => {
+  t.plan(4)
+
+  const app = medley()
+
+  app.get('/', (request, response) => {
+    t.equal(response.statusCode, 200)
+
+    response.statusCode = 300
+    t.equal(response.statusCode, 300)
+
+    response.statusCode = 204
+    response.send()
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 204)
+  })
 })
 
 test('response.status() should set the status code', (t) => {

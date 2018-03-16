@@ -9,6 +9,7 @@ It is a wrapper around Node's [`http.ServerResponse`][http.ServerResponse] objec
 + [`.request`](#responserequest)
 + [`.res`](#responseres)
 + [`.sent`](#responsesent)
++ [`.statusCode`](#responsestatuscode)
 
 **Methods:**
 
@@ -41,6 +42,14 @@ The native [`http.ServerResponse`][http.ServerResponse] object from Node core.
 ### `response.sent`
 
 A boolean value that indicates whether or not a response has already been sent.
+
+### `response.statusCode`
+
+The HTTP status code that will be sent to the client when the response is sent.<br>
+Defaults to `200`.
+
+**Note:** The status code must be between `200` and `599` (inclusive) to be
+compatible with HTTP 2.
 
 
 ## Methods
@@ -348,8 +357,12 @@ and for consistency with HTTP 2 (which requires header names to be lowercase).
 + `statusCode` *(number)*
 + Chainable
 
-Sets the HTTP status code for the response. If not set, the status code for
-the response defaults to `200`.
+Sets the HTTP status code for the response. A chainable shortcut
+for setting [`response.statusCode`](#responsestatuscode).
+
+```js
+response.status(204).send()
+```
 
 **Note:** The status code must be between `200` and `599` (inclusive) to be
 compatible with HTTP 2.
