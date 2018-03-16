@@ -257,7 +257,7 @@ function medley(options) {
 
   // Routing methods
   function createShorthandRouteMethod(method) {
-    return function(url, opts, handler) {
+    return function(path, opts, handler) {
       if (handler === undefined) {
         handler = opts
         opts = {}
@@ -265,7 +265,7 @@ function medley(options) {
 
       opts = Object.assign({}, opts, {
         method,
-        url,
+        path,
         handler,
       })
 
@@ -304,27 +304,27 @@ function medley(options) {
     validateBodyLimitOption(opts.bodyLimit)
 
     const prefix = this._routePrefix
-    var url = opts.url || opts.path
-    if (url === '/' && prefix.length > 0) {
+    var path = opts.path || opts.url
+    if (path === '/' && prefix.length > 0) {
       // Ensure that '/prefix' + '/' gets registered as '/prefix'
-      url = ''
-    } else if (url[0] === '/' && prefix.endsWith('/')) {
+      path = ''
+    } else if (path[0] === '/' && prefix.endsWith('/')) {
       // Ensure that '/prefix/' + '/route' gets registered as '/prefix/route'
-      url = url.slice(1)
+      path = path.slice(1)
     }
-    url = prefix + url
+    path = prefix + path
 
-    opts.url = opts.path = url
+    opts.path = opts.url = path
     opts.prefix = prefix
 
     for (const [methodHandler, method] of methodGroups) {
-      _route.call(this, method, methodHandler, url, opts)
+      _route.call(this, method, methodHandler, path, opts)
     }
 
     return this // Chainable
   }
 
-  function _route(method, methodHandler, url, opts) {
+  function _route(method, methodHandler, path, opts) {
     this.after((err, done) => {
       if (err) {
         done(err)
@@ -349,7 +349,7 @@ function medley(options) {
       )
 
       try {
-        router.on(method, url, routeHandler, context)
+        router.on(method, path, routeHandler, context)
       } catch (err) {
         done(err)
         return

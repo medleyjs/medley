@@ -41,7 +41,7 @@ test('missing schema - route', (t) => {
 
   app.route({
     method: 'GET',
-    url: '/missing',
+    path: '/missing',
     handler(request, response) {
       response.send({hello: 'world'})
     },
@@ -61,7 +61,7 @@ test('Multiple methods', (t) => {
 
   app.route({
     method: ['GET', 'DELETE'],
-    url: '/multiple',
+    path: '/multiple',
     handler(request, response) {
       response.send({hello: 'world'})
     },
@@ -94,7 +94,7 @@ test('Add multiple methods', (t) => {
 
   app.route({
     method: ['PUT', 'DELETE'],
-    url: '/add-multiple',
+    path: '/add-multiple',
     handler(request, response) {
       response.send({hello: 'world'})
     },
@@ -134,7 +134,7 @@ test('cannot add another route after server is listening', (t) => {
 
   app.route({
     method: 'GET',
-    url: '/1',
+    path: '/1',
     handler(request, response) {
       response.send(1)
     },
@@ -146,7 +146,7 @@ test('cannot add another route after server is listening', (t) => {
     try {
       app.route({
         method: 'GET',
-        url: '/another-route',
+        path: '/another-route',
         handler() { },
       })
       t.fail()
@@ -156,20 +156,20 @@ test('cannot add another route after server is listening', (t) => {
   })
 })
 
-test('path can be specified in place of uri', (t) => {
+test('url can be specified in place of path', (t) => {
   t.plan(3)
 
   const app = medley()
 
   app.route({
     method: 'GET',
-    path: '/path',
+    url: '/url',
     handler(request, response) {
       response.send({hello: 'world'})
     },
   })
 
-  app.inject('/path', (err, res) => {
+  app.inject('/url', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 200)
     t.deepEqual(JSON.parse(res.payload), {hello: 'world'})
