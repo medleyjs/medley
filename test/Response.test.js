@@ -21,6 +21,15 @@ test('Response properties', (t) => {
   t.equal(response.sent, false)
 })
 
+test('Response aliases', (t) => {
+  const response = new Response()
+  t.equal(response.appendHeader, response.append)
+  t.equal(response.getHeader, response.get)
+  t.equal(response.removeHeader, response.remove)
+  t.equal(response.setHeader, response.set)
+  t.end()
+})
+
 test('response.status() should set the status code', (t) => {
   t.plan(4)
 
@@ -41,18 +50,18 @@ test('response.status() should set the status code', (t) => {
   })
 })
 
-test('response.getHeader/setHeader() get and set the response headers', (t) => {
+test('response.get/set() get and set the response headers', (t) => {
   t.plan(8)
 
   const app = medley()
 
   app.get('/', (request, response) => {
-    t.equal(response.getHeader('X-Custom-Header'), undefined)
+    t.equal(response.get('x-custom-header'), undefined)
 
-    t.equal(response.setHeader('X-Custom-Header', 'custom header'), response)
-    t.equal(response.getHeader('X-Custom-Header'), 'custom header')
+    t.equal(response.set('x-custom-header', 'custom header'), response)
+    t.equal(response.get('x-custom-header'), 'custom header')
 
-    response.setHeader('Content-Type', 'custom/type')
+    response.set('content-type', 'custom/type')
     response.send('text')
   })
 
@@ -65,30 +74,30 @@ test('response.getHeader/setHeader() get and set the response headers', (t) => {
   })
 })
 
-test('response.appendHeader() adds to existing headers', (t) => {
+test('response.append() sets headers and adds to existing headers', (t) => {
   t.plan(13)
 
   const app = medley()
 
   app.get('/', (request, response) => {
-    response.appendHeader('X-Custom-Header', 'first')
-    t.equal(response.getHeader('X-Custom-Header'), 'first')
+    response.append('x-custom-header', 'first')
+    t.equal(response.get('x-custom-header'), 'first')
 
-    t.equal(response.appendHeader('X-Custom-Header', 'second'), response)
-    t.deepEqual(response.getHeader('X-Custom-Header'), ['first', 'second'])
+    t.equal(response.append('x-custom-header', 'second'), response)
+    t.deepEqual(response.get('x-custom-header'), ['first', 'second'])
 
-    t.equal(response.appendHeader('X-Custom-Header', ['3', '4']), response)
-    t.deepEqual(response.getHeader('X-Custom-Header'), ['first', 'second', '3', '4'])
+    t.equal(response.append('x-custom-header', ['3', '4']), response)
+    t.deepEqual(response.get('x-custom-header'), ['first', 'second', '3', '4'])
 
     response.send()
   })
 
   app.get('/append-multiple-to-string', (request, response) => {
-    response.appendHeader('X-Custom-Header', 'first')
-    t.equal(response.getHeader('X-Custom-Header'), 'first')
+    response.append('x-custom-header', 'first')
+    t.equal(response.get('x-custom-header'), 'first')
 
-    response.appendHeader('X-Custom-Header', ['second', 'third'])
-    t.deepEqual(response.getHeader('X-Custom-Header'), ['first', 'second', 'third'])
+    response.append('x-custom-header', ['second', 'third'])
+    t.deepEqual(response.get('x-custom-header'), ['first', 'second', 'third'])
 
     response.send()
   })
@@ -106,23 +115,23 @@ test('response.appendHeader() adds to existing headers', (t) => {
   })
 })
 
-test('response.removeHeader() removes response headers', (t) => {
+test('response.remove() removes response headers', (t) => {
   t.plan(8)
 
   const app = medley()
 
   app.get('/', (request, response) => {
-    response.setHeader('X-Custom-Header', 'custom header')
-    t.equal(response.getHeader('X-Custom-Header'), 'custom header')
+    response.set('x-custom-header', 'custom header')
+    t.equal(response.get('x-custom-header'), 'custom header')
 
-    t.equal(response.removeHeader('X-Custom-Header'), response)
-    t.equal(response.getHeader('X-Custom-Header'), undefined)
+    t.equal(response.remove('x-custom-header'), response)
+    t.equal(response.get('x-custom-header'), undefined)
 
     response
-      .setHeader('X-Custom-Header-2', ['a', 'b'])
-      .removeHeader('X-Custom-Header-2')
+      .set('x-custom-header-2', ['a', 'b'])
+      .remove('x-custom-header-2')
 
-    t.equal(response.getHeader('X-Custom-Header-2'), undefined)
+    t.equal(response.get('x-custom-header-2'), undefined)
 
     response.send()
   })

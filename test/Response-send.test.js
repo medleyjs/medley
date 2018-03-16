@@ -43,7 +43,7 @@ test('within a sub app', (t) => {
   const app = medley()
 
   app.get('/', function(req, response) {
-    response.setHeader('content-type', 'text/plain')
+    response.set('content-type', 'text/plain')
     response.send('hello world!')
   })
 
@@ -66,7 +66,7 @@ test('within a sub app', (t) => {
 
   app.register(function(subApp, options, next) {
     app.addHook('onSend', function(request, response, payload, next) {
-      response.setHeader('x-onsend', 'yes')
+      response.set('x-onsend', 'yes')
       next()
     })
     app.get('/redirect-onsend', function(req, response) {
@@ -202,7 +202,7 @@ test('buffer with content type should not send application/octet-stream', (t) =>
   const app = medley()
 
   app.get('/', function(req, response) {
-    response.setHeader('content-type', 'text/plain')
+    response.set('content-type', 'text/plain')
     response.send(Buffer.alloc(1024))
   })
 

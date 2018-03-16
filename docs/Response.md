@@ -12,13 +12,13 @@ It is a wrapper around Node's [`http.ServerResponse`][http.ServerResponse] objec
 
 **Methods:**
 
-+ [`.appendHeader(name, value)`](#append-header)
++ [`.append(field, value)`](#append)
 + [`.error([statusCode,] error)`](#error)
-+ [`.getHeader(name)`](#get-header)
++ [`.get(field)`](#get)
 + [`.redirect([statusCode,] url)`](#redirect)
-+ [`.removeHeader(name)`](#remove-header)
++ [`.remove(field)`](#remove)
 + [`.send([payload])`](#send)
-+ [`.setHeader(name, value)`](#set-header)
++ [`.set(field, value)`](#set)
 + [`.status(statusCode)`](#status)
 + [`.type(contentType)`](#type)
 
@@ -45,21 +45,25 @@ A boolean value that indicates whether or not a response has already been sent.
 
 ## Methods
 
-<a id="append-header"></a>
-### `response.appendHeader(name, value)`
+<a id="append"></a>
+### `response.append(field, value)`
 
-+ `name` *(string)*
++ `field` *(string)*
 + `value` *(string|string[])*
 + Chainable
++ Alias: `response.appendHeader()`
 
-Sets a response header if not already set. Appends the value to the header as an array if it already exists.
+Appends the `value` to the HTTP response header `field`. If the header is not
+already set, it creates the header with the specified `value`.
 
 ```js
-response.appendHeader('set-cookie', 'foo=bar')
-response.getHeader('set-cookie') // 'foo=bar'
-response.appendHeader('set-cookie', 'bar=baz; Path=/; HttpOnly')
-response.getHeader('set-cookie') // ['foo=bar', 'bar=baz; Path=/; HttpOnly']
+response.append('set-cookie', 'foo=bar')
+response.get('set-cookie') // 'foo=bar'
+response.append('set-cookie', 'bar=baz; Path=/; HttpOnly')
+response.get('set-cookie') // ['foo=bar', 'bar=baz; Path=/; HttpOnly']
 ```
+
+Note that calling `response.set()` after `response.append()` will reset the previously set header value.
 
 <a id="error"></a>
 ### `response.error([statusCode,] error)`
@@ -71,7 +75,7 @@ Sends an error response.
 
 ```js
 app.get('/', function(request, response) {
-  asyncFn((err, data) => {
+  getData((err, data) => {
     if (err) {
       response.error(err)
     } else {
@@ -107,6 +111,9 @@ The status code for the response is chosen in the following order:
 1. The `statusCode` property on the error object.
 1. If none of the above, `500` is used.
 
+**Note:** The status code must be between `200` and `599` (inclusive) to be
+compatible with HTTP 2.
+
 If the `statusCode` is `404`, the not-found handler (either the default, or a custom
 handler set with [`app.setNotFoundHandler()`](App.md#set-not-found-handler))
 will be invoked instead of the error handler.
@@ -119,20 +126,21 @@ response.error(new httpErrors.NotFound())
 response.error(404, null) // Pass `null` as the error since it cannot be `undefined`
 ```
 
-<a id="get-header"></a>
-### `response.getHeader(name)`
+<a id="get"></a>
+### `response.get(field)`
 
-+ `name` *(string)*
++ `field` *(string)*
 + Returns: *(string|string[])*
++ Alias: `response.getHeader()`
 
-Gets a response header.
+Gets a previously set response header.
 
 ```js
-response.getHeader('content-type') // 'application/json'
+response.get('content-type') // 'application/json'
 ```
 
-**Tip:** Always use lowercase header names for the best performance and for future
-compatibility with HTTP 2 (which requires header names to be lowercase).
+**Tip:** While not required, it is best to use lowercase header names for the best performance
+and for consistency with HTTP 2 (which requires header names to be lowercase).
 
 <a id="redirect"></a>
 ### `response.redirect([statusCode,] url)`
@@ -150,16 +158,17 @@ response.redirect('/home')
 response.redirect(301, '/moved-permanently')
 ```
 
-<a id="remove-header"></a>
-### `response.removeHeader(name)`
+<a id="remove"></a>
+### `response.remove(field)`
 
-+ `name` *(string)*
++ `field` *(string)*
 + Chainable
++ Alias: `response.removeHeader()`
 
 Removes a response header.
 
 ```js
-response.removeHeader('content-type')
+response.remove('content-type')
 ```
 
 <a id="send"></a>
@@ -305,24 +314,25 @@ app.get('/', (request, response) => {
 
 See [Routes#async-await](Routes.md#async-await) for more examples.
 
-<a id="set-header"></a>
-### `response.setHeader(name, value)`
+<a id="set"></a>
+### `response.set(field, value)`
 
-+ `name` *(string)*
++ `field` *(string)*
 + `value` *(string|string[])*
 + Chainable
++ Alias: `response.setHeader()`
 
-Sets a response header. If the header already exists, its value will be replaced.
-Use an array of strings to set multiple headers with the same name.
+Sets a response HTTP header. If the header already exists, its value will be replaced.
+Use an array of strings to set multiple headers for the same field.
 
 ```js
-response.setHeader('content-encoding', 'gzip')
+response.set('content-encoding', 'gzip')
 
-response.setHeader('set-cookie', ['user=medley', 'session=123456'])
+response.set('set-cookie', ['user=medley', 'session=123456'])
 ```
 
-**Tip:** Always use lowercase header names for the best performance and for future
-compatibility with HTTP 2 (which requires header names to be lowercase).
+**Tip:** While not required, it is best to use lowercase header names for the best performance
+and for consistency with HTTP 2 (which requires header names to be lowercase).
 
 <a id="status"></a>
 ### `response.status(statusCode)`
@@ -348,6 +358,6 @@ Sets the `Content-Type` header for the response.
 response.type('text/html')
 ```
 
-This is a shortcut for: `response.setHeader('content-type', contentType)`.
+This is a shortcut for: `response.set('content-type', contentType)`.
 
 [http.ServerResponse]: https://nodejs.org/dist/latest/docs/api/http.html#http_class_http_serverresponse
