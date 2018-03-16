@@ -5,9 +5,9 @@ It is a wrapper around Node's [`http.ServerResponse`][http.ServerResponse] objec
 
 **Properties:**
 
-+ [`.config`](#responseconfig)
 + [`.request`](#responserequest)
 + [`.res`](#responseres)
++ [`.route`](#responseroute)
 + [`.sent`](#responsesent)
 + [`.statusCode`](#responsestatuscode)
 
@@ -26,11 +26,6 @@ It is a wrapper around Node's [`http.ServerResponse`][http.ServerResponse] objec
 
 ## Properties
 
-### `response.config`
-
-The value of the `config` option passed to [`app.route()`](Response.md#options)
-(or one of it's shorthand methods). Defaults to an empty object `{}`.
-
 ### `response.request`
 
 A reference to the [`request`](Request.md) object for the current request.
@@ -38,6 +33,23 @@ A reference to the [`request`](Request.md) object for the current request.
 ### `response.res`
 
 The native [`http.ServerResponse`][http.ServerResponse] object from Node core.
+
+### `response.route`
+
+The Medley data associated with the current route. Exposed to provide access to
+the `config` object passed to the [`app.route()`](Response.md#options) method
+(or one of it's shorthands). Could also be useful for debugging.
+
+```js
+app.route({
+  method: 'GET',
+  path: '/user',
+  config: { confValue: 22 },
+  handler: function(request, response) {
+    response.route.config // { confValue: 22 }
+  }
+})
+```
 
 ### `response.sent`
 

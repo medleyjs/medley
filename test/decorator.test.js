@@ -97,17 +97,10 @@ test('.decorateResponse() should not allow decorating Medley values', (t) => {
   }
 
   try {
-    app.decorateResponse('_context', null)
-    t.fail('should not allow decorating Response with `_context`')
+    app.decorateResponse('route', null)
+    t.fail('should not allow decorating Response with `route`')
   } catch (err) {
-    t.equal(err.message, "A decorator called '_context' has been already added to Response")
-  }
-
-  try {
-    app.decorateResponse('config', null)
-    t.fail('should not allow decorating Response with `config`')
-  } catch (err) {
-    t.equal(err.message, "A decorator called 'config' has been already added to Response")
+    t.equal(err.message, "A decorator called 'route' has been already added to Response")
   }
 
   try {

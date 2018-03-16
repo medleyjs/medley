@@ -10,13 +10,14 @@ test('Response properties', (t) => {
   const res = {statusCode: 200}
   const request = {}
   const config = {}
-  const context = {config}
+  const routeContext = {config}
 
-  const response = new Response(res, request, context)
+  const response = new Response(res, request, routeContext)
   t.type(response, Response)
   t.equal(response.res, res)
   t.equal(response.request, request)
-  t.equal(response.config, config)
+  t.equal(response.route, routeContext)
+  t.equal(response.route.config, config)
   t.equal(response.sent, false)
   t.equal(response.statusCode, 200)
   t.end()

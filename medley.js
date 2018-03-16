@@ -101,7 +101,7 @@ function medley(options) {
     setNotFoundHandler,
     _canSetNotFoundHandler: true,
     _notFoundLevelApp: null,
-    _notFoundContexts: null,
+    _notFoundRouteContexts: null,
 
     setErrorHandler,
     _errorHandler: null,
@@ -343,7 +343,7 @@ function medley(options) {
         return
       }
 
-      const context = RouteContext.create(
+      const routeContext = RouteContext.create(
         this,
         serializers,
         methodHandler,
@@ -353,7 +353,7 @@ function medley(options) {
       )
 
       try {
-        router.on(method, path, routeHandler, context)
+        router.on(method, path, routeHandler, routeContext)
       } catch (err) {
         done(err)
         return
@@ -361,21 +361,21 @@ function medley(options) {
 
       // It can happen that a user register a plugin with some hooks *after* the route registration.
       // To be sure to load also that hoooks, we must listen for the avvio's 'preReady' event and
-      // update the context object accordingly.
+      // update the routeContext object accordingly.
       appLoader.once('preReady', () => {
         const onRequest = this._hooks.onRequest
         const onFinished = this._hooks.onFinished
         const onSend = this._hooks.onSend
         const preHandler = this._hooks.preHandler.concat(opts.beforeHandler || [])
 
-        context.onRequest = onRequest.length ? onRequest : null
-        context.preHandler = preHandler.length ? preHandler : null
-        context.onSend = onSend.length ? onSend : null
-        context.onFinished = onFinished.length ? onFinished : null
+        routeContext.onRequest = onRequest.length ? onRequest : null
+        routeContext.preHandler = preHandler.length ? preHandler : null
+        routeContext.onSend = onSend.length ? onSend : null
+        routeContext.onFinished = onFinished.length ? onFinished : null
 
         // Must store the not-found RouteContext in 'preReady' because it is only guaranteed
         // to be available after all of the plugins and routes have been loaded.
-        context.notFoundContext = this._notFoundContexts.get(methodHandler)
+        routeContext.notFoundRouteContext = this._notFoundRouteContexts.get(methodHandler)
       })
 
       done()
@@ -422,7 +422,7 @@ function medley(options) {
 
       if (!replaceDefault404) {
         // Force a new context map to be created for the not-found level
-        this._notFoundLevelApp._notFoundContexts = null
+        this._notFoundLevelApp._notFoundRouteContexts = null
       }
 
       for (const [methodHandler, methods] of methodGroups) {
@@ -453,7 +453,7 @@ function medley(options) {
     serializers,
     replaceDefault404
   ) {
-    const context = RouteContext.create(
+    const routeContext = RouteContext.create(
       this,
       serializers,
       methodHandler,
@@ -463,42 +463,42 @@ function medley(options) {
     )
 
     appLoader.once('preReady', () => {
-      const notFoundContext = this._notFoundContexts.get(methodHandler)
+      const notFoundRouteContext = this._notFoundRouteContexts.get(methodHandler)
 
       const onRequest = this._hooks.onRequest
       const preHandler = this._hooks.preHandler
       const onSend = this._hooks.onSend
       const onFinished = this._hooks.onFinished
 
-      notFoundContext.onRequest = onRequest.length ? onRequest : null
-      notFoundContext.preHandler = preHandler.length ? preHandler : null
-      notFoundContext.onSend = onSend.length ? onSend : null
-      notFoundContext.onFinished = onFinished.length ? onFinished : null
+      notFoundRouteContext.onRequest = onRequest.length ? onRequest : null
+      notFoundRouteContext.preHandler = preHandler.length ? preHandler : null
+      notFoundRouteContext.onSend = onSend.length ? onSend : null
+      notFoundRouteContext.onFinished = onFinished.length ? onFinished : null
     })
 
     if (replaceDefault404) { // Replace the default 404 handler
-      Object.assign(this._notFoundContexts.get(methodHandler), context)
+      Object.assign(this._notFoundRouteContexts.get(methodHandler), routeContext)
       return
     }
 
-    if (this._notFoundContexts === null) {
-      // Set the context on the "_notFoundLevelApp" so that
+    if (this._notFoundRouteContexts === null) {
+      // Set the routeContext on the "_notFoundLevelApp" so that
       // it can be inherited by all of that app's children.
-      this._notFoundLevelApp._notFoundContexts = new Map()
+      this._notFoundLevelApp._notFoundRouteContexts = new Map()
     }
-    this._notFoundContexts.set(methodHandler, context)
+    this._notFoundRouteContexts.set(methodHandler, routeContext)
 
     notFoundRouter.on(
       methods,
       prefix + (prefix.endsWith('/') ? '*' : '/*'),
       routeHandler,
-      context
+      routeContext
     )
     notFoundRouter.on(
       methods,
       prefix,
       routeHandler,
-      context
+      routeContext
     )
   }
 

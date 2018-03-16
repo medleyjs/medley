@@ -108,7 +108,7 @@ test('custom 404 handler accepts options', (t) => {
   const app = medley()
 
   app.setNotFoundHandler({config: {a: 1}}, (request, response) => {
-    response.send(response.config)
+    response.send(response.route.config)
   })
 
   app.inject('/', (err, res) => {
