@@ -259,8 +259,12 @@ function medley(options) {
   function createShorthandRouteMethod(method) {
     return function(path, opts, handler) {
       if (handler === undefined) {
-        handler = opts
-        opts = {}
+        if (typeof opts === 'function') {
+          handler = opts
+          opts = {}
+        } else {
+          handler = opts && opts.handler
+        }
       }
 
       opts = Object.assign({}, opts, {

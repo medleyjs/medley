@@ -176,6 +176,44 @@ test('url can be specified in place of path', (t) => {
   })
 })
 
+test('the handler can be specified in the options object of a shorthand method', (t) => {
+  t.plan(3)
+
+  const app = medley()
+
+  app.get('/', {
+    handler(request, response) {
+      response.send({hello: 'world'})
+    },
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.deepEqual(JSON.parse(res.payload), {hello: 'world'})
+  })
+})
+
+test('handler as the third parameter of a shorthand method takes precedence over handler in the options object', (t) => {
+  t.plan(3)
+
+  const app = medley()
+
+  app.get('/', {
+    handler(request, response) {
+      response.send({hello: 'options'})
+    },
+  }, function(request, response) {
+    response.send({hello: 'parameter'})
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.deepEqual(JSON.parse(res.payload), {hello: 'parameter'})
+  })
+})
+
 test('invalid bodyLimit option - route', (t) => {
   t.plan(2)
 

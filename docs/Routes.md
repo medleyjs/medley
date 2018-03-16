@@ -71,6 +71,9 @@ app.put(path, [options], handler)
 app.patch(path, [options], handler)
 app.delete(path, [options], handler)
 app.options(path, [options], handler)
+
+// Registers a route that handles all supported methods
+app.all(path, [options], handler)
 ```
 
 Example:
@@ -85,11 +88,20 @@ app.get('/', { beforeHandler }, (request, response) => {
 })
 ```
 
-Additionally, there is an `app.all()` shorthand method that will register a handler for all of the supported methods.
+The `handler` may be specified in the `options` object if the third parameter is omitted:
 
 ```js
-app.all(path, [options], handler)
+app.get('/path', {
+  beforeHandler: [ ... ],
+  responseSchema: { ... },
+  handler: function(request, response) {
+    response.send()
+  }
+})
 ```
+
+*If the `handler` is specified in both the `options` object and as the
+third parameter, the third parameter will take precedence.*
 
 ## URL-building
 Medley supports both static and dynamic urls.<br>
