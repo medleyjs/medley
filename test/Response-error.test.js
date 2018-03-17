@@ -292,17 +292,17 @@ test('should throw an error if the payload does not get serialized to a valid ty
   })
 })
 
-test('response.error() throws if called after response is sent', (t) => {
+test('res.error() throws if called after response is sent', (t) => {
   t.plan(3)
 
   const app = medley()
 
-  app.get('/', (request, response) => {
-    response.send('send')
+  app.get('/', (req, res) => {
+    res.send('send')
     try {
-      response.error(new Error())
+      res.error(new Error())
     } catch (err) {
-      t.equal(err.message, 'Cannot call response.error() when a response has already been sent')
+      t.equal(err.message, 'Cannot call .error() when a response has already been sent')
     }
   })
 
@@ -312,7 +312,7 @@ test('response.error() throws if called after response is sent', (t) => {
   })
 })
 
-test('response.error(err) should work with any err value', (t) => {
+test('res.error(err) should work with any err value', (t) => {
   t.plan(8)
 
   const app = medley()

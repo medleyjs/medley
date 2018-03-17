@@ -19,17 +19,17 @@ test('response.send() throws with circular JSON', (t) => {
   })
 })
 
-test('response.send() throws if called after response is sent', (t) => {
+test('res.send() throws if called after response is sent', (t) => {
   t.plan(3)
 
   const app = medley()
 
-  app.get('/', (request, response) => {
-    response.send('first')
+  app.get('/', (req, res) => {
+    res.send('first')
     try {
-      response.send('second')
+      res.send('second')
     } catch (err) {
-      t.equal(err.message, 'Cannot call response.send() when a response has already been sent')
+      t.equal(err.message, 'Cannot call .send() when a response has already been sent')
     }
   })
 

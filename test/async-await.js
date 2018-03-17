@@ -70,7 +70,7 @@ test('async await', (t) => {
   })
 })
 
-test('should throw if an async function returns a value and response.send() is also called', (t) => {
+test('should throw if an async function returns a value and res.send() is also called', (t) => {
   t.plan(3)
 
   const app = medley()
@@ -80,7 +80,7 @@ test('should throw if an async function returns a value and response.send() is a
       try {
         response.send()
       } catch (err) {
-        t.equal(err.message, 'Cannot call response.send() when a response has already been sent')
+        t.equal(err.message, 'Cannot call .send() when a response has already been sent')
       }
     })
     return 'value'
@@ -92,7 +92,7 @@ test('should throw if an async function returns a value and response.send() is a
   })
 })
 
-test('should throw if an async function returns a value and response.error() is also called', (t) => {
+test('should throw if an async function returns a value and res.error() is also called', (t) => {
   t.plan(3)
 
   const app = medley()
@@ -102,7 +102,7 @@ test('should throw if an async function returns a value and response.error() is 
       try {
         response.error()
       } catch (err) {
-        t.equal(err.message, 'Cannot call response.error() when a response has already been sent')
+        t.equal(err.message, 'Cannot call .error() when a response has already been sent')
       }
     })
     return 'value'
