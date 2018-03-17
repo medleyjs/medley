@@ -55,13 +55,13 @@ app.addHook('onRequest', (req, res, next) => {
 })
 ```
 
-These hooks may send an early response with `res.end()`. If a hooks does this, the rest of the lifecycle will be skipped except for the `onFinished` hooks.
+These hooks may send an early response with `res.send()`. If a hook does this, the rest of the lifecycle will be skipped except for the `onFinished` hooks.
 
 If an error occurs during a hook, the rest of the lifecycle up to the *Route Handler* is skipped and the error handler is invoked as the *Route Handler*.
 
 ## Body Parsing
 
-In this step, a [`BodyParser`](BodyParser.md) is used to parse the body of the request and set `request.body`.
+In this step, a [`BodyParser`](BodyParser.md) is used to parse the body of the request and set `req.body`.
 
 Body parsing is skipped if the request method is `GET` or `HEAD`.
 
@@ -74,12 +74,12 @@ If an error occurs while parsing the request body (including the `415` error men
 Next, the `preHandler` hooks are run.
 
 ```js
-app.addHook('preHandler', (request, response, next) => {
+app.addHook('preHandler', (req, res, next) => {
   next()
 })
 ```
 
-These hooks may send an early response with `response.send()`. If a hooks does this, the rest of the hooks will be skipped and the lifecycle will go straight to the [*Serialize Payload*](#serialize-payload) step.
+These hooks may send an early response with `res.send()`. If a hooks does this, the rest of the hooks will be skipped and the lifecycle will go straight to the [*Serialize Payload*](#serialize-payload) step.
 
 If an error occurs during a hook, the rest of the lifecycle up to the *Route Handler* is skipped and the error handler is invoked as the *Route Handler*.
 
@@ -89,7 +89,7 @@ The *beforeHandlers* are treated exactly the same as the `preHandler` hooks. The
 
 ```js
 app.get('/', {
-  beforeHandler: (request, response, next) => {
+  beforeHandler: (req, res, next) => {
     next()
   }
 }, (request, response) => { ... })
@@ -100,8 +100,8 @@ app.get('/', {
 This is the main handler for the route. The route handler sends the response payload.
 
 ```js
-app.get('/', (request, response) => {
-  response.send('payload')
+app.get('/', (req, res) => {
+  res.send('payload')
 })
 ```
 
@@ -109,16 +109,16 @@ app.get('/', (request, response) => {
 
 ## Serialize Payload
 
-In this step, the payload that was passed to `response.send()` is serialized (if it needs to be) and an appropriate `Content-Type` for the payload is set (if one was not already set).
+In this step, the payload that was passed to `res.send()` is serialized (if it needs to be) and an appropriate `Content-Type` for the payload is set (if one was not already set).
 
-See the [`response.send()`](Response.md#send) and [Serialization](Serialization.md) documentation for more information.
+See the [`res.send()`](Response.md#send) and [Serialization](Serialization.md) documentation for more information.
 
 ## `onSend` Hook
 
 Next, the `onSend` hooks are run.
 
 ```js
-app.addHook('onSend', (request, response, payload, next) => {
+app.addHook('onSend', (req, res, payload, next) => {
   next()
 })
 ```
@@ -135,7 +135,7 @@ Finally, the `onFinished` hooks are run once the response has finished sending (
 the underlying connection was terminated before the response could finish sending).
 
 ```js
-app.addHook('onFinished', (request, response) => {
+app.addHook('onFinished', (req, res) => {
   // Do something like log the response time
 })
 ```

@@ -14,8 +14,8 @@ const responseSchema = {
   }
 }
 
-app.get('/', { responseSchema }, (request, response) => {
-  response.send({ hello: 'world' })
+app.get('/', { responseSchema }, (req, res) => {
+  res.send({ hello: 'world' })
 })
 ```
 
@@ -39,12 +39,12 @@ const responseSchema = {
   }
 }
 
-app.post('/info', { responseSchema }, (request, response) => {
-  if (request.body.createInfo) {
+app.post('/info', { responseSchema }, (req, res) => {
+  if (req.body.createInfo) {
     // Create info ...
-    response.status(201).send({ success: true, error: null })
+    res.status(201).send({ success: true, error: null })
   } else {
-    response.send({ value: 'medley', fast: true })
+    res.send({ value: 'medley', fast: true })
   }
 })
 ```
@@ -62,8 +62,8 @@ const responseSchema = {
   }
 }
 
-app.get('/', { responseSchema }, (request, response) => {
-  response.send({ hello: 'world' })
+app.get('/', { responseSchema }, (req, res) => {
+  res.send({ hello: 'world' })
 })
 ```
 
@@ -81,7 +81,7 @@ const responseSchema = {
   }
 }
 
-app.get('/mismatch', { responseSchema }, (request, response) => {
-  response.send({ value: [1, 2, 3] }) // Gets serialized to: '{ "value": [1, 2, 3] }'
+app.get('/mismatch', { responseSchema }, (req, res) => {
+  res.send({ value: [1, 2, 3] }) // Gets serialized to: '{"value":[1,2,3]}'
 })
 ```

@@ -14,7 +14,7 @@ app.inject({
   payload: Object,
   headers: Object
 }, (error, response) => {
-  // your tests
+  // Tests
 })
 ```
 
@@ -29,20 +29,26 @@ app
     headers: Object
   })
   .then(response => {
-    // your tests
+    // Tests
   })
   .catch(err => {
-    // handle error
+    // Handle error
   })
 ```
 
-Async await is supported as well!
+Async-await is supported as well:
+
 ```js
 try {
-  const res = await app.inject({ method: String, url: String, payload: Object, headers: Object })
-  // your tests
+  const response = await app.inject({
+    method: String,
+    url: String,
+    payload: Object,
+    headers: Object
+  })
+  // Tests
 } catch (err) {
-  // handle error
+  // Handle error
 }
 ```
 
@@ -55,8 +61,8 @@ const medley = require('@medley/medley')
 function buildMedley () {
   const app = medley()
 
-  app.get('/', (request, response) => {
-    response.send({ hello: 'world' })
+  app.get('/', (req, res) => {
+    res.send({ hello: 'world' })
   })
   
   return app

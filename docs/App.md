@@ -215,17 +215,17 @@ that aren't included here. See the [Routes](Routes.md) documentation.
 <a id="set-error-handler"></a>
 ### `app.setErrorHandler(handler)`
 
-+ `handler(error, request, response)` *(function)* - The handler function that receives the following parameters:
-  + `error` - The [`Error`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error) that occurred during the request.
-  + `request` - The Medley [`request`](Request.md) object.
-  + `response` - The Medley [`response`](Response.md) object.
++ `handler(err, req, res)` *(function)* - The handler function that receives the following parameters:
+  + `err` - The [`Error`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error) that occurred during the request.
+  + `req` - The Medley [`request`](Request.md) object.
+  + `res` - The Medley [`response`](Response.md) object.
 
 Sets a handler that will be called whenever an error occurs. The handler is fully
 encapsulated, so different sub apps can set different error handlers. `async-await`
 is supported just like with [regular route handlers](Routes.md#async-await).
 
 ```js
-app.setErrorHandler((error, request, response) => {
+app.setErrorHandler((err, req, res) => {
   // Send error response
 })
 ```
@@ -237,14 +237,14 @@ for more information on where this status code may come from.
 <a id="set-not-found-handler"></a>
 ### `app.setNotFoundHandler(handler)`
 
-+ `handler(request, response)` *(function)* - The handler function that receives the [`request`](Request.md) and [`response`](Response.md) objects.
++ `handler(req, res)` *(function)* - The handler function that receives the [`request`](Request.md) and [`response`](Response.md) objects.
 
 Sets the handler that will be called when no registered routes match the
 incoming request. The handler is treated like a regular route handler so
 requests will go through the full [request lifecycle](Lifecycle.md).
 
 ```js
-app.setNotFoundHandler((request, response) => {
+app.setNotFoundHandler((req, res) => {
   // Send 404 Not Found response
 })
 ```
@@ -253,12 +253,12 @@ Additional not-found handlers can be set for sub apps that are registered with
 a [`prefix`](Plugins.md#route-prefixing-option). 
 
 ```js
-app.setNotFoundHandler((request, response) => {
+app.setNotFoundHandler((req, res) => {
   // Default not-found handler
 })
 
 app.register((subApp, options, next) => {
-  subApp.setNotFoundHandler((request, response) => {
+  subApp.setNotFoundHandler((req, res) => {
     // Handle unmatched request to URLs that begin with '/v1'
   })
   next()

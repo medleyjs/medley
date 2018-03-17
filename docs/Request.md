@@ -1,28 +1,29 @@
 # Request
 
 Request is a core Medley object that is passed as the first argument to hooks and handlers.
-It is a wrapper around Node's [`http.IncomingMessage`][http.IncomingMessage] object.
+It is a wrapper around Node's [`http.IncomingMessage`][http.IncomingMessage] object
+(unlike in Express, which extends that object).
 
 **Properties:**
 
-+ [`.body`](#requestbody)
-+ [`.headers`](#requestheaders)
-+ [`.method`](#requestmethod)
-+ [`.params`](#requestparams)
-+ [`.query`](#requestquery)
-+ [`.querystring`](#requestquerystring)
-+ [`.stream`](#requeststream)
-+ [`.url`](#requesturl)
++ [`.body`](#reqbody)
++ [`.headers`](#reqheaders)
++ [`.method`](#reqmethod)
++ [`.params`](#reqparams)
++ [`.query`](#reqquery)
++ [`.querystring`](#reqquerystring)
++ [`.stream`](#reqstream)
++ [`.url`](#requrl)
 
 ## Properties
 
-### `request.body`
+### `req.body`
 
 The parsed body of the request. Is `undefined` if there was no request body or if parsing the body failed.
 
 ```js
-app.post('/user', (request, response) => {
-  request.body // { name: 'medley', email: 'medley@example.com' }
+app.post('/user', (req, res) => {
+  req.body // { name: 'medley', email: 'medley@example.com' }
 })
 ```
 
@@ -31,61 +32,61 @@ See the [`Body Parser`](BodyParser.md) documentation for information on how to i
 Note that `request.body` is set back to `undefined` when the response is sent
 (after `onSend` hooks) to save memory.
 
-### `request.headers`
+### `req.headers`
 
 The request's HTTP headers. It is an object mapping header names to values. Header names are lower-cased.
 
 ```js
-request.headers
+req.headers
 // { 'user-agent': 'curl/7.22.0',
 //   host: '127.0.0.1:8000',
 //   accept: '*/*' }
 ```
 
-### `request.method`
+### `req.method`
 
 *Read-only*
 
 The request's HTTP method as a string.
 
 ```js
-request.method // 'GET'
+req.method // 'GET'
 ```
 
-### `request.params`
+### `req.params`
 
 An object of the parameters matched in the URL.
 
 ```js
-app.get('/path/:user/:foo', (request, response) => {
+app.get('/path/:user/:foo', (req, res) => {
   // URL: /path/100/bar
-  request.params // { user: '100', foo: 'bar' }
+  req.params // { user: '100', foo: 'bar' }
 })
 ```
 
-### `request.query`
+### `req.query`
 
 Object parsed from the query string. If there was no query string, the object will be empty.
 
 ```js
 // URL: /path?a=1&b=value
-request.query // { a: '1', b: 'value' }
+req.query // { a: '1', b: 'value' }
 ```
 
-By default the query string is parsed with [`querystring.parse`](https://nodejs.org/dist/latest/docs/api/querystring.html#querystring_querystring_parse_str_sep_eq_options).
+By default the query string is parsed with [`querystring.parse`](https://nodejs.org/api/querystring.html#querystring_querystring_parse_str_sep_eq_options).
 To use a different query string parser (such as [`qs`](https://github.com/ljharb/qs)),
-add an `onRequest` hook that parses `request.querystring` like so:
+add an `onRequest` hook that parses `req.querystring` like so:
 
 ```js
 const qs = require('qs')
 
-app.addHook('onRequest', (request, response, next) => {
-  request.query = qs.parse(request.querystring)
+app.addHook('onRequest', (req, res, next) => {
+  req.query = qs.parse(req.querystring)
   next()  
 })
 ```
 
-### `request.querystring`
+### `req.querystring`
 
 *Read-only*
 
@@ -93,10 +94,10 @@ The query string found in the request's URL.
 
 ```js
 // URL: /path?a=1&b=value
-request.querystring // 'a=1&b=value'
+req.querystring // 'a=1&b=value'
 ```
 
-### `request.stream`
+### `req.stream`
 
 The [readable stream](https://nodejs.org/api/stream.html#stream_class_stream_readable)
 of the incoming request that can be used to read the request's body. This is the
@@ -111,12 +112,12 @@ const fs = require('fs')
 const pump = require('pump') // https://www.npmjs.com/package/pump
 
 // Using GET because POST request bodies should already be handled by a body parser
-app.get('/', (request, response) => {
-  pump(request.stream, fs.createWriteStream('./reqBody.txt'), (err) => {
+app.get('/', (req, res) => {
+  pump(req.stream, fs.createWriteStream('./reqBody.txt'), (err) => {
     if (err) {
-      response.error(err)
+      res.error(err)
     } else {
-      response.send('Done!')
+      res.send('Done!')
     }
   })
 })
@@ -127,7 +128,7 @@ This object generally should only ever be treated like a stream. Accessing
 `.url` will be incompatible with future versions of Medley that will use Node's new
 [HTTP 2 stream interface](https://nodejs.org/api/http2.html#http2_class_http2stream).
 
-### `request.url`
+### `req.url`
 
 *Read-only*
 
@@ -141,7 +142,7 @@ Accept: text/plain\r\n
 \r\n
 ```
 
-Then `request.url` will be:
+Then `req.url` will be:
 
 ```js
 '/status/user?name=medley'

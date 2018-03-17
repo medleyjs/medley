@@ -1,16 +1,17 @@
 # Response
 
 Request is a core Medley object that is passed as the second argument to hooks and handlers.
-It is a wrapper around Node's [`http.ServerResponse`][http.ServerResponse] object.
+It is a wrapper around Node's [`http.ServerResponse`][http.ServerResponse] object
+(unlike in Express, which extends that object).
 
 **Properties:**
 
-+ [`.headersSent`](#responseheaderssent)
-+ [`.request`](#responserequest)
-+ [`.route`](#responseroute)
-+ [`.sent`](#responsesent)
-+ [`.statusCode`](#responsestatuscode)
-+ [`.stream`](#responsestream)
++ [`.headersSent`](#resheaderssent)
++ [`.request`](#resrequest)
++ [`.route`](#resroute)
++ [`.sent`](#ressent)
++ [`.statusCode`](#resstatuscode)
++ [`.stream`](#resstream)
 
 **Methods:**
 
@@ -27,15 +28,15 @@ It is a wrapper around Node's [`http.ServerResponse`][http.ServerResponse] objec
 
 ## Properties
 
-### `response.headersSent`
+### `res.headersSent`
 
 Boolean (read-only). `true` if headers have already been sent, `false` otherwise.
 
-### `response.request`
+### `res.request`
 
 A reference to the [`request`](Request.md) object for the current request.
 
-### `response.route`
+### `res.route`
 
 The Medley data associated with the current route. Exposed to provide access to
 the `config` object passed to the [`app.route()`](Response.md#options) method
@@ -46,17 +47,17 @@ app.route({
   method: 'GET',
   path: '/user',
   config: { confValue: 22 },
-  handler: function(request, response) {
-    response.route.config // { confValue: 22 }
+  handler: function(req, res) {
+    res.route.config // { confValue: 22 }
   }
 })
 ```
 
-### `response.sent`
+### `res.sent`
 
 Boolean. `true` if a response has already been sent, `false` otherwise.
 
-### `response.statusCode`
+### `res.statusCode`
 
 The HTTP status code that will be sent to the client when the response is sent.<br>
 Defaults to `200`.
@@ -64,7 +65,7 @@ Defaults to `200`.
 **Note:** The status code must be between `200` and `599` (inclusive) to be
 compatible with HTTP 2.
 
-### `response.stream`
+### `res.stream`
 
 The [writable stream](https://nodejs.org/api/stream.html#stream_writable_streams)
 of the outgoing response that can be used to send data to the client. This is the
@@ -84,27 +85,27 @@ be compatible with future versions of Medley that will use Node's new
 ## Methods
 
 <a id="append"></a>
-### `response.append(field, value)`
+### `res.append(field, value)`
 
 + `field` *(string)*
 + `value` *(string|string[])*
 + Chainable
-+ Alias: `response.appendHeader()`
++ Alias: `res.appendHeader()`
 
 Appends the `value` to the HTTP response header `field`. If the header is not
 already set, it creates the header with the specified `value`.
 
 ```js
-response.append('set-cookie', 'foo=bar')
-response.get('set-cookie') // 'foo=bar'
-response.append('set-cookie', 'bar=baz; Path=/; HttpOnly')
-response.get('set-cookie') // ['foo=bar', 'bar=baz; Path=/; HttpOnly']
+res.append('set-cookie', 'foo=bar')
+res.get('set-cookie') // 'foo=bar'
+res.append('set-cookie', 'bar=baz; Path=/; HttpOnly')
+res.get('set-cookie') // ['foo=bar', 'bar=baz; Path=/; HttpOnly']
 ```
 
-Note that calling `response.set()` after `response.append()` will reset the previously set header value.
+Note that calling `res.set()` after `res.append()` will reset the previously set header value.
 
 <a id="error"></a>
-### `response.error([statusCode,] error)`
+### `res.error([statusCode,] error)`
 
 + `error` *([Error](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error))*
 + `statusCode` *(number)* - The status code for the response. See [below](#error-status-code) for the default value.
@@ -112,12 +113,12 @@ Note that calling `response.set()` after `response.append()` will reset the prev
 Sends an error response.
 
 ```js
-app.get('/', function(request, response) {
+app.get('/', function(req, res) {
   getData((err, data) => {
     if (err) {
-      response.error(err)
+      res.error(err)
     } else {
-      response.send(data)
+      res.send(data)
     }
   })
 })
@@ -126,7 +127,7 @@ app.get('/', function(request, response) {
 With a specific status code:
 
 ```js
-response.error(400, error)
+res.error(400, error)
 ```
 
 If a custom error handler (set with [`app.setErrorHandler()`](App.md#set-error-handler)) is
@@ -158,14 +159,14 @@ will be invoked instead of the error handler.
 
 ```js
 // Using the http-errors module (https://www.npmjs.com/package/http-errors)
-response.error(new httpErrors.NotFound())
+res.error(new httpErrors.NotFound())
 
 // Just the statusCode
-response.error(404, null) // Pass `null` as the error since it cannot be `undefined`
+res.error(404, null) // Pass `null` as the error since it cannot be `undefined`
 ```
 
 <a id="get"></a>
-### `response.get(field)`
+### `res.get(field)`
 
 + `field` *(string)*
 + Returns: *(string|string[])*
@@ -174,14 +175,14 @@ response.error(404, null) // Pass `null` as the error since it cannot be `undefi
 Gets a previously set response header.
 
 ```js
-response.get('content-type') // 'application/json'
+res.get('content-type') // 'application/json'
 ```
 
 **Tip:** While not required, it is best to use lowercase header names for the best performance
 and for consistency with HTTP 2 (which requires header names to be lowercase).
 
 <a id="redirect"></a>
-### `response.redirect([statusCode,] url)`
+### `res.redirect([statusCode,] url)`
 
 + `statusCode` *(number)* - The HTTP status code for the response. Defaults to `302`.
 + `url` *(string)* - The URL to which the client will be redirected.
@@ -190,27 +191,27 @@ Redirects a request to the specified URL.
 
 ```js
 // "302 Found" redirect
-response.redirect('/home')
+res.redirect('/home')
 
 // With statusCode
-response.redirect(301, '/moved-permanently')
+res.redirect(301, '/moved-permanently')
 ```
 
 <a id="remove"></a>
-### `response.remove(field)`
+### `res.remove(field)`
 
 + `field` *(string)*
 + Chainable
-+ Alias: `response.removeHeader()`
++ Alias: `res.removeHeader()`
 
 Removes a response header.
 
 ```js
-response.remove('content-type')
+res.remove('content-type')
 ```
 
 <a id="send"></a>
-### `response.send([payload])`
+### `res.send([payload])`
 
 Sends the payload to respond to the request. It may be called without any arguments to
 respond without sending a payload.
@@ -238,13 +239,13 @@ app.get('/json', {
       hello: { type: 'string' }
     }
   }
-}, (request, response) => {
-  response.send({ hello: 'world' })
+}, (req, res) => {
+  res.send({ hello: 'world' })
 })
 
 // Send a string as JSON
-app.get('/json-string', (request, response) => {
-  response.type('application/json').send('Hello world!')
+app.get('/json-string', (req, res) => {
+  res.type('application/json').send('Hello world!')
 })
 ```
 
@@ -253,16 +254,16 @@ app.get('/json-string', (request, response) => {
 If not already set, the `Content-Type` header will be set to `'text/plain'`.
 
 ```js
-app.get('/text', options, (request, response) => {
-  response.send('plain text')
+app.get('/text', options, (req, res) => {
+  res.send('plain text')
 })
 ```
 
 If the `Content-Type` header is set to `'application/json'`, the string is serialized as JSON.
 
 ```js
-app.get('/json-string', (request, response) => {
-  response.type('application/json').send('Hello world!')
+app.get('/json-string', (req, res) => {
+  res.type('application/json').send('Hello world!')
   // Sends: "Hello world!"
 })
 ```
@@ -274,12 +275,12 @@ If not already set, the `Content-Type` header will be set to `'application/octet
 ```js
 const fs = require('fs')
 
-app.get('/buffer', (request, response) => {
+app.get('/buffer', (req, res) => {
   fs.readFile('some-file', (err, fileBuffer) => {
     if (err) {
-      response.error(err)
+      res.error(err)
     } else {
-      response.send(fileBuffer) 
+      res.send(fileBuffer) 
     }
   })
 })
@@ -292,9 +293,9 @@ If not already set, the `Content-Type` header will be set to `'application/octet
 ```js
 const fs = require('fs')
 
-app.get('/stream', (request, response) => {
+app.get('/stream', (req, res) => {
   const stream = fs.createReadStream('some-file', 'utf8')
-  response.send(stream)
+  res.send(stream)
 })
 ```
 
@@ -313,18 +314,18 @@ An error will be thrown if the payload is not one of these types.
 
 #### Async-Await / Promises
 
-If an `async` function returns a value (other than `undefined`), `response.send()`
+If an `async` function returns a value (other than `undefined`), `res.send()`
 will be called automatically with the value.
 
 ```js
-app.get('/', async (request, response) => {
+app.get('/', async (req, res) => {
   const user = await loadUser()
   return user
 })
 // Is the same as:
-app.get('/', (request, response) => {
+app.get('/', (req, res) => {
   const user = await loadUser()
-  response.send(user)
+  res.send(user)
 })
 ```
 
@@ -332,46 +333,46 @@ This means that using `await` isn't always necessary since promises that resolve
 to a value can be returned to have the value automatically sent.
 
 ```js
-app.get('/', (request, response) => { // no `async` (since `await` isn't used)
+app.get('/', (req, res) => { // no `async` (since `await` isn't used)
   return loadUser() // no `await`
 })
 ```
 
-If an error is throw inside an `async` function, `response.error()` is called
+If an error is throw inside an `async` function, `res.error()` is called
 automatically with the error.
 
 ```js
-app.get('/', async (request, response) => {
+app.get('/', async (req, res) => {
   throw new Error('async error')
 })
 // Is the same as:
-app.get('/', (request, response) => {
-  response.error(new Error('async error'))
+app.get('/', (req, res) => {
+  res.error(new Error('async error'))
 })
 ```
 
 See [Routes#async-await](Routes.md#async-await) for more examples.
 
 <a id="set"></a>
-### `response.set(field [, value])`
+### `res.set(field [, value])`
 
 + `field` *(string|object)*
 + `value` *(string|string[])*
 + Chainable
-+ Alias: `response.setHeader()`
++ Alias: `res.setHeader()`
 
 Sets a response HTTP header. If the header already exists, its value will be replaced.
 Use an array of strings to set multiple headers for the same field.
 
 ```js
-response.set('content-encoding', 'gzip')
-response.set('set-cookie', ['user=medley', 'session=123456'])
+res.set('content-encoding', 'gzip')
+res.set('set-cookie', ['user=medley', 'session=123456'])
 ```
 
 Multiple headers can be set at once by passing an object as the `field` parameter:
 
 ```js
-response.set({
+res.set({
   'content-type': 'text/plain',
   'etag': '123456'
 });
@@ -381,23 +382,23 @@ response.set({
 and for consistency with HTTP 2 (which requires header names to be lowercase).
 
 <a id="status"></a>
-### `response.status(statusCode)`
+### `res.status(statusCode)`
 
 + `statusCode` *(number)*
 + Chainable
 
 Sets the HTTP status code for the response. A chainable shortcut
-for setting [`response.statusCode`](#responsestatuscode).
+for setting [`res.statusCode`](#resstatuscode).
 
 ```js
-response.status(204).send()
+res.status(204).send()
 ```
 
 **Note:** The status code must be between `200` and `599` (inclusive) to be
 compatible with HTTP 2.
 
 <a id="type"></a>
-### `response.type(contentType)`
+### `res.type(contentType)`
 
 + `contentType` *(string)*
 + Chainable
@@ -405,9 +406,9 @@ compatible with HTTP 2.
 Sets the `Content-Type` header for the response.
 
 ```js
-response.type('text/html')
+res.type('text/html')
 ```
 
-This is a shortcut for: `response.set('content-type', contentType)`.
+This is a shortcut for: `res.set('content-type', contentType)`.
 
 [http.ServerResponse]: https://nodejs.org/dist/latest/docs/api/http.html#http_class_http_serverresponse
