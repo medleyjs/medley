@@ -144,7 +144,7 @@ test('res.append() does not allow setting a header value to `undefined`', (t) =>
       t.fail('should not allow setting a header to `undefined`')
     } catch (err) {
       t.type(err, TypeError)
-      t.equal(err.message, 'The "value" argument must be specified')
+      t.equal(err.message, "Cannot set header value to 'undefined'")
     }
 
     res.append('x-custom-header', ['a value'])
@@ -153,7 +153,7 @@ test('res.append() does not allow setting a header value to `undefined`', (t) =>
       t.fail('should not allow setting a header to `undefined`')
     } catch (err) {
       t.type(err, TypeError)
-      t.equal(err.message, 'The "value" argument must be specified')
+      t.equal(err.message, "Cannot set header value to 'undefined'")
     }
 
     res.send()
@@ -229,7 +229,7 @@ test('res.set() does not allow setting a header value to `undefined`', (t) => {
       t.fail('should not allow setting a header to `undefined`')
     } catch (err) {
       t.type(err, TypeError)
-      t.equal(err.message, 'The "value" argument must be specified')
+      t.equal(err.message, "Cannot set header value to 'undefined'")
     }
 
     try {
@@ -240,7 +240,7 @@ test('res.set() does not allow setting a header value to `undefined`', (t) => {
       t.fail('should not allow setting a header to `undefined`')
     } catch (err) {
       t.type(err, TypeError)
-      t.equal(err.message, 'The "value" argument must be specified')
+      t.equal(err.message, "Cannot set header value to 'undefined'")
     }
 
     res.send()

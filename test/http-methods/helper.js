@@ -191,16 +191,17 @@ module.exports.payloadMethod = function(method, t) {
       })
     } else { // OPTION, DELETE
       test(`${upMethod} ignores body if no Content-Type header is set`, (t) => {
-        t.plan(3)
+        t.plan(4)
         sget({
           method: upMethod,
           url: 'http://localhost:' + app.server.address().port + '/no-schema',
           body: 'hello world',
           timeout: 500,
-        }, (err, response) => {
+        }, (err, response, body) => {
           t.error(err)
           t.equal(response.statusCode, 200)
           t.equal(response.headers['content-length'], '0')
+          t.equal(body.toString(), '')
         })
       })
     }
