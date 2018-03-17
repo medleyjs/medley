@@ -5,6 +5,7 @@ It is a wrapper around Node's [`http.ServerResponse`][http.ServerResponse] objec
 
 **Properties:**
 
++ [`.headersSent`](#responseheaderssent)
 + [`.request`](#responserequest)
 + [`.route`](#responseroute)
 + [`.sent`](#responsesent)
@@ -25,6 +26,10 @@ It is a wrapper around Node's [`http.ServerResponse`][http.ServerResponse] objec
 
 
 ## Properties
+
+### `response.headersSent`
+
+Boolean (read-only). `true` if headers have already been sent, `false` otherwise.
 
 ### `response.request`
 
@@ -49,7 +54,7 @@ app.route({
 
 ### `response.sent`
 
-A boolean value that indicates whether or not a response has already been sent.
+Boolean. `true` if a response has already been sent, `false` otherwise.
 
 ### `response.statusCode`
 

@@ -7,7 +7,7 @@ const medley = require('..')
 const Response = require('../lib/Response').buildResponse()
 
 test('Response properties', (t) => {
-  const res = {statusCode: 200}
+  const res = {headersSent: false, statusCode: 200}
   const request = {}
   const config = {}
   const routeContext = {config}
@@ -19,6 +19,7 @@ test('Response properties', (t) => {
   t.equal(response.route, routeContext)
   t.equal(response.route.config, config)
   t.equal(response.sent, false)
+  t.equal(response.headersSent, false)
   t.equal(response.statusCode, 200)
   t.end()
 })
@@ -32,7 +33,25 @@ test('Response aliases', (t) => {
   t.end()
 })
 
-test('.statusCode emulates res.statusCode', (t) => {
+test('res.headersSent is a getter for res.stream.headersSent', (t) => {
+  const res = new Response({headersSent: false})
+  t.equal(res.headersSent, false)
+
+  res.stream.headersSent = true
+  t.equal(res.headersSent, true)
+
+  try {
+    res.headersSent = false
+    t.fail('should not be able to change res.headersSent')
+  } catch (err) {
+    t.type(err, Error)
+    t.match(err.message, 'Cannot set property headersSent')
+  }
+
+  t.end()
+})
+
+test('res.statusCode emulates res.statusCode', (t) => {
   t.plan(4)
 
   const app = medley()
