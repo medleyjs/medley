@@ -72,7 +72,7 @@ test('res.statusCode emulates res.statusCode', (t) => {
   })
 })
 
-test('response.status() should set the status code', (t) => {
+test('res.status() should set the status code', (t) => {
   t.plan(4)
 
   const app = medley()
@@ -92,7 +92,7 @@ test('response.status() should set the status code', (t) => {
   })
 })
 
-test('response.append() sets headers and adds to existing headers', (t) => {
+test('res.append() sets headers and adds to existing headers', (t) => {
   t.plan(13)
 
   const app = medley()
@@ -133,7 +133,41 @@ test('response.append() sets headers and adds to existing headers', (t) => {
   })
 })
 
-test('response.get/set() get and set the response headers', (t) => {
+test('res.append() does not allow setting a header value to `undefined`', (t) => {
+  t.plan(8)
+
+  const app = medley()
+
+  app.get('/', (req, res) => {
+    try {
+      res.append('set-cookie', undefined)
+      t.fail('should not allow setting a header to `undefined`')
+    } catch (err) {
+      t.type(err, TypeError)
+      t.equal(err.message, 'The "value" argument must be specified')
+    }
+
+    res.append('x-custom-header', ['a value'])
+    try {
+      res.append('x-custom-header', undefined)
+      t.fail('should not allow setting a header to `undefined`')
+    } catch (err) {
+      t.type(err, TypeError)
+      t.equal(err.message, 'The "value" argument must be specified')
+    }
+
+    res.send()
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.headers.hasOwnProperty('set-cookie'), false)
+    t.deepEqual(res.headers['x-custom-header'], ['a value'])
+  })
+})
+
+test('res.get/set() get and set the response headers', (t) => {
   t.plan(8)
 
   const app = medley()
@@ -157,7 +191,7 @@ test('response.get/set() get and set the response headers', (t) => {
   })
 })
 
-test('response.set() accepts an object of headers', (t) => {
+test('res.set() accepts an object of headers', (t) => {
   t.plan(8)
 
   const app = medley()
@@ -184,7 +218,44 @@ test('response.set() accepts an object of headers', (t) => {
   })
 })
 
-test('response.remove() removes response headers', (t) => {
+test('res.set() does not allow setting a header value to `undefined`', (t) => {
+  t.plan(9)
+
+  const app = medley()
+
+  app.get('/', (req, res) => {
+    try {
+      res.set('content-type', undefined)
+      t.fail('should not allow setting a header to `undefined`')
+    } catch (err) {
+      t.type(err, TypeError)
+      t.equal(err.message, 'The "value" argument must be specified')
+    }
+
+    try {
+      res.set({
+        'x-custom-header1': 'string',
+        'x-custom-header2': undefined,
+      })
+      t.fail('should not allow setting a header to `undefined`')
+    } catch (err) {
+      t.type(err, TypeError)
+      t.equal(err.message, 'The "value" argument must be specified')
+    }
+
+    res.send()
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.headers.hasOwnProperty('content-type'), false)
+    t.equal(res.headers['x-custom-header1'], 'string')
+    t.equal(res.headers.hasOwnProperty('x-custom-header2'), false)
+  })
+})
+
+test('res.remove() removes response headers', (t) => {
   t.plan(8)
 
   const app = medley()
