@@ -102,7 +102,7 @@ t.test('onSend hooks do not run again if they errored before - Not-found handler
   const app = medley()
 
   app.get('/', (request, response) => {
-    response.error(new StatusError(404, 'response error'))
+    response.notFound()
   })
 
   var onSendCalled = false
@@ -183,7 +183,7 @@ t.test('onSend hooks do not run again if they errored before - Not-found handler
   const app = medley()
 
   app.get('/', (request, response) => {
-    response.error(new StatusError(404, 'response error'))
+    response.notFound()
   })
 
   var onSendCalled = false
@@ -270,7 +270,7 @@ t.test('onSend hooks do not run again if they errored before - Not-found handler
   const app = medley()
 
   app.get('/', (request, response) => {
-    response.error(new StatusError(404, 'response error'))
+    response.notFound()
   })
 
   var onSendCalled = false

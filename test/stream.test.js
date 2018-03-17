@@ -7,7 +7,6 @@ const fs = require('fs')
 const zlib = require('zlib')
 const pump = require('pump')
 const medley = require('..')
-const errors = require('http-errors')
 const JSONStream = require('JSONStream')
 const send = require('send')
 const StreamingJSONStringify = require('streaming-json-stringify')
@@ -216,40 +215,6 @@ test('should support stream2 streams', (t) => {
       t.strictEqual(response.headers['content-type'], 'application/json')
       t.strictEqual(response.statusCode, 200)
       t.deepEqual(JSON.parse(body), [{hello: 'world'}, {a: 42}])
-    })
-  })
-})
-
-test('return a 404 if the stream emits a 404 error', (t) => {
-  t.plan(6)
-
-  const app = medley()
-
-  app.get('/', function(request, response) {
-    t.pass('Received request')
-
-    const errorStream = new Readable({
-      read() {
-        setImmediate(() => {
-          this.emit('error', new errors.NotFound())
-        })
-      },
-    })
-
-    response.send(errorStream)
-  })
-
-  app.listen(0, (err) => {
-    t.error(err)
-    app.server.unref()
-
-    const port = app.server.address().port
-
-    sget(`http://localhost:${port}`, function(err, response, body) {
-      t.error(err)
-      t.equal(response.statusCode, 404)
-      t.equal(response.headers['content-type'], 'text/plain')
-      t.equal(body.toString(), 'Not Found: GET /')
     })
   })
 })

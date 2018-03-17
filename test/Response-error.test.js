@@ -4,10 +4,7 @@ const t = require('tap')
 const test = t.test
 
 const medley = require('..')
-const sget = require('simple-get').concat
 const statusCodes = require('http').STATUS_CODES
-
-const NotFound = require('http-errors').NotFound
 
 const codes = Object.keys(statusCodes)
 codes.forEach((code) => {
@@ -401,84 +398,6 @@ test('response.error(err) should use err.status or err.statusCode', (t) => {
       error: 'Bad Gateway',
       message: '502',
       statusCode: 502,
-    })
-  })
-})
-
-test('response.error(new NotFound()) should invoke the 404 handler', (t) => {
-  t.plan(9)
-
-  const app = medley()
-
-  app.get('/not-found', function(req, response) {
-    response.error(new NotFound())
-  })
-
-  app.register(function(subApp, options, next) {
-    subApp.get('/not-found', function(req, response) {
-      response.error(new NotFound())
-    })
-
-    subApp.setNotFoundHandler(function(req, response) {
-      response.status(404).send('Custom not found response')
-    })
-
-    next()
-  }, {prefix: '/prefixed'})
-
-  app.listen(0, (err) => {
-    t.error(err)
-
-    app.server.unref()
-
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + app.server.address().port + '/not-found',
-    }, (err, response, body) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 404)
-      t.strictEqual(response.headers['content-type'], 'text/plain')
-      t.strictEqual(body.toString(), 'Not Found: GET /not-found')
-    })
-
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + app.server.address().port + '/prefixed/not-found',
-    }, (err, response, body) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 404)
-      t.strictEqual(response.headers['content-type'], 'text/plain')
-      t.strictEqual(body.toString(), 'Custom not found response')
-    })
-  })
-})
-
-test('response.error(new NotFound()) should send a basic response if called inside a 404 handler', (t) => {
-  t.plan(5)
-
-  const app = medley()
-
-  app.get('/not-found', function(req, response) {
-    response.error(new NotFound())
-  })
-
-  app.setNotFoundHandler(function(req, response) {
-    response.error(new NotFound())
-  })
-
-  app.listen(0, (err) => {
-    t.error(err)
-
-    app.server.unref()
-
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + app.server.address().port + '/not-found',
-    }, (err, response, body) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 404)
-      t.strictEqual(response.headers['content-type'], 'text/plain')
-      t.deepEqual(body.toString(), 'Not Found: GET /not-found')
     })
   })
 })

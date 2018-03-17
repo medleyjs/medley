@@ -3,9 +3,7 @@
 const t = require('tap')
 const test = t.test
 const fp = require('fastify-plugin')
-const httpErrors = require('http-errors')
 const sget = require('simple-get').concat
-const errors = require('http-errors')
 const medley = require('..')
 
 const {methodHandlers} = require('../lib/RequestHandlers')
@@ -49,8 +47,8 @@ test('customized 404', (t) => {
     response.send({hello: 'world'})
   })
 
-  app.get('/with-error', function(req, response) {
-    response.error(new errors.NotFound())
+  app.get('/with-notFound', function(req, response) {
+    response.notFound()
   })
 
   app.setNotFoundHandler(function(req, response) {
@@ -88,11 +86,11 @@ test('customized 404', (t) => {
       })
     })
 
-    t.test('with error object', (t) => {
+    t.test('with calling .notFound()', (t) => {
       t.plan(3)
       sget({
         method: 'GET',
-        url: 'http://localhost:' + app.server.address().port + '/with-error',
+        url: 'http://localhost:' + app.server.address().port + '/with-notFound',
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 404)
@@ -760,23 +758,6 @@ test('setNotFoundHandler should not suppress duplicated routes checking', (t) =>
   })
 })
 
-test('recognizes errors from the http-errors module', (t) => {
-  t.plan(4)
-
-  const app = medley()
-
-  app.get('/', function(request, response) {
-    response.error(httpErrors.NotFound())
-  })
-
-  app.inject('/', (err, res) => {
-    t.error(err)
-    t.equal(res.statusCode, 404)
-    t.equal(res.headers['content-type'], 'text/plain')
-    t.equal(res.payload, 'Not Found: GET /')
-  })
-})
-
 test('the default 404 handler can be invoked inside a prefixed plugin', (t) => {
   t.plan(4)
 
@@ -784,7 +765,7 @@ test('the default 404 handler can be invoked inside a prefixed plugin', (t) => {
 
   app.register((subApp, opts, next) => {
     subApp.get('/path', (request, response) => {
-      response.error(httpErrors.NotFound())
+      response.notFound()
     })
 
     next()
@@ -809,7 +790,7 @@ test('an inherited custom 404 handler can be invoked inside a prefixed plugin', 
 
   app.register((subApp, opts, next) => {
     subApp.get('/path', (request, response) => {
-      response.error(httpErrors.NotFound())
+      response.notFound()
     })
 
     next()
@@ -877,41 +858,13 @@ test('cannot set notFoundHandler after binding', (t) => {
   })
 })
 
-test('404 inside onSend', (t) => {
+test('async not-found handler triggered by response.notFound()', (t) => {
   t.plan(3)
 
   const app = medley()
 
   app.get('/', function(request, response) {
-    response.send({hello: 'world'})
-  })
-
-  app.addHook('onSend', function(request, response, payload, next) {
-    next(new errors.NotFound())
-  })
-
-  t.tearDown(app.close.bind(app))
-
-  app.listen(0, (err) => {
-    t.error(err)
-
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + app.server.address().port,
-    }, (err, response) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 404)
-    })
-  })
-})
-
-test('async not-found handler triggered by response.error(404)', (t) => {
-  t.plan(3)
-
-  const app = medley()
-
-  app.get('/', function(request, response) {
-    response.error(404, null)
+    response.notFound()
   })
 
   app.setNotFoundHandler((request, response) => {
@@ -933,7 +886,7 @@ test('the Content-Type header should be unset before calling a not-found handler
 
   app.get('/', (request, response) => {
     response.type('application/json')
-    response.error(404, null)
+    response.notFound()
   })
 
   app.setNotFoundHandler((request, response) => {

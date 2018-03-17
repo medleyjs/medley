@@ -18,6 +18,7 @@ It is a wrapper around Node's [`http.ServerResponse`][http.ServerResponse] objec
 + [`.append(field, value)`](#append)
 + [`.error([statusCode,] error)`](#error)
 + [`.get(field)`](#get)
++ [`.notFound()`](#not-found)
 + [`.redirect([statusCode,] url)`](#redirect)
 + [`.remove(field)`](#remove)
 + [`.send([payload])`](#send)
@@ -153,18 +154,6 @@ The status code for the response is chosen in the following order:
 **Note:** The status code must be between `200` and `599` (inclusive) to be
 compatible with HTTP 2.
 
-If the `statusCode` is `404`, the not-found handler (either the default, or a custom
-handler set with [`app.setNotFoundHandler()`](App.md#set-not-found-handler))
-will be invoked instead of the error handler.
-
-```js
-// Using the http-errors module (https://www.npmjs.com/package/http-errors)
-res.error(new httpErrors.NotFound())
-
-// Just the statusCode
-res.error(404, null) // Pass `null` as the error since it cannot be `undefined`
-```
-
 <a id="get"></a>
 ### `res.get(field)`
 
@@ -180,6 +169,22 @@ res.get('content-type') // 'application/json'
 
 **Tip:** While not required, it is best to use lowercase header names for the best performance
 and for consistency with HTTP 2 (which requires header names to be lowercase).
+
+<a id="not-found"></a>
+### `res.notFound()`
+
+Forwards the request to the not-found handler (either the default or one set
+with [`app.setNotFoundHandler()`](App.md#set-not-found-handler)).
+
+```js
+app.setNotFoundHandler((req, res) => {
+  res.status(404).send(req.url + ' not found')
+})
+
+app.get('/never-found', (req, res) => {
+  res.notFound()
+})
+```
 
 <a id="redirect"></a>
 ### `res.redirect([statusCode,] url)`
