@@ -100,7 +100,7 @@ request.querystring // 'a=1&b=value'
 
 The [readable stream](https://nodejs.org/api/stream.html#stream_class_stream_readable)
 of the incoming request that can be used to read the request's body. This is the
-[`http.IncomingMessage`][http.IncomingMessage] object from Node core. If the
+[`http.IncomingMessage`][http.IncomingMessage] ("req") object from Node core. If the
 server is using HTTP 2, this will instead be an instance of
 [`http2.Http2ServerRequest`](https://nodejs.org/api/http2.html#http2_class_http2_http2serverrequest).
 
@@ -121,6 +121,11 @@ app.get('/', (request, response) => {
   })
 })
 ```
+
+This object generally should only ever be treated like a stream. Accessing
+[`http.IncomingMessage`][http.IncomingMessage] properties like `.method` and
+`.url` will be incompatible with future versions of Medley that will use Node's new
+[HTTP 2 stream interface](https://nodejs.org/api/http2.html#http2_class_http2stream).
 
 ### `request.url`
 

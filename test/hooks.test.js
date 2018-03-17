@@ -45,7 +45,7 @@ test('hooks', (t) => {
 
   app.addHook('onFinished', function(request, response) {
     t.equal(request.onRequestVal, 'the request is coming')
-    t.equal(response.res.finished, true)
+    t.equal(response.stream.finished, true)
   })
 
   app.get('/', function(request, response) {
@@ -381,7 +381,7 @@ test('onFinished hook should run if the client closes the connection', (t) => {
 
   app.addHook('onFinished', (request, response) => {
     t.equal(request.method, 'GET')
-    t.equal(response.res.finished, false)
+    t.equal(response.stream.finished, false)
   })
 
   var clientRequest

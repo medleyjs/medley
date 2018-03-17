@@ -256,7 +256,7 @@ test('should set the status code from the error object (from custom error handle
 
   app.setErrorHandler((err, request, response) => {
     t.is(err.message, 'ouch')
-    t.is(response.res.statusCode, 401)
+    t.is(response.statusCode, 401)
     const error = new Error('kaboom')
     error.statusCode = 400
     response.error(error)

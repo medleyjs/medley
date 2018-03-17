@@ -6,10 +6,10 @@ It is a wrapper around Node's [`http.ServerResponse`][http.ServerResponse] objec
 **Properties:**
 
 + [`.request`](#responserequest)
-+ [`.res`](#responseres)
 + [`.route`](#responseroute)
 + [`.sent`](#responsesent)
 + [`.statusCode`](#responsestatuscode)
++ [`.stream`](#responsestream)
 
 **Methods:**
 
@@ -29,10 +29,6 @@ It is a wrapper around Node's [`http.ServerResponse`][http.ServerResponse] objec
 ### `response.request`
 
 A reference to the [`request`](Request.md) object for the current request.
-
-### `response.res`
-
-The native [`http.ServerResponse`][http.ServerResponse] object from Node core.
 
 ### `response.route`
 
@@ -62,6 +58,22 @@ Defaults to `200`.
 
 **Note:** The status code must be between `200` and `599` (inclusive) to be
 compatible with HTTP 2.
+
+### `response.stream`
+
+The [writable stream](https://nodejs.org/api/stream.html#stream_writable_streams)
+of the outgoing response that can be used to send data to the client. This is the
+[`http.ServerResponse`][http.ServerResponse] ("res") object from Node core. If
+the server is using HTTP 2, this will instead be an instance of
+[`http2.Http2ServerResponse`](https://nodejs.org/api/http2.html#http2_class_http2_http2serverresponse).
+
+This object generally should never need to be used. Writing to the stream
+directly instead of using [`res.send()`](#send) will bypass Medley's internal
+response handling and prevent `onSend` hooks from being run. It is also a
+good idea to avoid using [`http.ServerResponse`][http.ServerResponse] methods
+on the object, like `.writeHead()` and `.getHeaders()`, so that your code can
+be compatible with future versions of Medley that will use Node's new
+[HTTP 2 stream interface](https://nodejs.org/api/http2.html#http2_class_http2stream).
 
 
 ## Methods

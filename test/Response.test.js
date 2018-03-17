@@ -14,7 +14,7 @@ test('Response properties', (t) => {
 
   const response = new Response(res, request, routeContext)
   t.type(response, Response)
-  t.equal(response.res, res)
+  t.equal(response.stream, res)
   t.equal(response.request, request)
   t.equal(response.route, routeContext)
   t.equal(response.route.config, config)
@@ -59,10 +59,10 @@ test('response.status() should set the status code', (t) => {
   const app = medley()
 
   app.get('/', (request, response) => {
-    t.equal(response.res.statusCode, 200)
+    t.equal(response.statusCode, 200)
 
     response.status(300)
-    t.equal(response.res.statusCode, 300)
+    t.equal(response.statusCode, 300)
 
     response.status(204).send()
   })

@@ -83,10 +83,10 @@ test('.decorateResponse() should not allow decorating Medley values', (t) => {
   const app = medley()
 
   try {
-    app.decorateResponse('res', null)
-    t.fail('should not allow decorating Response with `res`')
+    app.decorateResponse('stream', null)
+    t.fail('should not allow decorating Response with `stream`')
   } catch (err) {
-    t.equal(err.message, "A decorator called 'res' has been already added to Response")
+    t.equal(err.message, "A decorator called 'stream' has been already added to Response")
   }
 
   try {

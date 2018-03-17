@@ -301,7 +301,7 @@ test('should handle destroying a stream if headers are already sent', (t) => {
     const chunk = Buffer.alloc(100, 'c')
     const streamUntilHeaders = new Readable({
       read() {
-        if (response.res.headersSent) {
+        if (response.stream.headersSent) {
           this.emit('error', new Error('stream error'))
           t.pass('emitted error')
         } else {
