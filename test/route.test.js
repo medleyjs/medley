@@ -255,6 +255,6 @@ test('.route() should forward the error if creating a serializer fails', (t) => 
   })
 
   app.ready((err) => {
-    t.equal(err.message, 'Invalid type: invalid-type')
+    t.equal(err.message, 'Invalid type: "invalid-type"')
   })
 })
