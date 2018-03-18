@@ -14,6 +14,52 @@ t.test('Request object', (t) => {
   t.equal(request.body, undefined)
 })
 
+t.test('req.body should be available in onSend hooks and undefined in onFinished hooks', (t) => {
+  t.plan(4)
+
+  const app = medley()
+
+  app.get('/', (req, res) => {
+    req.body = 'body'
+    res.send()
+  })
+
+  app.addHook('onSend', (req, res, payload, next) => {
+    t.equal(req.body, 'body')
+    next()
+  })
+
+  app.addHook('onFinished', (req) => {
+    t.equal(req.body, undefined)
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+  })
+})
+
+t.test('req.body should be undefined in onFinished hooks if the default error response is sent', (t) => {
+  t.plan(4)
+
+  const app = medley()
+
+  app.get('/', (req, res) => {
+    req.body = 'body'
+    res.error(new Error('Manual error'))
+  })
+
+  app.addHook('onFinished', (req) => {
+    t.equal(req.body, undefined)
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 500)
+    t.equal(JSON.parse(res.payload).message, 'Manual error')
+  })
+})
+
 t.test('req.host - trustProxy=false', (t) => {
   t.plan(6)
 
@@ -119,50 +165,4 @@ t.test('request.querystring - get', (t) => {
   t.equal(new Request({url: '/?query?'}).querystring, 'query?')
   t.equal(new Request({url: '/?a&b=1%23-&c='}).querystring, 'a&b=1%23-&c=')
   t.end()
-})
-
-t.test('request.body should be available in onSend hooks and undefined in onFinished hooks', (t) => {
-  t.plan(4)
-
-  const app = medley()
-
-  app.get('/', (request, response) => {
-    request.body = 'body'
-    response.send()
-  })
-
-  app.addHook('onSend', (request, response, payload, next) => {
-    t.equal(request.body, 'body')
-    next()
-  })
-
-  app.addHook('onFinished', (request) => {
-    t.equal(request.body, undefined)
-  })
-
-  app.inject('/', (err, res) => {
-    t.error(err)
-    t.equal(res.statusCode, 200)
-  })
-})
-
-t.test('request.body should be undefined in onFinished hooks if the default error response is sent', (t) => {
-  t.plan(4)
-
-  const app = medley()
-
-  app.get('/', (request, response) => {
-    request.body = 'body'
-    response.error(new Error('Manual error'))
-  })
-
-  app.addHook('onFinished', (request) => {
-    t.equal(request.body, undefined)
-  })
-
-  app.inject('/', (err, res) => {
-    t.error(err)
-    t.equal(res.statusCode, 500)
-    t.equal(JSON.parse(res.payload).message, 'Manual error')
-  })
 })
