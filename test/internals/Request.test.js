@@ -223,6 +223,15 @@ t.test('request.method - get', (t) => {
   t.end()
 })
 
+t.test('req.path is an alias for req.url', (t) => {
+  t.notEqual(Object.getOwnPropertyDescriptor(Request.prototype, 'path'), undefined)
+  t.strictDeepEqual(
+    Object.getOwnPropertyDescriptor(Request.prototype, 'path'),
+    Object.getOwnPropertyDescriptor(Request.prototype, 'url')
+  )
+  t.end()
+})
+
 t.test('req.protocol - trustProxy=false', (t) => {
   t.plan(4)
 
@@ -327,12 +336,6 @@ t.test('req.protocol - https', (t) => {
   })
 })
 
-t.test('request.url - get', (t) => {
-  const req = {url: '/some-url'}
-  t.equal(new Request(req).url, '/some-url')
-  t.end()
-})
-
 t.test('request.query - get', (t) => {
   const req = {url: '/path?search=1'}
   t.deepEqual(new Request(req).query, {search: '1'})
@@ -359,5 +362,11 @@ t.test('request.querystring - get', (t) => {
   t.equal(new Request({url: '/??query'}).querystring, '?query')
   t.equal(new Request({url: '/?query?'}).querystring, 'query?')
   t.equal(new Request({url: '/?a&b=1%23-&c='}).querystring, 'a&b=1%23-&c=')
+  t.end()
+})
+
+t.test('request.url - get', (t) => {
+  const req = {url: '/some-url'}
+  t.equal(new Request(req).url, '/some-url')
   t.end()
 })

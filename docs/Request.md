@@ -12,6 +12,7 @@ It is a wrapper around Node's [`http.IncomingMessage`][http.IncomingMessage] obj
 + [`.hostname`](#reqhostname)
 + [`.method`](#reqmethod)
 + [`.params`](#reqparams)
++ [`.path`](#reqpath)
 + [`.protocol`](#reqprotocol)
 + [`.query`](#reqquery)
 + [`.querystring`](#reqquerystring)
@@ -93,6 +94,10 @@ app.get('/path/:user/:foo', (req, res) => {
   req.params // { user: '100', foo: 'bar' }
 })
 ```
+
+### `req.path`
+
+Alias for [`req.url`](#requrl).
 
 ### `req.protocol`
 
