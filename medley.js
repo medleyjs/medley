@@ -13,6 +13,7 @@ const Request = require('./lib/Request')
 const RouteContext = require('./lib/RouteContext')
 
 const pluginUtils = require('./lib/pluginUtils')
+const registerPlugin = require('./lib/registerPlugin')
 
 const {buildSerializers} = require('./lib/Serializer')
 const {
@@ -114,6 +115,8 @@ function medley(options) {
     _subApps: [],
     [pluginUtils.registeredPlugins]: [], // For storing plugins
   }
+
+  registerPlugin.decorateApp(app)
 
   const appLoader = avvio(app, {
     autostart: false,
