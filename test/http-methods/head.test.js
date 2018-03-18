@@ -11,18 +11,18 @@ t.test('shorthand - head', (t) => {
 
   const responseSchema = {
     200: {
-      type: 'null',
+      type: 'boolean',
     },
   }
 
   app.head('/', {responseSchema}, (req, res) => {
     t.pass('handler called')
-    res.send(null)
+    res.send(true)
   })
 
   app.head('/missing-schema', (req, res) => {
     t.pass('handler called')
-    res.send(null)
+    res.send(true)
   })
 
   app.listen(0, (err) => {

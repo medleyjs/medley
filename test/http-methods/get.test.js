@@ -21,7 +21,7 @@ const stringSchema = {
 const nullSchema = {
   responseSchema: {
     200: {
-      type: 'null',
+      type: 'number',
     },
   },
 }
@@ -38,11 +38,11 @@ test('shorthand - get', (t) => {
   }
 })
 
-test('shorthand - get (return null)', (t) => {
+test('shorthand - get (return number)', (t) => {
   t.plan(1)
   try {
-    app.get('/null', nullSchema, function(req, response) {
-      response.send(null)
+    app.get('/number', nullSchema, function(req, response) {
+      response.send(1234)
     })
     t.pass()
   } catch (e) {
@@ -141,15 +141,15 @@ app.listen(0, (err) => {
     })
   })
 
-  test('shorthand - send null value', (t) => {
+  test('shorthand - send number value', (t) => {
     t.plan(3)
     sget({
       method: 'GET',
-      url: 'http://localhost:' + app.server.address().port + '/null',
+      url: 'http://localhost:' + app.server.address().port + '/number',
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
-      t.deepEqual(body.toString(), 'null')
+      t.deepEqual(body.toString(), '1234')
     })
   })
 })

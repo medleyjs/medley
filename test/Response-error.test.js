@@ -273,25 +273,6 @@ test('should set the status code from the error object (from custom error handle
   })
 })
 
-test('should throw an error if the payload does not get serialized to a valid type', (t) => {
-  t.plan(2)
-  const app = medley()
-
-  app.get('/', (request, response) => {
-    response.type('text/html')
-    try {
-      response.send({})
-    } catch (err) {
-      t.type(err, TypeError)
-      t.strictEqual(err.message, "Attempted to send payload of invalid type 'object'. Expected a string, Buffer, or stream.")
-    }
-  })
-
-  app.inject('/', () => {
-    t.fail('should not be called')
-  })
-})
-
 test('res.error() throws if called after response is sent', (t) => {
   t.plan(3)
 

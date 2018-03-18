@@ -160,11 +160,11 @@ app.get('/', (req, res) => {
 ```
 
 The default status code for responses is `200`. If needed, use `res.status()`
-to set the status code before returning:
+or `res.statusCode` to set the status code before returning:
 
 ```js
 app.post('/user', (req, res) => {
-  res.status(201) // 201 Created
+  res.statusCode = 201 // "201 Created"
   return createUserAsync()
 })
 ```

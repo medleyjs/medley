@@ -218,21 +218,54 @@ res.remove('content-type')
 <a id="send"></a>
 ### `res.send([payload])`
 
-Sends the payload to respond to the request. It may be called without any arguments to
-respond without sending a payload.
+Sends the payload to respond to the request.
 
 `.send()` handles payloads differently based on their type. The behavior for each type
 is described below.
 
-Note that if the `Content-Type` header is set before `.send()` is called, the payload
-will be sent as-is (unless the `Content-Type` header was set to `application/json`,
-in which case it will be serialized as JSON).
+#### No Value / `null` / `undefined`
+
+Sends a response with an empty body.
+
+```js
+res.send()
+res.send(null)
+res.send(undefined)
+```
+
+#### String
+
+If not already set, the `Content-Type` header will be set to `'text/plain'`.
+
+```js
+res.send('plain text')
+```
+
+#### Buffer
+
+If not already set, the `Content-Type` header will be set to `'application/octet-stream'`.
+
+```js
+res.send(Buffer.from('a message'))
+```
+
+#### Stream
+
+If not already set, the `Content-Type` header will be set to `'application/octet-stream'`.
+
+```js
+const fs = require('fs')
+
+app.get('/stream', (req, res) => {
+  const stream = fs.createReadStream('some-file')
+  res.send(stream)
+})
+```
 
 #### JSON
 
-The payload will be JSON-serialized by default if it is not a `string`, `Buffer`, or `stream`.
-To force a `string` to be serialized as JSON, set the `Content-Type` header to `application/json`
-before sending the payload.
+If the payload is not one of the previous types, it will be JSON-serialized.
+If not already set, the `Content-Type` header will be set to `'application/json'`.
 
 JSON payloads are serialized with [`compile-json-stringify`](https://www.npmjs.com/package/compile-json-stringify)
 if a response schema was set, otherwise `JSON.stringify()` is used.
@@ -247,75 +280,7 @@ app.get('/json', {
 }, (req, res) => {
   res.send({ hello: 'world' })
 })
-
-// Send a string as JSON
-app.get('/json-string', (req, res) => {
-  res.type('application/json').send('Hello world!')
-})
 ```
-
-#### String
-
-If not already set, the `Content-Type` header will be set to `'text/plain'`.
-
-```js
-app.get('/text', options, (req, res) => {
-  res.send('plain text')
-})
-```
-
-If the `Content-Type` header is set to `'application/json'`, the string is serialized as JSON.
-
-```js
-app.get('/json-string', (req, res) => {
-  res.type('application/json').send('Hello world!')
-  // Sends: "Hello world!"
-})
-```
-
-#### Buffer
-
-If not already set, the `Content-Type` header will be set to `'application/octet-stream'`.
-
-```js
-const fs = require('fs')
-
-app.get('/buffer', (req, res) => {
-  fs.readFile('some-file', (err, fileBuffer) => {
-    if (err) {
-      res.error(err)
-    } else {
-      res.send(fileBuffer) 
-    }
-  })
-})
-```
-
-#### Stream
-
-If not already set, the `Content-Type` header will be set to `'application/octet-stream'`.
-
-```js
-const fs = require('fs')
-
-app.get('/stream', (req, res) => {
-  const stream = fs.createReadStream('some-file', 'utf8')
-  res.send(stream)
-})
-```
-
-#### Type of the final payload
-
-The type of the payload (after serialization and going through any [`onSend` hooks](Hooks.md#the-onsend-hook))
-must be one of the following types:
-
-+ `string`
-+ `Buffer`
-+ `stream`
-+ `null`
-+ `undefined`
-
-An error will be thrown if the payload is not one of these types.
 
 #### Async-Await / Promises
 
@@ -328,22 +293,23 @@ app.get('/', async (req, res) => {
   return user
 })
 // Is the same as:
-app.get('/', (req, res) => {
+app.get('/', async (req, res) => {
   const user = await loadUser()
   res.send(user)
 })
 ```
 
 This means that using `await` isn't always necessary since promises that resolve
-to a value can be returned to have the value automatically sent.
+to a value can be returned to have the value automatically sent. The example
+above could be rewritten as:
 
 ```js
-app.get('/', (req, res) => { // no `async` (since `await` isn't used)
-  return loadUser() // no `await`
+app.get('/', (req, res) => { // No `async` (since `await` isn't used)
+  return loadUser()
 })
 ```
 
-If an error is throw inside an `async` function, `res.error()` is called
+If an error is thrown inside an `async` function, `res.error()` is called
 automatically with the error.
 
 ```js

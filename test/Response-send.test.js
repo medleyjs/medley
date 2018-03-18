@@ -157,13 +157,13 @@ test('within a sub app', (t) => {
   })
 })
 
-test('buffer without content type should send a application/octet-stream and raw buffer', (t) => {
+test('buffer without Content-Type should default to application/octet-stream', (t) => {
   t.plan(4)
 
   const app = medley()
 
-  app.get('/', function(req, response) {
-    response.send(Buffer.alloc(1024))
+  app.get('/', function(req, res) {
+    res.send(Buffer.alloc(1024))
   })
 
   app.listen(0, (err) => {
@@ -181,14 +181,14 @@ test('buffer without content type should send a application/octet-stream and raw
   })
 })
 
-test('buffer with content type should not send application/octet-stream', (t) => {
+test('buffer with Content-Type should not change the Content-Type', (t) => {
   t.plan(4)
 
   const app = medley()
 
-  app.get('/', function(req, response) {
-    response.set('content-type', 'text/plain')
-    response.send(Buffer.alloc(1024))
+  app.get('/', function(req, res) {
+    res.set('content-type', 'text/plain')
+    res.send(Buffer.alloc(1024))
   })
 
   app.listen(0, (err) => {
@@ -206,13 +206,13 @@ test('buffer with content type should not send application/octet-stream', (t) =>
   })
 })
 
-test('plain string without content type should send text/plain', (t) => {
+test('plain string without Content-Type should default to text/plain', (t) => {
   t.plan(4)
 
   const app = medley()
 
-  app.get('/', function(req, response) {
-    response.send('hello world!')
+  app.get('/', function(req, res) {
+    res.send('hello world!')
   })
 
   app.listen(0, (err) => {
@@ -230,13 +230,13 @@ test('plain string without content type should send text/plain', (t) => {
   })
 })
 
-test('plain string with content type should be sent unmodified', (t) => {
+test('plain string with Content-Type should be sent unmodified', (t) => {
   t.plan(4)
 
   const app = medley()
 
-  app.get('/', function(req, response) {
-    response.type('text/css').send('hello world!')
+  app.get('/', function(req, res) {
+    res.type('text/css').send('hello world!')
   })
 
   app.listen(0, (err) => {
@@ -254,13 +254,18 @@ test('plain string with content type should be sent unmodified', (t) => {
   })
 })
 
-test('plain string with content type application/json should be serialized as json', (t) => {
-  t.plan(4)
+test('undefined payload should be sent as-is', (t) => {
+  t.plan(6)
 
   const app = medley()
 
-  app.get('/', function(req, response) {
-    response.type('application/json').send('hello world!')
+  app.addHook('onSend', function(req, res, payload, next) {
+    t.equal(payload, undefined)
+    next()
+  })
+
+  app.get('/', function(req, res) {
+    res.status(204).send()
   })
 
   app.listen(0, (err) => {
@@ -269,27 +274,28 @@ test('plain string with content type application/json should be serialized as js
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + app.server.address().port,
+      url: `http://localhost:${app.server.address().port}`,
     }, (err, response, body) => {
       t.error(err)
-      t.strictEqual(response.headers['content-type'], 'application/json')
-      t.deepEqual(body.toString(), '"hello world!"')
+      t.strictEqual(response.headers['content-type'], undefined)
+      t.strictEqual(response.headers['content-length'], undefined)
+      t.strictEqual(body.length, 0)
     })
   })
 })
 
-test('undefined payload should be sent as-is', (t) => {
+test('null payload should be sent as-is', (t) => {
   t.plan(6)
 
   const app = medley()
 
-  app.addHook('onSend', function(request, response, payload, next) {
-    t.strictEqual(response.payload, undefined)
+  app.addHook('onSend', function(req, res, payload, next) {
+    t.equal(payload, null)
     next()
   })
 
-  app.get('/', function(req, response) {
-    response.status(204).send()
+  app.get('/', function(req, res) {
+    res.status(204).send(null)
   })
 
   app.listen(0, (err) => {
