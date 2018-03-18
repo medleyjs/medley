@@ -11,6 +11,7 @@ It is a wrapper around Node's [`http.IncomingMessage`][http.IncomingMessage] obj
 + [`.host`](#reqhost)
 + [`.method`](#reqmethod)
 + [`.params`](#reqparams)
++ [`.protocol`](#reqprotocol)
 + [`.query`](#reqquery)
 + [`.querystring`](#reqquerystring)
 + [`.stream`](#reqstream)
@@ -77,6 +78,17 @@ app.get('/path/:user/:foo', (req, res) => {
   // URL: /path/100/bar
   req.params // { user: '100', foo: 'bar' }
 })
+```
+
+### `req.protocol`
+
+*Read-only*
+
+The request protocol ("http" or "https"). Supports `X-Forwarded-Proto` when
+the [`trustProxy`](Factory.md#trustproxy) setting is enabled.
+
+```js
+req.protocol // 'http'
 ```
 
 ### `req.query`

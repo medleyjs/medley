@@ -72,3 +72,5 @@ When `true`, `X-Forwarded-*` headers will be trusted and take precedence when
 determining request information such as the [host](Request.md#reqhost) value.
 
 + Default: `false`
+
+**Note**: `X-Forwarded-*` headers are easily spoofed and the detected values are unreliable.

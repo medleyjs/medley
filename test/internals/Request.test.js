@@ -1,7 +1,11 @@
 'use strict'
 
 const t = require('tap')
+const fs = require('fs')
 const medley = require('../..')
+const path = require('path')
+const sget = require('simple-get').concat
+
 const Request = require('../../lib/Request').buildRequest()
 
 t.test('Request object', (t) => {
@@ -130,6 +134,110 @@ t.test('request.method - get', (t) => {
   const req = {method: 'GET'}
   t.equal(new Request(req).method, 'GET')
   t.end()
+})
+
+t.test('req.protocol - trustProxy=false', (t) => {
+  t.plan(4)
+
+  const app = medley()
+
+  app.get('/', (req, res) => {
+    res.send(req.protocol)
+  })
+
+  app.listen(0, (err) => {
+    t.error(err)
+    app.server.unref()
+
+    sget({
+      url: `http://localhost:${app.server.address().port}`,
+      headers: {
+        'X-Forwarded-Proto': 'https',
+      },
+    }, (err, res, body) => {
+      t.error(err)
+      t.equal(res.statusCode, 200)
+      t.equal(body.toString(), 'http')
+    })
+  })
+})
+
+t.test('req.protocol - trustProxy=true', (t) => {
+  t.plan(7)
+
+  const app = medley({trustProxy: true})
+
+  app.get('/', (req, res) => {
+    res.send(req.protocol)
+  })
+
+  app.listen(0, (err) => {
+    t.error(err)
+    app.server.unref()
+
+    const url = `http://localhost:${app.server.address().port}`
+
+    sget(url, (err, res, body) => {
+      t.error(err)
+      t.equal(res.statusCode, 200)
+      t.equal(body.toString(), 'http')
+    })
+
+    sget({
+      url,
+      headers: {
+        'X-Forwarded-Proto': 'https',
+      },
+    }, (err, res, body) => {
+      t.error(err)
+      t.equal(res.statusCode, 200)
+      t.equal(body.toString(), 'https')
+    })
+  })
+})
+
+t.test('req.protocol - https', (t) => {
+  t.plan(7)
+
+  const app = medley({
+    https: {
+      key: fs.readFileSync(path.join(__dirname, '../https/app.key')),
+      cert: fs.readFileSync(path.join(__dirname, '../https/app.cert')),
+    },
+    trustProxy: true,
+  })
+
+  app.get('/', (req, res) => {
+    res.send(req.protocol)
+  })
+
+  app.listen(0, (err) => {
+    t.error(err)
+    app.server.unref()
+
+    const url = `https://localhost:${app.server.address().port}`
+
+    sget({
+      url,
+      rejectUnauthorized: false,
+    }, (err, res, body) => {
+      t.error(err)
+      t.equal(res.statusCode, 200)
+      t.equal(body.toString(), 'https')
+    })
+
+    sget({
+      url,
+      rejectUnauthorized: false,
+      headers: {
+        'X-Forwarded-Proto': 'sftp',
+      },
+    }, (err, res, body) => {
+      t.error(err)
+      t.equal(res.statusCode, 200)
+      t.equal(body.toString(), 'https')
+    })
+  })
 })
 
 t.test('request.url - get', (t) => {
