@@ -81,6 +81,8 @@ good idea to avoid using [`http.ServerResponse`][http.ServerResponse] methods
 on the object, like `.writeHead()` and `.getHeaders()`, so that your code can
 be compatible with future versions of Medley that will use Node's new
 [HTTP 2 stream interface](https://nodejs.org/api/http2.html#http2_class_http2stream).
+Additionally, using the `.[get|set]Header()` methods available on this object
+is not supported by Medley and may cause undefined behavior.
 
 
 ## Methods
