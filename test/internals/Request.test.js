@@ -14,6 +14,72 @@ t.test('Request object', (t) => {
   t.equal(request.body, undefined)
 })
 
+t.test('req.host - trustProxy=false', (t) => {
+  t.plan(6)
+
+  const app = medley()
+
+  app.get('/', (req, res) => {
+    res.send(req.host)
+  })
+
+  app.inject({
+    url: '/',
+    headers: {
+      Host: 'justhost.com',
+    },
+  }, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.payload, 'justhost.com')
+  })
+
+  app.inject({
+    url: '/',
+    headers: {
+      Host: 'justhost.com',
+      'X-Forwarded-Host': 'forwardedhost.com',
+    },
+  }, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.payload, 'justhost.com')
+  })
+})
+
+t.test('req.host - trustProxy=true', (t) => {
+  t.plan(6)
+
+  const app = medley({trustProxy: true})
+
+  app.get('/', (req, res) => {
+    res.send(req.host)
+  })
+
+  app.inject({
+    url: '/',
+    headers: {
+      Host: 'justhost.com',
+    },
+  }, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.payload, 'justhost.com')
+  })
+
+  app.inject({
+    url: '/',
+    headers: {
+      Host: 'justhost.com',
+      'X-Forwarded-Host': 'forwardedhost.com',
+    },
+  }, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.payload, 'forwardedhost.com')
+  })
+})
+
 t.test('request.method - get', (t) => {
   const req = {method: 'GET'}
   t.equal(new Request(req).method, 'GET')

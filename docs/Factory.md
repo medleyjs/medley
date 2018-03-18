@@ -65,3 +65,10 @@ This can be useful especially if you have some regex based route, protecting you
 Defines the maximum payload, in bytes, the server is allowed to accept.
 
 + Default: `1048576` (1MiB)
+
+### `trustProxy`
+
+When `true`, `X-Forwarded-*` headers will be trusted and take precedence when
+determining request information such as the [host](Request.md#reqhost) value.
+
++ Default: `false`

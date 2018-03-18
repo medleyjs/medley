@@ -8,6 +8,7 @@ It is a wrapper around Node's [`http.IncomingMessage`][http.IncomingMessage] obj
 
 + [`.body`](#reqbody)
 + [`.headers`](#reqheaders)
++ [`.host`](#reqhost)
 + [`.method`](#reqmethod)
 + [`.params`](#reqparams)
 + [`.query`](#reqquery)
@@ -41,6 +42,20 @@ req.headers
 // { 'user-agent': 'curl/7.22.0',
 //   host: '127.0.0.1:8000',
 //   accept: '*/*' }
+```
+
+### `req.host`
+
+*Read-only*
+
+The request host (`hostname:port`) if available. When the [`trustProxy`](Factory.md#trustproxy)
+setting is enabled, uses the `X-Forwarded-Host` header first, then the `Host` header.
+
+```js
+req.host // 'localhost:8080'
+
+// Another example
+req.host // 'www.google.com'
 ```
 
 ### `req.method`

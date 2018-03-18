@@ -109,7 +109,7 @@ function medley(options) {
     listen, // Starts the HTTP server
     inject, // Fake HTTP injection
 
-    _Request: Request.buildRequest(),
+    _Request: Request.buildRequest(undefined, !!options.trustProxy),
     _Response: Response.buildResponse(),
     _subApps: [],
     [pluginUtils.registeredPlugins]: [], // For storing plugins

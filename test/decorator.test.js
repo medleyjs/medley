@@ -76,6 +76,13 @@ test('.decorateRequest() should not allow decorating Medley values', (t) => {
     t.equal(err.message, "A decorator called 'query' has been already added to Request")
   }
 
+  try {
+    app.decorateRequest('_trustProxy', null)
+    t.fail('should not allow decorating Request with `_trustProxy`')
+  } catch (err) {
+    t.equal(err.message, "A decorator called '_trustProxy' has been already added to Request")
+  }
+
   t.end()
 })
 
