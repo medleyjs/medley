@@ -121,7 +121,7 @@ function medley(options) {
   })
   appLoader.override = override // Override to allow plugin encapsulation
 
-  var ready = false // true when plugins and sub apps have loaded
+  var ready = false // true when plugins and sub-apps have loaded
   var listening = false // true when server is listening
 
   appLoader.on('start', () => {

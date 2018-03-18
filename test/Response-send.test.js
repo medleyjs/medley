@@ -39,7 +39,7 @@ test('res.send() throws if called after response is sent', (t) => {
   })
 })
 
-test('within a sub app', (t) => {
+test('within a sub-app', (t) => {
   const app = medley()
 
   app.get('/', function(req, res) {

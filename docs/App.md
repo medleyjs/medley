@@ -36,7 +36,7 @@ const app = medley()
 <a id="base-path"></a>
 ### `app.basePath`
 
-The path that will be prefixed to routes in a sub app. Example:
+The path that will be prefixed to routes in a sub-app. Example:
 
 ```js
 app.register((subApp, opts, next) => {
@@ -110,7 +110,7 @@ Performs a fake HTTP request on the `app` (for testing purposes). See the [Testi
 + `callback` *(function)* - A function that is called once the server has started listening for incoming connections.
 + Returns: *(?Promise)* - A Promise is returned if the `callback` parameter is not used.
 
-Starts the server on the given port after all plugins and sub apps have loaded.
+Starts the server on the given port after all plugins and sub-apps have loaded.
 
 By default, the server will only listen for requests from the local IP address
 (`127.0.0.1`). If listening for requests from any IP address is desired, then
@@ -180,10 +180,10 @@ app.ready(() => {
 <a id="ready"></a>
 ### `app.ready([callback])`
 
-+ `callback(err)` *(function)* - Called when all plugins and sub apps have finished loading.
++ `callback(err)` *(function)* - Called when all plugins and sub-apps have finished loading.
   + `err` *(Error)* - The callback is passed an Error if one occurred during the loading process.
 
-Starts the process of loading registered plugins and sub apps.
+Starts the process of loading registered plugins and sub-apps.
 
 ```js
 app.ready((err) => {
@@ -204,7 +204,7 @@ app.ready().then(() => {
 <a id="register"></a>
 ### `app.register()`
 
-Registers a new sub app. *TODO*.
+Registers a new sub-app. *TODO*.
 
 <a id="route"></a>
 ### `app.route(options)`
@@ -221,7 +221,7 @@ that aren't included here. See the [Routes](Routes.md) documentation.
   + `res` - The Medley [`response`](Response.md) object.
 
 Sets a handler that will be called whenever an error occurs. The handler is fully
-encapsulated, so different sub apps can set different error handlers. `async-await`
+encapsulated, so different sub-apps can set different error handlers. `async-await`
 is supported just like with [regular route handlers](Routes.md#async-await).
 
 ```js
@@ -249,7 +249,7 @@ app.setNotFoundHandler((req, res) => {
 })
 ```
 
-Additional not-found handlers can be set for sub apps that are registered with
+Additional not-found handlers can be set for sub-apps that are registered with
 a [`prefix`](Plugins.md#route-prefixing-option). 
 
 ```js

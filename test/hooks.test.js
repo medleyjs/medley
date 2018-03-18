@@ -1160,11 +1160,11 @@ test('onFinished hooks should run in the order in which they are defined', (t) =
   })
 })
 
-test('.addHook() should not alter errors from other sub apps', (t) => {
+test('.addHook() should not alter errors from other sub-apps', (t) => {
   t.plan(1)
 
   const app = medley()
-  const subAppError = new Error('sub app error')
+  const subAppError = new Error('sub-app error')
 
   app.register((subApp, opts, next) => {
     next(subAppError)

@@ -20,7 +20,7 @@ app.register(
   { options }
 )
 ```
-`register` creates a "sub app", this means that if you do any change to the sub app, those changes will not be reflected into the sub app's ancestors. In other words, encapsulation!
+`register` creates a "sub-app", this means that if you do any change to the sub-app, those changes will not be reflected into the sub-app's ancestors. In other words, encapsulation!
 
 
 *Why is encapsulation important?*<br>

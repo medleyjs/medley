@@ -2,7 +2,7 @@
 
 Medley comes with a body parser for the `application/json` Content-Type. To parse different content types, `app.addBodyParser()` can be used to add more body parsers. The parsed request body is added to the [Medley `request`](Request.md) object as `request.body`.
 
-As with the other APIs, `addBodyParser` is encapsulated in the scope in which it is declared. This means that if a parser is declared in the root scope, it will be available everywhere, whereas if it is declared inside a sub app, it will be available only in that scope and its children.
+As with the other APIs, `addBodyParser` is encapsulated in the scope in which it is declared. This means that if a parser is declared in the root scope, it will be available everywhere, whereas if it is declared inside a sub-app, it will be available only in that scope and its children.
 
 If needed, the default JSON parser can be overridden by adding a parser with the Content-Type `'application/json'`.
 
