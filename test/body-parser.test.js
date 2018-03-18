@@ -667,7 +667,7 @@ test('The charset should not interfere with the content type handling', (t) => {
       url: 'http://localhost:' + app.server.address().port,
       body: '{"hello":"world"}',
       headers: {
-        'Content-Type': 'application/json; charset=utf-8',
+        'Content-Type': 'application/json',
       },
     }, (err, response, body) => {
       t.error(err)

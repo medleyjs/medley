@@ -493,8 +493,8 @@ test('onSend hook is called after payload is serialized and headers are set', (t
     const payload = {hello: 'world'}
 
     subApp.addHook('onSend', (request, response, serializedPayload, next) => {
-      t.deepEqual(JSON.parse(serializedPayload), payload)
-      t.strictEqual(response.get('content-type'), 'application/json; charset=utf-8')
+      t.strictDeepEqual(JSON.parse(serializedPayload), payload)
+      t.equal(response.get('content-type'), 'application/json')
       next()
     })
 
@@ -660,7 +660,7 @@ test('onSend hooks can clear payload', (t) => {
     t.strictEqual(res.statusCode, 304)
     t.strictEqual(res.payload, '')
     t.strictEqual(res.headers['content-length'], undefined)
-    t.strictEqual(res.headers['content-type'], 'application/json; charset=utf-8')
+    t.strictEqual(res.headers['content-type'], 'application/json')
   })
 })
 

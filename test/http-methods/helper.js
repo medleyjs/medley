@@ -110,7 +110,7 @@ module.exports.payloadMethod = function(method, t) {
         url: 'http://localhost:' + app.server.address().port,
         body: JSON.stringify({hello: 'world'}),
         headers: {
-          'content-type': 'application/json; charset=utf-8',
+          'content-type': 'application/json',
         },
       }, (err, response, body) => {
         t.error(err)
