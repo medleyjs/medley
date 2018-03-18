@@ -19,7 +19,7 @@ test('default 500', (t) => {
   }, (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 500)
-    t.strictEqual(res.headers['content-type'], 'application/json')
+    t.strictEqual(res.headers['content-type'], 'application/json; charset=utf-8')
     t.deepEqual(JSON.parse(res.payload), {
       error: 'Internal Server Error',
       message: 'kaboom',
@@ -49,7 +49,7 @@ test('custom 500', (t) => {
   }, (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 500)
-    t.strictEqual(res.headers['content-type'], 'text/plain')
+    t.strictEqual(res.headers['content-type'], 'text/plain; charset=utf-8')
     t.deepEqual(res.payload.toString(), 'an error happened: kaboom')
   })
 })
@@ -110,7 +110,7 @@ test('encapsulated 500', (t) => {
   }, (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 500)
-    t.strictEqual(res.headers['content-type'], 'text/plain')
+    t.strictEqual(res.headers['content-type'], 'text/plain; charset=utf-8')
     t.deepEqual(res.payload.toString(), 'an error happened: kaboom')
   })
 
@@ -120,7 +120,7 @@ test('encapsulated 500', (t) => {
   }, (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 500)
-    t.strictEqual(res.headers['content-type'], 'application/json')
+    t.strictEqual(res.headers['content-type'], 'application/json; charset=utf-8')
     t.deepEqual(JSON.parse(res.payload), {
       error: 'Internal Server Error',
       message: 'kaboom',
@@ -161,7 +161,7 @@ test('custom 500 with hooks', (t) => {
   app.inject('/', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 500)
-    t.strictEqual(res.headers['content-type'], 'text/plain')
+    t.strictEqual(res.headers['content-type'], 'text/plain; charset=utf-8')
     t.deepEqual(res.payload.toString(), 'an error happened: kaboom')
   })
 })
@@ -203,7 +203,7 @@ test('custom error handler can response with a promise', (t) => {
   }, (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 500)
-    t.strictEqual(res.headers['content-type'], 'text/plain')
+    t.strictEqual(res.headers['content-type'], 'text/plain; charset=utf-8')
     t.deepEqual(res.payload.toString(), 'Error: kaboom')
   })
 })
@@ -228,7 +228,7 @@ test('async custom error handler can still use .send()', (t) => {
   }, (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 500)
-    t.strictEqual(res.headers['content-type'], 'text/plain')
+    t.strictEqual(res.headers['content-type'], 'text/plain; charset=utf-8')
     t.deepEqual(res.payload.toString(), 'Error: kaboom')
   })
 })
@@ -250,7 +250,7 @@ test('the Content-Type header should be unset before calling a custom error hand
   app.inject('/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 500)
-    t.equal(res.headers['content-type'], 'text/plain')
+    t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
     t.equal(res.payload, 'error message')
   })
 })

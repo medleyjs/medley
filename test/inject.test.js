@@ -91,7 +91,7 @@ test('inject get request - headers check', (t) => {
   }, (err, res) => {
     t.error(err)
     t.strictEqual('', res.payload)
-    t.strictEqual(res.headers['content-type'], 'text/plain')
+    t.strictEqual(res.headers['content-type'], 'text/plain; charset=utf-8')
     t.strictEqual(res.headers['content-length'], '0')
   })
 })

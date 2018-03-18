@@ -42,18 +42,14 @@ test('res.send() throws if called after response is sent', (t) => {
 test('within a sub app', (t) => {
   const app = medley()
 
-  app.get('/', function(req, response) {
-    response.set('content-type', 'text/plain')
-    response.send('hello world!')
+  app.get('/', function(req, res) {
+    res.status(201)
+    res.set('content-type', 'text/plain')
+    res.send('hello world!')
   })
 
-  app.get('/auto-type', function(req, response) {
-    response.type('text/plain')
-    response.send('hello world!')
-  })
-
-  app.get('/auto-status-code', function(req, response) {
-    response.send('hello world!')
+  app.get('/auto', function(req, res) {
+    res.send('hello world!')
   })
 
   app.get('/redirect', function(req, response) {
@@ -86,33 +82,22 @@ test('within a sub app', (t) => {
         url: 'http://localhost:' + app.server.address().port,
       }, (err, response, body) => {
         t.error(err)
-        t.strictEqual(response.statusCode, 200)
-        t.strictEqual(response.headers['content-type'], 'text/plain')
-        t.deepEqual(body.toString(), 'hello world!')
+        t.equal(response.statusCode, 201)
+        t.equal(response.headers['content-type'], 'text/plain')
+        t.equal(body.toString(), 'hello world!')
       })
     })
 
-    t.test('auto status code shoud be 200', (t) => {
-      t.plan(3)
+    t.test('auto status code and content-type ', (t) => {
+      t.plan(4)
       sget({
         method: 'GET',
-        url: 'http://localhost:' + app.server.address().port + '/auto-status-code',
+        url: 'http://localhost:' + app.server.address().port + '/auto',
       }, (err, response, body) => {
         t.error(err)
-        t.strictEqual(response.statusCode, 200)
-        t.deepEqual(body.toString(), 'hello world!')
-      })
-    })
-
-    t.test('auto type shoud be text/plain', (t) => {
-      t.plan(3)
-      sget({
-        method: 'GET',
-        url: 'http://localhost:' + app.server.address().port + '/auto-type',
-      }, (err, response, body) => {
-        t.error(err)
-        t.strictEqual(response.headers['content-type'], 'text/plain')
-        t.deepEqual(body.toString(), 'hello world!')
+        t.equal(response.statusCode, 200)
+        t.equal(response.headers['content-type'], 'text/plain; charset=utf-8')
+        t.equal(body.toString(), 'hello world!')
       })
     })
 
@@ -139,7 +124,7 @@ test('within a sub app', (t) => {
         url: 'http://localhost:' + app.server.address().port + '/redirect',
       }, (err, response, body) => {
         t.error(err)
-        t.strictEqual(response.statusCode, 200)
+        t.strictEqual(response.statusCode, 201)
         t.strictEqual(response.headers['content-type'], 'text/plain')
         t.deepEqual(body.toString(), 'hello world!')
       })
@@ -152,7 +137,7 @@ test('within a sub app', (t) => {
         url: 'http://localhost:' + app.server.address().port + '/redirect-code',
       }, (err, response, body) => {
         t.error(err)
-        t.strictEqual(response.statusCode, 200)
+        t.strictEqual(response.statusCode, 201)
         t.strictEqual(response.headers['content-type'], 'text/plain')
         t.deepEqual(body.toString(), 'hello world!')
       })
@@ -221,7 +206,7 @@ test('buffer with content type should not send application/octet-stream', (t) =>
   })
 })
 
-test('plain string without content type should send a text/plain', (t) => {
+test('plain string without content type should send text/plain', (t) => {
   t.plan(4)
 
   const app = medley()
@@ -239,7 +224,7 @@ test('plain string without content type should send a text/plain', (t) => {
       url: 'http://localhost:' + app.server.address().port,
     }, (err, response, body) => {
       t.error(err)
-      t.strictEqual(response.headers['content-type'], 'text/plain')
+      t.strictEqual(response.headers['content-type'], 'text/plain; charset=utf-8')
       t.deepEqual(body.toString(), 'hello world!')
     })
   })

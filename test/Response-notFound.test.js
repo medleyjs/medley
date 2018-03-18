@@ -47,14 +47,14 @@ t.test('res.notFound() should invoke the not-found handler', (t) => {
   app.inject('/not-found', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 404)
-    t.equal(res.headers['content-type'], 'text/plain')
+    t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
     t.equal(res.payload, 'Not Found: GET /not-found')
   })
 
   app.inject('/prefixed/not-found', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 404)
-    t.equal(res.headers['content-type'], 'text/plain')
+    t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
     t.equal(res.payload, 'Custom not found response')
   })
 })
@@ -76,14 +76,14 @@ t.test('res.notFound() should send a basic response if called inside a not-found
   app.inject('/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 404)
-    t.equal(res.headers['content-type'], 'text/plain')
+    t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
     t.equal(res.payload, 'Not Found: GET /')
   })
 
   app.inject('/not-found', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 404)
-    t.equal(res.headers['content-type'], 'text/plain')
+    t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
     t.equal(res.payload, 'Not Found: GET /not-found')
   })
 })

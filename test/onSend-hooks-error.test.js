@@ -143,7 +143,7 @@ t.test('onSend hooks do not run again if they errored before - response.send() s
   app.inject('/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 500)
-    t.equal(res.headers['content-type'], 'text/plain')
+    t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
     t.equal(res.payload, 'Custom error handler message')
   })
 })
@@ -172,7 +172,7 @@ t.test('onSend hooks do not run again if they errored before - response.error() 
   app.inject('/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 500)
-    t.equal(res.headers['content-type'], 'application/json')
+    t.equal(res.headers['content-type'], 'application/json; charset=utf-8')
     t.equal(JSON.parse(res.payload).message, 'onSend error')
   })
 })
@@ -201,7 +201,7 @@ t.test('onSend hooks do not run again if they errored before - Not-found handler
   app.inject('/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 500)
-    t.equal(res.headers['content-type'], 'text/plain')
+    t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
     t.equal(res.payload, 'Custom error handler message')
   })
 })
@@ -230,7 +230,7 @@ t.test('onSend hooks do not run again if they errored before - response.send() s
   app.inject('/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 500)
-    t.equal(res.headers['content-type'], 'application/json')
+    t.equal(res.headers['content-type'], 'application/json; charset=utf-8')
     t.equal(JSON.parse(res.payload).message, 'Custom error handler message')
   })
 })
@@ -259,7 +259,7 @@ t.test('onSend hooks do not run again if they errored before - response.error() 
   app.inject('/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 500)
-    t.equal(res.headers['content-type'], 'application/json')
+    t.equal(res.headers['content-type'], 'application/json; charset=utf-8')
     t.equal(JSON.parse(res.payload).message, 'onSend error')
   })
 })
@@ -288,7 +288,7 @@ t.test('onSend hooks do not run again if they errored before - Not-found handler
   app.inject('/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 500)
-    t.equal(res.headers['content-type'], 'application/json')
+    t.equal(res.headers['content-type'], 'application/json; charset=utf-8')
     t.equal(JSON.parse(res.payload).message, 'Custom error handler message')
   })
 })

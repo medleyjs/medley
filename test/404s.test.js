@@ -23,7 +23,7 @@ test('default 404', (t) => {
   }, (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 404)
-    t.equal(res.headers['content-type'], 'text/plain')
+    t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
     t.equal(res.payload, 'Not Found: HEAD /')
   })
 
@@ -33,7 +33,7 @@ test('default 404', (t) => {
   }, (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 404)
-    t.equal(res.headers['content-type'], 'text/plain')
+    t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
     t.equal(res.payload, 'Not Found: GET /not-defined')
   })
 })
@@ -128,7 +128,7 @@ test('has a 404 handler for all supported HTTP methods', (t) => {
     app.inject({method, url: '/not-found'}, (err, res) => {
       t.error(err)
       t.equal(res.statusCode, 404)
-      t.equal(res.headers['content-type'], 'text/plain')
+      t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
       t.equal(res.payload, `Not Found: ${method} /not-found`)
     })
   })
@@ -151,7 +151,7 @@ test('has a custom 404 handler for all supported HTTP methods', (t) => {
     app.inject({method, url: '/not-found'}, (err, res) => {
       t.error(err)
       t.equal(res.statusCode, 404)
-      t.equal(res.headers['content-type'], 'text/plain')
+      t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
       t.equal(res.payload, `Custom Not Found: ${method} /not-found`)
     })
   })
@@ -774,7 +774,7 @@ test('the default 404 handler can be invoked inside a prefixed plugin', (t) => {
   app.inject('/v1/path', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 404)
-    t.equal(res.headers['content-type'], 'text/plain')
+    t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
     t.equal(res.payload, 'Not Found: GET /v1/path')
   })
 })
@@ -896,7 +896,7 @@ test('the Content-Type header should be unset before calling a not-found handler
   app.inject('/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 404)
-    t.equal(res.headers['content-type'], 'text/plain')
+    t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
     t.equal(res.payload, 'plain text')
   })
 })

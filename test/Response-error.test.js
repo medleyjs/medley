@@ -28,7 +28,7 @@ function helper(code) {
     }, (error, res) => {
       t.error(error)
       t.equal(res.statusCode, code)
-      t.equal(res.headers['content-type'], 'application/json')
+      t.equal(res.headers['content-type'], 'application/json; charset=utf-8')
       t.strictDeepEqual(
         {
           error: statusCodes[code],
@@ -418,7 +418,7 @@ test('error with a Content-Type that is not application/json should work', (t) =
   app.inject('/text', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 500)
-    t.equal(res.headers['content-type'], 'application/json')
+    t.equal(res.headers['content-type'], 'application/json; charset=utf-8')
     t.deepEqual(JSON.parse(res.payload), {
       error: 'Internal Server Error',
       message: 'some application error',
@@ -429,7 +429,7 @@ test('error with a Content-Type that is not application/json should work', (t) =
   app.inject('/html', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 500)
-    t.equal(res.headers['content-type'], 'application/json')
+    t.equal(res.headers['content-type'], 'application/json; charset=utf-8')
     t.deepEqual(JSON.parse(res.payload), {
       error: 'Internal Server Error',
       message: 'some application error',
