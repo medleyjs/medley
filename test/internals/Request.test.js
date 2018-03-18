@@ -130,6 +130,93 @@ t.test('req.host - trustProxy=true', (t) => {
   })
 })
 
+t.test('req.hostname - trustProxy=false', (t) => {
+  t.plan(15)
+
+  const app = medley()
+
+  app.get('/', (req, res) => {
+    res.send(req.hostname)
+  })
+
+  app.inject({
+    url: '/',
+    headers: {
+      Host: 'host.com',
+      'X-Forwarded-Host': 'xhost.com',
+    },
+  }, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.payload, 'host.com')
+  })
+
+  app.inject({
+    url: '/',
+    headers: {
+      Host: '[::1]',
+    },
+  }, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.payload, '[::1]')
+  })
+
+  app.inject({
+    url: '/',
+    headers: {
+      Host: 'host.com:8080',
+    },
+  }, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.payload, 'host.com')
+  })
+
+  app.inject({
+    url: '/',
+    headers: {
+      Host: '[::1]:8080',
+    },
+  }, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.payload, '[::1]')
+  })
+
+  app.inject({
+    url: '/',
+    headers: {
+      Host: '[2001:db8:85a3::8a2e:370:7334]',
+    },
+  }, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.payload, '[2001:db8:85a3::8a2e:370:7334]')
+  })
+})
+
+t.test('req.hostname - trustProxy=true', (t) => {
+  t.plan(3)
+
+  const app = medley({trustProxy: true})
+
+  app.get('/', (req, res) => {
+    res.send(req.hostname)
+  })
+
+  app.inject({
+    url: '/',
+    headers: {
+      Host: 'host.com:80',
+    },
+  }, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.payload, 'host.com')
+  })
+})
+
 t.test('request.method - get', (t) => {
   const req = {method: 'GET'}
   t.equal(new Request(req).method, 'GET')

@@ -9,6 +9,7 @@ It is a wrapper around Node's [`http.IncomingMessage`][http.IncomingMessage] obj
 + [`.body`](#reqbody)
 + [`.headers`](#reqheaders)
 + [`.host`](#reqhost)
++ [`.hostname`](#reqhostname)
 + [`.method`](#reqmethod)
 + [`.params`](#reqparams)
 + [`.protocol`](#reqprotocol)
@@ -57,6 +58,19 @@ req.host // 'localhost:8080'
 
 // Another example
 req.host // 'www.google.com'
+```
+
+### `req.hostname`
+
+*Read-only*
+
+The request host (domain) name (the [`host`](#reqhost) without the `port`).
+
+```js
+req.hostname // 'www.google.com'
+
+// IPv6 example
+req.hostname // [::1]
 ```
 
 ### `req.method`
