@@ -232,6 +232,17 @@ t.test('req.path is an alias for req.url', (t) => {
   t.end()
 })
 
+t.test('req.pathname - get', (t) => {
+  t.equal(new Request({url: '/'}).pathname, '/')
+  t.equal(new Request({url: '/no-query'}).pathname, '/no-query')
+  t.equal(new Request({url: '/?'}).pathname, '/')
+  t.equal(new Request({url: '/path?'}).pathname, '/path')
+  t.equal(new Request({url: '/path?search=1'}).pathname, '/path')
+  t.equal(new Request({url: '/with/multi/parts?qu?ery'}).pathname, '/with/multi/parts')
+  t.equal(new Request({url: '/trailing/slash/??query'}).pathname, '/trailing/slash/')
+  t.end()
+})
+
 t.test('req.protocol - trustProxy=false', (t) => {
   t.plan(4)
 

@@ -13,6 +13,7 @@ It is a wrapper around Node's [`http.IncomingMessage`][http.IncomingMessage] obj
 + [`.method`](#reqmethod)
 + [`.params`](#reqparams)
 + [`.path`](#reqpath)
++ [`.pathname`](#reqpathname)
 + [`.protocol`](#reqprotocol)
 + [`.query`](#reqquery)
 + [`.querystring`](#reqquerystring)
@@ -98,6 +99,17 @@ app.get('/path/:user/:foo', (req, res) => {
 ### `req.path`
 
 Alias for [`req.url`](#requrl).
+
+### `req.pathname`
+
+*Read-only*
+
+The request pathname (the [URL](#requrl) without the [query string](#reqquerystring)).
+
+```js
+// URL: /status/user?name=medley
+req.pathname // '/status/user'
+```
 
 ### `req.protocol`
 
