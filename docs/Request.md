@@ -10,6 +10,7 @@ It is a wrapper around Node's [`http.IncomingMessage`][http.IncomingMessage] obj
 + [`.headers`](#reqheaders)
 + [`.host`](#reqhost)
 + [`.hostname`](#reqhostname)
++ [`.href`](#reqhref)
 + [`.method`](#reqmethod)
 + [`.origin`](#reqorigin)
 + [`.params`](#reqparams)
@@ -74,6 +75,16 @@ req.hostname // 'www.example.com'
 
 // IPv6 example
 req.hostname // [::1]
+```
+
+### `req.href`
+
+*Read-only*
+
+The full request URL.
+
+```js
+req.href // 'http://www.example.com/status/user?name=medley'
 ```
 
 ### `req.method`

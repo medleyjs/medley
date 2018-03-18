@@ -217,6 +217,70 @@ t.test('req.hostname - trustProxy=true', (t) => {
   })
 })
 
+t.test('req.href - trustProxy=false', (t) => {
+  t.plan(4)
+
+  const app = medley()
+
+  app.get('/*', (req, res) => {
+    res.send(req.href)
+  })
+
+  app.listen(0, (err) => {
+    t.error(err)
+    app.server.unref()
+
+    const url = `http://localhost:${app.server.address().port}/status/user?name=medley`
+
+    sget({
+      url,
+      headers: {
+        'X-Forwarded-Host': 'xhost.com',
+        'X-Forwarded-Proto': 'https',
+      },
+    }, (err, res, body) => {
+      t.error(err)
+      t.equal(res.statusCode, 200)
+      t.equal(body.toString(), url)
+    })
+  })
+})
+
+t.test('req.href - trustProxy=true', (t) => {
+  t.plan(7)
+
+  const app = medley({trustProxy: true})
+
+  app.get('/*', (req, res) => {
+    res.send(req.href)
+  })
+
+  app.listen(0, (err) => {
+    t.error(err)
+    app.server.unref()
+
+    const url = `http://localhost:${app.server.address().port}/status/user/?name=medley`
+
+    sget(url, (err, res, body) => {
+      t.error(err)
+      t.equal(res.statusCode, 200)
+      t.equal(body.toString(), url)
+    })
+
+    sget({
+      url,
+      headers: {
+        'X-Forwarded-Host': 'xhost.com',
+        'X-Forwarded-Proto': 'https',
+      },
+    }, (err, res, body) => {
+      t.error(err)
+      t.equal(res.statusCode, 200)
+      t.equal(body.toString(), 'https://xhost.com/status/user/?name=medley')
+    })
+  })
+})
+
 t.test('request.method - get', (t) => {
   const req = {method: 'GET'}
   t.equal(new Request(req).method, 'GET')
