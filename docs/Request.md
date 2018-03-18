@@ -11,6 +11,7 @@ It is a wrapper around Node's [`http.IncomingMessage`][http.IncomingMessage] obj
 + [`.host`](#reqhost)
 + [`.hostname`](#reqhostname)
 + [`.method`](#reqmethod)
++ [`.origin`](#reqorigin)
 + [`.params`](#reqparams)
 + [`.path`](#reqpath)
 + [`.pathname`](#reqpathname)
@@ -59,7 +60,7 @@ setting is enabled, uses the `X-Forwarded-Host` header first, then the `Host` he
 req.host // 'localhost:8080'
 
 // Another example
-req.host // 'www.google.com'
+req.host // 'www.example.com'
 ```
 
 ### `req.hostname`
@@ -69,7 +70,7 @@ req.host // 'www.google.com'
 The request host (domain) name (the [`host`](#reqhost) without the `port`).
 
 ```js
-req.hostname // 'www.google.com'
+req.hostname // 'www.example.com'
 
 // IPv6 example
 req.hostname // [::1]
@@ -83,6 +84,16 @@ The request's HTTP method as a string.
 
 ```js
 req.method // 'GET'
+```
+
+### `req.origin`
+
+*Read-only*
+
+The origin part of the URL (the [protocol](#reqprotocol) and [host](#reqhost)).
+
+```js
+req.origin // 'http://www.example.com'
 ```
 
 ### `req.params`

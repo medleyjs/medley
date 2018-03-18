@@ -223,6 +223,68 @@ t.test('request.method - get', (t) => {
   t.end()
 })
 
+t.test('req.origin - trustProxy=false', (t) => {
+  t.plan(4)
+
+  const app = medley()
+
+  app.get('/', (req, res) => {
+    res.send(req.origin)
+  })
+
+  app.listen(0, (err) => {
+    t.error(err)
+    app.server.unref()
+
+    sget({
+      url: `http://localhost:${app.server.address().port}/`,
+      headers: {
+        'X-Forwarded-Host': 'xhost.com',
+        'X-Forwarded-Proto': 'https',
+      },
+    }, (err, res, body) => {
+      t.error(err)
+      t.equal(res.statusCode, 200)
+      t.equal(body.toString(), `http://localhost:${app.server.address().port}`)
+    })
+  })
+})
+
+t.test('req.origin - trustProxy=true', (t) => {
+  t.plan(7)
+
+  const app = medley({trustProxy: true})
+
+  app.get('/', (req, res) => {
+    res.send(req.origin)
+  })
+
+  app.listen(0, (err) => {
+    t.error(err)
+    app.server.unref()
+
+    const url = `http://localhost:${app.server.address().port}/`
+
+    sget(url, (err, res, body) => {
+      t.error(err)
+      t.equal(res.statusCode, 200)
+      t.equal(body.toString(), url.slice(0, -1))
+    })
+
+    sget({
+      url,
+      headers: {
+        'X-Forwarded-Host': 'xhost.com',
+        'X-Forwarded-Proto': 'https',
+      },
+    }, (err, res, body) => {
+      t.error(err)
+      t.equal(res.statusCode, 200)
+      t.equal(body.toString(), 'https://xhost.com')
+    })
+  })
+})
+
 t.test('req.path is an alias for req.url', (t) => {
   t.notEqual(Object.getOwnPropertyDescriptor(Request.prototype, 'path'), undefined)
   t.strictDeepEqual(
