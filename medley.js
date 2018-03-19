@@ -12,8 +12,10 @@ const Response = require('./lib/Response')
 const Request = require('./lib/Request')
 const RouteContext = require('./lib/RouteContext')
 
-const registerPlugin = require('./lib/registerPlugin')
-
+const {
+  kRegisteredPlugins,
+  registerPlugin,
+} = require('./lib/PluginUtils')
 const {buildSerializers} = require('./lib/Serializer')
 const {
   routeHandler,
@@ -109,12 +111,14 @@ function medley(options) {
     listen, // Starts the HTTP server
     inject, // Fake HTTP injection
 
+    // Plugins
+    registerPlugin,
+    [kRegisteredPlugins]: [],
+
     _Request: Request.buildRequest(undefined, !!options.trustProxy),
     _Response: Response.buildResponse(),
     _subApps: [],
   }
-
-  registerPlugin.decorateApp(app)
 
   const appLoader = avvio(app, {
     autostart: false,
@@ -151,13 +155,16 @@ function medley(options) {
 
   function override(parentApp, fn, opts) {
     const subApp = Object.create(parentApp)
+
     parentApp._subApps.push(subApp)
+
     subApp._subApps = []
     subApp._Request = Request.buildRequest(subApp._Request)
     subApp._Response = Response.buildResponse(subApp._Response)
     subApp._bodyParser = subApp._bodyParser.clone()
     subApp._hooks = Hooks.buildHooks(subApp._hooks)
     subApp._routePrefix = buildRoutePrefix(parentApp._routePrefix, opts.prefix)
+    subApp[kRegisteredPlugins] = parentApp[kRegisteredPlugins].slice()
 
     if (opts.prefix) {
       subApp._canSetNotFoundHandler = true

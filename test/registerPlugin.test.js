@@ -113,3 +113,56 @@ t.test('registerPlugin checks dependencies before running the plugin', (t) => {
     )
   }
 })
+
+t.test('plugin dependency-checking should follow sub-app encapsulation', (t) => {
+  t.plan(5)
+
+  const app = medley()
+
+  function plugin1() {
+    t.pass('plugin1 should be registered')
+  }
+  plugin1.meta = {name: 'plugin1'}
+
+  function plugin2() {
+    t.pass('plugin2 should be registered')
+  }
+  plugin2.meta = {
+    name: 'plugin2',
+    dependencies: ['plugin1'],
+  }
+
+  function plugin3() {
+    t.fail('plugin3 should not be registered')
+  }
+  plugin3.meta = {
+    name: 'plugin3',
+    dependencies: ['plugin1', 'plugin2'],
+  }
+
+  app.registerPlugin(plugin1)
+
+  app.register((subApp, _, next) => {
+    subApp.registerPlugin(plugin2)
+    next()
+  })
+
+  app.register((subApp, _, next) => {
+    try {
+      app.registerPlugin(plugin3)
+      t.fail('plugin3 should not be registered when plugin2 is in a different sub-app')
+    } catch (err) {
+      t.type(err, Error)
+      t.equal(
+        err.message,
+        "Could not register plugin 'plugin3' because dependency 'plugin2' was not registered"
+      )
+    }
+    next()
+  })
+
+  app.ready((err, done) => {
+    t.error(err)
+    done()
+  })
+})
