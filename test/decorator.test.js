@@ -133,14 +133,13 @@ test('.decorateResponse() should not allow decorating Medley values', (t) => {
   t.end()
 })
 
-test('server methods should be incapsulated via .register', (t) => {
+test('app decorators are encapsulated in sub-apps', (t) => {
   t.plan(2)
   const app = medley()
 
-  app.register((subApp, opts, next) => {
+  app.use((subApp) => {
     subApp.decorate('test', () => {})
     t.ok(subApp.test)
-    next()
   })
 
   app.ready(() => {
@@ -163,11 +162,11 @@ test('cannot decorate sub-app if parent app already has the decorator', (t) => {
   })
 })
 
-test('decorateResponse inside register', (t) => {
+test('decorateResponse inside a sub-app', (t) => {
   t.plan(12)
   const app = medley()
 
-  app.register((subApp, opts, next) => {
+  app.use((subApp) => {
     subApp.decorateResponse('test', 'test')
     t.ok(subApp._Response.prototype.test)
 
@@ -175,8 +174,6 @@ test('decorateResponse inside register', (t) => {
       t.ok(response.test, 'test exists')
       response.send({hello: 'world'})
     })
-
-    next()
   })
 
   app.get('/no', (req, response) => {
@@ -210,11 +207,11 @@ test('decorateResponse inside register', (t) => {
   })
 })
 
-test('decorateRequest inside register', (t) => {
+test('decorateRequest inside a sub-app', (t) => {
   t.plan(12)
   const app = medley()
 
-  app.register((subApp, opts, next) => {
+  app.use((subApp) => {
     subApp.decorateRequest('test', 'test')
     t.ok(subApp._Request.prototype.test)
 
@@ -222,8 +219,6 @@ test('decorateRequest inside register', (t) => {
       t.ok(req.test, 'test exists')
       response.send({hello: 'world'})
     })
-
-    next()
   })
 
   app.get('/no', (req, response) => {

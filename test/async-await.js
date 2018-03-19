@@ -183,28 +183,7 @@ test('inject async await - when the server is up', async (t) => {
   }
 })
 
-test('async await plugin', async (t) => {
-  t.plan(1)
-
-  const app = medley()
-
-  app.register(async (subApp) => {
-    subApp.get('/', (req, response) => {
-      response.send({hello: 'world'})
-    })
-
-    await sleep(200)
-  })
-
-  try {
-    const res = await app.inject({method: 'GET', url: '/'})
-    t.deepEqual({hello: 'world'}, JSON.parse(res.payload))
-  } catch (err) {
-    t.fail(err)
-  }
-})
-
-test('Thrown Error subApp sets HTTP status code', (t) => {
+test('thrown Error in handler sets HTTP status code', (t) => {
   t.plan(3)
 
   const app = medley()
@@ -222,7 +201,7 @@ test('Thrown Error subApp sets HTTP status code', (t) => {
   }, (error, res) => {
     t.error(error)
     t.strictEqual(res.statusCode, 418)
-    t.deepEqual(
+    t.strictDeepEqual(
       {
         error: statusCodes['418'],
         message: err.message,

@@ -124,7 +124,7 @@ function medley(options) {
 
   const appLoader = avvio(app, {
     autostart: false,
-    expose: {use: 'register'},
+    expose: {use: '_register'},
   })
   appLoader.override = createSubApp // Override to allow plugin encapsulation
 
@@ -380,9 +380,9 @@ function medley(options) {
         return
       }
 
-      // It can happen that a user register a plugin with some hooks *after* the route registration.
-      // To be sure to load also that hoooks, we must listen for the avvio's 'preReady' event and
-      // update the routeContext object accordingly.
+      // Users can add hooks *after* the route registration. To include those
+      // hooks in the route, we must listen for the avvio's 'preReady' event
+      // and update the routeContext object accordingly.
       appLoader.once('preReady', () => {
         const onRequest = this._hooks.onRequest
         const onFinished = this._hooks.onFinished

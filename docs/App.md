@@ -25,7 +25,6 @@ const app = medley()
 + [`.onClose(callback)`](#on-close)
 + [`.printRoutes()`](#print-routes)
 + [`.ready([callback])`](#ready)
-+ [`.register()`](#register)
 + [`.registerPlugin(plugin [, options])`](#register-plugin)
 + [`.route(options)`](#route)
 + [`.setErrorHandler(handler)`](#set-error-handler)
@@ -41,17 +40,13 @@ const app = medley()
 The path that will be prefixed to routes in a sub-app. Example:
 
 ```js
-app.register((subApp, opts, next) => {
+app.use('/v1', (subApp) => {
   console.log(subApp.basePath) // '/v1'
 
-  subApp.register((subSubApp, opts, next) => {
+  subApp.use('/user', (subSubApp) => {
     console.log(subSubApp.basePath) // '/v1/user'
-
-    next()
-  }, { prefix: '/user' })
-
-  next()
-}, { prefix: '/v1' })
+  })
+})
 ```
 
 <a id="server"></a>
@@ -202,11 +197,6 @@ app.ready().then(() => {
   console.log(err)
 })
 ```
-
-<a id="register"></a>
-### `app.register()`
-
-Registers a new sub-app. *TODO*.
 
 <a id="register-plugin"></a>
 ### `app.registerPlugin(plugin [, options])`

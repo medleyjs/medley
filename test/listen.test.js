@@ -54,24 +54,6 @@ test('listen after Promise.resolve()', (t) => {
     })
 })
 
-test('register after listen using Promise.resolve()', (t) => {
-  t.plan(1)
-  const f = medley()
-
-  const handler = (req, res) => res.send({})
-  Promise.resolve()
-    .then(() => {
-      f.get('/', handler)
-      f.register((f2, options, done) => {
-        f2.get('/plugin', handler)
-        done()
-      })
-      return f.ready()
-    })
-    .catch(t.error)
-    .then(() => t.pass('resolved'))
-})
-
 test('double listen errors', (t) => {
   t.plan(2)
   const app = medley()

@@ -18,12 +18,12 @@ test('should wait for the ready event', (t) => {
   const app = medley()
   const payload = {hello: 'world'}
 
-  app.register((subApp, opts, next) => {
-    subApp.get('/', (req, response) => {
-      response.send(payload)
+  app.use((subApp) => {
+    subApp.get('/', (req, res) => {
+      res.send(payload)
     })
 
-    setTimeout(next, 500)
+    // TODO: Use app.onLoad() here
   })
 
   app.inject({
@@ -307,11 +307,12 @@ test('inject promisify - when the server is up', (t) => {
 
 test('should reject in error case', (t) => {
   t.plan(1)
-  const app = medley()
 
+  const app = medley()
   const error = new Error('DOOM!')
-  app.register((subApp, opts, next) => {
-    setTimeout(next, 500, error)
+
+  app.after((_, done) => {
+    done(error)
   })
 
   app.inject({
@@ -328,8 +329,8 @@ test('should pass any error to the callback', (t) => {
   const app = medley()
   const error = new Error('DOOM!')
 
-  app.register((subApp, opts, next) => {
-    setTimeout(next, 500, error)
+  app.after((_, done) => {
+    done(error)
   })
 
   app.inject({

@@ -157,134 +157,104 @@ test('has a custom 404 handler for all supported HTTP methods', (t) => {
 })
 
 test('setting a custom 404 handler multiple times is an error', (t) => {
-  t.plan(5)
+  t.plan(6)
 
   t.test('at the root level', (t) => {
-    t.plan(2)
+    t.plan(1)
 
     const app = medley()
 
     app.setNotFoundHandler(() => {})
 
-    try {
-      app.setNotFoundHandler(() => {})
-      t.fail('setting multiple 404 handlers at the same prefix encapsulation level should throw')
-    } catch (err) {
-      t.type(err, Error)
-      t.strictEqual(err.message, 'Not found handler already set for app instance with prefix: \'/\'')
-    }
+    t.throws(
+      () => app.setNotFoundHandler(() => {}),
+      new Error("Not found handler already set for app instance with prefix: '/'")
+    )
   })
 
-  t.test('at the plugin level', (t) => {
-    t.plan(3)
+  t.test('at the sub-app level', (t) => {
+    t.plan(1)
 
     const app = medley()
 
-    app.register((subApp, options, next) => {
+    app.use('/prefix', (subApp) => {
       subApp.setNotFoundHandler(() => {})
 
-      try {
-        subApp.setNotFoundHandler(() => {})
-        t.fail('setting multiple 404 handlers at the same prefix encapsulation level should throw')
-      } catch (err) {
-        t.type(err, Error)
-        t.strictEqual(err.message, 'Not found handler already set for app instance with prefix: \'/prefix\'')
-      }
-
-      next()
-    }, {prefix: '/prefix'})
-
-    app.listen(0, (err) => {
-      t.error(err)
-      app.close()
+      t.throws(
+        () => subApp.setNotFoundHandler(() => {}),
+        new Error("Not found handler already set for app instance with prefix: '/prefix'")
+      )
     })
   })
 
   t.test('at multiple levels', (t) => {
-    t.plan(3)
+    t.plan(1)
 
     const app = medley()
 
-    app.register((subApp, options, next) => {
-      try {
-        subApp.setNotFoundHandler(() => {})
-        t.fail('setting multiple 404 handlers at the same prefix encapsulation level should throw')
-      } catch (err) {
-        t.type(err, Error)
-        t.strictEqual(err.message, 'Not found handler already set for app instance with prefix: \'/\'')
-      }
-      next()
-    })
-
     app.setNotFoundHandler(() => {})
 
-    app.listen(0, (err) => {
-      t.error(err)
-      app.close()
+    app.use((subApp) => {
+      t.throws(
+        () => subApp.setNotFoundHandler(() => {}),
+        new Error("Not found handler already set for app instance with prefix: '/'")
+      )
     })
   })
 
-  t.test('at multiple levels / 2', (t) => {
-    t.plan(3)
+  t.test('at multiple levels > sub-app sets the not-found handler first', (t) => {
+    t.plan(1)
 
     const app = medley()
 
-    app.register((subApp, options, next) => {
+    app.use((subApp) => {
       subApp.setNotFoundHandler(() => {})
+    })
 
-      subApp.register((subApp2, options2, next) => {
-        try {
-          subApp2.setNotFoundHandler(() => {})
-          t.fail('setting multiple 404 handlers at the same prefix encapsulation level should throw')
-        } catch (err) {
-          t.type(err, Error)
-          t.strictEqual(err.message, 'Not found handler already set for app instance with prefix: \'/prefix\'')
-        }
-        next()
-      })
+    t.throws(
+      () => app.setNotFoundHandler(() => {}),
+      new Error("Not found handler already set for app instance with prefix: '/'")
+    )
+  })
 
-      next()
-    }, {prefix: '/prefix'})
+  t.test('at multiple levels / 2', (t) => {
+    t.plan(1)
+
+    const app = medley()
 
     app.setNotFoundHandler(() => {})
 
-    app.listen(0, (err) => {
-      t.error(err)
-      app.close()
+    app.use('/prefix', (subApp) => {
+      subApp.setNotFoundHandler(() => {})
+
+      subApp.use((subApp2) => {
+        t.throws(
+          () => subApp2.setNotFoundHandler(() => {}),
+          new Error("Not found handler already set for app instance with prefix: '/prefix'")
+        )
+      })
     })
   })
 
   t.test('in separate plugins at the same level', (t) => {
-    t.plan(3)
+    t.plan(1)
 
     const app = medley()
 
-    app.register((subApp, options, next) => {
-      subApp.register((subApp2A, opts, next) => {
+    app.use('/prefix', (subApp) => {
+      subApp.use((subApp2A) => {
         subApp2A.setNotFoundHandler(() => {})
-        next()
       })
 
-      subApp.register((subApp2B, opts, next) => {
-        try {
-          subApp2B.setNotFoundHandler(() => {})
-          t.fail('setting multiple 404 handlers at the same prefix encapsulation level should throw')
-        } catch (err) {
-          t.type(err, Error)
-          t.strictEqual(err.message, "Not found handler already set for app instance with prefix: '/prefix'")
-        }
-        next()
+      subApp.use((subApp2B) => {
+        t.throws(
+          () => subApp2B.setNotFoundHandler(() => {}),
+          new Error("Not found handler already set for app instance with prefix: '/prefix'")
+        )
       })
-
-      next()
-    }, {prefix: '/prefix'})
+    })
 
     app.setNotFoundHandler(() => {})
-
-    app.ready((err) => {
-      t.error(err)
-      app.close()
-    })
   })
 })
 
@@ -293,34 +263,31 @@ test('encapsulated 404', (t) => {
 
   const app = medley()
 
-  app.get('/', function(req, response) {
-    response.send({hello: 'world'})
+  app.get('/', function(req, res) {
+    res.send({hello: 'world'})
   })
 
-  app.setNotFoundHandler(function(req, response) {
-    response.status(404).send('this was not found')
+  app.setNotFoundHandler(function(req, res) {
+    res.status(404).send('this was not found')
   })
 
-  app.register(function(f, opts, next) {
-    f.setNotFoundHandler(function(req, response) {
-      response.status(404).send('this was not found 2')
+  app.use('/test', (subApp) => {
+    subApp.setNotFoundHandler(function(req, res) {
+      res.status(404).send('this was not found 2')
     })
-    next()
-  }, {prefix: '/test'})
+  })
 
-  app.register(function(f, opts, next) {
-    f.setNotFoundHandler(function(req, response) {
-      response.status(404).send('this was not found 3')
+  app.use('/test2', (subApp) => {
+    subApp.setNotFoundHandler(function(req, res) {
+      res.status(404).send('this was not found 3')
     })
-    next()
-  }, {prefix: '/test2'})
+  })
 
-  app.register(function(f, opts, next) {
-    f.setNotFoundHandler(function(request, response) {
-      response.status(404).send('this was not found 4')
+  app.use('/test3/', (subApp) => {
+    subApp.setNotFoundHandler(function(req, res) {
+      res.status(404).send('this was not found 4')
     })
-    next()
-  }, {prefix: '/test3/'})
+  })
 
   t.tearDown(app.close.bind(app))
 
@@ -341,7 +308,7 @@ test('encapsulated 404', (t) => {
       })
     })
 
-    t.test('root insupported route', (t) => {
+    t.test('root unsupported route', (t) => {
       t.plan(3)
       sget({
         method: 'GET',
@@ -547,32 +514,30 @@ test('run hooks with encapsulated 404', (t) => {
     t.ok(response, 'onFinished called')
   })
 
-  app.register(function(f, opts, next) {
-    f.setNotFoundHandler((request, response) => {
+  app.use('/test', (subApp) => {
+    subApp.setNotFoundHandler((request, response) => {
       response.status(404).send('this was not found 2')
     })
 
-    f.addHook('onRequest', function(req, res, next) {
+    subApp.addHook('onRequest', function(req, res, next) {
       t.pass('onRequest 2 called')
       next()
     })
 
-    f.addHook('preHandler', function(request, response, next) {
+    subApp.addHook('preHandler', function(request, response, next) {
       t.pass('preHandler 2 called')
       next()
     })
 
-    f.addHook('onSend', function(request, response, payload, next) {
+    subApp.addHook('onSend', function(request, response, payload, next) {
       t.pass('onSend 2 called')
       next()
     })
 
-    f.addHook('onFinished', (request, response) => {
+    subApp.addHook('onFinished', (request, response) => {
       t.ok(response, 'onFinished 2 called')
     })
-
-    next()
-  }, {prefix: '/test'})
+  })
 
   t.tearDown(app.close.bind(app))
 
@@ -599,7 +564,7 @@ test('encapsulated custom 404 without prefix has the right encapsulation context
   app.decorateRequest('foo', 42)
   app.decorateResponse('foo', 42)
 
-  app.register((subApp, opts, next) => {
+  app.use((subApp) => {
     subApp.decorateRequest('bar', 84)
 
     subApp.addHook('onRequest', (request, response, next) => {
@@ -631,8 +596,6 @@ test('encapsulated custom 404 without prefix has the right encapsulation context
       t.equal(request.bar, 84)
       response.status(404).send('custom not found')
     })
-
-    next()
   })
 
   app.inject('/not-found', (err, res) => {
@@ -718,13 +681,11 @@ test('the default 404 handler can be invoked inside a prefixed plugin', (t) => {
 
   const app = medley()
 
-  app.register((subApp, opts, next) => {
+  app.use('/v1', (subApp) => {
     subApp.get('/path', (request, response) => {
       response.notFound()
     })
-
-    next()
-  }, {prefix: '/v1'})
+  })
 
   app.inject('/v1/path', (err, res) => {
     t.error(err)
@@ -743,13 +704,11 @@ test('an inherited custom 404 handler can be invoked inside a prefixed plugin', 
     response.status(404).send('custom handler')
   })
 
-  app.register((subApp, opts, next) => {
+  app.use('/v1', (subApp) => {
     subApp.get('/path', (request, response) => {
       response.notFound()
     })
-
-    next()
-  }, {prefix: '/v1'})
+  })
 
   app.inject('/v1/path', (err, res) => {
     t.error(err)
@@ -763,24 +722,19 @@ test('encapsulated custom 404 handler without a prefix is the handler for the en
 
   const app = medley()
 
-  app.register((subApp, opts, next) => {
+  app.use((subApp) => {
     subApp.setNotFoundHandler((request, response) => {
       response.status(404).send('custom handler')
     })
-
-    next()
   })
 
-  app.register((subApp, opts, next) => {
-    subApp.register((subApp2, opts, next) => {
+  app.use('/prefixed', (subApp) => {
+    subApp.use((subApp2) => {
       subApp2.setNotFoundHandler((request, response) => {
         response.status(404).send('custom handler 2')
       })
-      next()
     })
-
-    next()
-  }, {prefix: 'prefixed'})
+  })
 
   app.inject('/not-found', (err, res) => {
     t.error(err)

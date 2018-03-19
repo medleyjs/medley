@@ -174,36 +174,48 @@ Note that `res.send()` will not be called automatically if the value returned fr
 **Warning:** An error will be thrown if `return someValue` and `res.send()` are used at the same time because a response cannot be sent twice.
 
 ## Route Prefixing
-Sometimes you need to maintain two or more different versions of the same api, a classic approach is to prefix all the routes with the api version number, `/v1/user` for example.
-Medley offers you a fast and smart way to create different version of the same api without changing all the route names by hand, *route prefixing*. Let's see how it works:
+
+Sometimes you need to maintain two or more different versions of the same API.
+A classic approach is to prefix all the routes with the API version number,
+`/v1` for example. To do this, defining every route like this would work:
 
 ```js
-// server.js
-const app = require('@medley/medley')()
+app.get('/v1/user', (req, res) => { ... })
+```
 
-app.register(require('./routes/v1/users'), { prefix: '/v1' })
-app.register(require('./routes/v2/users'), { prefix: '/v2' })
+But an alternative is to use [`app.use()`](App.md#use) to create separate
+sub-apps with a different prefix for each group of routes:
+
+**app.js**
+```js
+const medley = require('@medley/medley')
+const app = medley()
+
+app.use('/v1', require('./routes/v1/user'))
+app.use('/v2', require('./routes/v2/user'))
 
 app.listen(3000)
 ```
+
+**./routes/v1/user.js**
 ```js
-// routes/v1/users.js
-module.exports = function(app, opts, next) {
-  app.get('/user', handler_v1)
-  next()
+module.exports = function v1Routes(subApp) {
+  subApp.get('/user', (req, res) => {
+    // v1 implementation  
+  })
 }
 ```
+
+**./routes/v2/user.js**
 ```js
-// routes/v2/users.js
-module.exports = function(app, opts, next) {
-  app.get('/user', handler_v2)
-  next()
+module.exports = function v2Routes(subApp) {
+  subApp.get('/user', (req, res) => {
+    // v2 implementation  
+  })
 }
 ```
-Medley will not complain because you are using the same name for two different routes, because at compilation time it will handle the prefix automatically *(this also means that the performance will not be affected at all!)*.
 
-Now your clients will have access to the following routes:
-- `/v1/user`
-- `/v2/user`
+Now the following routes will be defined, each with a different implementation:
 
-You can do this as many times as you want, it works also for nested `register` and routes parameter are supported as well.
++ `/v1/user`
++ `/v2/user`

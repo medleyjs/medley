@@ -32,7 +32,7 @@ t.test('res.notFound() should invoke the not-found handler', (t) => {
     res.notFound()
   })
 
-  app.register(function(subApp, options, next) {
+  app.use('/prefixed', function(subApp) {
     subApp.get('/not-found', (req, res) => {
       res.notFound()
     })
@@ -40,9 +40,7 @@ t.test('res.notFound() should invoke the not-found handler', (t) => {
     subApp.setNotFoundHandler((req, res) => {
       res.status(404).send('Custom not found response')
     })
-
-    next()
-  }, {prefix: '/prefixed'})
+  })
 
   app.inject('/not-found', (err, res) => {
     t.error(err)

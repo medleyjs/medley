@@ -90,19 +90,17 @@ test('encapsulated 500', (t) => {
     response.error(new Error('kaboom'))
   })
 
-  app.register(function(f, opts, next) {
-    f.get('/', function(req, response) {
+  app.use('/test', function(subApp) {
+    subApp.get('/', function(req, response) {
       response.error(new Error('kaboom'))
     })
 
-    f.setErrorHandler(function(err, request, response) {
+    subApp.setErrorHandler(function(err, request, response) {
       t.type(request, 'object')
-      t.type(request, f._Request)
+      t.type(request, subApp._Request)
       response.send('an error happened: ' + err.message)
     })
-
-    next()
-  }, {prefix: 'test'})
+  })
 
   app.inject({
     method: 'GET',

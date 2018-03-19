@@ -188,7 +188,7 @@ app.addHook('preHandler', async (req, res, next) => {
 ## Encapsulation
 
 Hooks can be encapsulated following Medley's sub-app encapsulation model so
-that they only run on routes in the same encapsulation scope.
+that they will only run on routes in the same encapsulation scope.
 
 ```js
 app.addHook('onRequest', (req, res, next) => {
@@ -196,7 +196,7 @@ app.addHook('onRequest', (req, res, next) => {
   next()
 })
 
-app.register((subApp1, options, done) => {
+app.use((subApp1) => {
   subApp1.addHook('onRequest', (req, res, next) => {
     req.one = 1 // Only runs for routes in `subApp1`
     next()
@@ -208,11 +208,9 @@ app.register((subApp1, options, done) => {
     console.log(req.two) // undefined
     res.send()
   })
-
-  done()
 })
 
-app.register((subApp2, options, done) => {
+app.use((subApp2) => {
   subApp2.addHook('onRequest', (req, res, next) => {
     req.two = 2 // Only runs for routes in `subApp2`
     next()
@@ -224,7 +222,5 @@ app.register((subApp2, options, done) => {
     console.log(req.two) // 2
     res.send()
   })
-
-  done()
 })
 ```

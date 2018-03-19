@@ -163,18 +163,15 @@ test('bodyParser should support encapsulation', (t) => {
   t.plan(6)
   const app = medley()
 
-  app.register((subApp, opts, next) => {
+  app.use((subApp) => {
     subApp.addBodyParser('application/jsoff', () => {})
     t.ok(subApp.hasBodyParser('application/jsoff'))
 
-    subApp.register((subApp2, opts, next) => {
+    subApp.use((subApp2) => {
       subApp2.addBodyParser('application/ffosj', () => {})
       t.ok(subApp2.hasBodyParser('application/jsoff'))
       t.ok(subApp2.hasBodyParser('application/ffosj'))
-      next()
     })
-
-    next()
   })
 
   app.ready((err) => {
@@ -188,7 +185,7 @@ test('bodyParser should support encapsulation, second try', (t) => {
   t.plan(4)
   const app = medley()
 
-  app.register((subApp, opts, next) => {
+  app.use((subApp) => {
     subApp.post('/', (req, response) => {
       response.send(req.body)
     })
@@ -198,8 +195,6 @@ test('bodyParser should support encapsulation, second try', (t) => {
         done(err, body)
       })
     })
-
-    next()
   })
 
   app.listen(0, (err) => {
