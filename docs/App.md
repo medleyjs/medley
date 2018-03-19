@@ -30,6 +30,7 @@ const app = medley()
 + [`.route(options)`](#route)
 + [`.setErrorHandler(handler)`](#set-error-handler)
 + [`.setNotFoundHandler(handler)`](#set-not-found-handler)
++ [`.use([prefix,] subAppFn)`](#use)
 
 
 ## Properties
@@ -269,4 +270,45 @@ app.register((subApp, options, next) => {
   })
   next()
 }, { prefix: '/v1' })
+```
+
+<a id="use"></a>
+### `app.use([prefix,] subAppFn)`
+
++ `prefix` *(string)* - A prefix for all routes defined in the sub-app (e.g `'/v1'`).
++ `subAppFn(subApp)` *(function)* - A function that will be called immediately with the created sub-app.
+
+Creates a new sub-app and passes it to the `subAppFn` function. Optionally,
+a `prefix` string can be specified which will be the prefix for all routes
+defined on the `subApp`. Prefixes are compounded for nested sub-apps.
+
+```js
+const medley = require('@medley/medley')
+const app = medley()
+
+app.use((subApp) => {
+  subApp.addHook('onRequest', (req, res, next) => {
+    // This hook only runs for routes defined on this sub-app
+    next()  
+  })
+  
+  subApp.get('/status', (req, res) => res.send('OK'))
+})
+
+app.use('/api', (apiSubApp) => {
+  apiSubApp.addHook('onRequest', (req, res, next) => {
+    // This hook only runs for routes defined on this "api" sub-app
+    next()  
+  })
+  
+  apiSubApp.get('/user', (req, res) => { // Route URL is: /api/user
+    // Get user  
+  })
+  
+  apiSubApp.use('/v1', (v1SubApp) => {
+    v1SubApp.post('/user', (req, res) => { // Route URL is: /api/v1/user
+      // Create a new user  
+    })
+  })
+})
 ```

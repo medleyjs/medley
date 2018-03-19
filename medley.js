@@ -70,6 +70,8 @@ function medley(options) {
     printRoutes: router.prettyPrint.bind(router),
     server,
 
+    use, // For sub-apps
+
     // Decorator methods
     decorate: decorateApp,
     decorateRequest,
@@ -152,6 +154,23 @@ function medley(options) {
   app._canSetNotFoundHandler = true // Allowed to override the default 404 handler
 
   return app
+
+  function use(prefix, subAppFn) {
+    if (subAppFn === undefined) {
+      subAppFn = prefix
+      prefix = ''
+    }
+
+    if (typeof prefix !== 'string') {
+      throw new TypeError(`'prefix' must be a string. Got a value of type '${typeof prefix}': ${prefix}`)
+    }
+    if (typeof subAppFn !== 'function') {
+      throw new TypeError(`'subAppFn' must be a function. Got a value of type '${typeof subAppFn}': ${subAppFn}`)
+    }
+
+    const subApp = createSubApp(this, null, {prefix})
+    subAppFn(subApp)
+  }
 
   function createSubApp(parentApp, fn, opts) {
     const subApp = Object.create(parentApp)

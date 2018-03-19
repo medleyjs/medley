@@ -4,28 +4,25 @@ const t = require('tap')
 const test = t.test
 const medley = require('..')
 
-test('Prefix options should add a prefix for all the routes inside a register / 1', (t) => {
+test('Prefix options should add a prefix for all the routes inside a sub-app / 1', (t) => {
   t.plan(6)
   const app = medley()
 
-  app.get('/first', (request, response) => {
-    response.send({route: '/first'})
+  app.get('/first', (req, res) => {
+    res.send({route: '/first'})
   })
 
-  app.register(function(subApp, opts, next) {
-    subApp.get('/first', (request, response) => {
-      response.send({route: '/v1/first'})
+  app.use('/v1', function(subApp) {
+    subApp.get('/first', (req, res) => {
+      res.send({route: '/v1/first'})
     })
 
-    subApp.register(function(subApp2, opts, next) {
-      subApp2.get('/first', (request, response) => {
-        response.send({route: '/v1/v2/first'})
+    subApp.use('/v2', function(subApp2) {
+      subApp2.get('/first', (req, res) => {
+        res.send({route: '/v1/v2/first'})
       })
-      next()
-    }, {prefix: '/v2'})
-
-    next()
-  }, {prefix: '/v1'})
+    })
+  })
 
   app.inject({
     method: 'GET',
@@ -52,53 +49,19 @@ test('Prefix options should add a prefix for all the routes inside a register / 
   })
 })
 
-test('Prefix options should add a prefix for all the routes inside a register / 2', (t) => {
+test('Prefix options should add a prefix for all the routes inside a sub-app / 2', (t) => {
   t.plan(4)
   const app = medley()
 
-  app.register(function(subApp, opts, next) {
-    subApp.get('/first', (request, response) => {
-      response.send({route: '/v1/first'})
+  app.use('/v1', function(subApp) {
+    subApp.get('/first', (req, res) => {
+      res.send({route: '/v1/first'})
     })
 
-    subApp.get('/second', (request, response) => {
-      response.send({route: '/v1/second'})
+    subApp.get('/second', (req, res) => {
+      res.send({route: '/v1/second'})
     })
-    next()
-  }, {prefix: '/v1'})
-
-  app.inject({
-    method: 'GET',
-    url: '/v1/first',
-  }, (err, res) => {
-    t.error(err)
-    t.same(JSON.parse(res.payload), {route: '/v1/first'})
   })
-
-  app.inject({
-    method: 'GET',
-    url: '/v1/second',
-  }, (err, res) => {
-    t.error(err)
-    t.same(JSON.parse(res.payload), {route: '/v1/second'})
-  })
-})
-
-test('Prefix options should add a prefix for all the chained routes inside a register / 3', (t) => {
-  t.plan(4)
-
-  const app = medley()
-
-  app.register(function(subApp, opts, next) {
-    subApp
-      .get('/first', (request, response) => {
-        response.send({route: '/v1/first'})
-      })
-      .get('/second', (request, response) => {
-        response.send({route: '/v1/second'})
-      })
-    next()
-  }, {prefix: '/v1'})
 
   app.inject({
     method: 'GET',
@@ -121,12 +84,11 @@ test('Prefix should support parameters as well', (t) => {
   t.plan(2)
   const app = medley()
 
-  app.register(function(subApp, opts, next) {
-    subApp.get('/hello', (request, response) => {
-      response.send({id: request.params.id})
+  app.use('/v1/:id', function(subApp) {
+    subApp.get('/hello', (req, res) => {
+      res.send({id: req.params.id})
     })
-    next()
-  }, {prefix: '/v1/:id'})
+  })
 
   app.inject({
     method: 'GET',
@@ -141,12 +103,11 @@ test('Prefix should support /', (t) => {
   t.plan(2)
   const app = medley()
 
-  app.register(function(subApp, opts, next) {
-    subApp.get('/', (request, response) => {
-      response.send({hello: 'world'})
+  app.use('/v1', function(subApp) {
+    subApp.get('/', (req, res) => {
+      res.send({hello: 'world'})
     })
-    next()
-  }, {prefix: '/v1'})
+  })
 
   app.inject({
     method: 'GET',
@@ -157,16 +118,15 @@ test('Prefix should support /', (t) => {
   })
 })
 
-test('Prefix without /', (t) => {
+test('Prefix without leading /', (t) => {
   t.plan(2)
   const app = medley()
 
-  app.register(function(subApp, opts, next) {
-    subApp.get('/', (request, response) => {
-      response.send({hello: 'world'})
+  app.use('v1', function(subApp) {
+    subApp.get('/', (req, res) => {
+      res.send({hello: 'world'})
     })
-    next()
-  }, {prefix: 'v1'})
+  })
 
   app.inject({
     method: 'GET',
@@ -181,30 +141,26 @@ test('Prefix with trailing /', (t) => {
   t.plan(8)
   const app = medley()
 
-  app.register(function(subApp, opts, next) {
-    subApp.get('/route1', (request, response) => {
-      response.send({hello: 'world1'})
+  app.use('/v1/', function(subApp) {
+    subApp.get('/route1', (req, res) => {
+      res.send({hello: 'world1'})
     })
-    subApp.get('route2', (request, response) => {
-      response.send({hello: 'world2'})
+    subApp.get('route2', (req, res) => {
+      res.send({hello: 'world2'})
     })
 
-    subApp.register(function(subApp2, opts, next) {
-      subApp2.get('/route3', (request, response) => {
-        response.send({hello: 'world3'})
+    subApp.use('/inner/', function(subApp2) {
+      subApp2.get('/route3', (req, res) => {
+        res.send({hello: 'world3'})
       })
-      next()
-    }, {prefix: '/inner/'})
+    })
 
-    subApp.register(function(subApp2, opts, next) {
-      subApp2.get('/route4', (request, response) => {
-        response.send({hello: 'world4'})
+    subApp.use('inner2', function(subApp2) {
+      subApp2.get('/route4', (req, res) => {
+        res.send({hello: 'world4'})
       })
-      next()
-    }, {prefix: 'inner2'})
-
-    next()
-  }, {prefix: '/v1/'})
+    })
+  })
 
   app.inject({
     method: 'GET',
@@ -243,21 +199,17 @@ test('Prefix works multiple levels deep', (t) => {
   t.plan(2)
   const app = medley()
 
-  app.register(function(subApp, opts, next) {
-    subApp.register(function(subApp2, opts, next) {
-      subApp2.register(function(subApp3, opts, next) {
-        subApp3.register(function(subApp4, opts, next) {
-          subApp4.get('/', (request, response) => {
-            response.send({hello: 'world'})
+  app.use('/v1', function(subApp) {
+    subApp.use('v2', function(subApp2) {
+      subApp2.use(function(subApp3) { // No prefix on this level
+        subApp3.use('/v3', function(subApp4) {
+          subApp4.get('/', (req, res) => {
+            res.send({hello: 'world'})
           })
-          next()
-        }, {prefix: '/v3'})
-        next()
-      }) // No prefix on this level
-      next()
-    }, {prefix: 'v2'})
-    next()
-  }, {prefix: '/v1'})
+        })
+      })
+    })
+  })
 
   app.inject({
     method: 'GET',
@@ -268,33 +220,29 @@ test('Prefix works multiple levels deep', (t) => {
   })
 })
 
-test('Different register - encapsulation check', (t) => {
+test('Different sub-apps - encapsulation check', (t) => {
   t.plan(4)
   const app = medley()
 
-  app.get('/first', (request, response) => {
-    response.send({route: '/first'})
+  app.get('/first', (req, res) => {
+    res.send({route: '/first'})
   })
 
-  app.register(function(subApp, opts, next) {
-    subApp.register(function(f, opts, next) {
-      f.get('/', (request, response) => {
-        response.send({route: '/v1/v2'})
+  app.use('/v1', function(subApp) {
+    subApp.use('/v2', function(subApp2) {
+      subApp2.get('/', (req, res) => {
+        res.send({route: '/v1/v2'})
       })
-      next()
-    }, {prefix: '/v2'})
-    next()
-  }, {prefix: '/v1'})
+    })
+  })
 
-  app.register(function(subApp, opts, next) {
-    subApp.register(function(f, opts, next) {
-      f.get('/', (request, response) => {
-        response.send({route: '/v3/v4'})
+  app.use('/v3', function(subApp) {
+    subApp.use('/v4', function(subApp2) {
+      subApp2.get('/', (req, res) => {
+        res.send({route: '/v3/v4'})
       })
-      next()
-    }, {prefix: '/v4'})
-    next()
-  }, {prefix: '/v3'})
+    })
+  })
 
   app.inject({
     method: 'GET',
@@ -313,38 +261,15 @@ test('Different register - encapsulation check', (t) => {
   })
 })
 
-test('Can retrieve basePath within an encapsulated app instance', (t) => {
-  t.plan(4)
+test('.basePath within an encapsulated app instance', (t) => {
+  t.plan(2)
   const app = medley()
 
-  app.register(function(subApp, opts, next) {
-    subApp.get('/one', function(request, response) {
-      response.send(subApp.basePath)
+  app.use('/v1', (subApp) => {
+    t.equal(subApp.basePath, '/v1')
+
+    subApp.use('/v2', (subApp2) => {
+      t.equal(subApp2.basePath, '/v1/v2')
     })
-
-    subApp.register(function(subApp2, opts, next) {
-      subApp2.get('/two', function(request, response) {
-        response.send(subApp2.basePath)
-      })
-      next()
-    }, {prefix: '/v2'})
-
-    next()
-  }, {prefix: '/v1'})
-
-  app.inject({
-    method: 'GET',
-    url: '/v1/one',
-  }, (err, res) => {
-    t.error(err)
-    t.is(res.payload, '/v1')
-  })
-
-  app.inject({
-    method: 'GET',
-    url: '/v1/v2/two',
-  }, (err, res) => {
-    t.error(err)
-    t.is(res.payload, '/v1/v2')
   })
 })

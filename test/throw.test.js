@@ -102,27 +102,6 @@ test('Should throw on duplicate decorator', (t) => {
   }
 })
 
-test('Should throw on duplicate decorator encapsulation', (t) => {
-  t.plan(1)
-
-  const app = medley()
-  const foo2Obj = {}
-
-  app.decorate('foo2', foo2Obj)
-
-  app.register(function(subApp, opts, next) {
-    try {
-      subApp.decorate('foo2', foo2Obj)
-      t.fail()
-    } catch (e) {
-      t.pass()
-    }
-    next()
-  })
-
-  app.ready()
-})
-
 test('Should throw on duplicate request decorator', (t) => {
   t.plan(1)
 

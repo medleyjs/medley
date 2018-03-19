@@ -42,7 +42,7 @@ t.test('registerPlugin passes the app and any options to the plugin', (t) => {
 /* eslint-disable padding-line-between-statements */
 
 t.test('registerPlugin checks dependencies before running the plugin', (t) => {
-  t.plan(8)
+  t.plan(6)
 
   const app = medley()
 
@@ -93,29 +93,19 @@ t.test('registerPlugin checks dependencies before running the plugin', (t) => {
   app.registerPlugin(plugin3)
   app.registerPlugin(plugin4)
 
-  try {
-    app.registerPlugin(plugin5)
-  } catch (err) {
-    t.type(err, Error)
-    t.equal(
-      err.message,
-      "Could not register plugin 'plugin5' because dependency 'plugin4' was not registered"
-    )
-  }
+  t.throws(
+    () => app.registerPlugin(plugin5),
+    new Error("Could not register plugin 'plugin5' because dependency 'plugin4' was not registered")
+  )
 
-  try {
-    app.registerPlugin(plugin6)
-  } catch (err) {
-    t.type(err, Error)
-    t.equal(
-      err.message,
-      "Could not register plugin 'undefined' because dependency 'plugin5' was not registered"
-    )
-  }
+  t.throws(
+    () => app.registerPlugin(plugin6),
+    new Error("Could not register plugin 'undefined' because dependency 'plugin5' was not registered")
+  )
 })
 
 t.test('plugin dependency-checking should follow sub-app encapsulation', (t) => {
-  t.plan(5)
+  t.plan(3)
 
   const app = medley()
 
@@ -142,27 +132,14 @@ t.test('plugin dependency-checking should follow sub-app encapsulation', (t) => 
 
   app.registerPlugin(plugin1)
 
-  app.register((subApp, _, next) => {
+  app.use((subApp) => {
     subApp.registerPlugin(plugin2)
-    next()
   })
 
-  app.register((subApp, _, next) => {
-    try {
-      app.registerPlugin(plugin3)
-      t.fail('plugin3 should not be registered when plugin2 is in a different sub-app')
-    } catch (err) {
-      t.type(err, Error)
-      t.equal(
-        err.message,
-        "Could not register plugin 'plugin3' because dependency 'plugin2' was not registered"
-      )
-    }
-    next()
-  })
-
-  app.ready((err, done) => {
-    t.error(err)
-    done()
+  app.use((subApp) => {
+    t.throws(
+      () => subApp.registerPlugin(plugin3),
+      new Error("Could not register plugin 'plugin3' because dependency 'plugin2' was not registered")
+    )
   })
 })

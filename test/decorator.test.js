@@ -148,6 +148,21 @@ test('server methods should be incapsulated via .register', (t) => {
   })
 })
 
+test('cannot decorate sub-app if parent app already has the decorator', (t) => {
+  t.plan(1)
+
+  const app = medley()
+
+  app.decorate('foo', true)
+
+  app.use((subApp) => {
+    t.throws(
+      () => subApp.decorate('foo', 'other'),
+      new Error("A decorator called 'foo' has been already added")
+    )
+  })
+})
+
 test('decorateResponse inside register', (t) => {
   t.plan(12)
   const app = medley()
