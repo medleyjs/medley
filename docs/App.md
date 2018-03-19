@@ -26,6 +26,7 @@ const app = medley()
 + [`.printRoutes()`](#print-routes)
 + [`.ready([callback])`](#ready)
 + [`.register()`](#register)
++ [`.registerPlugin(plugin [, options])`](#register-plugin)
 + [`.route(options)`](#route)
 + [`.setErrorHandler(handler)`](#set-error-handler)
 + [`.setNotFoundHandler(handler)`](#set-not-found-handler)
@@ -206,6 +207,11 @@ app.ready().then(() => {
 
 Registers a new sub-app. *TODO*.
 
+<a id="register-plugin"></a>
+### `app.registerPlugin(plugin [, options])`
+
+Registers a plugin with the `app`. See the [Plugins](Plugins.md) documentation.
+
 <a id="route"></a>
 ### `app.route(options)`
 
@@ -215,7 +221,7 @@ that aren't included here. See the [Routes](Routes.md) documentation.
 <a id="set-error-handler"></a>
 ### `app.setErrorHandler(handler)`
 
-+ `handler(err, req, res)` *(function)* - The handler function that receives the following parameters:
++ `handler(err, req, res)` *(function)* - A request handler function that receives the following parameters:
   + `err` - The [`Error`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error) that occurred during the request.
   + `req` - The Medley [`request`](Request.md) object.
   + `res` - The Medley [`response`](Response.md) object.
@@ -237,7 +243,7 @@ for more information on where this status code may come from.
 <a id="set-not-found-handler"></a>
 ### `app.setNotFoundHandler(handler)`
 
-+ `handler(req, res)` *(function)* - The handler function that receives the [`request`](Request.md) and [`response`](Response.md) objects.
++ `handler(req, res)` *(function)* - A request handler function that receives the [`request`](Request.md) and [`response`](Response.md) objects.
 
 Sets the handler that will be called when no registered routes match the
 incoming request. The handler is treated like a regular route handler so
