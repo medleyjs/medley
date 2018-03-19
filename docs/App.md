@@ -73,8 +73,11 @@ See the [Hooks](Hooks.md) documentation.
 <a id="close"></a>
 ### `app.close([callback])`
 
-Shuts down the app by closing the server and running the [`'onClose'`](Hooks.md#on-close) hooks.
-If a `callback` is provided, it will be called once all of the `onClose` hooks have completed.
+Shuts down the app by closing the server and running the [`'onClose'`](#on-close) handlers.
+If a `callback` is provided, it will be called once all of the handlers have completed.
+
+The `callback` will receive an error object as the first parameter if one of
+the handlers failed, or an array or errors if multiple handlers failed.
 
 <a id="decorate"></a>
 ### `app.decorate(name, value)`
@@ -140,18 +143,31 @@ app.listen(3000, '0.0.0.0')
 <a id="on-close"></a>
 ### `app.onClose(handler)`
 
-+ `handler(app, done)` *(function)* - Called when the `app` is shutting down. Receives the following parameters:
-  + `app` - The `app` instance that `.onClose()` was called on.
-  + `done([err])` *(function)* - A function that must be called when the `handler` is finished.
++ `handler([done])` *(function)* - Called when the `app` is shutting down. Receives the following parameter:
+  + `done([err])` *(function)* - A function to call when the `handler` is finished. A Promise can be returned instead of calling this function.
 
 Registers a function that will be called when the `app` is shutting down (triggered
 by [`app.close()`](#close)). Useful for things like releasing database connections.
 
 ```js
-app.onClose(function(app, done) {
+app.onClose(function(done) {
   app.db.end(err => done(err))
 })
 ```
+
+If the `handler` is an `async` function (or returns a promise), the `done`
+callback does not need to be used since the handler will be considered
+finished when the promise resolves (or rejects).
+
+```js
+app.onClose(async function() {
+  console.log('closing database connections')
+  await app.db.end()
+  console.log('database connections closed')
+})
+```
+
+**Note:** Using both async functions/promises and the `done` callback will cause undefined behavior.
 
 <a id="print-routes"></a>
 ### `app.printRoutes()`

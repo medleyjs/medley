@@ -12,6 +12,8 @@ const Response = require('./lib/Response')
 const Request = require('./lib/Request')
 const RouteContext = require('./lib/RouteContext')
 
+const runOnCloseHandlers = require('./lib/utils/runOnCloseHandlers')
+
 const {
   kRegisteredPlugins,
   registerPlugin,
@@ -110,6 +112,11 @@ function medley(options) {
     setErrorHandler,
     _errorHandler: null,
 
+    // App tear-down
+    _onCloseHandlers: [],
+    onClose,
+    close,
+
     listen, // Starts the HTTP server
     inject, // Fake HTTP injection
 
@@ -124,12 +131,11 @@ function medley(options) {
 
   const appLoader = avvio(app, {
     autostart: false,
-    expose: {use: '_register'},
+    expose: {use: '_register', onClose: '_onClose', close: '_close'},
   })
   appLoader.override = createSubApp // Override to allow plugin encapsulation
 
   var ready = false // true when plugins and sub-apps have loaded
-  var listening = false // true when server is listening
 
   appLoader.on('start', () => {
     ready = true
@@ -141,9 +147,9 @@ function medley(options) {
     }
   }
 
-  app.onClose((_app, done) => {
-    if (listening) {
-      _app.server.close(done)
+  app.onClose((done) => {
+    if (app.server.listening) {
+      app.server.close(done)
     } else {
       done(null)
     }
@@ -536,6 +542,15 @@ function medley(options) {
     return this
   }
 
+  function onClose(handler) {
+    this._onCloseHandlers.push(handler.bind(this))
+    return this
+  }
+
+  function close(cb = () => {}) {
+    runOnCloseHandlers(this._onCloseHandlers, cb)
+  }
+
   function listen(port, host, backlog, cb) {
     // Handle listen (port, cb)
     if (typeof host === 'function') {
@@ -567,7 +582,7 @@ function medley(options) {
         cb(err)
         return
       }
-      if (listening) {
+      if (this.server.listening) {
         cb(new Error('app is already listening'))
         return
       }
@@ -583,8 +598,6 @@ function medley(options) {
       } else {
         server.listen(port, host, handleListening)
       }
-
-      listening = true
     })
 
     return undefined

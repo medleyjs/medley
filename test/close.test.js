@@ -4,13 +4,14 @@ const t = require('tap')
 const test = t.test
 const medley = require('..')
 
-test('close callback', (t) => {
+test('.close() stops the server and runs onClose handlers in the context of the app', (t) => {
   t.plan(4)
+
   const app = medley()
   app.onClose(onClose)
 
-  function onClose(subApp, done) {
-    t.type(app, subApp)
+  function onClose(done) {
+    t.equal(this, app)
     done()
   }
 
@@ -19,20 +20,19 @@ test('close callback', (t) => {
 
     app.close((err) => {
       t.error(err)
-      t.ok('close callback')
+      t.equal(app.server.listening, false, 'stops the http server')
     })
   })
 })
 
 test('inside a sub-app', (t) => {
-  t.plan(4)
+  t.plan(3)
 
   const app = medley()
 
   app.use(function(subApp) {
-    subApp.onClose(function(_subApp, done) {
-      t.ok(_subApp.prototype === app.prototype)
-      t.strictEqual(_subApp, subApp)
+    subApp.onClose(function(done) {
+      t.equal(this, subApp)
       done()
     })
   })
@@ -46,45 +46,95 @@ test('inside a sub-app', (t) => {
   })
 })
 
-// TODO: Fix this
-// test('close order', (t) => {
-//   t.plan(5)
-//   const app = medley()
-//   const order = [1, 2, 3]
+test('close order', (t) => {
+  t.plan(5)
 
-//   app.use(function(subApp) {
-//     subApp.onClose((_, done) => {
-//       t.is(order.shift(), 1)
-//       done()
-//     })
-//   })
+  const app = medley()
+  let order = 1
 
-//   app.onClose((_, done) => {
-//     t.is(order.shift(), 2)
-//     done()
-//   })
+  app.use((subApp) => {
+    subApp.onClose((done) => {
+      t.equal(order++, 1)
+      setImmediate(done)
+    })
+  })
 
-//   app.listen(0, (err) => {
-//     t.error(err)
+  app.onClose((done) => {
+    t.equal(order++, 2)
+    done()
+  })
 
-//     app.close((err) => {
-//       t.error(err)
-//       t.is(order.shift(), 3)
-//     })
-//   })
-// })
+  app.listen(0, (err) => {
+    t.error(err)
+
+    app.close((err) => {
+      t.error(err)
+      t.equal(order++, 3)
+    })
+  })
+})
 
 test('should not throw an error if the server is not listening', (t) => {
   t.plan(2)
-  const app = medley()
-  app.onClose(onClose)
 
-  function onClose(subApp, done) {
-    t.type(app, subApp)
+  const app = medley()
+
+  app.onClose(function(done) {
+    t.equal(this, app)
     done()
-  }
+  })
 
   app.close((err) => {
     t.error(err)
+  })
+})
+
+test('should pass a single error to the close callback and still run other onClose handlers', (t) => {
+  t.plan(3)
+
+  const app = medley()
+  const error = new Error('onClose error')
+
+  app.onClose((done) => {
+    t.pass('first called')
+    done(error)
+  })
+
+  app.onClose((done) => {
+    t.pass('second called')
+    done()
+  })
+
+  app.close((err) => {
+    t.equal(err, error)
+  })
+})
+
+test('should pass an array of errors to the close callback and still run other onClose handlers', (t) => {
+  t.plan(5)
+
+  const app = medley()
+  const error = new Error('onClose error')
+
+  app
+    .onClose((done) => {
+      t.pass('first called')
+      done(error)
+    })
+    .onClose((done) => {
+      t.pass('second called')
+      process.nextTick(done)
+    })
+    .onClose((done) => {
+      t.pass('third called')
+      done(error)
+    })
+    .onClose((done) => {
+      t.pass('fourth called')
+      done()
+    })
+
+  app.close((err) => {
+    t.strictDeepEqual(err, [error, error])
   })
 })
