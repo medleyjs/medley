@@ -2,11 +2,11 @@
 
 const t = require('tap')
 const fs = require('fs')
-const medley = require('../..')
+const medley = require('..')
 const path = require('path')
 const sget = require('simple-get').concat
 
-const Request = require('../../lib/Request').buildRequest()
+const Request = require('../lib/Request').buildRequest()
 
 t.test('Request object', (t) => {
   t.plan(5)
@@ -16,6 +16,15 @@ t.test('Request object', (t) => {
   t.equal(request.headers, 'headers')
   t.equal(request.params, 'params')
   t.equal(request.body, undefined)
+})
+
+t.test('req.authority is an alias for req.host', (t) => {
+  t.notEqual(Object.getOwnPropertyDescriptor(Request.prototype, 'authority'), undefined)
+  t.strictDeepEqual(
+    Object.getOwnPropertyDescriptor(Request.prototype, 'authority'),
+    Object.getOwnPropertyDescriptor(Request.prototype, 'host')
+  )
+  t.end()
 })
 
 t.test('req.body should be available in onSend hooks and undefined in onFinished hooks', (t) => {
@@ -434,8 +443,8 @@ t.test('req.protocol - https', (t) => {
 
   const app = medley({
     https: {
-      key: fs.readFileSync(path.join(__dirname, '../https/app.key')),
-      cert: fs.readFileSync(path.join(__dirname, '../https/app.cert')),
+      key: fs.readFileSync(path.join(__dirname, 'https/app.key')),
+      cert: fs.readFileSync(path.join(__dirname, 'https/app.cert')),
     },
     trustProxy: true,
   })
@@ -499,6 +508,15 @@ t.test('request.querystring - get', (t) => {
   t.equal(new Request({url: '/??query'}).querystring, '?query')
   t.equal(new Request({url: '/?query?'}).querystring, 'query?')
   t.equal(new Request({url: '/?a&b=1%23-&c='}).querystring, 'a&b=1%23-&c=')
+  t.end()
+})
+
+t.test('req.scheme is an alias for req.protocol', (t) => {
+  t.notEqual(Object.getOwnPropertyDescriptor(Request.prototype, 'scheme'), undefined)
+  t.strictDeepEqual(
+    Object.getOwnPropertyDescriptor(Request.prototype, 'scheme'),
+    Object.getOwnPropertyDescriptor(Request.prototype, 'protocol')
+  )
   t.end()
 })
 

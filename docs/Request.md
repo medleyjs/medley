@@ -6,6 +6,7 @@ It is a wrapper around Node's [`http.IncomingMessage`][http.IncomingMessage] obj
 
 **Properties:**
 
++ [`.authority`](#reqauthority)
 + [`.body`](#reqbody)
 + [`.headers`](#reqheaders)
 + [`.host`](#reqhost)
@@ -19,10 +20,15 @@ It is a wrapper around Node's [`http.IncomingMessage`][http.IncomingMessage] obj
 + [`.protocol`](#reqprotocol)
 + [`.query`](#reqquery)
 + [`.querystring`](#reqquerystring)
++ [`.scheme`](#reqscheme)
 + [`.stream`](#reqstream)
 + [`.url`](#requrl)
 
 ## Properties
+
+### `req.authority`
+
+HTTP2-style alias for [`req.host`](#reqhost).
 
 ### `req.body`
 
@@ -36,12 +42,13 @@ app.post('/user', (req, res) => {
 
 See the [`Body Parser`](BodyParser.md) documentation for information on how to implement custom body parsers.
 
-Note that `request.body` is set back to `undefined` when the response is sent
+Note that `req.body` is set back to `undefined` when the response is sent
 (after `onSend` hooks) to save memory.
 
 ### `req.headers`
 
-The request's HTTP headers. It is an object mapping header names to values. Header names are lower-cased.
+The request's HTTP headers. It is an object mapping header names to values.
+Header names are lower-cased.
 
 ```js
 req.headers
@@ -176,6 +183,10 @@ The query string found in the request's URL.
 // URL: /path?a=1&b=value
 req.querystring // 'a=1&b=value'
 ```
+
+### `req.scheme`
+
+HTTP2-style alias for [`req.protocol`](#reqprotocol).
 
 ### `req.stream`
 
