@@ -124,7 +124,7 @@ function medley(options) {
     autostart: false,
     expose: {use: 'register'},
   })
-  appLoader.override = override // Override to allow plugin encapsulation
+  appLoader.override = createSubApp // Override to allow plugin encapsulation
 
   var ready = false // true when plugins and sub-apps have loaded
   var listening = false // true when server is listening
@@ -153,16 +153,16 @@ function medley(options) {
 
   return app
 
-  function override(parentApp, fn, opts) {
+  function createSubApp(parentApp, fn, opts) {
     const subApp = Object.create(parentApp)
 
     parentApp._subApps.push(subApp)
 
     subApp._subApps = []
-    subApp._Request = Request.buildRequest(subApp._Request)
-    subApp._Response = Response.buildResponse(subApp._Response)
-    subApp._bodyParser = subApp._bodyParser.clone()
-    subApp._hooks = Hooks.buildHooks(subApp._hooks)
+    subApp._Request = Request.buildRequest(parentApp._Request)
+    subApp._Response = Response.buildResponse(parentApp._Response)
+    subApp._bodyParser = parentApp._bodyParser.clone()
+    subApp._hooks = Hooks.buildHooks(parentApp._hooks)
     subApp._routePrefix = buildRoutePrefix(parentApp._routePrefix, opts.prefix)
     subApp[kRegisteredPlugins] = parentApp[kRegisteredPlugins].slice()
 
