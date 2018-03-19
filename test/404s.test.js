@@ -2,7 +2,6 @@
 
 const t = require('tap')
 const test = t.test
-const fp = require('fastify-plugin')
 const sget = require('simple-get').concat
 const medley = require('..')
 
@@ -479,77 +478,33 @@ test('run hooks on default 404', (t) => {
   })
 })
 
-test('run non-encapsulated plugin hooks on default 404', (t) => {
-  t.plan(6)
-
-  const app = medley()
-
-  app.register(fp(function(subApp, options, next) {
-    subApp.addHook('onRequest', function(req, res, next) {
-      t.pass('onRequest called')
-      next()
-    })
-
-    subApp.addHook('preHandler', function(request, response, next) {
-      t.pass('preHandler called')
-      next()
-    })
-
-    subApp.addHook('onSend', function(request, response, payload, next) {
-      t.pass('onSend called')
-      next()
-    })
-
-    subApp.addHook('onFinished', (request, response) => {
-      t.ok(response, 'onFinished called')
-    })
-
-    next()
-  }))
-
-  app.get('/', (request, response) => {
-    response.send({hello: 'world'})
-  })
-
-  app.inject({
-    method: 'POST',
-    url: '/',
-    payload: {hello: 'world'},
-  }, (err, res) => {
-    t.error(err)
-    t.strictEqual(res.statusCode, 404)
-  })
-})
-
-test('run non-encapsulated plugin hooks on custom 404', (t) => {
+test('run hooks on custom 404', (t) => {
   t.plan(11)
 
   const app = medley()
 
-  const plugin = fp((subApp, opts, next) => {
-    subApp.addHook('onRequest', function(req, res, next) {
+  function plugin(appInstance) {
+    appInstance.addHook('onRequest', function(req, res, next) {
       t.pass('onRequest called')
       next()
     })
 
-    subApp.addHook('preHandler', function(request, response, next) {
+    appInstance.addHook('preHandler', function(request, response, next) {
       t.pass('preHandler called')
       next()
     })
 
-    subApp.addHook('onSend', function(request, response, payload, next) {
+    appInstance.addHook('onSend', function(request, response, payload, next) {
       t.pass('onSend called')
       next()
     })
 
-    subApp.addHook('onFinished', (request, response) => {
+    appInstance.addHook('onFinished', (request, response) => {
       t.ok(response, 'onFinished called')
     })
+  }
 
-    next()
-  })
-
-  app.register(plugin)
+  app.registerPlugin(plugin)
 
   app.get('/', (request, response) => {
     response.send({hello: 'world'})
@@ -559,7 +514,7 @@ test('run non-encapsulated plugin hooks on custom 404', (t) => {
     response.status(404).send('this was not found')
   })
 
-  app.register(plugin) // Registering plugin after handler also works
+  app.registerPlugin(plugin) // Registering plugin after handler also works
 
   app.inject({url: '/not-found'}, (err, res) => {
     t.error(err)

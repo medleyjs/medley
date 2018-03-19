@@ -10,7 +10,6 @@ const http = require('http')
 const sget = require('simple-get').concat
 const stream = require('stream')
 const medley = require('..')
-const fp = require('fastify-plugin')
 
 test('hooks', (t) => {
   t.plan(22)
@@ -800,135 +799,6 @@ test('preHandler hooks should be able to send a response', (t) => {
   })
 })
 
-test('Register a hook after a plugin inside a plugin', (t) => {
-  t.plan(6)
-  const app = medley()
-
-  app.register(fp(function(subApp, opts, next) {
-    subApp.addHook('preHandler', function(req, response, next) {
-      t.ok('called')
-      next()
-    })
-
-    subApp.get('/', function(request, response) {
-      response.send({hello: 'world'})
-    })
-
-    next()
-  }))
-
-  app.register(fp(function(subApp, opts, next) {
-    subApp.addHook('preHandler', function(req, response, next) {
-      t.ok('called')
-      next()
-    })
-
-    subApp.addHook('preHandler', function(req, response, next) {
-      t.ok('called')
-      next()
-    })
-
-    next()
-  }))
-
-  app.inject({
-    url: '/',
-    method: 'GET',
-  }, (err, res) => {
-    t.error(err)
-    t.is(res.statusCode, 200)
-    t.deepEqual(JSON.parse(res.payload), {hello: 'world'})
-  })
-})
-
-test('Register a hook after a plugin inside a plugin (with beforeHandler)', (t) => {
-  t.plan(7)
-  const app = medley()
-
-  app.register(fp(function(subApp, opts, next) {
-    subApp.addHook('preHandler', function(req, response, next) {
-      t.ok('called')
-      next()
-    })
-
-    subApp.get('/', {
-      beforeHandler: (req, response, next) => {
-        t.ok('called')
-        next()
-      },
-    }, function(request, response) {
-      response.send({hello: 'world'})
-    })
-
-    next()
-  }))
-
-  app.register(fp(function(subApp, opts, next) {
-    subApp.addHook('preHandler', function(req, response, next) {
-      t.ok('called')
-      next()
-    })
-
-    subApp.addHook('preHandler', function(req, response, next) {
-      t.ok('called')
-      next()
-    })
-
-    next()
-  }))
-
-  app.inject({
-    url: '/',
-    method: 'GET',
-  }, (err, res) => {
-    t.error(err)
-    t.is(res.statusCode, 200)
-    t.deepEqual(JSON.parse(res.payload), {hello: 'world'})
-  })
-})
-
-test('Register hooks inside a plugin after an encapsulated plugin', (t) => {
-  t.plan(7)
-  const app = medley()
-
-  app.register(function(subApp, opts, next) {
-    subApp.get('/', function(request, response) {
-      response.send({hello: 'world'})
-    })
-
-    next()
-  })
-
-  app.register(fp(function(subApp, opts, next) {
-    subApp.addHook('onRequest', function(request, response, next) {
-      t.ok('called')
-      next()
-    })
-
-    subApp.addHook('preHandler', function(request, response, next) {
-      t.ok('called')
-      next()
-    })
-
-    subApp.addHook('onSend', function(request, response, payload, next) {
-      t.ok('called')
-      next()
-    })
-
-    subApp.addHook('onFinished', function() {
-      t.ok('called')
-    })
-
-    next()
-  }))
-
-  app.inject('/', (err, res) => {
-    t.error(err)
-    t.is(res.statusCode, 200)
-    t.deepEqual(JSON.parse(res.payload), {hello: 'world'})
-  })
-})
-
 test('onRequest hooks should run in the order in which they are defined', (t) => {
   t.plan(9)
   const app = medley()
@@ -945,42 +815,38 @@ test('onRequest hooks should run in the order in which they are defined', (t) =>
       response.send({hello: 'world'})
     })
 
-    subApp.register(fp(function(i, opts, next) {
-      i.addHook('onRequest', (request, response, next) => {
+    subApp.registerPlugin(function(appInstance) {
+      appInstance.addHook('onRequest', (request, response, next) => {
         t.strictEqual(request.previous, 1)
         request.previous = 2
         next()
       })
-      next()
-    }))
+    })
 
     next()
   })
 
-  app.register(fp(function(subApp, opts, next) {
+  app.registerPlugin(function(subApp) {
     subApp.addHook('onRequest', (request, response, next) => {
       t.strictEqual(request.previous, 2)
       request.previous = 3
       next()
     })
 
-    subApp.register(fp(function(i, opts, next) {
+    subApp.registerPlugin(function(i) {
       i.addHook('onRequest', (request, response, next) => {
         t.strictEqual(request.previous, 3)
         request.previous = 4
         next()
       })
-      next()
-    }))
+    })
 
     subApp.addHook('onRequest', (request, response, next) => {
       t.strictEqual(request.previous, 4)
       request.previous = 5
       next()
     })
-
-    next()
-  }))
+  })
 
   app.inject('/', (err, res) => {
     t.error(err)
@@ -1005,42 +871,38 @@ test('preHandler hooks should run in the order in which they are defined', (t) =
       response.send({hello: 'world'})
     })
 
-    subApp.register(fp(function(i, opts, next) {
+    subApp.registerPlugin(function(i) {
       i.addHook('preHandler', function(request, response, next) {
         t.strictEqual(request.previous, 1)
         request.previous = 2
         next()
       })
-      next()
-    }))
+    })
 
     next()
   })
 
-  app.register(fp(function(subApp, opts, next) {
+  app.registerPlugin(function(subApp) {
     subApp.addHook('preHandler', function(request, response, next) {
       t.strictEqual(request.previous, 2)
       request.previous = 3
       next()
     })
 
-    subApp.register(fp(function(i, opts, next) {
+    subApp.registerPlugin(function(i) {
       i.addHook('preHandler', function(request, response, next) {
         t.strictEqual(request.previous, 3)
         request.previous = 4
         next()
       })
-      next()
-    }))
+    })
 
     subApp.addHook('preHandler', function(request, response, next) {
       t.strictEqual(request.previous, 4)
       request.previous = 5
       next()
     })
-
-    next()
-  }))
+  })
 
   app.inject('/', (err, res) => {
     t.error(err)
@@ -1064,41 +926,37 @@ test('onSend hooks should run in the order in which they are defined', (t) => {
       response.send({})
     })
 
-    subApp.register(fp(function(i, opts, next) {
+    subApp.registerPlugin(function(i) {
       i.addHook('onSend', function(request, response, payload, next) {
         t.strictEqual(request.previous, 1)
         request.previous = 2
         next()
       })
-      next()
-    }))
+    })
 
     next()
   })
 
-  app.register(fp(function(subApp, opts, next) {
+  app.registerPlugin(function(subApp) {
     subApp.addHook('onSend', function(request, response, payload, next) {
       t.strictEqual(request.previous, 2)
       request.previous = 3
       next()
     })
 
-    subApp.register(fp(function(i, opts, next) {
+    subApp.registerPlugin(function(i) {
       i.addHook('onSend', function(request, response, payload, next) {
         t.strictEqual(request.previous, 3)
         request.previous = 4
         next()
       })
-      next()
-    }))
+    })
 
     subApp.addHook('onSend', function(request, response, payload, next) {
       t.strictEqual(request.previous, 4)
       next(null, '5')
     })
-
-    next()
-  }))
+  })
 
   app.inject('/', (err, res) => {
     t.error(err)
@@ -1121,37 +979,33 @@ test('onFinished hooks should run in the order in which they are defined', (t) =
       response.send({hello: 'world'})
     })
 
-    subApp.register(fp(function(i, opts, next) {
+    subApp.registerPlugin(function(i) {
       i.addHook('onFinished', (request, response) => {
         t.strictEqual(response.previous, 1)
         response.previous = 2
       })
-      next()
-    }))
+    })
 
     next()
   })
 
-  app.register(fp(function(subApp, opts, next) {
+  app.registerPlugin(function(subApp) {
     subApp.addHook('onFinished', (request, response) => {
       t.strictEqual(response.previous, 2)
       response.previous = 3
     })
 
-    subApp.register(fp(function(i, opts, next) {
+    subApp.registerPlugin(function(i) {
       i.addHook('onFinished', (request, response) => {
         t.strictEqual(response.previous, 3)
         response.previous = 4
       })
-      next()
-    }))
+    })
 
     subApp.addHook('onFinished', (request, response) => {
       t.strictEqual(response.previous, 4)
     })
-
-    next()
-  }))
+  })
 
   app.inject('/', (err, res) => {
     t.error(err)

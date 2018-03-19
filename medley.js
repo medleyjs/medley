@@ -12,7 +12,6 @@ const Response = require('./lib/Response')
 const Request = require('./lib/Request')
 const RouteContext = require('./lib/RouteContext')
 
-const pluginUtils = require('./lib/pluginUtils')
 const registerPlugin = require('./lib/registerPlugin')
 
 const {buildSerializers} = require('./lib/Serializer')
@@ -113,7 +112,6 @@ function medley(options) {
     _Request: Request.buildRequest(undefined, !!options.trustProxy),
     _Response: Response.buildResponse(),
     _subApps: [],
-    [pluginUtils.registeredPlugins]: [], // For storing plugins
   }
 
   registerPlugin.decorateApp(app)
@@ -152,11 +150,6 @@ function medley(options) {
   return app
 
   function override(parentApp, fn, opts) {
-    const shouldSkipOverride = pluginUtils.registerPlugin.call(parentApp, fn)
-    if (shouldSkipOverride) {
-      return parentApp
-    }
-
     const subApp = Object.create(parentApp)
     parentApp._subApps.push(subApp)
     subApp._subApps = []
@@ -165,7 +158,6 @@ function medley(options) {
     subApp._bodyParser = subApp._bodyParser.clone()
     subApp._hooks = Hooks.buildHooks(subApp._hooks)
     subApp._routePrefix = buildRoutePrefix(parentApp._routePrefix, opts.prefix)
-    subApp[pluginUtils.registeredPlugins] = Object.create(subApp[pluginUtils.registeredPlugins])
 
     if (opts.prefix) {
       subApp._canSetNotFoundHandler = true

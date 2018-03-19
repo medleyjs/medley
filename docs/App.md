@@ -250,7 +250,7 @@ app.setNotFoundHandler((req, res) => {
 ```
 
 Additional not-found handlers can be set for sub-apps that are registered with
-a [`prefix`](Plugins.md#route-prefixing-option). 
+a [`prefix`](SubApps.md#prefix). 
 
 ```js
 app.setNotFoundHandler((req, res) => {

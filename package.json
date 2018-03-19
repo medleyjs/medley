@@ -45,7 +45,6 @@
     "coveralls": "^3.0.0",
     "eslint": "~4.19.0",
     "fast-json-body": "^1.1.0",
-    "fastify-plugin": "^0.2.1",
     "h2url": "^0.1.2",
     "pre-commit": "^1.2.2",
     "pump": "^3.0.0",

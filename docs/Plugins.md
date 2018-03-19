@@ -1,106 +1,133 @@
 # Plugins
-Medley allows the user to extend its functionalities with plugins.
-A plugin can be a set of routes, a server [decorator](Decorators.md) or whatever. The API that you will need to use one or more plugins, is `register`.<br>
 
-By default, `register` creates a *new scope*, this means that if you do some changes to the app instance (via `decorate`), this change will not be reflected to the current context ancestors, but only to its children. This feature allows us to achieve plugin *encapsulation* and *inheritance*, in this way we create a *direct acyclic graph* (DAG) and we will not have issues caused by cross dependencies.
-
-You already see in the [getting started](Getting-Started.md#register) section how using this API is pretty straightforward.
-```
-app.register(plugin, [options])
-```
-
-<a name="plugin-options"></a>
-### Plugin Options
-The optional `options` parameter for `app.register` supports a predefined set of options that Medley itself will use, except when the plugin has been wrapped with [fastify-plugin](https://github.com/fastify/fastify-plugin). This options object will also be passed to the plugin upon invocation, regardless of whether or not the plugin has been wrapped. The currently supported list of Medley specific options is:
-
-+ [`prefix`](Plugins.md#route-prefixing-options)
-
-It is possible that Medley will directly support other options in the future. Thus, to avoid collisions, a plugin should consider namespacing its options. For example, a plugin `foo` might be registered like so:
+Plugins are useful for adding specific functionality to a Medley app
+(or sub-app) in a configurable way. A plugin can be added to an app
+with the `app.registerPlugin()` method.
 
 ```js
-app.register(require('fastify-foo'), {
-  prefix: '/foo',
-  foo: {
-    fooOption1: 'value',
-    fooOption2: 'value'
-  }
-})
+app.registerPlugin(plugin [, options])
 ```
 
-If collisions are not a concern, the plugin may simply accept the options object as-is:
+The `.registerPlugin()` method takes two parameters:
 
++ `plugin` *(function)* - The plugin function that adds functionality to the `app`.
++ `options` *(object | any)* - The options that will be passed to the `plugin` function.
+
+The `plugin` function will receive two parameters:
+
++ `app` - The `app` instance the plugin is being registered on.
++ `options` *(object | any)* - The options that were passed to `.registerPlugin()`.
+
+#### Example:
+
+**my-plugin.js**
 ```js
-app.register(require('fastify-foo'), {
-  prefix: '/foo',
-  fooOption1: 'value',
-  fooOption2: 'value'
-})
-```
-
-<a name="route-prefixing-option"></a>
-#### Route Prefixing option
-If you pass an option with the key `prefix` with a `string` value, Medley will use it to prefix all the routes inside the register, for more info check [here](Routes.md#route-prefixing).<br>
-Be aware that if you use [`fastify-plugin`](https://github.com/fastify/fastify-plugin) this option won't work.
-
-<a name="error-handling"></a>
-#### Error handling
-The error handling is done by [avvio](https://github.com/mcollina/avvio#error-handling).<br>
-As general rule, it is highly recommended that you handle your errors in the `register`'s callback, otherwise the server will not start, and you will find the unhandled error in the `listen` callback.
-
-<a name="create-plugin"></a>
-### Create a plugin
-Creating a plugin is very easy, you just need to create a function that takes three parameters, the `app` instance, an options object and the next callback.<br>
-Example:
-```js
-module.exports = function(app, opts, next) {
-  app.decorate('utility', () => {})
-
-  app.get('/', handler)
-
-  next()
+function myPlugin(app, options) {
+  app.decorate('myPluginData', {
+    receivedOptions: options,
+    example: 'value'
+  })
+  app.addHook('onRequest', (req, res, next) => { ... })
+  app.get('/my-plugin/route', (req, res) => { ... })
+  // etc.
 }
+module.exports = myPlugin
 ```
-You can also use `register` inside another `register`:
+
+**app.js**
 ```js
-module.exports = function(app, opts, next) {
-  app.decorate('utility', () => {})
+const medley = require('@medley/medley')
+const myPlugin = require('./my-plugin')
+const app = medley()
 
-  app.get('/', handler)
+app.registerPlugin(myPlugin, {optional: 'options'})
 
-  app.register(require('./other-plugin'))
+console.log(app.myPluginData.receivedOptions) // {optional: 'options'}
+console.log(app.myPluginData.example) // 'value'
+```
 
-  next()
+Using `app.registerPlugin()` is almost the exact same as doing the following:
+
+```js
+const myPlugin = require('./my-plugin')
+myPlugin(app, options)
+```
+
+It is perfectly acceptable to do that, however, `.registerPlugin()`
+provides the following additional functionality:
+
+
+## Plugin Dependency-Checking
+
+Sometimes a plugin may depend on the functionality of another plugin. In that
+case it helps to ensure that plugin dependencies are met when a plugin is
+registered. To hook into this feature, metadata can be added to the plugin
+for Medley to use to check dependencies.
+
+To add metadata to a plugin, add a `meta` property to the plugin function:
+
+```js
+function myPlugin(app, options) {
+  // ...
 }
-```
-Sometimes, you will need to know when the server is about to close, for example because you must close a connection to a database. To know when this is going to happen, you can use the [`'onClose'`](Hooks.md#on-close) hook.
 
-Do not forget that `register` will always create a new Medley scope, if you don't need that, read the following section.
-
-<a name="handle-scope"></a>
-### Handle the scope
-If you are using `register` only for extending the functionality of the server with  [`decorate`](Decorators.md), it is your responsibility to tell Medley to not create a new scope, otherwise your changes will not be accessible by the user in the upper scope.
-
-You have two ways to tell Medley to avoid the creation of a new context:
-- Use the [`fastify-plugin`](https://github.com/fastify/fastify-plugin) module
-- Use the `'skip-override'` hidden property
-
-We recommend to using the `fastify-plugin` module, because it solves this problem for you, and you can pass a version range of Medley as a parameter that your plugin will support.
-```js
-const fp = require('fastify-plugin')
-
-module.exports = fp(function(app, opts, next) {
-  app.decorate('utility', () => {})
-  next()
-}, '0.x')
-```
-Check the [`fastify-plugin`](https://github.com/fastify/fastify-plugin) documentation to know more about how use this module.
-
-If you don't use the `fastify-plugin` module, you can use the `'skip-override'` hidden property, but we do not recommend it. If in the future the Medley API changes it will be a your responsibility update the module, while if you use `fastify-plugin`, you can be sure about backwards compatibility.
-```js
-function yourPlugin(app, opts, next) {
-  app.decorate('utility', () => {})
-  next()
+myPlugin.meta = {
+  name: 'my-plugin',
+  dependencies: [] // Array of plugin names
 }
-yourPlugin[Symbol.for('skip-override')] = true
-module.exports = yourPlugin
+
+module.exports = myPlugin
 ```
+
+The `name` property tells Medley the plugin's name and the `dependencies`
+property is an array of the names of plugins that the plugin depends on.
+
+Here is a full example of this feature:
+
+**cookie-plugin.js**
+```js
+function cookiePlugin(app, options) { }
+
+cookiePlugin.meta = {
+  name: 'cookie-plugin'
+}
+
+module.exports = cookiePlugin
+```
+
+**session-plugin.js**
+```js
+function sessionPlugin(app, options) { }
+
+sessionPlugin.meta = {
+  name: 'session-plugin',
+  dependencies: ['cookie-plugin']
+}
+
+module.exports = sessionPlugin
+```
+
+**app.js**
+```js
+const medley = require('@medley/medley')
+const app = medley()
+
+app.registerPlugin(require('./cookie-plugin'))
+app.registerPlugin(require('./session-plugin'))
+```
+
+Everything works because the `cookie-plugin` was registered before the
+`session-plugin`. But if the `session-plugin` were registered first:
+
+```js
+app.registerPlugin(require('./session-plugin')) // AssertionError!
+app.registerPlugin(require('./cookie-plugin'))
+```
+
+An error is thrown because the `session-plugin` depends on the `cookie-plugin`
+but the `cookie-plugin` hadn't been registered yet.
+
+Using this dependency-checking feature not only ensures that plugin
+dependencies are met, but also that plugins are registered in the
+right order. For example, hooks added by the `cookie-plugin` above
+would need to run before hooks added by the `session-plugin`.
