@@ -171,11 +171,11 @@ function medley(options) {
       throw new TypeError(`'subAppFn' must be a function. Got a value of type '${typeof subAppFn}': ${subAppFn}`)
     }
 
-    const subApp = createSubApp(this, null, {prefix})
+    const subApp = createSubApp(this, prefix)
     subAppFn(subApp)
   }
 
-  function createSubApp(parentApp, fn, opts) {
+  function createSubApp(parentApp, prefix) {
     const subApp = Object.create(parentApp)
 
     parentApp._subApps.push(subApp)
@@ -185,10 +185,10 @@ function medley(options) {
     subApp._Response = Response.buildResponse(parentApp._Response)
     subApp._bodyParser = parentApp._bodyParser.clone()
     subApp._hooks = Hooks.buildHooks(parentApp._hooks)
-    subApp._routePrefix = buildRoutePrefix(parentApp._routePrefix, opts.prefix)
+    subApp._routePrefix = buildRoutePrefix(parentApp._routePrefix, prefix)
     subApp[kRegisteredPlugins] = parentApp[kRegisteredPlugins].slice()
 
-    if (opts.prefix) {
+    if (prefix) {
       subApp._canSetNotFoundHandler = true
       subApp._notFoundLevelApp = subApp
     }
