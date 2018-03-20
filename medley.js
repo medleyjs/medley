@@ -132,6 +132,7 @@ function medley(options) {
     _Response: Response.buildResponse(),
     _subApps: [],
   }
+  app._notFoundLevelApp = app
 
   const onLoadHandlers = []
   const preLoadedHandlers = [] // Internal, synchronous handlers
@@ -151,10 +152,6 @@ function medley(options) {
       done(null)
     }
   })
-
-  app._notFoundLevelApp = app
-  app.setNotFoundHandler(defaultNotFoundHandler)
-  app._canSetNotFoundHandler = true // Allowed to override the default 404 handler
 
   return app
 
@@ -386,14 +383,16 @@ function medley(options) {
       throw new Error(`Not found handler already set for app instance with prefix: '${prefix}'`)
     }
 
+    // Set values on the "_notFoundLevelApp" so that they
+    // can be inherited by all of that app's children.
     this._notFoundLevelApp._canSetNotFoundHandler = false
+    this._notFoundLevelApp._notFoundRouteContexts = new Map()
 
     if (handler === undefined) {
       handler = opts
       opts = {}
     }
 
-    const replaceDefault404 = prefix === '/' && handler !== defaultNotFoundHandler
     const serializers = buildSerializers(opts.responseSchema)
     const methodGroups = new Map()
 
@@ -409,11 +408,6 @@ function medley(options) {
       }
     }
 
-    if (!replaceDefault404) {
-      // Force a new context map to be created for the not-found level
-      this._notFoundLevelApp._notFoundRouteContexts = null
-    }
-
     for (const [methodHandler, methods] of methodGroups) {
       _setNotFoundHandler.call(
         this,
@@ -422,8 +416,7 @@ function medley(options) {
         methodHandler,
         opts,
         handler,
-        serializers,
-        replaceDefault404
+        serializers
       )
     }
 
@@ -436,8 +429,7 @@ function medley(options) {
     methodHandler,
     opts,
     handler,
-    serializers,
-    replaceDefault404
+    serializers
   ) {
     const routeContext = RouteContext.create(
       this,
@@ -446,6 +438,21 @@ function medley(options) {
       handler,
       opts.config || {},
       opts.bodyLimit
+    )
+
+    this._notFoundRouteContexts.set(methodHandler, routeContext)
+
+    notFoundRouter.on(
+      methods,
+      prefix + (prefix.endsWith('/') ? '*' : '/*'),
+      routeHandler,
+      routeContext
+    )
+    notFoundRouter.on(
+      methods,
+      prefix,
+      routeHandler,
+      routeContext
     )
 
     preLoadedHandlers.push(() => {
@@ -463,31 +470,6 @@ function medley(options) {
 
       notFoundRouteContext.errorHandler = this._errorHandler
     })
-
-    if (replaceDefault404) { // Replace the default 404 handler
-      Object.assign(this._notFoundRouteContexts.get(methodHandler), routeContext)
-      return
-    }
-
-    if (this._notFoundRouteContexts === null) {
-      // Set the routeContext on the "_notFoundLevelApp" so that
-      // it can be inherited by all of that app's children.
-      this._notFoundLevelApp._notFoundRouteContexts = new Map()
-    }
-    this._notFoundRouteContexts.set(methodHandler, routeContext)
-
-    notFoundRouter.on(
-      methods,
-      prefix + (prefix.endsWith('/') ? '*' : '/*'),
-      routeHandler,
-      routeContext
-    )
-    notFoundRouter.on(
-      methods,
-      prefix,
-      routeHandler,
-      routeContext
-    )
   }
 
   function setErrorHandler(handler) {
@@ -527,11 +509,17 @@ function medley(options) {
     }
 
     return runOnLoadHandlers(onLoadHandlers, (err) => {
-      if (!err) {
-        loaded = true
-        preLoadedHandlers.forEach(handler => handler())
+      if (err) {
+        cb(err)
+        return
       }
-      cb(err)
+
+      if (app._canSetNotFoundHandler) {
+        app.setNotFoundHandler(defaultNotFoundHandler)
+      }
+      loaded = true
+      preLoadedHandlers.forEach(handler => handler())
+      cb(null)
     })
   }
 
