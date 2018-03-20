@@ -142,7 +142,7 @@ test('app decorators are encapsulated in sub-apps', (t) => {
     t.ok(subApp.test)
   })
 
-  app.ready(() => {
+  app.load(() => {
     t.notOk(app.test)
   })
 })

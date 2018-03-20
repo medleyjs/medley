@@ -16,13 +16,15 @@ test('medley should throw on wrong options', (t) => {
 
 test('medley should throw on multiple assignment to the same route', (t) => {
   t.plan(1)
+
   const app = medley()
-  app.get('/', () => {})
+
   app.get('/', () => {})
 
-  app.ready((err) => {
-    t.is(err.message, "Method 'GET' already declared for route '/'")
-  })
+  t.throws(
+    () => app.get('/', () => {}),
+    new Error("Method 'GET' already declared for route '/'")
+  )
 })
 
 test('Should throw on unsupported method', (t) => {

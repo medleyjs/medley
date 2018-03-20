@@ -654,28 +654,6 @@ test('hooks check 404', (t) => {
   })
 })
 
-test('setNotFoundHandler should not suppress duplicated routes checking', (t) => {
-  t.plan(1)
-
-  const app = medley()
-
-  app.get('/', function(request, response) {
-    response.send({hello: 'world'})
-  })
-
-  app.get('/', function(request, response) {
-    response.send({hello: 'world'})
-  })
-
-  app.setNotFoundHandler(function(request, response) {
-    response.status(404).send('this was not found')
-  })
-
-  app.listen(0, (err) => {
-    t.ok(err)
-  })
-})
-
 test('the default 404 handler can be invoked inside a prefixed plugin', (t) => {
   t.plan(4)
 

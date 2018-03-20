@@ -22,9 +22,10 @@ const app = medley()
 + [`.decorateResponse(name, value)`](#decorate-response)
 + [`.inject(options [, callback])`](#inject)
 + [`.listen(port [, host][, backlog][, callback])`](#listen)
++ [`.load([callback])`](#load)
 + [`.onClose(callback)`](#on-close)
++ [`.onLoad(callback)`](#on-load)
 + [`.printRoutes()`](#print-routes)
-+ [`.ready([callback])`](#ready)
 + [`.registerPlugin(plugin [, options])`](#register-plugin)
 + [`.route(options)`](#route)
 + [`.setErrorHandler(handler)`](#set-error-handler)
@@ -140,6 +141,31 @@ app.listen(3000, '0.0.0.0')
   })
 ```
 
+<a id="load"></a>
+### `app.load([callback])`
+
++ `callback(err)` *(function)* - Called when all [`onLoad`](#on-load) handlers have finished.
+  + `err` *(Error)* - The callback is passed an Error if one occurred during the loading process.
+
+Starts the process of running all [`onLoad`](#on-load) handlers.
+
+```js
+app.load((err) => {
+  if (err) throw err
+})
+```
+
+If the `callback` argument is omitted, a Promise will be returned:
+
+```js
+app.load()
+  .then(() => {
+    console.log('Successfully loaded!')
+  }, (err) => {
+    console.log(err)
+  })
+```
+
 <a id="on-close"></a>
 ### `app.onClose(handler)`
 
@@ -150,7 +176,7 @@ Registers a function that will be called when the `app` is shutting down (trigge
 by [`app.close()`](#close)). Useful for things like releasing database connections.
 
 ```js
-app.onClose(function(done) {
+app.onClose(function onCloseHandler(done) {
   app.db.end(err => done(err))
 })
 ```
@@ -169,49 +195,54 @@ app.onClose(async function() {
 
 **Note:** Using both async functions/promises and the `done` callback will cause undefined behavior.
 
+<a id="on-load"></a>
+### `app.onLoad(handler)`
+
++ `handler([done])` *(function)* - Called when the `app` is starting up. Receives the following parameter:
+  + `done([err])` *(function)* - A function to call when the `handler` is finished. A Promise can be returned instead of calling this function.
+
+Registers a function that will be called when the `app` is starting up
+(triggered by [`app.load()`](#load), [`app.listen()`](#listen), or
+[`app.inject()`](#inject)). `onLoad` handlers are run one at a time, with
+the next handler only be called once the previous handler completes.
+
+Useful for asynchronous setup operations.
+
+```js
+app.onLoad(function onLoadHandler(done) {
+  app.db.connect(config, err => done(err))
+})
+```
+
+If the `handler` is an `async` function (or returns a promise), the `done`
+callback does not need to be used since the handler will be considered
+finished when the promise resolves (or rejects).
+
+```js
+app.onLoad(async function() {
+  console.log('setting up database connection')
+  await app.db.connect(config)
+  console.log('connected to database')
+})
+```
+
+**Note:** Using both async functions/promises and the `done` callback will cause undefined behavior.
+
 <a id="print-routes"></a>
 ### `app.printRoutes()`
 
 Prints the representation of the internal radix tree used by the router. Useful for debugging.
-
-*Should be called inside or after a `ready()` call to ensure that all routes will be available.*
 
 ```js
 app.get('/test', () => {})
 app.get('/test/hello', () => {})
 app.get('/hello/world', () => {})
 
-app.ready(() => {
-  console.log(app.printRoutes())
-  // └── /
-  //   ├── test (GET)
-  //   │   └── /hello (GET)
-  //   └── hello/world (GET)
-})
-```
-
-<a id="ready"></a>
-### `app.ready([callback])`
-
-+ `callback(err)` *(function)* - Called when all plugins and sub-apps have finished loading.
-  + `err` *(Error)* - The callback is passed an Error if one occurred during the loading process.
-
-Starts the process of loading registered plugins and sub-apps.
-
-```js
-app.ready((err) => {
-  if (err) throw err
-})
-```
-
-If the `callback` argument is omitted, a Promise will be returned:
-
-```js
-app.ready().then(() => {
-  console.log('successfully booted!')
-}, (err) => {
-  console.log(err)
-})
+console.log(app.printRoutes())
+// └── /
+//   ├── test (GET)
+//   │   └── /hello (GET)
+//   └── hello/world (GET)
 ```
 
 <a id="register-plugin"></a>

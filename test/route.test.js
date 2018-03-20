@@ -237,24 +237,3 @@ test('invalid bodyLimit option - route', (t) => {
     t.equal(err.message, "'bodyLimit' option must be an integer > 0. Got '10000.1'")
   }
 })
-
-test('.route() should forward the error if creating a serializer fails', (t) => {
-  t.plan(1)
-
-  const app = medley()
-
-  app.route({
-    method: 'GET',
-    path: '/',
-    responseSchema: {
-      200: {
-        type: 'invalid-type',
-      },
-    },
-    handler() {},
-  })
-
-  app.ready((err) => {
-    t.equal(err.message, 'Invalid type: "invalid-type"')
-  })
-})

@@ -174,7 +174,7 @@ test('bodyParser should support encapsulation', (t) => {
     })
   })
 
-  app.ready((err) => {
+  app.load((err) => {
     t.error(err)
     t.notOk(app.hasBodyParser('application/jsoff'))
     t.notOk(app.hasBodyParser('application/ffosj'))

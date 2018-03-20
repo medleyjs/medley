@@ -23,7 +23,9 @@ test('should wait for the ready event', (t) => {
       res.send(payload)
     })
 
-    // TODO: Use app.onLoad() here
+    subApp.onLoad((done) => {
+      setImmediate(done)
+    })
   })
 
   app.inject({
@@ -233,7 +235,7 @@ test('inject get request - response stream', (t) => {
   })
 })
 
-test('inject promisify - waiting for ready event', (t) => {
+test('inject promisify - waiting for load event', (t) => {
   t.plan(1)
   const app = medley()
   const payload = {hello: 'world'}
@@ -253,7 +255,7 @@ test('inject promisify - waiting for ready event', (t) => {
     .catch(t.fail)
 })
 
-test('inject promisify - after the ready event', (t) => {
+test('inject promisify - after the load event', (t) => {
   t.plan(2)
   const app = medley()
   const payload = {hello: 'world'}
@@ -262,7 +264,7 @@ test('inject promisify - after the ready event', (t) => {
     response.send(payload)
   })
 
-  app.ready((err) => {
+  app.load((err) => {
     t.error(err)
 
     const injectParams = {
@@ -286,22 +288,14 @@ test('inject promisify - when the server is up', (t) => {
     response.send(payload)
   })
 
-  app.ready((err) => {
+  app.load((err) => {
     t.error(err)
 
-    // setTimeout because the ready event don't set "started" flag
-    // in this iteration of the 'event loop'
-    setTimeout(() => {
-      const injectParams = {
-        method: 'GET',
-        url: '/',
-      }
-      app.inject(injectParams)
-        .then((res) => {
-          t.strictEqual(res.statusCode, 200)
-        })
-        .catch(t.fail)
-    }, 10)
+    app.inject('/')
+      .then((res) => {
+        t.strictEqual(res.statusCode, 200)
+      })
+      .catch(t.fail)
   })
 })
 
@@ -311,25 +305,25 @@ test('should reject in error case', (t) => {
   const app = medley()
   const error = new Error('DOOM!')
 
-  app.after((_, done) => {
+  app.onLoad((done) => {
     done(error)
   })
 
   app.inject({
     method: 'GET',
     url: '/',
-  }).catch((e) => {
-    t.strictEqual(e, error)
+  }).catch((err) => {
+    t.strictEqual(err, error)
   })
 })
 
-test('should pass any error to the callback', (t) => {
+test('should pass any onLoad error to the callback', (t) => {
   t.plan(1)
 
   const app = medley()
   const error = new Error('DOOM!')
 
-  app.after((_, done) => {
+  app.onLoad((done) => {
     done(error)
   })
 

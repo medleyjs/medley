@@ -98,7 +98,9 @@ tap.test('GET `/` route', t => {
 ```
 
 ### Testing with a running server
-Medley can also be tested after starting the server with `app.listen()` or after initializing routes and plugins with `app.ready()`.
+
+Medley can also be tested after starting the server with `app.listen()` or
+after initializing the app with `app.load()`.
 
 #### Example:
 
@@ -144,7 +146,7 @@ tap.test('GET `/` route', async (t) => {
 
   t.tearDown(() => app.close())
   
-  await app.ready()
+  await app.load()
   
   const response = await supertest(app.server)
     .get('/')

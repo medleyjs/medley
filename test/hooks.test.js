@@ -138,7 +138,7 @@ test('onRequest hook should support encapsulation / 2', (t) => {
     pluginInstance = subApp
   })
 
-  app.ready((err) => {
+  app.load((err) => {
     t.error(err)
     t.is(app._hooks.onRequest.length, 1)
     t.is(pluginInstance._hooks.onRequest.length, 2)
@@ -304,7 +304,7 @@ test('onFinished hook should support encapsulation / 2', (t) => {
     pluginInstance = subApp
   })
 
-  app.ready((err) => {
+  app.load((err) => {
     t.error(err)
     t.is(app._hooks.onFinished.length, 1)
     t.is(pluginInstance._hooks.onFinished.length, 2)
@@ -403,7 +403,7 @@ test('onSend hook should support encapsulation / 1', (t) => {
     pluginInstance = subApp
   })
 
-  app.ready((err) => {
+  app.load((err) => {
     t.error(err)
     t.is(app._hooks.onSend.length, 1)
     t.is(pluginInstance._hooks.onSend.length, 2)
@@ -980,22 +980,5 @@ test('onFinished hooks should run in the order in which they are defined', (t) =
     t.error(err)
     t.strictEqual(res.statusCode, 200)
     t.deepEqual(JSON.parse(res.payload), {hello: 'world'})
-  })
-})
-
-test('.addHook() should not alter errors from other sub-apps', (t) => {
-  t.plan(1)
-
-  const app = medley()
-  const afterError = new Error('sub-app error')
-
-  app.after((_, done) => {
-    done(afterError)
-  })
-
-  app.addHook('onRequest', () => {})
-
-  app.ready((err) => {
-    t.equal(err, afterError)
   })
 })

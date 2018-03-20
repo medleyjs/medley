@@ -28,7 +28,6 @@
     "api"
   ],
   "dependencies": {
-    "avvio": "^5.4.0",
     "compile-json-stringify": "^0.1.2",
     "destroy": "^1.0.4",
     "end-of-stream": "^1.4.1",

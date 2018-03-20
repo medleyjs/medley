@@ -1,6 +1,5 @@
 'use strict'
 
-const avvio = require('avvio')
 const findMyWay = require('find-my-way')
 const http = require('http')
 const https = require('https')
@@ -135,23 +134,12 @@ function medley(options) {
   }
 
   const onLoadHandlers = []
+  const preLoadedHandlers = [] // Internal, synchronous handlers
 
-  const appLoader = avvio(app, {
-    autostart: false,
-    expose: {use: '_register', onClose: '_onClose', close: '_close'},
-  })
-  appLoader.override = createSubApp // Override to allow plugin encapsulation
-
-  // eslint-disable-next-line
   var loaded = false // true when all onLoad handlers have finished
-  var ready = false // true when plugins and sub-apps have loaded
-
-  appLoader.on('start', () => {
-    ready = true
-  })
 
   function throwIfAppIsLoaded(msg) {
-    if (ready) {
+    if (loaded) {
       throw new Error(msg)
     }
   }
@@ -274,14 +262,7 @@ function medley(options) {
   function addHook(name, fn) {
     throwIfAppIsLoaded('Cannot call "addHook()" when app is already loaded')
 
-    this.after((err, done) => {
-      if (err) {
-        done(err)
-        return
-      }
-      _addHook(this, name, fn)
-      done()
-    })
+    _addHook(this, name, fn)
 
     return this
   }
@@ -365,56 +346,34 @@ function medley(options) {
   }
 
   function _route(method, methodHandler, path, opts) {
-    this.after((err, done) => {
-      if (err) {
-        done(err)
-        return
-      }
+    const jsonSerializers = buildSerializers(opts.responseSchema)
+    const routeContext = RouteContext.create(
+      this,
+      jsonSerializers,
+      methodHandler,
+      opts.handler,
+      opts.config || {},
+      opts.bodyLimit
+    )
 
-      var serializers
-      try {
-        serializers = buildSerializers(opts.responseSchema)
-      } catch (err) {
-        done(err)
-        return
-      }
+    router.on(method, path, routeHandler, routeContext)
 
-      const routeContext = RouteContext.create(
-        this,
-        serializers,
-        methodHandler,
-        opts.handler,
-        opts.config || {},
-        opts.bodyLimit
-      )
+    // Users can add hooks, an error handler, and a not-found handler after
+    // the route is registered, so add these to the routeContext just before
+    // the app is loaded.
+    preLoadedHandlers.push(() => {
+      const onRequest = this._hooks.onRequest
+      const onFinished = this._hooks.onFinished
+      const onSend = this._hooks.onSend
+      const preHandler = this._hooks.preHandler.concat(opts.beforeHandler || [])
 
-      try {
-        router.on(method, path, routeHandler, routeContext)
-      } catch (err) {
-        done(err)
-        return
-      }
+      routeContext.onRequest = onRequest.length ? onRequest : null
+      routeContext.preHandler = preHandler.length ? preHandler : null
+      routeContext.onSend = onSend.length ? onSend : null
+      routeContext.onFinished = onFinished.length ? onFinished : null
 
-      // Users can add hooks *after* the route registration. To include those
-      // hooks in the route, we must listen for the avvio's 'preReady' event
-      // and update the routeContext object accordingly.
-      appLoader.once('preReady', () => {
-        const onRequest = this._hooks.onRequest
-        const onFinished = this._hooks.onFinished
-        const onSend = this._hooks.onSend
-        const preHandler = this._hooks.preHandler.concat(opts.beforeHandler || [])
-
-        routeContext.onRequest = onRequest.length ? onRequest : null
-        routeContext.preHandler = preHandler.length ? preHandler : null
-        routeContext.onSend = onSend.length ? onSend : null
-        routeContext.onFinished = onFinished.length ? onFinished : null
-
-        // Must store the not-found RouteContext in 'preReady' because it is only guaranteed
-        // to be available after all of the plugins and routes have been loaded.
-        routeContext.notFoundRouteContext = this._notFoundRouteContexts.get(methodHandler)
-      })
-
-      done()
+      routeContext.notFoundRouteContext = this._notFoundRouteContexts.get(methodHandler)
+      routeContext.errorHandler = this._errorHandler
     })
   }
 
@@ -450,32 +409,23 @@ function medley(options) {
       }
     }
 
-    this.after((err, done) => {
-      if (err) {
-        done(err)
-        return
-      }
+    if (!replaceDefault404) {
+      // Force a new context map to be created for the not-found level
+      this._notFoundLevelApp._notFoundRouteContexts = null
+    }
 
-      if (!replaceDefault404) {
-        // Force a new context map to be created for the not-found level
-        this._notFoundLevelApp._notFoundRouteContexts = null
-      }
-
-      for (const [methodHandler, methods] of methodGroups) {
-        _setNotFoundHandler.call(
-          this,
-          prefix,
-          methods,
-          methodHandler,
-          opts,
-          handler,
-          serializers,
-          replaceDefault404
-        )
-      }
-
-      done()
-    })
+    for (const [methodHandler, methods] of methodGroups) {
+      _setNotFoundHandler.call(
+        this,
+        prefix,
+        methods,
+        methodHandler,
+        opts,
+        handler,
+        serializers,
+        replaceDefault404
+      )
+    }
 
     return this
   }
@@ -498,7 +448,7 @@ function medley(options) {
       opts.bodyLimit
     )
 
-    appLoader.once('preReady', () => {
+    preLoadedHandlers.push(() => {
       const notFoundRouteContext = this._notFoundRouteContexts.get(methodHandler)
 
       const onRequest = this._hooks.onRequest
@@ -510,6 +460,8 @@ function medley(options) {
       notFoundRouteContext.preHandler = preHandler.length ? preHandler : null
       notFoundRouteContext.onSend = onSend.length ? onSend : null
       notFoundRouteContext.onFinished = onFinished.length ? onFinished : null
+
+      notFoundRouteContext.errorHandler = this._errorHandler
     })
 
     if (replaceDefault404) { // Replace the default 404 handler
@@ -577,6 +529,7 @@ function medley(options) {
     return runOnLoadHandlers(onLoadHandlers, (err) => {
       if (!err) {
         loaded = true
+        preLoadedHandlers.forEach(handler => handler())
       }
       cb(err)
     })
@@ -617,7 +570,7 @@ function medley(options) {
       })
     }
 
-    this.ready((err) => {
+    this.load((err) => {
       if (err) {
         cb(err)
         return
@@ -644,13 +597,13 @@ function medley(options) {
   }
 
   function inject(opts, cb) {
-    if (ready) {
+    if (loaded) {
       return lightMyRequest(httpHandler, opts, cb)
     }
 
     if (!cb) {
       return new Promise((resolve, reject) => {
-        this.ready((err) => {
+        this.load((err) => {
           if (err) {
             reject(err)
           } else {
@@ -660,7 +613,7 @@ function medley(options) {
       }).then(() => lightMyRequest(httpHandler, opts))
     }
 
-    this.ready((err) => {
+    this.load((err) => {
       if (err) {
         cb(err)
         return
