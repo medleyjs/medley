@@ -321,7 +321,9 @@ function medley(options) {
 
     validateBodyLimitOption(opts.bodyLimit)
 
+    const serializers = buildSerializers(opts.responseSchema)
     const prefix = this._routePrefix
+
     var path = opts.path || opts.url
     if (path === '/' && prefix.length > 0) {
       // Ensure that '/prefix' + '/' gets registered as '/prefix'
@@ -334,22 +336,22 @@ function medley(options) {
 
     opts.path = opts.url = path
     opts.prefix = prefix
+    opts.config = opts.config || {}
 
     for (const [methodHandler, method] of methodGroups) {
-      _route.call(this, method, methodHandler, path, opts)
+      _route.call(this, method, methodHandler, path, opts, serializers)
     }
 
     return this // Chainable
   }
 
-  function _route(method, methodHandler, path, opts) {
-    const jsonSerializers = buildSerializers(opts.responseSchema)
+  function _route(method, methodHandler, path, opts, serializers) {
     const routeContext = RouteContext.create(
       this,
-      jsonSerializers,
+      serializers,
       methodHandler,
       opts.handler,
-      opts.config || {},
+      opts.config,
       opts.bodyLimit
     )
 
@@ -408,6 +410,8 @@ function medley(options) {
       }
     }
 
+    opts.config = opts.config || {}
+
     for (const [methodHandler, methods] of methodGroups) {
       _setNotFoundHandler.call(
         this,
@@ -436,7 +440,7 @@ function medley(options) {
       serializers,
       methodHandler,
       handler,
-      opts.config || {},
+      opts.config,
       opts.bodyLimit
     )
 
