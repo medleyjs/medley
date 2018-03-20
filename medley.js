@@ -13,6 +13,7 @@ const Request = require('./lib/Request')
 const RouteContext = require('./lib/RouteContext')
 
 const runOnCloseHandlers = require('./lib/utils/runOnCloseHandlers')
+const runOnLoadHandlers = require('./lib/utils/runOnLoadHandlers')
 
 const {
   kRegisteredPlugins,
@@ -112,7 +113,11 @@ function medley(options) {
     setErrorHandler,
     _errorHandler: null,
 
-    // App tear-down
+    // App setup
+    onLoad,
+    load,
+
+    // App teardown
     _onCloseHandlers: [],
     onClose,
     close,
@@ -129,12 +134,16 @@ function medley(options) {
     _subApps: [],
   }
 
+  const onLoadHandlers = []
+
   const appLoader = avvio(app, {
     autostart: false,
     expose: {use: '_register', onClose: '_onClose', close: '_close'},
   })
   appLoader.override = createSubApp // Override to allow plugin encapsulation
 
+  // eslint-disable-next-line
+  var loaded = false // true when all onLoad handlers have finished
   var ready = false // true when plugins and sub-apps have loaded
 
   appLoader.on('start', () => {
@@ -540,6 +549,37 @@ function medley(options) {
 
     this._errorHandler = handler
     return this
+  }
+
+  function onLoad(handler) {
+    onLoadHandlers.push(handler.bind(this))
+    return this
+  }
+
+  function load(cb) {
+    if (!cb) {
+      return new Promise((resolve, reject) => {
+        load((err) => {
+          if (err) {
+            reject(err)
+          } else {
+            resolve()
+          }
+        })
+      })
+    }
+
+    if (loaded) {
+      process.nextTick(cb)
+      return undefined
+    }
+
+    return runOnLoadHandlers(onLoadHandlers, (err) => {
+      if (!err) {
+        loaded = true
+      }
+      cb(err)
+    })
   }
 
   function onClose(handler) {
