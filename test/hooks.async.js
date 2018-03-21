@@ -12,30 +12,31 @@ test('async hooks', (t) => {
   t.plan(19)
 
   const app = medley()
-  app.addHook('onRequest', async (request, response, next) => {
+  app.addHook('onRequest', async (request, response) => {
     await sleep(1)
     request.onRequestVal = 'the request is coming'
     response.onRequestVal = 'the response has come'
     if (request.method === 'DELETE') {
       throw new Error('some error')
     }
-    next()
   })
 
-  app.addHook('preHandler', async (request, response, next) => {
+  app.addHook('preHandler', async (request, response) => {
     await sleep(1)
     request.preHandlerVal = 'the request is coming'
     response.preHandlerVal = 'the response has come'
     if (request.method === 'HEAD') {
       throw new Error('some error')
     }
-    next()
   })
 
-  app.addHook('onSend', async (request, response, payload, next) => {
+  app.addHook('onSend', async (req, res, payload) => {
     await sleep(1)
-    t.ok('onSend called')
-    next()
+    if (req.method === 'DELETE' || req.method === 'HEAD') {
+      t.match(payload, 'Internal Server Error')
+    } else {
+      t.equal(payload, '{"hello":"world"}')
+    }
   })
 
   app.addHook('onFinished', async function() {
@@ -98,22 +99,21 @@ test('onSend hooks can modify payload', (t) => {
   const modifiedPayload = {hello: 'modified'}
   const anotherPayload = '"winter is coming"'
 
-  app.addHook('onSend', async (request, response, serializedPayload, next) => {
+  app.addHook('onSend', async (req, res, serializedPayload) => {
     t.ok('onSend called')
     t.deepEqual(JSON.parse(serializedPayload), payload)
-    next(null, serializedPayload.replace('world', 'modified'))
+    return serializedPayload.replace('world', 'modified')
   })
 
-  app.addHook('onSend', async (request, response, serializedPayload, next) => {
+  app.addHook('onSend', async (req, res, serializedPayload) => {
     t.ok('onSend called')
     t.deepEqual(JSON.parse(serializedPayload), modifiedPayload)
-    next(null, anotherPayload)
+    return anotherPayload
   })
 
-  app.addHook('onSend', async (request, response, serializedPayload, next) => {
+  app.addHook('onSend', async (req, res, serializedPayload) => {
     t.ok('onSend called')
     t.strictEqual(serializedPayload, anotherPayload)
-    next()
   })
 
   app.get('/', (req, response) => {
@@ -147,9 +147,8 @@ test('onRequest hooks should be able to send a response', (t) => {
     t.fail('this should not be called')
   })
 
-  app.addHook('onSend', async (request, response, payload, next) => {
+  app.addHook('onSend', async (req, res, payload) => {
     t.equal(payload, 'hello')
-    next()
   })
 
   app.addHook('onFinished', async () => {
@@ -160,10 +159,7 @@ test('onRequest hooks should be able to send a response', (t) => {
     t.fail('this should not be called')
   })
 
-  app.inject({
-    url: '/',
-    method: 'GET',
-  }, (err, res) => {
+  app.inject('/', (err, res) => {
     t.error(err)
     t.is(res.statusCode, 200)
     t.is(res.payload, 'hello')
@@ -182,9 +178,8 @@ test('preHandler hooks should be able to send a response', (t) => {
     t.fail('this should not be called')
   })
 
-  app.addHook('onSend', async (request, response, payload, next) => {
+  app.addHook('onSend', async (req, res, payload) => {
     t.equal(payload, 'hello')
-    next()
   })
 
   app.addHook('onFinished', async () => {
@@ -195,10 +190,7 @@ test('preHandler hooks should be able to send a response', (t) => {
     t.fail('this should not be called')
   })
 
-  app.inject({
-    url: '/',
-    method: 'GET',
-  }, (err, res) => {
+  app.inject('/', (err, res) => {
     t.error(err)
     t.is(res.statusCode, 200)
     t.is(res.payload, 'hello')

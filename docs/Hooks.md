@@ -18,9 +18,6 @@ The possible `hookName` values are:
 
 Check out the [lifecycle docs](Lifecycle.md) to see where each hook is executed in the request lifecycle.
 
-Hooks that are `async` (or return a Promise) will have errors automatically caught and forwarded
-to the error handler. See the [Using `async-await`](#async-await) section for more information.
-
 Hooks are affected by Medley's encapsulation, and can thus be scoped to selected routes.
 See the [Encapsulation](#encapsulation) section for more information.
 
@@ -28,6 +25,7 @@ See the [Encapsulation](#encapsulation) section for more information.
 ## The `onRequest` and `preHandler` Hooks
 
 ```js
+// Callback version
 app.addHook('onRequest', (req, res, next) => {
   // Handle onRequest
   next()
@@ -36,6 +34,15 @@ app.addHook('onRequest', (req, res, next) => {
 app.addHook('preHandler', (req, res, next) => {
   // Handle preHandler
   next()
+})
+
+// Async version
+app.addHook('onRequest', async (req, res) => {
+  // Handle onRequest
+})
+
+app.addHook('preHandler', async (req, res) => {
+  // Handle preHandler
 })
 ```
 
@@ -47,6 +54,10 @@ app.addHook('preHandler', (req, res, next) => {
 executed before the route handler is invoked (see the [Lifecycle docs](Lifecycle.md) for details).
 
 These hooks are similar to Express middleware.
+
+If the hook is an `async` function (or it returns a promise), the `next`
+callback should **not** be used. The request will continue to the next hook
+when the async hook ends or throws (or the promise resolves or rejects).
 
 ### `beforeHandler`
 
@@ -70,7 +81,9 @@ app.route({
 
 ### Sending a Response
 
-It is possible to respond to a request within the `onRequest` and `preHandler` hooks. This will skip the rest of the `onRequest` and `preHandler` hooks and the route handler.
+It is possible to respond to a request within the `onRequest` and `preHandler`
+hooks. This will skip the rest of the `onRequest` and `preHandler` hooks and
+the route handler.
 
 ```js
 app.addHook('preHandler', (req, res, next) => {
@@ -80,36 +93,66 @@ app.addHook('preHandler', (req, res, next) => {
 
 If sending a response from inside a hook, **`next()` must not be called**.
 
+If sending a response from inside an `async` hook, `res.send()` must be used.
+If it is not, Medley will not know that a response has been sent so the hooks
+will continue running.
+
 ### Handling Errors
 
-If an error occurs during the execution of a hook, it should be passed to `next()` to end
-the hook execution and trigger an error response.
+If an error occurs during the execution of a hook, it should be passed to
+`next()` to end the hook execution and trigger an error response. The
+error will be handled by [`Response#error()`](Response.md#error).
 
 ```js
+const fs = require('fs')
+
 app.addHook('onRequest', (req, res, next) => {
-  next(new Error('some error'))
+  fs.readFile('./someFile.txt', (err, buffer) => {
+    if (err) {
+      next(err)
+      return
+    }
+    // Do something with the buffer
+  })
 })
 ```
 
-The error will be handled by [`Response#error`](Response.md#error).
+Async-await/promise errors are automatically caught and handled by Medley.
+
+```js
+const fs = require('fs')
+const util = require('util')
+const readFile = util.promisify(fs.readFile)
+
+app.addHook('onRequest', async (req, res) => {
+  const buffer = await fs.readFile('./someFile.txt')
+  // Do something with the buffer
+})
+```
 
 <a id="onSend-hook"></a> 
 ## The `onSend` Hook
 
 ```js
+// Callback version
 app.addHook('onSend', (req, res, payload, next) => {
   // Handle onSend
   next()
+})
+
+// Async version
+app.addHook('onSend', async (req, res, payload) => {
+  // Handle onSend
 })
 ```
 
 + `req` - Medley [Request](Request.md) object.
 + `res` - Medley [Response](Response.md) object.
 + `payload` - The serialized payload.
-+ `next([error, [payload]])` - Function to continue to the next hook and optionally update the payload.
++ `next([error [, payload]])` - Function to continue to the next hook and optionally update the payload.
 
 The `onSend` hooks are run right after `res.send()` is called and the payload
-has been serialized. They provide a great opportunity to save application state
+has been serialized. They provide an opportunity to save application state
 (e.g. sessions) and set extra headers before the response is sent.
 
 ### Modifying the Payload
@@ -123,10 +166,18 @@ app.get('/', (req, res) => {
   res.send({ hello: 'world' })  
 })
 
-app.addHook('onSend', (req, res, payload, next) => {{
+app.addHook('onSend', (req, res, payload, next) => {
   console.log(payload) // '{"hello":"world"}'
   const newPayload = Buffer.from(payload)
   next(null, newPayload)
+})
+```
+
+To modify the payload using an `async` hook, return the new payload:
+
+```js
+app.addHook('onSend', async (req, res, payload) => {
+  return Buffer.from(payload)
 })
 ```
 
@@ -169,20 +220,6 @@ app.addHook('onFinished', async (req, res) => {
 
 `onFinished` hooks are run once the response has finished sending (or if the underlying
 connection was terminated before the response could finish sending).
-
-<a id="async-await"></a> 
-## Using `async-await`
-
-Hooks may be an `async` function. For convenience, all hooks (except for the `onFinished` hook)
-will automatically catch errors thrown in an `async` function and call `next(error)` for you.
-
-```js
-app.addHook('preHandler', async (req, res, next) => {
-  const user = await loadUser() // No need to wrap in a try-catch
-  req.user = user
-  next()
-})
-```
 
 <a id="encapsulation"></a>
 ## Hooks Encapsulation
