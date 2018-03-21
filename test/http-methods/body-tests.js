@@ -1,14 +1,17 @@
 'use strict'
 
+const t = require('tap')
+const test = t.test
 const sget = require('simple-get').concat
 const stream = require('stream')
 
-const app = require('../..')()
+const medley = require('../..')
 
-module.exports.payloadMethod = function(method, t) {
-  const test = t.test
+module.exports = function bodyTests(method, config) {
   const upMethod = method.toUpperCase()
   const loMethod = method.toLowerCase()
+  const expectsBody = upMethod === 'POST' || upMethod === 'PUT' || upMethod === 'PATCH'
+  const app = medley(config)
 
   app[loMethod]('/', {
     responseSchema: {
@@ -61,8 +64,8 @@ module.exports.payloadMethod = function(method, t) {
       })
     })
 
-    // Node errors for non-P* requests with a stream body
-    if (upMethod !== 'OPTIONS' && upMethod !== 'DELETE') {
+    // Node errors for non-POST/PUT/PATCH requests with a stream body
+    if (expectsBody) {
       test(`${upMethod} - correctly replies when sent a stream`, (t) => {
         t.plan(3)
 
@@ -110,7 +113,7 @@ module.exports.payloadMethod = function(method, t) {
         url: 'http://localhost:' + app.server.address().port,
         body: JSON.stringify({hello: 'world'}),
         headers: {
-          'content-type': 'application/json',
+          'content-type': 'application/json; charset=utf-8',
         },
       }, (err, response, body) => {
         t.error(err)
@@ -176,7 +179,7 @@ module.exports.payloadMethod = function(method, t) {
       })
     })
 
-    if (upMethod === 'POST' || upMethod === 'PUT' || upMethod === 'PATCH') {
+    if (expectsBody) {
       test(`${upMethod} returns 415 - incorrect media type if body is not json`, (t) => {
         t.plan(2)
         sget({
@@ -189,7 +192,7 @@ module.exports.payloadMethod = function(method, t) {
           t.equal(response.statusCode, 415)
         })
       })
-    } else { // OPTION, DELETE
+    } else {
       test(`${upMethod} ignores body if no Content-Type header is set`, (t) => {
         t.plan(4)
         sget({
@@ -272,7 +275,7 @@ module.exports.payloadMethod = function(method, t) {
     })
 
     test(`${upMethod} returns 413 - Payload Too Large`, (t) => {
-      t.plan(upMethod === 'OPTIONS' || upMethod === 'DELETE' ? 4 : 6)
+      t.plan(expectsBody ? 6 : 4)
 
       sget({
         method: upMethod,
@@ -286,8 +289,8 @@ module.exports.payloadMethod = function(method, t) {
         t.strictEqual(response.statusCode, 413)
       })
 
-      // Node errors for non-P* requests with a stream body
-      if (upMethod !== 'OPTIONS' && upMethod !== 'DELETE') {
+      // Node errors for non-POST/PUT/PATCH requests with a stream body
+      if (expectsBody) {
         var chunk = Buffer.allocUnsafe(1024 * 1024 + 1)
         const largeStream = new stream.Readable({
           read() {
