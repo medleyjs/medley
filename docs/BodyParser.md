@@ -23,7 +23,7 @@ app.addBodyParser(contentType, parser(req, done))
 
 + `contentType` *(string)* - The Content-Type (MIME type) to parse.
 + `parser` *(function)* - A function to parse the request body that takes the following parameters:
-  + `req` - The native [`http.IncomingMessage`][http.IncomingMessage] object.
+  + `req` - The Medley [`Request`][Request.md] object.
   + `done(error, body)` - Callback to call when done parsing the body or if an error occurred.
 
 Example that uses [`raw-body`](https://github.com/stream-utils/raw-body):
@@ -32,7 +32,7 @@ Example that uses [`raw-body`](https://github.com/stream-utils/raw-body):
 const rawBody = require('raw-body')
 
 app.addBodyParser('text/html', (req, done) => {
-  rawBody(req, {
+  rawBody(req.stream, {
     length: req.headers['content-length'],
     limit: '1mb',
     encoding: 'utf8',
@@ -46,7 +46,7 @@ If using an `async` function, return the parsed body instead of calling the `don
 const rawBody = require('raw-body')
 
 app.addBodyParser('text/html', async (req) => {
-  const body = await rawBody(req, {
+  const body = await rawBody(req.stream, {
     length: req.headers['content-length'],
     limit: '1mb',
     encoding: 'utf8',
@@ -60,7 +60,7 @@ it could be simplified to just return the promise:
 
 ```js
 app.addBodyParser('text/html', (req) => {
-  return rawBody(req, {
+  return rawBody(req.stream, {
     length: req.headers['content-length'],
     limit: '1mb',
     encoding: 'utf8',
@@ -79,7 +79,7 @@ app.addBodyParser(contentType, options, parser(req, body, done))
   + `parseAs` *(string)* - Either `'buffer'` or `'string'` to indicate how the incoming data should be collected. Defaults to `undefined`.
   + `bodyLimit` *(number)* - The maximum payload size (in bytes) that the custom parser will accept. Defaults to the global body limit passed to the [`Medley factory function`](Factory.md#bodylimit). If the limit is exceeded, the `parser` function will not be invoked.
 + `parser` *(function)* - A function to parse the request body that takes the following parameters:
-  + `req` - The native [`http.IncomingMessage`][http.IncomingMessage] object.
+  + `req` - The Medley [`Request`][Request.md] object.
   + `body` *(buffer|string)* - The collected body. The type depends on the `parseAs` option.
   + `done(error, body)` - Callback to call when done parsing the body or if an error occurred.
 
@@ -117,7 +117,7 @@ can be done by setting a parser for the `'*'` content type.
 ```js
 app.addBodyParser('*', (req, done) => {
   if (isACertainType(req.headers['content-type'])) {
-    parseBody(req, done)
+    parseBody(req.stream, done)
   } else {
     done(undefined)
   }
@@ -133,5 +133,3 @@ if (!app.hasBodyParser('application/jsoff')){
   app.addBodyParser('application/jsoff', jsoffParser)
 }
 ```
-
-[http.IncomingMessage]: https://nodejs.org/dist/latest/docs/api/http.html#http_class_http_incomingmessage

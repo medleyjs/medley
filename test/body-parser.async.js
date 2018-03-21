@@ -18,7 +18,7 @@ test('bodyParser should add a custom async parser', (t) => {
   })
 
   app.addBodyParser('application/jsoff', async function(req) {
-    const ret = await Promise.resolve(req)
+    const ret = await Promise.resolve(req.stream)
     return ret
   })
 

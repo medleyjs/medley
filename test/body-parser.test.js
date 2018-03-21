@@ -30,7 +30,7 @@ test('addBodyParser should add a custom parser', (t) => {
   })
 
   app.addBodyParser('application/jsoff', function(req, done) {
-    jsonParser(req, function(err, body) {
+    jsonParser(req.stream, function(err, body) {
       done(err, body)
     })
   })
@@ -89,7 +89,7 @@ test('bodyParser should handle multiple custom parsers', (t) => {
   })
 
   function customParser(req, done) {
-    jsonParser(req, function(err, body) {
+    jsonParser(req.stream, function(err, body) {
       done(err, body)
     })
   }
@@ -191,7 +191,7 @@ test('bodyParser should support encapsulation, second try', (t) => {
     })
 
     subApp.addBodyParser('application/jsoff', function(req, done) {
-      jsonParser(req, function(err, body) {
+      jsonParser(req.stream, function(err, body) {
         done(err, body)
       })
     })
@@ -225,7 +225,7 @@ test('bodyParser should not by default support requests without a Content-Type',
   })
 
   app.addBodyParser('application/jsoff', function(req, done) {
-    jsonParser(req, function(err, body) {
+    jsonParser(req.stream, function(err, body) {
       done(err, body)
     })
   })
@@ -257,7 +257,7 @@ test('bodyParser should not by default support requests with an unknown Content-
   })
 
   app.addBodyParser('application/jsoff', function(req, done) {
-    jsonParser(req, function(err, body) {
+    jsonParser(req.stream, function(err, body) {
       done(err, body)
     })
   })
@@ -326,10 +326,10 @@ test('catch all body parser', (t) => {
 
   app.addBodyParser('*', function(req, done) {
     var data = ''
-    req.on('data', (chunk) => {
+    req.stream.on('data', (chunk) => {
       data += chunk
     })
-    req.on('end', () => {
+    req.stream.on('end', () => {
       done(null, data)
     })
   })
@@ -376,16 +376,16 @@ test('catch all body parser should not interfere with other content type parsers
 
   app.addBodyParser('*', function(req, done) {
     var data = ''
-    req.on('data', (chunk) => {
+    req.stream.on('data', (chunk) => {
       data += chunk
     })
-    req.on('end', () => {
+    req.stream.on('end', () => {
       done(null, data)
     })
   })
 
   app.addBodyParser('application/jsoff', function(req, done) {
-    jsonParser(req, function(err, body) {
+    jsonParser(req.stream, function(err, body) {
       done(err, body)
     })
   })
@@ -432,17 +432,16 @@ test('\'*\' catch undefined Content-Type requests', (t) => {
 
   app.addBodyParser('*', function(req, done) {
     var data = ''
-    req.on('data', (chunk) => {
+    req.stream.on('data', (chunk) => {
       data += chunk
     })
-    req.on('end', () => {
+    req.stream.on('end', () => {
       done(null, data)
     })
   })
 
   app.post('/', (req, res) => {
-    // Needed to avoid json stringify
-    res.type('text/plain').send(req.body)
+    res.send(req.body)
   })
 
   app.listen(0, function(err) {
@@ -470,7 +469,7 @@ test('cannot add body parser after binding', (t) => {
   t.tearDown(app.close.bind(app))
 
   app.post('/', (req, res) => {
-    res.type('text/plain').send(req.body)
+    res.send(req.body)
   })
 
   app.listen(0, function(err) {
@@ -515,7 +514,7 @@ test('Can override the default JSON parser', (t) => {
 
   app.addBodyParser('application/json', function(req, done) {
     t.ok('called')
-    jsonParser(req, function(err, body) {
+    jsonParser(req.stream, function(err, body) {
       done(err, body)
     })
   })
@@ -544,7 +543,7 @@ test('Cannot override the JSON parser multiple times', (t) => {
   const app = medley()
 
   app.addBodyParser('application/json', function(req, done) {
-    jsonParser(req, function(err, body) {
+    jsonParser(req.stream, function(err, body) {
       done(err, body)
     })
   })
@@ -552,7 +551,7 @@ test('Cannot override the JSON parser multiple times', (t) => {
   try {
     app.addBodyParser('application/json', function(req, done) {
       t.ok('called')
-      jsonParser(req, function(err, body) {
+      jsonParser(req.stream, function(err, body) {
         done(err, body)
       })
     })
@@ -649,7 +648,7 @@ test('The charset should not interfere with the content type handling', (t) => {
 
   app.addBodyParser('application/json', function(req, done) {
     t.ok('called')
-    jsonParser(req, function(err, body) {
+    jsonParser(req.stream, function(err, body) {
       done(err, body)
     })
   })
