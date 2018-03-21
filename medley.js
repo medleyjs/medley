@@ -56,14 +56,18 @@ function medley(options) {
   const httpHandler = router.lookup.bind(router)
 
   var server
-  if (options.https) {
-    if (options.http2) {
-      server = http2().createSecureServer(options.https, httpHandler)
+  if (options.http2) {
+    if (typeof options.http2 === 'object') {
+      if (options.http2.key || options.http2.cert) {
+        server = http2().createSecureServer(options.http2, httpHandler)
+      } else {
+        server = http2().createServer(options.http2, httpHandler)
+      }
     } else {
-      server = https.createServer(options.https, httpHandler)
+      server = http2().createServer(httpHandler)
     }
-  } else if (options.http2) {
-    server = http2().createServer(httpHandler)
+  } else if (options.https) {
+    server = https.createServer(options.https, httpHandler)
   } else {
     server = http.createServer(httpHandler)
   }
@@ -619,8 +623,7 @@ function http2() {
   try {
     return require('http2')
   } catch (err) /* istanbul ignore next */ {
-    console.error('http2 is available only from node >= 8.8.1') // eslint-disable-line no-console
-    return undefined
+    throw new Error('http2 is available only from Node >= 8.8.0')
   }
 }
 

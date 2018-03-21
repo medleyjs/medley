@@ -21,12 +21,22 @@ Defines the maximum payload, in bytes, the server is allowed to accept.
 
 ### `http2`
 
-*(Status: experimental)*
++ *object | boolean*
 
-If `true`, the HTTP server will be created with Node.js's
-[HTTP/2](https://nodejs.org/api/http2.html) module.
+An object used to configure the HTTP server to use HTTP/2. The options are the
+same as the Node.js core
+[`http2.createSecureServer()`](https://nodejs.org/api/http2.html#http2_http2_createsecureserver_options_onrequesthandler)
+method (when the `key` or `cert` options are present) or the
+[`http2.createServer()`](https://nodejs.org/api/http2.html#http2_http2_createserver_options_onrequesthandler)
+method (when the `key` and `cert` options are not present -- this is not supported by browsers).
+
+If `true`, the HTTP server will be created to use unencrypted HTTP/2 without
+any options. Note that unencrypted HTTP/2 is not supported by browsers. See
+the [HTTP/2 docs](HTTP2.md) for more information.
 
 + Default: `false`
+
+The `https` option is ignored if this option is present.
 
 ### `https`
 
@@ -35,8 +45,6 @@ are the same as the Node.js core
 [`https.createServer()` method](https://nodejs.org/api/https.html#https_https_createserver_options_requestlistener).
 When this property is not set, the socket will not be configured for TLS
 (meaning it will use plain, unencrypted HTTP).
-
-This option also applies when the [`http2`](Factory.md#factory-http2) option is set.
 
 + Default: `undefined`
 

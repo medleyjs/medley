@@ -9,7 +9,7 @@ const sget = require('simple-get').concat
 
 const msg = {hello: 'world'}
 
-t.test('plain', (t) => {
+t.test('unencrypted - true', (t) => {
   t.plan(4)
 
   var app = medley({
@@ -34,12 +34,36 @@ t.test('plain', (t) => {
   })
 })
 
+t.test('unencrypted - object', (t) => {
+  t.plan(4)
+
+  var app = medley({
+    http2: {peerMaxConcurrentStreams: 20},
+  })
+
+  app.get('/', function(req, response) {
+    response.send(msg)
+  })
+
+  app.listen(0, async (err) => {
+    t.error(err)
+    app.server.unref()
+
+    const url = `http://localhost:${app.server.address().port}`
+    const res = await h2url.concat({url})
+
+    t.strictEqual(res.headers[':status'], 200)
+    t.strictEqual(res.headers['content-length'], '' + JSON.stringify(msg).length)
+
+    t.deepEqual(JSON.parse(res.body), msg)
+  })
+})
+
 t.test('secure', (t) => {
   t.plan(4)
 
   var app = medley({
-    http2: true,
-    https: {
+    http2: {
       key: fs.readFileSync(path.join(__dirname, 'app.key')),
       cert: fs.readFileSync(path.join(__dirname, 'app.cert')),
     },
@@ -66,8 +90,7 @@ t.test('secure with fallback', (t) => {
   t.plan(6)
 
   var app = medley({
-    http2: true,
-    https: {
+    http2: {
       allowHTTP1: true,
       key: fs.readFileSync(path.join(__dirname, 'app.key')),
       cert: fs.readFileSync(path.join(__dirname, 'app.cert')),

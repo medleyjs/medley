@@ -9,15 +9,12 @@ unencrypted HTTP/2, but note that browsers only support encrypted HTTP/2.
 HTTP/2 is supported in browsers **only over a secure connection**:
 
 ```js
-'use strict'
-
 const fs = require('fs')
 const path = require('path')
 const medley = require('@medley/medley')
 
 const app = medley({
-  http2: true,
-  https: {
+  http2: {
     key: fs.readFileSync(path.join(__dirname, 'https', 'app.key')),
     cert: fs.readFileSync(path.join(__dirname, 'https', 'app.cert'))
   }
@@ -38,8 +35,7 @@ HTTPS and secure HTTP/2 connections, use the `allowHTTP1` option:
 
 ```js
 const app = medley({
-  http2: true,
-  https: {
+  http2: {
     allowHTTP1: true, // Fallback support for HTTP/1
     key: fs.readFileSync(path.join(__dirname, 'https', 'app.key')),
     cert: fs.readFileSync(path.join(__dirname, 'https', 'app.cert'))
@@ -53,8 +49,6 @@ If you are building microservices, you can use the unencrypted form of HTTP/2,
 however this is not supported by browsers.
 
 ```js
-'use strict'
-
 const medley = require('@medley/medley')
 const app = medley({
   http2: true

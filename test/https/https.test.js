@@ -1,15 +1,19 @@
 'use strict'
 
-if (require('../testUtils.js').supportsHTTP2) {
-  require('./http2')
-}
-
 const t = require('tap')
-const test = t.test
 const sget = require('simple-get').concat
 const fs = require('fs')
 const path = require('path')
 const medley = require('../..')
+
+if (require('../testUtils.js').supportsHTTP2) {
+  require('./http2')
+} else {
+  t.throws(
+    medley({http2: true}),
+    new Error('http2 is available only from Node >= 8.8.0')
+  )
+}
 
 var app = medley({
   https: {
@@ -26,7 +30,7 @@ app.listen(0, (err) => {
   t.error(err)
   app.server.unref()
 
-  test('https get request', (t) => {
+  t.test('https get request', (t) => {
     t.plan(4)
     sget({
       method: 'GET',
