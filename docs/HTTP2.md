@@ -1,28 +1,25 @@
-# HTTP2
+# HTTP/2
 
-_Medley_ offers **experimental support** for HTTP2 starting from Node
-8.8.0, which includes HTTP2 without a flag. _Medley_ supports HTTP2
-both over HTTPS or over plaintext.
-
-Currently none of the HTTP2-specific APIs are available through
-_Medley_, but Node's `req` and `res` can be access through our
-`Request` and `Response` interface via the `stream` property.
+Medley offers **experimental support** for HTTP/2 starting from Node 8.8.0,
+which includes HTTP/2 without a flag. Medley supports both encrypted and
+unencrypted HTTP/2, but note that browsers only support encrypted HTTP/2.
 
 ### Secure (HTTPS)
 
-HTTP2 is supported in all modern browsers __only over a secure
-connection__:
+HTTP/2 is supported in browsers **only over a secure connection**:
 
 ```js
 'use strict'
 
 const fs = require('fs')
 const path = require('path')
-const app = require('@medley/medley')({
+const medley = require('@medley/medley')
+
+const app = medley({
   http2: true,
   https: {
-    key: fs.readFileSync(path.join(__dirname, '..', 'https', 'app.key')),
-    cert: fs.readFileSync(path.join(__dirname, '..', 'https', 'app.cert'))
+    key: fs.readFileSync(path.join(__dirname, 'https', 'app.key')),
+    cert: fs.readFileSync(path.join(__dirname, 'https', 'app.cert'))
   }
 })
 
@@ -34,47 +31,32 @@ app.listen(3000)
 ```
 
 ALPN negotiation allows to support both HTTPS and HTTP/2 over the same socket.
-Node core `req` and `res` objects can be either [HTTP/1](https://nodejs.org/api/http.html)
-or [HTTP/2](https://nodejs.org/api/http2.html).
-_Medley_ supports this out of the box:
+Node core [`req`](Request.md#reqstream) and [`res`](Response.md#resstream)
+objects can be either [HTTP/1](https://nodejs.org/api/http.html) or
+[HTTP/2](https://nodejs.org/api/http2.html). To configure Medley to accept both
+HTTPS and secure HTTP/2 connections, use the `allowHTTP1` option:
 
 ```js
-'use strict'
-
-const fs = require('fs')
-const path = require('path')
-const app = require('@medley/medley')({
+const app = medley({
   http2: true,
   https: {
-    allowHTTP1: true, // fallback support for HTTP1
-    key: fs.readFileSync(path.join(__dirname, '..', 'https', 'app.key')),
-    cert: fs.readFileSync(path.join(__dirname, '..', 'https', 'app.cert'))
+    allowHTTP1: true, // Fallback support for HTTP/1
+    key: fs.readFileSync(path.join(__dirname, 'https', 'app.key')),
+    cert: fs.readFileSync(path.join(__dirname, 'https', 'app.cert'))
   }
 })
-
-// this route can be accessed through both protocols
-app.get('/', (req, res) => {
-  res.send({ hello: 'world' })
-})
-
-app.listen(3000)
 ```
 
-You can test your new server with:
+### Unencrypted
 
-```
-$ npx h2url https://localhost:3000
-```
-
-### Plain or insecure
-
-If you are building microservices, you can connect to HTTP2 in plain
-text, however this is not supported by browsers.
+If you are building microservices, you can use the unencrypted form of HTTP/2,
+however this is not supported by browsers.
 
 ```js
 'use strict'
 
-const app = require('@medley/medley')({
+const medley = require('@medley/medley')
+const app = medley({
   http2: true
 })
 
@@ -84,10 +66,3 @@ app.get('/', (req, res) => {
 
 app.listen(3000)
 ```
-
-You can test your new server with:
-
-```
-$ npx h2url http://localhost:3000
-```
-

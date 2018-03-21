@@ -1,10 +1,17 @@
 # Body Parser
 
-Medley comes with a body parser for the `application/json` Content-Type. To parse different content types, `app.addBodyParser()` can be used to add more body parsers. The parsed request body is added to the [Medley `request`](Request.md) object as `request.body`.
+Medley comes with only a body parser for the `application/json` Content-Type
+out of the box. To parse other content types, `app.addBodyParser()` can be
+used to add more body parsers. When a body is parsed, it is added to the
+Medley [`req`](Request.md) object as `req.body`.
 
-As with the other APIs, `addBodyParser` is encapsulated in the scope in which it is declared. This means that if a parser is declared in the root scope, it will be available everywhere, whereas if it is declared inside a sub-app, it will be available only in that scope and its children.
+Similar to hooks, body parsers are encapsulated within the scope in which they
+are declared. This means that if a parser is declared in the root scope, it
+will be available everywhere, whereas if it is declared inside a sub-app, it
+will be available only in that scope and its children.
 
-If needed, the default JSON parser can be overridden by adding a parser with the Content-Type `'application/json'`.
+If needed, the default JSON parser can be overridden by adding a parser with
+the Content-Type `'application/json'`.
 
 ## `app.addBodyParser()`
 
@@ -14,7 +21,7 @@ If needed, the default JSON parser can be overridden by adding a parser with the
 app.addBodyParser(contentType, parser(req, done))
 ```
 
-+ `contentType` *(string)* - The Content-Type to parse.
++ `contentType` *(string)* - The Content-Type (MIME type) to parse.
 + `parser` *(function)* - A function to parse the request body that takes the following parameters:
   + `req` - The native [`http.IncomingMessage`][http.IncomingMessage] object.
   + `done(error, body)` - Callback to call when done parsing the body or if an error occurred.

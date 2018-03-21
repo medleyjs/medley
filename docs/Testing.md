@@ -1,9 +1,15 @@
 # Testing
-Testing is one of the most important parts of developing an application. Medley is very flexible when it comes to testing and is compatible with most testing frameworks (such as [Tap](https://www.npmjs.com/package/tap), which is used in the examples below).
 
-<a name="inject"></a>
+Testing is one of the most important parts of developing an application. Medley
+is very flexible when it comes to testing and is compatible with most testing
+frameworks (such as [Tap](https://www.npmjs.com/package/tap), which is used
+in the examples below).
+
+<a id="inject"></a>
 ### Testing with http injection
-Medley comes with built-in support for fake http injection thanks to [`light-my-request`](https://github.com/fastify/light-my-request).
+
+Medley comes with built-in support for fake http injection via to
+[`light-my-request`](https://github.com/fastify/light-my-request).
 
 To inject a fake http request, use the `inject` method:
 
@@ -18,7 +24,7 @@ app.inject({
 })
 ```
 
-or in the promisified version:
+Or using a promise instead of a callback:
 
 ```js
 app
@@ -52,13 +58,21 @@ try {
 }
 ```
 
+There is also a shorthand signature to make a GET request:
+
+```js
+app.inject('/url', (error, response) => {
+  // Tests
+})
+```
+
 #### Example:
 
 **app.js**
 ```js
 const medley = require('@medley/medley')
 
-function buildMedley () {
+function buildApp () {
   const app = medley()
 
   app.get('/', (req, res) => {
@@ -68,18 +82,18 @@ function buildMedley () {
   return app
 }
 
-module.exports = buildMedley
+module.exports = buildApp
 ```
 
 **test.js**
 ```js
 const tap = require('tap')
-const buildMedley = require('./app')
+const buildApp = require('./app')
 
 tap.test('GET `/` route', t => {
   t.plan(4)
   
-  const app = buildMedley()
+  const app = buildApp()
   
   // At the end of your tests it is highly recommended to call `.close()`
   // to ensure that all connections to external services get closed.
@@ -110,12 +124,12 @@ Uses **app.js** from the previous example.
 ```js
 const tap = require('tap')
 const request = require('request')
-const buildMedley = require('./app')
+const buildApp = require('./app')
 
 tap.test('GET `/` route', t => {
   t.plan(5)
   
-  const app = buildMedley()
+  const app = buildApp()
   
   t.tearDown(() => app.close())
   
@@ -135,14 +149,14 @@ tap.test('GET `/` route', t => {
 })
 ```
 
-**test-ready.js** (testing with [`SuperTest`](https://www.npmjs.com/package/supertest))
+**test-load.js** (testing with [`SuperTest`](https://www.npmjs.com/package/supertest))
 ```js
 const tap = require('tap')
 const supertest = require('supertest')
-const buildMedley = require('./app')
+const buildApp = require('./app')
 
 tap.test('GET `/` route', async (t) => {
-  const app = buildMedley()
+  const app = buildApp()
 
   t.tearDown(() => app.close())
   

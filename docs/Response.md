@@ -64,14 +64,14 @@ The HTTP status code that will be sent to the client when the response is sent.<
 Defaults to `200`.
 
 **Note:** The status code must be between `200` and `599` (inclusive) to be
-compatible with HTTP 2.
+compatible with HTTP/2.
 
 ### `res.stream`
 
 The [writable stream](https://nodejs.org/api/stream.html#stream_writable_streams)
 of the outgoing response that can be used to send data to the client. This is the
 [`http.ServerResponse`][http.ServerResponse] ("res") object from Node core. If
-the server is using HTTP 2, this will instead be an instance of
+the server is using HTTP/2, this will instead be an instance of
 [`http2.Http2ServerResponse`](https://nodejs.org/api/http2.html#http2_class_http2_http2serverresponse).
 
 This object generally should never need to be used. Writing to the stream
@@ -80,7 +80,7 @@ response handling and prevent `onSend` hooks from being run. It is also a
 good idea to avoid using [`http.ServerResponse`][http.ServerResponse] methods
 on the object, like `.writeHead()` and `.getHeaders()`, so that your code can
 be compatible with future versions of Medley that will use Node's new
-[HTTP 2 stream interface](https://nodejs.org/api/http2.html#http2_class_http2stream).
+[HTTP/2 stream interface](https://nodejs.org/api/http2.html#http2_class_http2stream).
 Additionally, using the `.[get|set]Header()` methods available on this object
 is not supported by Medley and may cause undefined behavior.
 
@@ -154,7 +154,7 @@ The status code for the response is chosen in the following order:
 1. If none of the above, `500` is used.
 
 **Note:** The status code must be between `200` and `599` (inclusive) to be
-compatible with HTTP 2.
+compatible with HTTP/2.
 
 <a id="get"></a>
 ### `res.get(field)`
@@ -170,7 +170,7 @@ res.get('content-type') // 'application/json'
 ```
 
 **Tip:** While not required, it is best to use lowercase header names for the best performance
-and for consistency with HTTP 2 (which requires header names to be lowercase).
+and for consistency with HTTP/2 (which requires header names to be lowercase).
 
 <a id="not-found"></a>
 ### `res.notFound()`
@@ -352,7 +352,7 @@ res.set({
 ```
 
 **Tip:** While not required, it is best to use lowercase header names for the best performance
-and for consistency with HTTP 2 (which requires header names to be lowercase).
+and for consistency with HTTP/2 (which requires header names to be lowercase).
 
 <a id="status"></a>
 ### `res.status(statusCode)`
@@ -368,7 +368,7 @@ res.status(204).send()
 ```
 
 **Note:** The status code must be between `200` and `599` (inclusive) to be
-compatible with HTTP 2.
+compatible with HTTP/2.
 
 <a id="type"></a>
 ### `res.type(contentType)`

@@ -54,7 +54,7 @@ app.use('/v1', (subApp) => {
 ### `app.server`
 
 The [HTTP server](https://nodejs.org/api/http.html#http_class_http_server) (or
-[HTTP 2 server](https://nodejs.org/api/http2.html#http2_class_http2secureserver))
+[HTTP/2 server](https://nodejs.org/api/http2.html#http2_class_http2secureserver))
 automatically created for the `app`.
 
 

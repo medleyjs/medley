@@ -53,7 +53,8 @@ const myPlugin = require('./my-plugin')
 myPlugin(app, options)
 ```
 
-It is perfectly acceptable to do that, however, `.registerPlugin()`
+It is perfectly acceptable to do that, however, `.registerPlugin()` is a
+slightly more convenient way of writing the code above, and it also
 provides the following additional functionality:
 
 

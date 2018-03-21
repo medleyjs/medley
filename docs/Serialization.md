@@ -1,6 +1,13 @@
 # Serialization
 
-When sending a JSON response, it is serialized with `JSON.stringify()` by default. However, a response schema can be set to enable the payload to be serialized with [`compile-json-stringify`](https://www.npmjs.com/package/compile-json-stringify) instead. `compile-json-stringify` will stringify the payload 2-8x faster than `JSON.stringify()` and it will exclude any properties that are not included in the schema (which can prevent accidental disclosure of sensitive information, although it is not recommended to use this as the primary method of preventing data leaks).
+When sending a JSON response, it is serialized with `JSON.stringify()` by
+default. However, a response schema can be set to enable the payload to be
+serialized with [`compile-json-stringify`](https://www.npmjs.com/package/compile-json-stringify)
+instead. `compile-json-stringify` will stringify the payload 2-8x faster than
+`JSON.stringify()` and it will exclude any properties that are not included in
+the schema (which can prevent accidental disclosure of sensitive information,
+although it is not recommended to use this as the primary method of preventing
+data leaks).
 
 **Example:**
 
@@ -19,7 +26,9 @@ app.get('/', { responseSchema }, (req, res) => {
 })
 ```
 
-The structure of the schema is a mapping of a *status code* to a *`compile-json-stringify` schema*. Different schemas can be set for different status codes.
+The structure of the schema is a mapping of a *status code* to a
+*`compile-json-stringify` schema*. Different schemas can be set
+for different status codes.
 
 ```js
 const responseSchema = {
@@ -49,11 +58,15 @@ app.post('/info', { responseSchema }, (req, res) => {
 })
 ```
 
-For more information on how to define a response schema, see the [`compile-json-stringify` documentation](https://github.com/nwoltman/compile-json-stringify).
+For more information on how to define a response schema, see the
+[`compile-json-stringify` documentation](https://github.com/nwoltman/compile-json-stringify).
 
 ## Object Shorthand
 
-Medley lets you use a "shorthand" format for object schema definitions. If the schema is missing the `type` and `properties` keyword properties, Medley will wrap it in a `{type: 'object', properties: yourSchema}` object so that it will be compiled properly.
+Medley lets you use a "shorthand" format for object schema definitions. If the
+schema is missing the `type` and `properties` keyword properties, Medley will
+wrap it in a `{type: 'object', properties: yourSchema}` object so that it will
+be compiled properly.
 
 ```js
 const responseSchema = {
@@ -69,7 +82,9 @@ app.get('/', { responseSchema }, (req, res) => {
 
 ## Incorrect Types in the Payload
 
-`compile-json-stringify` works just like `JSON.stringify()` ([mostly](https://github.com/nwoltman/compile-json-stringify#differences-from-jsonstringify)). If a part of the payload being sent doesn't match the schema, it will still be serialized.
+`compile-json-stringify` works just like `JSON.stringify()`
+([mostly](https://github.com/nwoltman/compile-json-stringify#differences-from-jsonstringify)).
+If a part of the payload being sent doesn't match the schema, it will still be serialized.
 
 ```js
 const responseSchema = {

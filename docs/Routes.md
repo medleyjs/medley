@@ -95,40 +95,64 @@ app.get('/path', {
 *If the `handler` is specified in both the `options` object and as the
 third parameter, the third parameter will take precedence.*
 
-## URL-building
+## URL-Building
+
 Medley supports both static and dynamic urls.<br>
-To register a **parametric** path, use the *colon* before the parameter name. For **wildcard** use the *star*.
+To register a **parametric** path, use a *colon* (`:`) before the parameter
+name. For a **wildcard** path, use an *asterisk* (`*`).
+
 *Remember that static routes are always checked before parametric and wildcard.*
 
 ```js
-// parametric
-app.get('/example/:userId', (req, res) => {}))
-app.get('/example/:userId/:secretToken', (req, res) => {}))
+// Static
+app.get('/api/user', (req, res) => {}))
 
-// wildcard
-app.get('/example/*', (req, res) => {}))
+// Parametric
+app.get('/api/:userId', (req, res) => {}))
+app.get('/api/:userId/:secretToken', (req, res) => {}))
+
+// Wildcard
+app.get('/api/*', (req, res) => {}))
 ```
 
-Regular expression routes are supported as well, but pay attention, RegExp are very expensive in term of performance!
+Regular expression routes are also supported, but be aware that they are very
+expensive in terms of performance.
+
 ```js
-// parametric with regexp
-app.get('/example/:file(^\\d+).png', (req, res) => {}))
+// Parametric with regexp
+app.get('/api/:file(^\\d+).png', (req, res) => {}))
 ```
 
-It's possible to define more than one parameter within the same couple of slash ("/"). Such as:
+To define a path with more than one parameter within the same path part,
+use a hyphen (`-`) to separate the parameters:
+
 ```js
-app.get('/example/near/:lat-:lng/radius/:r', (req, res) => {}))
-```
-*Remember in this case to use the dash ("-") as parameters separator.*
+// Multi-parametric
+app.get('/api/near/:lat-:lng/radius/:r', (req, res) => {
+  // Matches: '/api/near/10.856-32.284/radius/50'
+  req.params // { lat: '10.856', lng: '32.284', r: '50' }
+}))
 
-Finally it's possible to have multiple parameters with RegExp.
+```
+
+Multiple parameters also work with RegExp:
+
 ```js
-app.get('/example/at/:hour(^\\d{2})h:minute(^\\d{2})m', (req, res) => {}))
+app.get('/api/at/:hour(^\\d{2})h:minute(^\\d{2})m', (req, res) => {
+  // Matches: '/api/at/02h:50m'
+  req.params // { hour: '02', minute: '50' }
+}))
 ```
-In this case as parameter separator it's possible to use whatever character is not matched by the regular expression.
 
-Having a route with multiple parameters may affect negatively the performance, so prefer single parameter approach whenever possible, especially on routes which are on the hot path of your application.
-If you are interested in how we handle the routing, checkout [find-my-way](https://github.com/delvedor/find-my-way).
+In this case, the parameter separator can be any character that is not
+matched by the regular expression.
+
+Having a route with multiple parameters may affect negatively the performance,
+so prefer the single parameter approach whenever possible, especially on routes
+that are on the hot path of your application.
+
+For more information on the router used by Medley, check out
+[`find-my-way`](https://github.com/delvedor/find-my-way).
 
 <a id="async-await"></a>
 ## Async-Await / Promises

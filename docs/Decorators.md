@@ -1,53 +1,122 @@
 # Decorators
 
-The API allows you to add new properties to the Medley `app` instance. A value is not restricted to a function and could also be an object or a string, for example.
+Medley allows for its functionality to be extended through the use of *decorators*.
+Decorators are just extra properties that are added to the `app`, `req`, and `res`
+objects. The following methods can be used to decorate each object:
 
-<a name="usage"></a>
-### Usage
-<a name="decorate"></a>
-**decorate**
-Just call the `decorate` API and pass the name of the new property and its value.
++ [`app.decorate(name, value)`](#decorate)
++ [`app.decorateRequeste(name, value)`](#decorate-request)
++ [`app.decorateResponse(name, value)`](#decorate-response)
+
+Decorators follow Medley's sub-app encapsulation model. See the
+[Decorators Encapsulation](#encapsulation) section to learn how
+decorators work with encapsulation.
+
+
+## Usage
+
+<a id="decorate"></a>
+### `app.decorate(name, value)`
+
+Adds a new property to the `app`.
+
 ```js
-app.decorate('utility', () => {
-  // something very useful
+app.decorate('doSomething', function doSomething() {
+  // Does something
 })
 ```
 
-As said above, you can also decorate the app with non-function values:
+The `value` can be anything:
+
 ```js
-app.decorate('conf', {
-  db: 'some.db',
+app.decorate('config', {
+  host: 'ww.example.com',
   port: 3000
 })
 ```
 
-Once you decorate the app, you can access the value by using the name you passed as a parameter:
-```js
-app.utility()
+After adding a decorator, the property is immediately accessible on the `app`:
 
-console.log(app.conf.db)
+```js
+app.doSomething()
+app.config.port // 3000
 ```
 
-Decorators are not *overwritable*. If you try to declare a decorator that was previously declared *(in other words, use the same name)*, `decorate` will throw an exception.
+Decorators are not *overwritable*. If you try to declare a decorator that was
+previously declared *(in other words, uses the same name)*, `decorate` will
+throw an error.
 
-<a name="decorate-response"></a>
-**decorateResponse**
-As the name suggests, this API is needed if you want to add new methods to the `Response` core object. Just call the `decorateResponse` API and pass the name of the new property and its value:
+<a id="decorate-request"></a>
+### `app.decorateRequest(name, value)`
+
+Adds a new property to Medley's [`Request`](Request.md) object. This property
+will be available on the `req` object in handlers:
+
 ```js
-app.decorateResponse('utility', function () {
-  // something very useful
+app.decorateRequest('logHello', function logHello() {
+  console.log('Hello')
+})
+
+app.get('/', (req, res) => {
+  req.logHello()  
 })
 ```
 
-<a name="decorate-request"></a>
-**decorateRequest**
-As above, this API is needed if you want to add new methods to the `Request` core object. Just call the `decorateRequest` API and pass the name of the new property and its value:
+<a id="decorate-response"></a>
+### `app.decorateResponse(name, value)`
+
+Adds a new property to Medley's [`Response`](Response.md) object. This property
+will be available on the `res` object in handlers:
+
 ```js
-app.decorateRequest('utility', function () {
-  // something very useful
+app.decorateResponse('logGoodbye', function logGoodbye() {
+  console.log('Goodbye')
+})
+
+app.get('/', (req, res) => {
+  res.logGoodbye()  
 })
 ```
 
-<a name="sync-async"></a>
-#### Sync and Async
-`decorate` is a *synchronous* API. If you need to add a decorator that has an *asynchronous* bootstrap, Medley could boot up before your decorator is ready. To avoid this issue, you must use the `register` API in combination with `fastify-plugin`. To learn more, check out the [Plugins](Plugins.md) documentation as well.
+<a id="encapsulation"></a>
+## Decorators Encapsulation
+
+Decorators are encapsulated to the scope in which they are defined and they are
+inherited by sub-apps. This means that any decorator defined on the root `app`
+will be available everywhere and decorators defined on a sub-app will only
+be available to that sub-app and its own sub-apps.
+
+```js
+app.decorate('config', {
+  host: 'example.com',
+  port: 3000,
+})
+
+app.decorateRequest('top', true)
+
+app.use((subApp1) => {
+  console.log(subApp1.config) // { host: 'example.com', port: 3000 }
+  
+  subApp1.decorateRequest('one', 1)
+
+  subApp1.get('/route-1', (req, res) => {
+    console.log(req.top) // true
+    console.log(req.one) // 1
+    console.log(req.two) // undefined
+    res.send()
+  })
+})
+
+app.use((subApp2) => {
+  console.log(subApp2.config) // { host: 'example.com', port: 3000 }
+  
+  subApp2.decorateRequest('two', 2)
+
+  subApp2.get('/route-2', (req, res) => {
+    console.log(req.top) // true
+    console.log(req.one) // undefined
+    console.log(req.two) // 2
+    res.send()
+  })
+})
+```

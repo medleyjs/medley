@@ -185,7 +185,7 @@ app.addHook('preHandler', async (req, res, next) => {
 ```
 
 <a id="encapsulation"></a>
-## Encapsulation
+## Hooks Encapsulation
 
 Hooks can be encapsulated following Medley's sub-app encapsulation model so
 that they will only run on routes in the same encapsulation scope.
