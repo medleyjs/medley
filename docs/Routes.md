@@ -11,8 +11,7 @@ app.route(options)
 
 ### Options
 
-+ `method`: The name of an HTTP method or an array of methods. The supported methods are:
-  + `'GET'`, `'HEAD'`, `'POST'`, `'PUT'`, `'PATCH'`, `'DELETE'`, `'OPTIONS'`
++ `method`: The name of an HTTP method or an array of methods. Can be any method found in the [`http.METHODS`](https://nodejs.org/api/http.html#http_http_methods) array.
 + `path`: The path to match the URL of the request.
 + `url`: Alias for `path`.
 + `responseSchema`: The schema for a JSON response. See the [`Serialization` documentation](Serialization.md).
@@ -24,7 +23,7 @@ app.route(options)
 `req` is defined in [Request](Request.md).<br>
 `res` is defined in [Response](Response.md).
 
-Example:
+Examples:
 
 ```js
 app.route({
@@ -42,13 +41,13 @@ app.route({
 
 app.route({
   method: ['POST', 'PUT'],
-  path: '/comment',
+  path: '/user',
   beforeHandler: function(req, res, next) {
     // Validate the request
     next()  
   },
   handler: function(req, res) {
-    // Create a user comment
+    // Create a user
   }  
 })
 ```
@@ -63,10 +62,14 @@ app.put(path, [options], handler)
 app.patch(path, [options], handler)
 app.delete(path, [options], handler)
 app.options(path, [options], handler)
+// app.move(), app.search(), etc.
 
 // Registers a route that handles all supported methods
 app.all(path, [options], handler)
 ```
+
+There is a shorthand for each method found in the
+[`http.METHODS`](https://nodejs.org/api/http.html#http_http_methods) array.
 
 Example:
 
@@ -101,7 +104,7 @@ Medley supports both static and dynamic urls.<br>
 To register a **parametric** path, use a *colon* (`:`) before the parameter
 name. For a **wildcard** path, use an *asterisk* (`*`).
 
-*Remember that static routes are always checked before parametric and wildcard.*
+*Note that static routes are always checked before parametric and wildcard routes.*
 
 ```js
 // Static
@@ -161,16 +164,15 @@ Medley has a convenient feature for `async` functions. If an `async` function re
 it will be sent automatically.
 
 ```js
-// Using res.send()
-app.get('/', async (req, res) => {
-  const data = await getDataAsync()
-  res.send(data)
-})
-
-// Using return
 app.get('/', async (req, res) => {
   const data = await getDataAsync()
   return data
+})
+
+// Which is the same as:
+app.get('/', async (req, res) => {
+  const data = await getDataAsync()
+  res.send(data)
 })
 ```
 
@@ -193,9 +195,12 @@ app.post('/user', (req, res) => {
 })
 ```
 
-Note that `res.send()` will not be called automatically if the value returned from an `async` function is `undefined`. This is because returning `undefined` is the same as not returning anything all (see the [MDN `return` documentation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/return#wikiArticle)).
+Note that `res.send()` will not be called automatically if the value returned from an `async`
+function is `undefined`. This is because returning `undefined` is the same as not returning
+anything all (see the [MDN `return` documentation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/return#wikiArticle)).
 
-**Warning:** An error will be thrown if `return someValue` and `res.send()` are used at the same time because a response cannot be sent twice.
+**Warning:** An error will be thrown if `return someValue` and `res.send()`
+are used at the same time because a response cannot be sent twice.
 
 ## Route Prefixing
 

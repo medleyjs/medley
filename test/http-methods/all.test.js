@@ -4,7 +4,7 @@ const t = require('tap')
 const test = t.test
 const medley = require('../..')
 
-const supportedMethods = ['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT', 'OPTIONS']
+const supportedMethods = require('http').METHODS
 
 test('app.all should add all the methods to the same URL', (t) => {
   t.plan(supportedMethods.length * 2)

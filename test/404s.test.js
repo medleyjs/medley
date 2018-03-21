@@ -115,7 +115,7 @@ test('custom 404 handler accepts options', (t) => {
 })
 
 test('has a 404 handler for all supported HTTP methods', (t) => {
-  t.plan(28)
+  t.plan(4 * Object.keys(methodHandlers).length)
 
   const app = medley()
 
@@ -134,7 +134,7 @@ test('has a 404 handler for all supported HTTP methods', (t) => {
 })
 
 test('has a custom 404 handler for all supported HTTP methods', (t) => {
-  t.plan(28)
+  t.plan(4 * Object.keys(methodHandlers).length)
 
   const app = medley()
 

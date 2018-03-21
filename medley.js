@@ -90,13 +90,6 @@ function medley(options) {
 
     // Routing
     route,
-    delete: createShorthandRouteMethod('DELETE'),
-    get: createShorthandRouteMethod('GET'),
-    head: createShorthandRouteMethod('HEAD'),
-    patch: createShorthandRouteMethod('PATCH'),
-    post: createShorthandRouteMethod('POST'),
-    put: createShorthandRouteMethod('PUT'),
-    options: createShorthandRouteMethod('OPTIONS'),
     all: createShorthandRouteMethod(supportedMethods),
 
     get basePath() {
@@ -133,6 +126,10 @@ function medley(options) {
     _subApps: [],
   }
   app._notFoundLevelApp = app
+
+  for (const method of supportedMethods) {
+    app[method.toLowerCase()] = createShorthandRouteMethod(method)
+  }
 
   const onLoadHandlers = []
   const preLoadedHandlers = [] // Internal, synchronous handlers
