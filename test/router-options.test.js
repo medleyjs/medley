@@ -1,37 +1,46 @@
 'use strict'
 
 const test = require('tap').test
-const sget = require('simple-get')
 const medley = require('../')
 
-test('Should honor ignoreTrailingSlash option', (t) => {
-  t.plan(4)
-  const app = medley({
-    ignoreTrailingSlash: true,
+test('Should honor strictRouting option', (t) => {
+  t.plan(12)
+  const app1 = medley()
+  const app2 = medley({
+    strictRouting: true,
   })
 
-  app.get('/test', (req, res) => {
+  app1.get('/test', (req, res) => {
+    res.send('test')
+  })
+  app2.get('/test', (req, res) => {
     res.send('test')
   })
 
-  app.listen(0, (err) => {
-    app.server.unref()
-    if (err) t.threw(err)
-
-    const baseUrl = 'http://127.0.0.1:' + app.server.address().port
-
-    sget.concat(baseUrl + '/test', (err, res, data) => {
-      if (err) t.threw(err)
-      t.is(res.statusCode, 200)
-      t.is(data.toString(), 'test')
-    })
-
-    sget.concat(baseUrl + '/test/', (err, res, data) => {
-      if (err) t.threw(err)
-      t.is(res.statusCode, 200)
-      t.is(data.toString(), 'test')
-    })
+  app1.inject('/test', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.payload, 'test')
   })
+
+  app1.inject('/test/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.payload, 'test')
+  })
+
+  app2.inject('/test', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.payload, 'test')
+  })
+
+  app2.inject('/test/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 404)
+    t.equal(res.payload, 'Not Found: GET /test/')
+  })
+
 })
 
 test('Should honor maxParamLength option', (t) => {

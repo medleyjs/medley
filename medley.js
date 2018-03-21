@@ -14,11 +14,11 @@ const RouteContext = require('./lib/RouteContext')
 const runOnCloseHandlers = require('./lib/utils/runOnCloseHandlers')
 const runOnLoadHandlers = require('./lib/utils/runOnLoadHandlers')
 
+const {buildSerializers} = require('./lib/Serializer')
 const {
   kRegisteredPlugins,
   registerPlugin,
 } = require('./lib/PluginUtils')
-const {buildSerializers} = require('./lib/Serializer')
 const {
   routeHandler,
   methodHandlers,
@@ -50,7 +50,7 @@ function medley(options) {
   const notFoundRouter = findMyWay({defaultRoute: notFoundFallbackHandler})
   const router = findMyWay({
     defaultRoute: notFoundRouter.lookup.bind(notFoundRouter),
-    ignoreTrailingSlash: options.ignoreTrailingSlash,
+    ignoreTrailingSlash: !options.strictRouting,
     maxParamLength: options.maxParamLength,
   })
   const httpHandler = router.lookup.bind(router)

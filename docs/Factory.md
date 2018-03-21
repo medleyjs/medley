@@ -7,8 +7,8 @@ object which is used to customize the resulting instance. The options are:
 + [`bodyLimit`](#bodylimit)
 + [`http2`](#http2)
 + [`https`](#https)
-+ [`ignoreTrailingSlash`](#ignoretrailingslash)
 + [`maxParamLength`](#maxparamlength)
++ [`strictRouting`](#strictrouting)
 + [`trustProxy`](#trustproxy)
 
 ## Options
@@ -40,31 +40,6 @@ This option also applies when the [`http2`](Factory.md#factory-http2) option is 
 
 + Default: `undefined`
 
-### `ignoreTrailingSlash`
-
-Medley uses [find-my-way](https://github.com/delvedor/find-my-way) to handle
-routing. This option may be set to `true` to ignore trailing slashes in routes.
-This option applies to *all* routes in the app.
-
-+ Default: `false`
-
-```js
-const medley = require('@medley/medley')
-const app = medley({
-  ignoreTrailingSlash: true
-})
-
-// Registers both "/foo" and "/foo/"
-app.get('/foo/', (req, res) => {
-  res.send('foo')
-})
-
-// Registers both "/bar" and "/bar/"
-app.get('/bar', (req, res) => {
-  res.send('bar')
-})
-```
-
 ### `maxParamLength`
 
 This option sets a limit on the number of characters in the parameters of
@@ -76,6 +51,40 @@ This can be useful to protect against [DoS attacks](https://www.owasp.org/index.
 for routes with regex parameters.
 
 *If the maximum length limit is reached, the not-found handler will be invoked.*
+
+### `strictRouting`
+
+Enables strict routing. When `true`, the router treats "/foo" and "/foo/" as
+different. Otherwise, the router treats "/foo" and "/foo/" as the same.
+
++ Default: `false`
+
+```js
+const medley = require('@medley/medley')
+const app = medley({ strictRouting: false })
+
+// Registers both "/foo" and "/foo/"
+app.get('/foo/', (req, res) => {
+  res.send('foo')
+})
+
+// Registers both "/bar" and "/bar/"
+app.get('/bar', (req, res) => {
+  res.send('bar')
+})
+
+const strictApp = medley({ strictRouting: true })
+
+strictApp.get('/foo', (req, res) => {
+  res.send('foo')
+})
+
+strictApp.get('/foo/', (req, res) => {
+  res.send('different foo')
+})
+```
+
+This option applies to all route declarations, including those in sub-apps.
 
 ### `trustProxy`
 
