@@ -85,3 +85,48 @@ t.test('res.notFound() should send a basic response if called inside a not-found
     t.equal(res.payload, 'Not Found: GET /not-found')
   })
 })
+
+t.test('res.notFound() should handle custom not-found handlers that reject', (t) => {
+  t.plan(4)
+
+  const app = medley()
+
+  app.get('/', (req, res) => {
+    t.pass('/ handler called')
+    res.notFound()
+  })
+
+  app.setNotFoundHandler(() => {
+    return Promise.reject(new Error('not-found error'))
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 500)
+    t.equal(JSON.parse(res.payload).message, 'not-found error')
+  })
+})
+
+t.test('res.notFound() should handle async custom not-found handlers that use res.send()', (t) => {
+  t.plan(4)
+
+  const app = medley()
+
+  app.get('/', (req, res) => {
+    t.pass('/ handler called')
+    res.notFound()
+  })
+
+  app.setNotFoundHandler((req, res) => {
+    setTimeout(() => {
+      res.status(404).send('response')
+    }, 1)
+    return Promise.resolve()
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 404)
+    t.equal(res.payload, 'response')
+  })
+})

@@ -50,6 +50,37 @@ t.test('onSend hook error sets the right status code - custom code', (t) => {
   })
 })
 
+t.test('onSend hooks error if they change the payload to an invalid type', (t) => {
+  t.plan(5)
+
+  const app = medley()
+
+  app.get('/', (req, res) => {
+    return Promise.resolve()
+      .then(() => res.send('plaintext'))
+      .catch((err) => {
+        t.type(err, TypeError)
+        t.equal(
+          err.message,
+          'Attempted to send payload of invalid type \'object\'. Expected a string, Buffer, or stream.'
+        )
+        // Hack to make the request complete (there's no other way to do this)
+        res.sent = false
+        res.send()
+      })
+  })
+
+  app.addHook('onSend', (req, res, payload, next) => {
+    next(null, {})
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.payload, '')
+  })
+})
+
 t.test('onSend hooks do not run again if they errored before - response.send() starts', (t) => {
   t.plan(4)
 

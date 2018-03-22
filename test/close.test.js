@@ -89,6 +89,21 @@ test('should not throw an error if the server is not listening', (t) => {
   })
 })
 
+test('should work with async functions', (t) => {
+  t.plan(2)
+
+  const app = medley()
+
+  app.onClose(function() {
+    t.equal(this, app)
+    return Promise.resolve()
+  })
+
+  app.close((err) => {
+    t.error(err)
+  })
+})
+
 test('should pass a single error to the close callback and still run other onClose handlers', (t) => {
   t.plan(3)
 
@@ -98,6 +113,27 @@ test('should pass a single error to the close callback and still run other onClo
   app.onClose((done) => {
     t.pass('first called')
     done(error)
+  })
+
+  app.onClose((done) => {
+    t.pass('second called')
+    done()
+  })
+
+  app.close((err) => {
+    t.equal(err, error)
+  })
+})
+
+test('should pass a single error to the close callback and still run other onClose handlers (Promises)', (t) => {
+  t.plan(3)
+
+  const app = medley()
+  const error = new Error('onClose error')
+
+  app.onClose(() => {
+    t.pass('first called')
+    return Promise.reject(error)
   })
 
   app.onClose((done) => {

@@ -139,6 +139,12 @@ t.test('req.host - trustProxy=true', (t) => {
   })
 })
 
+t.test('req.hostname - no HOST', (t) => {
+  const headers = {}
+  t.equal(new Request({headers}, headers).hostname, undefined)
+  t.end()
+})
+
 t.test('req.hostname - trustProxy=false', (t) => {
   t.plan(15)
 

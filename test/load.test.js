@@ -84,9 +84,12 @@ t.test('should pass error to the load callback and skip other onLoad handlers (P
     t.fail('second onLoad should not be called')
   })
 
-  app.load((err) => {
-    t.equal(err, error)
-  })
+  app.load().then(
+    () => t.fail('loading should fail'),
+    (err) => {
+      t.equal(err, error)
+    }
+  )
 })
 
 t.test('.onLoad() should be chainable', (t) => {

@@ -283,3 +283,14 @@ test('res.remove() removes response headers', (t) => {
     t.notOk('x-custom-header-2' in res.headers)
   })
 })
+
+test('res.type() does not allow setting a header value to `undefined`', (t) => {
+  t.plan(1)
+
+  const res = new Response()
+
+  t.throws(
+    () => res.type(undefined),
+    new TypeError("Cannot set header value to 'undefined'")
+  )
+})

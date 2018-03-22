@@ -312,3 +312,27 @@ test('null payload should be sent as-is', (t) => {
     })
   })
 })
+
+test('res.send() can still serialize payload even if a Content-Type header is set', (t) => {
+  t.plan(4)
+
+  const app = medley()
+
+  app.get('/', function(req, res) {
+    res.type('application/json').send({hello: 'world'})
+  })
+
+  app.listen(0, (err) => {
+    t.error(err)
+    app.server.unref()
+
+    sget({
+      method: 'GET',
+      url: `http://localhost:${app.server.address().port}`,
+    }, (err, response, body) => {
+      t.error(err)
+      t.equal(response.headers['content-type'], 'application/json')
+      t.equal(body.toString(), '{"hello":"world"}')
+    })
+  })
+})

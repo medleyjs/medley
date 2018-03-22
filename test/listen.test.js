@@ -153,3 +153,24 @@ test('listen twice on the same port without callback rejects', (t) => {
     })
     .catch(err => t.error(err))
 })
+
+test('load error is passed to listen callback', (t) => {
+  t.plan(2)
+
+  const app = medley()
+  const error = new Error('onLoad error')
+
+  app.onLoad((done) => {
+    t.pass('first called')
+    done(error)
+  })
+
+  app.onLoad(() => {
+    t.fail('second onLoad should not be called')
+  })
+
+  app.listen(0, (err) => {
+    t.equal(err, error)
+    app.close()
+  })
+})
