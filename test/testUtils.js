@@ -1,10 +1,11 @@
 'use strict'
 
-const nodeVersion = +process.version.match(/^v(\d+\.\d+)/)[1]
+const nodeVersionMajor = +process.version.match(/^v(\d+)/)[1]
+const nodeVersionMinor = +process.version.match(/^v\d+\.(\d+)/)[1]
 
 const testUtils = {
-  supportsAsyncAwait: nodeVersion >= 7.6,
-  supportsHTTP2: nodeVersion >= 8.4,
+  supportsAsyncAwait: nodeVersionMajor >= 7 && nodeVersionMinor >= 6,
+  supportsHTTP2: nodeVersionMajor >= 8 && nodeVersionMinor >= 8,
 }
 
 module.exports = testUtils

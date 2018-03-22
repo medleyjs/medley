@@ -10,7 +10,7 @@ if (require('../testUtils.js').supportsHTTP2) {
   require('./http2')
 } else {
   t.throws(
-    medley({http2: true}),
+    () => medley({http2: true}),
     new Error('http2 is available only from Node >= 8.8.0')
   )
 }
