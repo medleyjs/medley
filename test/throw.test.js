@@ -133,3 +133,11 @@ test('Should throw on duplicate response decorator', (t) => {
     t.ok(/has been already added/.test(e.message))
   }
 })
+
+test('should throw on unsupported method in extraBodyParsingMethods option', (t) => {
+  t.plan(1)
+  t.throws(
+    () => medley({extraBodyParsingMethods: ['TROLL']}),
+    /is not a supported method/
+  )
+})

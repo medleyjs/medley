@@ -2,10 +2,19 @@
 
 const t = require('tap')
 const http = require('http')
+const runBodyTests = require('./body-tests')
 const medley = require('../..')
 
 http.METHODS.forEach((method) => {
+  if (method === 'CONNECT') {
+    return // CONNECT doesn't work the same as other methods
+  }
+
   if (/^(?:POST|PUT|PATCH|OPTIONS|DELETE)$/.test(method)) {
+    t.throws(
+      () => medley({extraBodyParsingMethods: [method]}),
+      new RangeError(`"${method}" already has request bodies parsed`)
+    )
     return
   }
 
@@ -32,4 +41,10 @@ http.METHODS.forEach((method) => {
       t.equal(res.statusCode, 200)
     })
   })
+
+  if (method === 'HEAD') {
+    return // Skip the full test for HEAD requests since they can't return a request body
+  }
+
+  runBodyTests(method, {extraBodyParsingMethods: [method]})
 })

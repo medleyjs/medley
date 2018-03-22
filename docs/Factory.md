@@ -5,6 +5,7 @@ The Medley module exports a factory function that is used to create a new
 object which is used to customize the resulting instance. The options are:
 
 + [`bodyLimit`](#bodylimit)
++ [`extraBodyParsingMethods`](#extrabodyparsingmethods)
 + [`http2`](#http2)
 + [`https`](#https)
 + [`maxParamLength`](#maxparamlength)
@@ -18,6 +19,17 @@ object which is used to customize the resulting instance. The options are:
 Defines the maximum payload, in bytes, the server is allowed to accept.
 
 + Default: `1048576` (1MiB)
+
+### `extraBodyParsingMethods`
+
++ *string[]*
+
+An array of HTTP methods (like "GET" or "DELETE") to allow request bodies to be parsed. By default,
+[body parsers](BodyParser.md) are only run for `POST`, `PUT`, `PATCH`, and `OPTIONS` requests
+(request bodies are ignored for all other request methods). This option can be used to specify
+other methods that will have their request body parsed.
+
++ Default: `[]` (an empty array)
 
 ### `http2`
 

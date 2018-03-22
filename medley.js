@@ -21,12 +21,12 @@ const {
 } = require('./lib/PluginUtils')
 const {
   routeHandler,
-  methodHandlers,
+  methodHandlers: originalMethodHandlers,
   defaultNotFoundHandler,
   notFoundFallbackHandler,
 } = require('./lib/RequestHandlers')
 
-const supportedMethods = Object.keys(methodHandlers)
+const supportedMethods = Object.keys(originalMethodHandlers)
 
 const DEFAULT_BODY_LIMIT = 1024 * 1024 // 1 MiB
 
@@ -46,6 +46,21 @@ function medley(options) {
   }
 
   validateBodyLimitOption(options.bodyLimit)
+
+  const methodHandlers = Object.assign({}, originalMethodHandlers)
+
+  if (options.extraBodyParsingMethods) {
+    for (const method of options.extraBodyParsingMethods) {
+      if (supportedMethods.indexOf(method) === -1) {
+        throw new RangeError(`"${method}" in the 'extraBodyParsingMethods' option is not a supported method (make sure it is UPPERCASE)`)
+      }
+      if (/^(?:POST|PUT|PATCH|OPTIONS|DELETE)$/.test(method)) {
+        throw new RangeError(`"${method}" already has request bodies parsed`)
+      }
+      // Parse other methods' bodies using the semantics of an OPTIONS request
+      methodHandlers[method] = methodHandlers.OPTIONS
+    }
+  }
 
   const notFoundRouter = findMyWay({defaultRoute: notFoundFallbackHandler})
   const router = findMyWay({
