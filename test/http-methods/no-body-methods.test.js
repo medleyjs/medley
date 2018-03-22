@@ -10,7 +10,7 @@ http.METHODS.forEach((method) => {
     return // CONNECT doesn't work the same as other methods
   }
 
-  if (/^(?:POST|PUT|PATCH|OPTIONS|DELETE)$/.test(method)) {
+  if (/^(?:POST|PUT|PATCH|OPTIONS)$/.test(method)) {
     t.throws(
       () => medley({extraBodyParsingMethods: [method]}),
       new RangeError(`"${method}" already has request bodies parsed`)

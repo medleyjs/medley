@@ -54,7 +54,7 @@ function medley(options) {
       if (supportedMethods.indexOf(method) === -1) {
         throw new RangeError(`"${method}" in the 'extraBodyParsingMethods' option is not a supported method (make sure it is UPPERCASE)`)
       }
-      if (/^(?:POST|PUT|PATCH|OPTIONS|DELETE)$/.test(method)) {
+      if (method === 'POST' || method === 'PUT' || method === 'PATCH' || method === 'OPTIONS') {
         throw new RangeError(`"${method}" already has request bodies parsed`)
       }
       // Parse other methods' bodies using the semantics of an OPTIONS request
