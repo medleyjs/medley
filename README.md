@@ -1,6 +1,7 @@
 # Medley
 
 [![Build Status](https://travis-ci.org/medleyjs/medley.svg?branch=master)](https://travis-ci.org/medleyjs/medley)
+[![Coverage Status](https://coveralls.io/repos/github/medleyjs/medley/badge.svg?branch=master)](https://coveralls.io/github/medleyjs/medley?branch=master)
 
 This project is under development and is not yet ready for production. Use at your own risk (you should probably just use [Fastify](https://github.com/fastify/fastify) instead).
 
