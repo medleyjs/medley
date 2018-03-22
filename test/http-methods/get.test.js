@@ -26,64 +26,24 @@ const nullSchema = {
   },
 }
 
-test('shorthand - get', (t) => {
-  t.plan(1)
-  try {
-    app.get('/', stringSchema, function(req, response) {
-      response.send({hello: 'world'})
-    })
-    t.pass()
-  } catch (e) {
-    t.fail()
-  }
+app.get('/', stringSchema, (req, res) => {
+  res.send({hello: 'world'})
 })
 
-test('shorthand - get (return number)', (t) => {
-  t.plan(1)
-  try {
-    app.get('/number', nullSchema, function(req, response) {
-      response.send(1234)
-    })
-    t.pass()
-  } catch (e) {
-    t.fail()
-  }
+app.get('/number', nullSchema, (req, res) => {
+  res.send(1234)
 })
 
-test('missing schema - get', (t) => {
-  t.plan(1)
-  try {
-    app.get('/missing', function(req, response) {
-      response.send({hello: 'world'})
-    })
-    t.pass()
-  } catch (e) {
-    t.fail()
-  }
+app.get('/missing', (req, res) => {
+  res.send({hello: 'world'})
 })
 
-test('empty response', (t) => {
-  t.plan(1)
-  try {
-    app.get('/empty', function(req, response) {
-      response.send()
-    })
-    t.pass()
-  } catch (e) {
-    t.fail()
-  }
+app.get('/empty', (req, res) => {
+  res.send()
 })
 
-test('send a falsy boolean', (t) => {
-  t.plan(1)
-  try {
-    app.get('/boolean', function(req, response) {
-      response.send(false)
-    })
-    t.pass()
-  } catch (e) {
-    t.fail()
-  }
+app.get('/boolean', (req, res) => {
+  res.send(false)
 })
 
 app.listen(0, (err) => {
@@ -99,7 +59,7 @@ app.listen(0, (err) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
       t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), {hello: 'world'})
+      t.strictDeepEqual(JSON.parse(body), {hello: 'world'})
     })
   })
 
@@ -112,7 +72,7 @@ app.listen(0, (err) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
       t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), {hello: 'world'})
+      t.strictDeepEqual(JSON.parse(body), {hello: 'world'})
     })
   })
 
@@ -125,7 +85,7 @@ app.listen(0, (err) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
       t.strictEqual(response.headers['content-length'], '0')
-      t.deepEqual(body.toString(), '')
+      t.strictEqual(body.toString(), '')
     })
   })
 
@@ -137,7 +97,7 @@ app.listen(0, (err) => {
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
-      t.deepEqual(body.toString(), 'false')
+      t.strictEqual(body.toString(), 'false')
     })
   })
 
@@ -149,7 +109,7 @@ app.listen(0, (err) => {
     }, (err, response, body) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
-      t.deepEqual(body.toString(), '1234')
+      t.strictEqual(body.toString(), '1234')
     })
   })
 })
