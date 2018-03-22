@@ -7,27 +7,23 @@ const app = medley()
 let errored = false
 
 app.route({
-  method: 'POST',
-  path: '/jsonBody',
-  handler() {
-    throw new Error('kaboom')
+  method: 'GET',
+  path: '/',
+  handler(req, res) {
+    return Promise.resolve().then(() => res.send())
   },
 })
 
-const reqOpts = {
-  method: 'POST',
-  url: '/jsonBody',
-  payload: {
-    hello: 'world',
-  },
-}
+app.addHook('onSend', () => {
+  throw new Error('kaboom')
+})
 
-process.on('uncaughtException', (err) => {
+process.on('unhandledRejection', (err) => {
   errored = true
   t.equal(err.message, 'kaboom')
 })
 
-app.inject(reqOpts, () => {
+app.inject('/', () => {
   t.fail('should not be called')
 })
 
