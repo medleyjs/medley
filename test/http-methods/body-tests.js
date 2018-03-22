@@ -64,31 +64,31 @@ module.exports = function bodyTests(method, config) {
       })
     })
 
-    // Node errors for non-POST/PUT/PATCH requests with a stream body
-    if (expectsBody) {
-      test(`${upMethod} - correctly replies when sent a stream`, (t) => {
-        t.plan(3)
+    test(`${upMethod} - correctly replies when sent a stream`, (t) => {
+      t.plan(3)
 
-        var chunk = JSON.stringify({hello: 'world'})
-        const jsonStream = new stream.Readable({
-          read() {
-            this.push(chunk)
-            chunk = null
-          },
-        })
-
-        sget({
-          method: upMethod,
-          url: 'http://localhost:' + app.server.address().port,
-          body: jsonStream,
-          headers: {'Content-Type': 'application/json'},
-        }, (err, response, body) => {
-          t.error(err)
-          t.equal(response.statusCode, 200)
-          t.deepEqual(JSON.parse(body.toString()), {hello: 'world'})
-        })
+      var chunk = JSON.stringify({hello: 'world'})
+      const jsonStream = new stream.Readable({
+        read() {
+          this.push(chunk)
+          chunk = null
+        },
       })
-    }
+
+      sget({
+        method: upMethod,
+        url: 'http://localhost:' + app.server.address().port,
+        body: jsonStream,
+        headers: {
+          'Content-Type': 'application/json',
+          'Transfer-Encoding': 'chunked',
+        },
+      }, (err, response, body) => {
+        t.error(err)
+        t.equal(response.statusCode, 200)
+        t.deepEqual(JSON.parse(body.toString()), {hello: 'world'})
+      })
+    })
 
     test(`${upMethod} - correctly replies with very large body`, (t) => {
       t.plan(3)
@@ -275,7 +275,7 @@ module.exports = function bodyTests(method, config) {
     })
 
     test(`${upMethod} returns 413 - Payload Too Large`, (t) => {
-      t.plan(expectsBody ? 6 : 4)
+      t.plan(6)
 
       sget({
         method: upMethod,
@@ -289,26 +289,26 @@ module.exports = function bodyTests(method, config) {
         t.strictEqual(response.statusCode, 413)
       })
 
-      // Node errors for non-POST/PUT/PATCH requests with a stream body
-      if (expectsBody) {
-        var chunk = Buffer.allocUnsafe(1024 * 1024 + 1)
-        const largeStream = new stream.Readable({
-          read() {
-            this.push(chunk)
-            chunk = null
-          },
-        })
-        sget({
-          method: upMethod,
-          url: 'http://localhost:' + app.server.address().port,
-          headers: {'Content-Type': 'application/json'},
-          body: largeStream,
-          timeout: 500,
-        }, (err, response) => {
-          t.error(err)
-          t.strictEqual(response.statusCode, 413)
-        })
-      }
+      var chunk = Buffer.allocUnsafe(1024 * 1024 + 1)
+      const largeStream = new stream.Readable({
+        read() {
+          this.push(chunk)
+          chunk = null
+        },
+      })
+      sget({
+        method: upMethod,
+        url: 'http://localhost:' + app.server.address().port,
+        headers: {
+          'Content-Type': 'application/json',
+          'Transfer-Encoding': 'chunked',
+        },
+        body: largeStream,
+        timeout: 500,
+      }, (err, response) => {
+        t.error(err)
+        t.strictEqual(response.statusCode, 413)
+      })
 
       sget({
         method: upMethod,
