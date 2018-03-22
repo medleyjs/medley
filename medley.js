@@ -377,15 +377,15 @@ function medley(options) {
     // the route is registered, so add these to the routeContext just before
     // the app is loaded.
     preLoadedHandlers.push(() => {
-      const onRequest = this._hooks.onRequest
-      const onFinished = this._hooks.onFinished
-      const onSend = this._hooks.onSend
-      const preHandler = this._hooks.preHandler.concat(opts.beforeHandler || [])
+      const hooks = this._hooks
+      const preHandlerHooks = opts.beforeHandler
+        ? hooks.preHandler.concat(opts.beforeHandler)
+        : hooks.preHandler
 
-      routeContext.onRequest = onRequest.length ? onRequest : null
-      routeContext.preHandler = preHandler.length ? preHandler : null
-      routeContext.onSend = onSend.length ? onSend : null
-      routeContext.onFinished = onFinished.length ? onFinished : null
+      routeContext.onRequestHooks = hooks.onRequest.length ? hooks.onRequest : null
+      routeContext.preHandlerHooks = preHandlerHooks.length ? preHandlerHooks : null
+      routeContext.onSendHooks = hooks.onSend.length ? hooks.onSend : null
+      routeContext.onFinishedHooks = hooks.onFinished.length ? hooks.onFinished : null
 
       routeContext.notFoundRouteContext = this._notFoundRouteContexts.get(methodHandler)
       routeContext.errorHandler = this._errorHandler
@@ -476,19 +476,17 @@ function medley(options) {
     )
 
     preLoadedHandlers.push(() => {
-      const notFoundRouteContext = this._notFoundRouteContexts.get(methodHandler)
+      const hooks = this._hooks
+      const preHandlerHooks = opts.beforeHandler
+        ? hooks.preHandler.concat(opts.beforeHandler)
+        : hooks.preHandler
 
-      const onRequest = this._hooks.onRequest
-      const preHandler = this._hooks.preHandler
-      const onSend = this._hooks.onSend
-      const onFinished = this._hooks.onFinished
+      routeContext.onRequestHooks = hooks.onRequest.length ? hooks.onRequest : null
+      routeContext.preHandlerHooks = preHandlerHooks.length ? preHandlerHooks : null
+      routeContext.onSendHooks = hooks.onSend.length ? hooks.onSend : null
+      routeContext.onFinishedHooks = hooks.onFinished.length ? hooks.onFinished : null
 
-      notFoundRouteContext.onRequest = onRequest.length ? onRequest : null
-      notFoundRouteContext.preHandler = preHandler.length ? preHandler : null
-      notFoundRouteContext.onSend = onSend.length ? onSend : null
-      notFoundRouteContext.onFinished = onFinished.length ? onFinished : null
-
-      notFoundRouteContext.errorHandler = this._errorHandler
+      routeContext.errorHandler = this._errorHandler
     })
   }
 

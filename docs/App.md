@@ -29,7 +29,7 @@ const app = medley()
 + [`.registerPlugin(plugin [, options])`](#register-plugin)
 + [`.route(options)`](#route)
 + [`.setErrorHandler(handler)`](#set-error-handler)
-+ [`.setNotFoundHandler(handler)`](#set-not-found-handler)
++ [`.setNotFoundHandler([options,] handler)`](#set-not-found-handler)
 + [`.use([prefix,] subAppFn)`](#use)
 
 
@@ -279,8 +279,9 @@ is automatically set. See the [`Response#error`](Response.md#error-status-code) 
 for more information on where this status code may come from.
 
 <a id="set-not-found-handler"></a>
-### `app.setNotFoundHandler(handler)`
+### `app.setNotFoundHandler([options,] handler)`
 
++ `options` *object* - Accepts the `responseSchema`, `beforeHandler`, `bodyLimit`, and `config` options defined in [Routes#options](Routes.md#options).
 + `handler(req, res)` *(function)* - A request handler function that receives the [`request`](Request.md) and [`response`](Response.md) objects.
 
 Sets the handler that will be called when no registered routes match the
@@ -301,12 +302,11 @@ app.setNotFoundHandler((req, res) => {
   // Default not-found handler
 })
 
-app.register((subApp, options, next) => {
+app.use('/v1', (subApp) => {
   subApp.setNotFoundHandler((req, res) => {
-    // Handle unmatched request to URLs that begin with '/v1'
+    // Handle unmatched requests to URLs that begin with '/v1'
   })
-  next()
-}, { prefix: '/v1' })
+})
 ```
 
 <a id="use"></a>
