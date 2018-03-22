@@ -377,16 +377,7 @@ function medley(options) {
     // the route is registered, so add these to the routeContext just before
     // the app is loaded.
     preLoadedHandlers.push(() => {
-      const hooks = this._hooks
-      const preHandlerHooks = opts.beforeHandler
-        ? hooks.preHandler.concat(opts.beforeHandler)
-        : hooks.preHandler
-
-      routeContext.onRequestHooks = hooks.onRequest.length ? hooks.onRequest : null
-      routeContext.preHandlerHooks = preHandlerHooks.length ? preHandlerHooks : null
-      routeContext.onSendHooks = hooks.onSend.length ? hooks.onSend : null
-      routeContext.onFinishedHooks = hooks.onFinished.length ? hooks.onFinished : null
-
+      RouteContext.setHooks(routeContext, this._hooks, opts.beforeHandler)
       routeContext.notFoundRouteContext = this._notFoundRouteContexts.get(methodHandler)
       routeContext.errorHandler = this._errorHandler
     })
@@ -476,16 +467,7 @@ function medley(options) {
     )
 
     preLoadedHandlers.push(() => {
-      const hooks = this._hooks
-      const preHandlerHooks = opts.beforeHandler
-        ? hooks.preHandler.concat(opts.beforeHandler)
-        : hooks.preHandler
-
-      routeContext.onRequestHooks = hooks.onRequest.length ? hooks.onRequest : null
-      routeContext.preHandlerHooks = preHandlerHooks.length ? preHandlerHooks : null
-      routeContext.onSendHooks = hooks.onSend.length ? hooks.onSend : null
-      routeContext.onFinishedHooks = hooks.onFinished.length ? hooks.onFinished : null
-
+      RouteContext.setHooks(routeContext, this._hooks, opts.beforeHandler)
       routeContext.errorHandler = this._errorHandler
     })
   }
