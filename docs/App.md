@@ -14,7 +14,7 @@ const app = medley()
 
 **Methods:**
 
-+ [`.addBodyParser(hookName, hookHandler)`](#add-body-parser)
++ [`.addBodyParser(contentType, parser)`](#add-body-parser)
 + [`.addHook(hookName, hookHandler)`](#add-hook)
 + [`.close([callback])`](#close)
 + [`.decorate(name, value)`](#decorate)
@@ -61,7 +61,7 @@ automatically created for the `app`.
 ## Methods
 
 <a id="add-body-parser"></a>
-### `app.addBodyParser()`
+### `app.addBodyParser(contentType, parser)`
 
 Adds a new body parser. See the [Body Parser](BodyParser.md) documentation.
 
@@ -281,7 +281,7 @@ for more information on where this status code may come from.
 <a id="set-not-found-handler"></a>
 ### `app.setNotFoundHandler([options,] handler)`
 
-+ `options` *object* - Accepts the `responseSchema`, `beforeHandler`, `bodyLimit`, and `config` options defined in [Routes#options](Routes.md#options).
++ `options` *object* - Accepts the `responseSchema`, `beforeHandler`, and `config` options defined in [Routes#options](Routes.md#options).
 + `handler(req, res)` *(function)* - A request handler function that receives the [`request`](Request.md) and [`response`](Response.md) objects.
 
 Sets the handler that will be called when no registered routes match the

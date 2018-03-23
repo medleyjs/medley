@@ -175,48 +175,6 @@ test('inject get request - headers', (t) => {
   })
 })
 
-test('inject post request', (t) => {
-  t.plan(4)
-  const app = medley()
-  const payload = {hello: 'world'}
-
-  app.post('/', (req, response) => {
-    response.send(req.body)
-  })
-
-  app.inject({
-    method: 'POST',
-    url: '/',
-    payload,
-  }, (err, res) => {
-    t.error(err)
-    t.deepEqual(payload, JSON.parse(res.payload))
-    t.strictEqual(res.statusCode, 200)
-    t.strictEqual(res.headers['content-length'], '17')
-  })
-})
-
-test('inject post request - send stream', (t) => {
-  t.plan(4)
-  const app = medley()
-
-  app.post('/', (req, response) => {
-    response.send(req.body)
-  })
-
-  app.inject({
-    method: 'POST',
-    url: '/',
-    headers: {'content-type': 'application/json'},
-    payload: getStream(),
-  }, (err, res) => {
-    t.error(err)
-    t.deepEqual('{"hello":"world"}', res.payload)
-    t.strictEqual(res.statusCode, 200)
-    t.strictEqual(res.headers['content-length'], '17')
-  })
-})
-
 test('inject get request - response stream', (t) => {
   t.plan(3)
   const app = medley()

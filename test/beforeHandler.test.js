@@ -8,23 +8,18 @@ test('beforeHandler', (t) => {
   t.plan(2)
   const app = medley()
 
-  app.post('/', {
-    beforeHandler: (req, response, done) => {
-      req.body.beforeHandler = true
+  app.get('/', {
+    beforeHandler: (req, res, done) => {
+      req.sendVal = true
       done()
     },
-  }, (req, response) => {
-    response.send(req.body)
+  }, (req, res) => {
+    res.send(req.sendVal)
   })
 
-  app.inject({
-    method: 'POST',
-    url: '/',
-    payload: {hello: 'world'},
-  }, (err, res) => {
+  app.inject('/', (err, res) => {
     t.error(err)
-    var payload = JSON.parse(res.payload)
-    t.deepEqual(payload, {beforeHandler: true, hello: 'world'})
+    t.equal(JSON.parse(res.payload), true)
   })
 })
 
@@ -32,28 +27,23 @@ test('beforeHandler should be called after preHandler hook', (t) => {
   t.plan(2)
   const app = medley()
 
-  app.addHook('preHandler', (req, response, next) => {
-    req.body.check = 'a'
+  app.addHook('preHandler', (req, res, next) => {
+    req.sendVal = 'a'
     next()
   })
 
-  app.post('/', {
-    beforeHandler: (req, response, done) => {
-      req.body.check += 'b'
+  app.get('/', {
+    beforeHandler: (req, res, done) => {
+      req.sendVal += 'b'
       done()
     },
-  }, (req, response) => {
-    response.send(req.body)
+  }, (req, res) => {
+    res.send(req.sendVal)
   })
 
-  app.inject({
-    method: 'POST',
-    url: '/',
-    payload: {hello: 'world'},
-  }, (err, res) => {
+  app.inject('/', (err, res) => {
     t.error(err)
-    var payload = JSON.parse(res.payload)
-    t.deepEqual(payload, {check: 'ab', hello: 'world'})
+    t.equal(res.payload, 'ab')
   })
 })
 
@@ -61,37 +51,27 @@ test('beforeHandler should be unique per route', (t) => {
   t.plan(4)
   const app = medley()
 
-  app.post('/', {
-    beforeHandler: (req, response, done) => {
-      req.body.hello = 'earth'
+  app.get('/', {
+    beforeHandler: (req, res, done) => {
+      req.sendVal = 'hello'
       done()
     },
-  }, (req, response) => {
-    response.send(req.body)
+  }, (req, res) => {
+    res.send(req.sendVal)
   })
 
-  app.post('/no', (req, response) => {
-    response.send(req.body)
+  app.get('/no-before-handler', (req, res) => {
+    res.send(req.sendVal)
   })
 
-  app.inject({
-    method: 'POST',
-    url: '/',
-    payload: {hello: 'world'},
-  }, (err, res) => {
+  app.inject('/', (err, res) => {
     t.error(err)
-    var payload = JSON.parse(res.payload)
-    t.deepEqual(payload, {hello: 'earth'})
+    t.equal(res.payload, 'hello')
   })
 
-  app.inject({
-    method: 'POST',
-    url: '/no',
-    payload: {hello: 'world'},
-  }, (err, res) => {
+  app.inject('/no-before-handler', (err, res) => {
     t.error(err)
-    var payload = JSON.parse(res.payload)
-    t.deepEqual(payload, {hello: 'world'})
+    t.equal(res.payload, '')
   })
 })
 
@@ -99,23 +79,19 @@ test('beforeHandler should handle errors', (t) => {
   t.plan(3)
   const app = medley()
 
-  app.post('/', {
-    beforeHandler: (req, response, done) => {
+  app.get('/', {
+    beforeHandler: (req, res, done) => {
       done(new Error('kaboom'))
     },
-  }, (req, response) => {
-    response.send(req.body)
+  }, (req, res) => {
+    res.send()
   })
 
-  app.inject({
-    method: 'POST',
-    url: '/',
-    payload: {hello: 'world'},
-  }, (err, res) => {
+  app.inject('/', (err, res) => {
     t.error(err)
     var payload = JSON.parse(res.payload)
     t.equal(res.statusCode, 500)
-    t.deepEqual(payload, {
+    t.strictDeepEqual(payload, {
       message: 'kaboom',
       error: 'Internal Server Error',
       statusCode: 500,
@@ -127,19 +103,15 @@ test('beforeHandler should handle errors with custom status code', (t) => {
   t.plan(3)
   const app = medley()
 
-  app.post('/', {
-    beforeHandler: (request, response, done) => {
+  app.get('/', {
+    beforeHandler: (req, res, done) => {
       done(Object.assign(new Error('go away'), {status: 401}))
     },
-  }, (req, response) => {
-    response.send(req.body)
+  }, (req, res) => {
+    res.send()
   })
 
-  app.inject({
-    method: 'POST',
-    url: '/',
-    payload: {hello: 'world'},
-  }, (err, res) => {
+  app.inject('/', (err, res) => {
     t.error(err)
     var payload = JSON.parse(res.payload)
     t.equal(res.statusCode, 401)
@@ -155,29 +127,24 @@ test('beforeHandler could accept an array of functions', (t) => {
   t.plan(2)
   const app = medley()
 
-  app.post('/', {
+  app.get('/', {
     beforeHandler: [
-      (req, response, done) => {
-        req.body.beforeHandler = 'a'
+      (req, res, done) => {
+        req.sendVal = 'a'
         done()
       },
-      (req, response, done) => {
-        req.body.beforeHandler += 'b'
+      (req, res, done) => {
+        req.sendVal += 'b'
         done()
       },
     ],
-  }, (req, response) => {
-    response.send(req.body)
+  }, (req, res) => {
+    res.send(req.sendVal)
   })
 
-  app.inject({
-    method: 'POST',
-    url: '/',
-    payload: {hello: 'world'},
-  }, (err, res) => {
+  app.inject('/', (err, res) => {
     t.error(err)
-    var payload = JSON.parse(res.payload)
-    t.deepEqual(payload, {beforeHandler: 'ab', hello: 'world'})
+    t.equal(res.payload, 'ab')
   })
 })
 
@@ -185,41 +152,31 @@ test('beforeHandler does not interfere with preHandler', (t) => {
   t.plan(4)
   const app = medley()
 
-  app.addHook('preHandler', (req, response, next) => {
-    req.body.check = 'a'
+  app.addHook('preHandler', (req, res, next) => {
+    req.sendVal = 'a'
     next()
   })
 
-  app.post('/', {
-    beforeHandler: (req, response, done) => {
-      req.body.check += 'b'
+  app.get('/', {
+    beforeHandler: (req, res, done) => {
+      req.sendVal += 'b'
       done()
     },
-  }, (req, response) => {
-    response.send(req.body)
+  }, (req, res) => {
+    res.send(req.sendVal)
   })
 
-  app.post('/no', (req, response) => {
-    response.send(req.body)
+  app.get('/no', (req, res) => {
+    res.send(req.sendVal)
   })
 
-  app.inject({
-    method: 'post',
-    url: '/',
-    payload: {hello: 'world'},
-  }, (err, res) => {
+  app.inject('/', (err, res) => {
     t.error(err)
-    var payload = JSON.parse(res.payload)
-    t.deepEqual(payload, {check: 'ab', hello: 'world'})
+    t.equal(res.payload, 'ab')
   })
 
-  app.inject({
-    method: 'post',
-    url: '/no',
-    payload: {hello: 'world'},
-  }, (err, res) => {
+  app.inject('/no', (err, res) => {
     t.error(err)
-    var payload = JSON.parse(res.payload)
-    t.deepEqual(payload, {check: 'a', hello: 'world'})
+    t.equal(res.payload, 'a')
   })
 })

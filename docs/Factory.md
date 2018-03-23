@@ -4,7 +4,6 @@ The Medley module exports a factory function that is used to create a new
 [**Medley `app`**](App.md) instance. This factory function accepts an options
 object which is used to customize the resulting instance. The options are:
 
-+ [`bodyLimit`](#bodylimit)
 + [`extraBodyParsingMethods`](#extrabodyparsingmethods)
 + [`http2`](#http2)
 + [`https`](#https)
@@ -13,12 +12,6 @@ object which is used to customize the resulting instance. The options are:
 + [`trustProxy`](#trustproxy)
 
 ## Options
-
-### `bodyLimit`
-
-Defines the maximum payload, in bytes, the server is allowed to accept.
-
-+ Default: `1048576` (1MiB)
 
 ### `extraBodyParsingMethods`
 

@@ -28,24 +28,11 @@ const {
 
 const supportedMethods = Object.keys(originalMethodHandlers)
 
-const DEFAULT_BODY_LIMIT = 1024 * 1024 // 1 MiB
-
-function validateBodyLimitOption(bodyLimit) {
-  if (bodyLimit === undefined) {
-    return
-  }
-  if (!Number.isInteger(bodyLimit) || bodyLimit <= 0) {
-    throw new TypeError(`'bodyLimit' option must be an integer > 0. Got '${bodyLimit}'`)
-  }
-}
-
 function medley(options) {
   options = options || {}
   if (typeof options !== 'object') {
     throw new TypeError('Options must be an object')
   }
-
-  validateBodyLimitOption(options.bodyLimit)
 
   const methodHandlers = Object.assign({}, originalMethodHandlers)
 
@@ -101,7 +88,7 @@ function medley(options) {
     // Body parsing
     addBodyParser,
     hasBodyParser,
-    _bodyParser: new BodyParser(options.bodyLimit || DEFAULT_BODY_LIMIT),
+    _bodyParser: new BodyParser(),
 
     // Hooks
     addHook,
@@ -254,17 +241,11 @@ function medley(options) {
     return this
   }
 
-  function addBodyParser(contentType, opts, parser) {
+  function addBodyParser(contentType, parser) {
     throwIfAppIsLoaded('Cannot call "addBodyParser()" when app is already loaded')
 
-    if (parser === undefined) {
-      parser = opts
-      opts = {}
-    }
+    this._bodyParser.add(contentType, parser)
 
-    validateBodyLimitOption(opts.bodyLimit)
-
-    this._bodyParser.add(contentType, opts, parser)
     return this
   }
 
@@ -335,8 +316,6 @@ function medley(options) {
       )
     }
 
-    validateBodyLimitOption(opts.bodyLimit)
-
     const serializers = buildSerializers(opts.responseSchema)
     const prefix = this._routePrefix
 
@@ -367,8 +346,7 @@ function medley(options) {
       serializers,
       methodHandler,
       opts.handler,
-      opts.config,
-      opts.bodyLimit
+      opts.config
     )
 
     router.on(method, path, routeHandler, routeContext)
@@ -447,8 +425,7 @@ function medley(options) {
       serializers,
       methodHandler,
       handler,
-      opts.config,
-      opts.bodyLimit
+      opts.config
     )
 
     this._notFoundRouteContexts.set(methodHandler, routeContext)

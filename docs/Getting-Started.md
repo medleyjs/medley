@@ -180,9 +180,8 @@ See [`app.listen()`](App.md#listen).
 
 ### Body Parsing
 
-Medley parses JSON request bodies by default. See the 
-[**Body Parser** documentation](BodyParser.md) to learn how to add parsers
-for other types of request bodies.
+Medley has built-in support for body-parsing, although it does not come with any body parsers.
+See the [**Body Parser** documentation](BodyParser.md) for details.
 
 ### HTTP/2
 

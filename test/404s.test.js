@@ -59,13 +59,11 @@ test('customized 404', (t) => {
   app.listen(0, (err) => {
     t.error(err)
 
-    t.test('unsupported method', (t) => {
+    t.test('unhandled method', (t) => {
       t.plan(3)
       sget({
-        method: 'PUT',
+        method: 'DELETE',
         url: 'http://localhost:' + app.server.address().port,
-        body: JSON.stringify({hello: 'world'}),
-        headers: {'Content-Type': 'application/json'},
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 404)
@@ -294,13 +292,11 @@ test('encapsulated 404', (t) => {
   app.listen(0, (err) => {
     t.error(err)
 
-    t.test('root unsupported method', (t) => {
+    t.test('root unhandled method', (t) => {
       t.plan(3)
       sget({
-        method: 'PUT',
+        method: 'DELETE',
         url: 'http://localhost:' + app.server.address().port,
-        body: JSON.stringify({hello: 'world'}),
-        headers: {'Content-Type': 'application/json'},
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 404)
@@ -320,13 +316,11 @@ test('encapsulated 404', (t) => {
       })
     })
 
-    t.test('unsupported method', (t) => {
+    t.test('unhandled method', (t) => {
       t.plan(3)
       sget({
-        method: 'PUT',
+        method: 'DELETE',
         url: 'http://localhost:' + app.server.address().port + '/test',
-        body: JSON.stringify({hello: 'world'}),
-        headers: {'Content-Type': 'application/json'},
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 404)
@@ -346,13 +340,11 @@ test('encapsulated 404', (t) => {
       })
     })
 
-    t.test('unsupported method bis', (t) => {
+    t.test('unhandled method 2', (t) => {
       t.plan(3)
       sget({
-        method: 'PUT',
+        method: 'DELETE',
         url: 'http://localhost:' + app.server.address().port + '/test2',
-        body: JSON.stringify({hello: 'world'}),
-        headers: {'Content-Type': 'application/json'},
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 404)
@@ -360,7 +352,7 @@ test('encapsulated 404', (t) => {
       })
     })
 
-    t.test('unsupported route bis', (t) => {
+    t.test('unsupported route 2', (t) => {
       t.plan(3)
       sget({
         method: 'GET',
@@ -372,13 +364,11 @@ test('encapsulated 404', (t) => {
       })
     })
 
-    t.test('unsupported method 3', (t) => {
+    t.test('unhandled method 3', (t) => {
       t.plan(3)
       sget({
-        method: 'PUT',
+        method: 'DELETE',
         url: 'http://localhost:' + app.server.address().port + '/test3/',
-        body: JSON.stringify({hello: 'world'}),
-        headers: {'Content-Type': 'application/json'},
       }, (err, response, body) => {
         t.error(err)
         t.strictEqual(response.statusCode, 404)
@@ -424,20 +414,14 @@ test('run hooks on default 404', (t) => {
     t.ok(response, 'onFinished called')
   })
 
-  app.get('/', (request, response) => {
-    response.send({hello: 'world'})
-  })
-
   t.tearDown(app.close.bind(app))
 
   app.listen(0, (err) => {
     t.error(err)
 
     sget({
-      method: 'PUT',
+      method: 'GET',
       url: 'http://localhost:' + app.server.address().port,
-      body: JSON.stringify({hello: 'world'}),
-      headers: {'Content-Type': 'application/json'},
     }, (err, response) => {
       t.error(err)
       t.strictEqual(response.statusCode, 404)
@@ -545,10 +529,8 @@ test('run hooks with encapsulated 404', (t) => {
     t.error(err)
 
     sget({
-      method: 'PUT',
+      method: 'GET',
       url: 'http://localhost:' + app.server.address().port + '/test',
-      body: JSON.stringify({hello: 'world'}),
-      headers: {'Content-Type': 'application/json'},
     }, (err, response) => {
       t.error(err)
       t.strictEqual(response.statusCode, 404)
@@ -635,10 +617,8 @@ test('hooks check 404', (t) => {
     t.error(err)
 
     sget({
-      method: 'PUT',
+      method: 'DELETE',
       url: 'http://localhost:' + app.server.address().port + '?foo=asd',
-      body: JSON.stringify({hello: 'world'}),
-      headers: {'Content-Type': 'application/json'},
     }, (err, response) => {
       t.error(err)
       t.strictEqual(response.statusCode, 404)

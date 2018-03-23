@@ -2,6 +2,7 @@
 
 const t = require('tap')
 const test = t.test
+const jsonParser = require('fast-json-body')
 const sget = require('simple-get').concat
 const stream = require('stream')
 
@@ -12,6 +13,10 @@ module.exports = function bodyTests(method, config) {
   const loMethod = method.toLowerCase()
   const expectsBody = upMethod === 'POST' || upMethod === 'PUT' || upMethod === 'PATCH'
   const app = medley(config)
+
+  app.addBodyParser('application/json', (req, done) => {
+    jsonParser(req.stream, done)
+  })
 
   app[loMethod]('/', {
     responseSchema: {
@@ -34,10 +39,6 @@ module.exports = function bodyTests(method, config) {
 
   app[loMethod]('/with-query', function(request, response) {
     request.body.hello += request.query.foo
-    response.send(request.body)
-  })
-
-  app[loMethod]('/with-limit', {bodyLimit: 1}, function(request, response) {
     response.send(request.body)
   })
 
@@ -228,34 +229,6 @@ module.exports = function bodyTests(method, config) {
       })
     })
 
-    test(`${upMethod} returns 400 - Bad Request with malformed JSON`, (t) => {
-      t.plan(6)
-
-      sget({
-        method: upMethod,
-        url: 'http://localhost:' + app.server.address().port,
-        body: 'hello world',
-        headers: {'Content-Type': 'application/json'},
-        timeout: 500,
-      }, (err, response, body) => {
-        t.error(err)
-        t.equal(response.statusCode, 400)
-        t.equal(JSON.parse(body.toString()).message, 'Unexpected token h in JSON at position 0')
-      })
-
-      sget({
-        method: upMethod,
-        url: 'http://localhost:' + app.server.address().port,
-        body: '',
-        headers: {'Content-Type': 'application/json'},
-        timeout: 500,
-      }, (err, response, body) => {
-        t.error(err)
-        t.equal(response.statusCode, 400)
-        t.equal(JSON.parse(body.toString()).message, 'Unexpected end of JSON input')
-      })
-    })
-
     test(`${upMethod} returns 400 - Bad Request with invalid Content-Length header`, (t) => {
       t.plan(3)
 
@@ -271,54 +244,6 @@ module.exports = function bodyTests(method, config) {
         t.error(err)
         t.equal(res.statusCode, 400)
         t.equal(JSON.parse(res.payload).message, 'Invalid Content-Length: "not a number"')
-      })
-    })
-
-    test(`${upMethod} returns 413 - Payload Too Large`, (t) => {
-      t.plan(6)
-
-      sget({
-        method: upMethod,
-        url: 'http://localhost:' + app.server.address().port,
-        headers: {
-          'Content-Type': 'application/json',
-          'Content-Length': 1024 * 1024 + 1,
-        },
-      }, (err, response) => {
-        t.error(err)
-        t.strictEqual(response.statusCode, 413)
-      })
-
-      var chunk = Buffer.allocUnsafe(1024 * 1024 + 1)
-      const largeStream = new stream.Readable({
-        read() {
-          this.push(chunk)
-          chunk = null
-        },
-      })
-      sget({
-        method: upMethod,
-        url: 'http://localhost:' + app.server.address().port,
-        headers: {
-          'Content-Type': 'application/json',
-          'Transfer-Encoding': 'chunked',
-        },
-        body: largeStream,
-        timeout: 500,
-      }, (err, response) => {
-        t.error(err)
-        t.strictEqual(response.statusCode, 413)
-      })
-
-      sget({
-        method: upMethod,
-        url: `http://localhost:${app.server.address().port}/with-limit`,
-        headers: {'Content-Type': 'application/json'},
-        body: {},
-        json: true,
-      }, (err, response) => {
-        t.error(err)
-        t.strictEqual(response.statusCode, 413)
       })
     })
   })

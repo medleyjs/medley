@@ -18,19 +18,9 @@ test('app.all should add all the methods to the same URL', (t) => {
   supportedMethods.forEach(injectRequest)
 
   function injectRequest(method) {
-    const options = {
-      url: '/',
-      method,
-    }
-
-    if (method === 'POST' || method === 'PUT' || method === 'PATCH') {
-      options.payload = {hello: 'world'}
-    }
-
-    app.inject(options, (err, res) => {
+    app.inject({method, url: '/'}, (err, res) => {
       t.error(err)
-      var payload = JSON.parse(res.payload)
-      t.deepEqual(payload, {method})
+      t.strictDeepEqual(JSON.parse(res.payload), {method})
     })
   }
 })

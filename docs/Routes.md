@@ -17,7 +17,6 @@ app.route(options)
 + `responseSchema`: The schema for a JSON response. See the [`Serialization` documentation](Serialization.md).
 + `beforeHandler(req, res, next)`: A function or an array of functions called just before the request handler. They are treated just like `preHandler` hooks (see [Hooks#beforehandler](Hooks.md#beforehandler)).
 + `handler(req, res)`: The main function that will handle the request.
-+ `bodyLimit`: Limits request bodies to this number of bytes. Must be an integer. Used to override the `bodyLimit` option passed to the [`Medley factory function`](Factory.md#bodylimit).
 + `config`: Object used to store custom configuration. Defaults to an empty object (`{}`).
 
 `req` is defined in [Request](Request.md).<br>

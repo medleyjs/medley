@@ -213,27 +213,3 @@ test('handler as the third parameter of a shorthand method takes precedence over
     t.deepEqual(JSON.parse(res.payload), {hello: 'parameter'})
   })
 })
-
-test('invalid bodyLimit option - route', (t) => {
-  t.plan(2)
-
-  const app = medley()
-
-  try {
-    app.route({
-      bodyLimit: false,
-      method: 'PUT',
-      handler() { },
-    })
-    t.fail('bodyLimit must be an integer')
-  } catch (err) {
-    t.equal(err.message, "'bodyLimit' option must be an integer > 0. Got 'false'")
-  }
-
-  try {
-    app.post('/url', {bodyLimit: 10000.1}, () => null)
-    t.fail('bodyLimit must be an integer')
-  } catch (err) {
-    t.equal(err.message, "'bodyLimit' option must be an integer > 0. Got '10000.1'")
-  }
-})

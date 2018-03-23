@@ -87,7 +87,7 @@ t.test('secure', (t) => {
 })
 
 t.test('secure with fallback', (t) => {
-  t.plan(6)
+  t.plan(5)
 
   var app = medley({
     http2: {
@@ -101,10 +101,6 @@ t.test('secure with fallback', (t) => {
     response.send(msg)
   })
 
-  app.post('/', function(req, response) {
-    response.send(req.body)
-  })
-
   app.get('/error', async function() {
     await Promise.resolve()
     throw new Error('kaboom')
@@ -114,7 +110,7 @@ t.test('secure with fallback', (t) => {
     t.error(err)
     app.server.unref()
 
-    t.test('https get error', async (t) => {
+    t.test('http2 get error', async (t) => {
       t.plan(1)
 
       const url = `https://localhost:${app.server.address().port}/error`
@@ -123,25 +119,7 @@ t.test('secure with fallback', (t) => {
       t.strictEqual(res.headers[':status'], 500)
     })
 
-    t.test('https post', async (t) => {
-      t.plan(2)
-
-      const body = JSON.stringify({hello: 'http2'})
-      const res = await h2url.concat({
-        url: `https://localhost:${app.server.address().port}`,
-        method: 'POST',
-        body,
-        headers: {
-          'content-type': 'application/json',
-          'content-length': '' + body.length,
-        },
-      })
-
-      t.strictEqual(res.headers[':status'], 200)
-      t.deepEqual(JSON.parse(res.body), {hello: 'http2'})
-    })
-
-    t.test('https get request', async (t) => {
+    t.test('http2 get request', async (t) => {
       t.plan(3)
 
       const url = `https://localhost:${app.server.address().port}`
