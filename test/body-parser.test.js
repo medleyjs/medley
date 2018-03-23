@@ -317,7 +317,7 @@ test('the parser must be a function', (t) => {
 })
 
 test('catch all body parser', (t) => {
-  t.plan(7)
+  t.plan(11)
   const app = medley()
 
   app.post('/', (req, response) => {
@@ -334,8 +334,11 @@ test('catch all body parser', (t) => {
     })
   })
 
+  t.equal(app.hasBodyParser('*'), true)
+
   app.listen(0, (err) => {
     t.error(err)
+    app.server.unref()
 
     sget({
       method: 'POST',
@@ -348,20 +351,32 @@ test('catch all body parser', (t) => {
       t.error(err)
       t.strictEqual(response.statusCode, 200)
       t.deepEqual(body.toString(), 'hello')
+    })
 
-      sget({
-        method: 'POST',
-        url: 'http://localhost:' + app.server.address().port,
-        body: 'hello',
-        headers: {
-          'Content-Type': 'very-weird-content-type',
-        },
-      }, (err, response2, body2) => {
-        t.error(err)
-        t.strictEqual(response2.statusCode, 200)
-        t.deepEqual(body2.toString(), 'hello')
-        app.close()
-      })
+    sget({
+      method: 'POST',
+      url: 'http://localhost:' + app.server.address().port,
+      body: 'hello',
+      headers: {
+        'Content-Type': 'very-weird-content-type',
+      },
+    }, (err, response, body) => {
+      t.error(err)
+      t.strictEqual(response.statusCode, 200)
+      t.deepEqual(body.toString(), 'hello')
+    })
+
+    sget({
+      method: 'POST',
+      url: 'http://localhost:' + app.server.address().port,
+      body: 'hello',
+      headers: {
+        'Content-Type': '', // Empty string
+      },
+    }, (err, response, body) => {
+      t.error(err)
+      t.strictEqual(response.statusCode, 200)
+      t.deepEqual(body.toString(), 'hello')
     })
   })
 })
