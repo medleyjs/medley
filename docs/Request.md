@@ -4,6 +4,15 @@ Request is a core Medley object that is passed as the first argument to hooks an
 It is a wrapper around Node's [`http.IncomingMessage`][http.IncomingMessage] object
 (unlike in Express, which extends that object).
 
+This documentation refers to Request instances as `req`, although the object could be named
+anything (e.g. `request`) since it is almost always received as a function parameter.
+
+```js
+app.get('/user/:id', function(req, res) {
+  res.send('User ' + req.params.id);
+});
+```
+
 **Properties:**
 
 + [`.authority`](#reqauthority)

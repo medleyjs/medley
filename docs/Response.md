@@ -1,8 +1,17 @@
 # Response
 
-Request is a core Medley object that is passed as the second argument to hooks and handlers.
+Response is a core Medley object that is passed as the second argument to hooks and handlers.
 It is a wrapper around Node's [`http.ServerResponse`][http.ServerResponse] object
 (unlike in Express, which extends that object).
+
+This documentation refers to Response instances as `res`, although the object could be named
+anything (e.g. `response`) since it is always received as a function parameter.
+
+```js
+app.get('/user/:id', function(req, res) {
+  res.send('User ' + req.params.id);
+});
+```
 
 **Properties:**
 
@@ -62,6 +71,11 @@ Boolean. `true` if a response has already been sent, `false` otherwise.
 
 The HTTP status code that will be sent to the client when the response is sent.<br>
 Defaults to `200`.
+
+```js
+res.statusCode // 200
+res.statusCode = 201
+```
 
 **Note:** The status code must be between `200` and `599` (inclusive) to be
 compatible with HTTP/2.
