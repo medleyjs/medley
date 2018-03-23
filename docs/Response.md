@@ -27,6 +27,7 @@ app.get('/user/:id', function(req, res) {
 + [`.append(field, value)`](#append)
 + [`.error([statusCode,] error)`](#error)
 + [`.get(field)`](#get)
++ [`.has(field)`](#has)
 + [`.notFound()`](#not-found)
 + [`.redirect([statusCode,] url)`](#redirect)
 + [`.remove(field)`](#remove)
@@ -183,8 +184,23 @@ Gets a previously set response header.
 res.get('content-type') // 'application/json'
 ```
 
-**Tip:** While not required, it is best to use lowercase header names for the best performance
-and for consistency with HTTP/2 (which requires header names to be lowercase).
+**Tip:** While not required, it is best to use lowercase header field names for the best performance
+and for consistency with HTTP/2 (which always sends header names in lowercase).
+
+<a id="has"></a>
+### `res.has(field)`
+
++ `field` *(string)*
++ Returns: *(boolean)*
++ Alias: `response.hasHeader()`
+
+Returns `true` if the specified response header was previously set, otherwise returns `false`.
+
+```js
+res.has('content-type') // false
+res.set('content-type', 'application/json')
+res.has('content-type') // true
+```
 
 <a id="not-found"></a>
 ### `res.notFound()`
@@ -365,8 +381,8 @@ res.set({
 });
 ```
 
-**Tip:** While not required, it is best to use lowercase header names for the best performance
-and for consistency with HTTP/2 (which requires header names to be lowercase).
+**Tip:** While not required, it is best to use lowercase header field names for the best performance
+and for consistency with HTTP/2 (which always sends header names in lowercase).
 
 <a id="status"></a>
 ### `res.status(statusCode)`

@@ -28,6 +28,7 @@ test('Response aliases', (t) => {
   const response = new Response()
   t.equal(response.appendHeader, response.append)
   t.equal(response.getHeader, response.get)
+  t.equal(response.hasHeader, response.has)
   t.equal(response.removeHeader, response.remove)
   t.equal(response.setHeader, response.set)
   t.end()
@@ -188,6 +189,29 @@ test('res.get/set() get and set the response headers', (t) => {
     t.equal(res.headers['x-custom-header'], 'custom header')
     t.equal(res.headers['content-type'], 'custom/type')
     t.equal(res.payload, 'text')
+  })
+})
+
+test('res.has() checks if a response header has been set', (t) => {
+  t.plan(6)
+
+  const app = medley()
+
+  app.get('/', (req, res) => {
+    t.equal(res.has('x-custom-header'), false)
+
+    res.set('x-custom-header', 'custom header')
+    t.equal(res.has('x-custom-header'), true)
+    t.equal(res.has('X-Custom-Header'), true, 'is case-insensitive')
+
+    t.equal(res.has('__proto__'), false, 'does not report unset properties that are on Object.prototype')
+
+    res.send()
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
   })
 })
 
