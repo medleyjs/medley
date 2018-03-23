@@ -6,34 +6,30 @@ const Stream = require('stream')
 const util = require('util')
 const medley = require('..')
 
-test('inject should exist', (t) => {
-  t.plan(2)
-  const app = medley()
-  t.ok(app.inject)
-  t.is(typeof app.inject, 'function')
-})
+test('should wait for the app to load before injecting the request', (t) => {
+  t.plan(5)
 
-test('should wait for the ready event', (t) => {
-  t.plan(4)
   const app = medley()
   const payload = {hello: 'world'}
+  let loaded = false
 
   app.use((subApp) => {
     subApp.get('/', (req, res) => {
+      t.equal(loaded, true)
       res.send(payload)
     })
 
     subApp.onLoad((done) => {
-      setImmediate(done)
+      setTimeout(() => {
+        loaded = true
+        done()
+      }, 10)
     })
   })
 
-  app.inject({
-    method: 'GET',
-    url: '/',
-  }, (err, res) => {
+  app.inject('/', (err, res) => {
     t.error(err)
-    t.deepEqual(payload, JSON.parse(res.payload))
+    t.strictDeepEqual(JSON.parse(res.payload), payload)
     t.strictEqual(res.statusCode, 200)
     t.strictEqual(res.headers['content-length'], '17')
   })
