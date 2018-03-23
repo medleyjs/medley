@@ -61,9 +61,9 @@
     "benchmark": "concurrently -k -s first \"node ./benchmarks/basic.js\" \"npm run cannon\"",
     "cannon": "autocannon -c 100 -d 5 -p 10 localhost:3000/",
     "lint": "eslint --cache --cache-location node_modules/.cache/.eslintcache --ignore-pattern coverage .",
-    "test": "tap -j4 test/*.test.js test/*/*.test.js",
+    "test": "tap -J test/*.test.js test/*/*.test.js",
     "coverage": "npm run test -- --cov --coverage-report=html",
-    "coveralls": "npm run test -- -c --cov",
+    "coveralls": "npm run test -- -j4 -c --cov",
     "ci": "npm run lint && npm run coveralls"
   }
 }
