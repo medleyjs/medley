@@ -94,7 +94,7 @@ test('res.status() should set the status code', (t) => {
 })
 
 test('res.append() sets headers and adds to existing headers', (t) => {
-  t.plan(13)
+  t.plan(18)
 
   const app = medley()
 
@@ -121,6 +121,16 @@ test('res.append() sets headers and adds to existing headers', (t) => {
     response.send()
   })
 
+  app.get('/append-case-insensitive', (req, res) => {
+    res.append('X-Custom-Header', 'first')
+    t.equal(res.get('x-custom-header'), 'first')
+
+    res.append('X-Custom-Header', ['second', 'third'])
+    t.deepEqual(res.get('x-custom-header'), ['first', 'second', 'third'])
+
+    res.send()
+  })
+
   app.inject('/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 200)
@@ -128,6 +138,12 @@ test('res.append() sets headers and adds to existing headers', (t) => {
   })
 
   app.inject('/append-multiple-to-string', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.deepEqual(res.headers['x-custom-header'], ['first', 'second', 'third'])
+  })
+
+  app.inject('/append-case-insensitive', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 200)
     t.deepEqual(res.headers['x-custom-header'], ['first', 'second', 'third'])
@@ -169,7 +185,7 @@ test('res.append() does not allow setting a header value to `undefined`', (t) =>
 })
 
 test('res.get/set() get and set the response headers', (t) => {
-  t.plan(8)
+  t.plan(16)
 
   const app = medley()
 
@@ -183,7 +199,26 @@ test('res.get/set() get and set the response headers', (t) => {
     response.send('text')
   })
 
+  app.get('/case-insensitive', (req, res) => {
+    t.equal(res.get('X-Custom-Header'), undefined)
+
+    res.set('X-Custom-Header', 'custom header')
+    t.equal(res.get('X-Custom-Header'), 'custom header')
+    t.equal(res.get('x-custom-header'), 'custom header')
+
+    res.set('Content-Type', 'custom/type')
+    res.send('text')
+  })
+
   app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.headers['x-custom-header'], 'custom header')
+    t.equal(res.headers['content-type'], 'custom/type')
+    t.equal(res.payload, 'text')
+  })
+
+  app.inject('/case-insensitive', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 200)
     t.equal(res.headers['x-custom-header'], 'custom header')
@@ -280,7 +315,7 @@ test('res.set() does not allow setting a header value to `undefined`', (t) => {
 })
 
 test('res.remove() removes response headers', (t) => {
-  t.plan(8)
+  t.plan(10)
 
   const app = medley()
 
@@ -294,8 +329,12 @@ test('res.remove() removes response headers', (t) => {
     response
       .set('x-custom-header-2', ['a', 'b'])
       .remove('x-custom-header-2')
-
     t.equal(response.get('x-custom-header-2'), undefined)
+
+    response
+      .set('X-Custom-Header-3', 'custom header 3')
+      .remove('X-Custom-Header-3')
+    t.equal(response.get('X-Custom-Header-3'), undefined)
 
     response.send()
   })
@@ -305,6 +344,7 @@ test('res.remove() removes response headers', (t) => {
     t.equal(res.statusCode, 200)
     t.notOk('x-custom-header' in res.headers)
     t.notOk('x-custom-header-2' in res.headers)
+    t.notOk('x-custom-header-3' in res.headers)
   })
 })
 
