@@ -245,6 +245,7 @@ function medley(options) {
     throwIfAppIsLoaded('Cannot call "addBodyParser()" when app is already loaded')
 
     this._bodyParser.add(contentType, parser)
+    this._subApps.forEach(subApp => subApp.addBodyParser(contentType, parser))
 
     return this
   }
@@ -256,14 +257,10 @@ function medley(options) {
   function addHook(name, fn) {
     throwIfAppIsLoaded('Cannot call "addHook()" when app is already loaded')
 
-    _addHook(this, name, fn)
+    this._hooks.add(name, fn)
+    this._subApps.forEach(subApp => subApp.addHook(name, fn))
 
     return this
-  }
-
-  function _addHook(appInstance, name, fn) {
-    appInstance._hooks.add(name, fn)
-    appInstance._subApps.forEach(child => _addHook(child, name, fn))
   }
 
   // Routing methods

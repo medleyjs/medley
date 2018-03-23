@@ -539,3 +539,46 @@ test('The charset should not interfere with the content type handling', (t) => {
     })
   })
 })
+
+test('body parsers added after a sub-app has been created should be inherited by the sub-app', (t) => {
+  t.plan(10)
+
+  const app = medley()
+
+  app.post('/', (req, res) => {
+    res.send(req.body)
+  })
+
+  app.use((subApp) => {
+    subApp.post('/sub-app', (req, res) => {
+      res.send(req.body)
+    })
+  })
+
+  app.addBodyParser('application/json', (req, done) => {
+    t.ok('called')
+    jsonParser(req.stream, done)
+  })
+
+  app.inject({
+    method: 'POST',
+    url: '/',
+    payload: {hello: 'world'},
+  }, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.headers['content-type'], 'application/json')
+    t.equal(res.payload, '{"hello":"world"}')
+  })
+
+  app.inject({
+    method: 'POST',
+    url: '/sub-app',
+    payload: {hello: 'world'},
+  }, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.headers['content-type'], 'application/json')
+    t.equal(res.payload, '{"hello":"world"}')
+  })
+})
