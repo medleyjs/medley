@@ -37,16 +37,15 @@ module.exports = myPlugin
 **app.js**
 ```js
 const medley = require('@medley/medley')
-const myPlugin = require('./my-plugin')
 const app = medley()
 
-app.registerPlugin(myPlugin, {optional: 'options'})
+app.registerPlugin(require('./my-plugin'), {optional: 'options'})
 
 console.log(app.myPluginData.receivedOptions) // {optional: 'options'}
 console.log(app.myPluginData.example) // 'value'
 ```
 
-Using `app.registerPlugin()` is almost the exact same as doing the following:
+Using `app.registerPlugin()` is essentially the same as doing the following:
 
 ```js
 const myPlugin = require('./my-plugin')

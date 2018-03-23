@@ -1,6 +1,8 @@
 # App
 
-A new `app` is created by calling the [`medley` factory function](Factory.md).
+A new `app` is created by calling the [`medley` factory function](Factory.md). Sub-apps—created
+with [`app.use()`](#use)—are apps that inherit from the `app` that created them. Both an *app*
+and a *sub-app* may be referred to as an *app instance*.
 
 ```js
 const medley = require('@medley/medley')
@@ -334,7 +336,7 @@ app.use((subApp) => {
 
 app.use('/api', (apiSubApp) => {
   apiSubApp.addHook('onRequest', (req, res, next) => {
-    // This hook only runs for routes defined on this "api" sub-app
+    // This hook only runs for routes defined within the apiSubApp
     next()  
   })
   
@@ -348,4 +350,15 @@ app.use('/api', (apiSubApp) => {
     })
   })
 })
+```
+
+Note that the `subAppFn` is executed immediately:
+
+```js
+app.use((subApp) => {
+  // This code runs first
+})
+
+// This code runs second
+app.decorate('a', {})
 ```
