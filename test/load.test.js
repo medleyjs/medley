@@ -92,6 +92,29 @@ t.test('should pass error to the load callback and skip other onLoad handlers (P
   )
 })
 
+t.test('should create an error for promises that reject with a falsy value', (t) => {
+  t.plan(3)
+
+  const app = medley()
+
+  app.onLoad(() => {
+    t.pass('first called')
+    return Promise.reject(null) // eslint-disable-line prefer-promise-reject-errors
+  })
+
+  app.onLoad(() => {
+    t.fail('second onLoad should not be called')
+  })
+
+  app.load().then(
+    () => t.fail('loading should fail'),
+    (err) => {
+      t.type(err, Error)
+      t.equal(err.message, 'Promise threw non-error: null')
+    }
+  )
+})
+
 t.test('.onLoad() should be chainable', (t) => {
   t.plan(5)
 
