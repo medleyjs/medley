@@ -2,8 +2,6 @@
 
 const findMyWay = require('find-my-way')
 const http = require('http')
-const https = require('https')
-const lightMyRequest = require('light-my-request')
 
 const BodyParser = require('./lib/BodyParser')
 const Hooks = require('./lib/Hooks')
@@ -15,10 +13,7 @@ const runOnCloseHandlers = require('./lib/utils/runOnCloseHandlers')
 const runOnLoadHandlers = require('./lib/utils/runOnLoadHandlers')
 
 const {buildSerializers} = require('./lib/Serializer')
-const {
-  kRegisteredPlugins,
-  registerPlugin,
-} = require('./lib/PluginUtils')
+const {kRegisteredPlugins, registerPlugin} = require('./lib/PluginUtils')
 const {
   routeHandler,
   methodHandlers: originalMethodHandlers,
@@ -69,7 +64,7 @@ function medley(options) {
       server = http2().createServer(httpHandler)
     }
   } else if (options.https) {
-    server = https.createServer(options.https, httpHandler)
+    server = require('https').createServer(options.https, httpHandler)
   } else {
     server = http.createServer(httpHandler)
   }
@@ -559,6 +554,8 @@ function medley(options) {
   }
 
   function inject(opts, cb) {
+    const lightMyRequest = require('light-my-request')
+
     if (loaded) {
       return lightMyRequest(httpHandler, opts, cb)
     }
