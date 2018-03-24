@@ -223,7 +223,7 @@ module.exports = function bodyTests(method, config) {
         t.equal(response.statusCode, 415)
         t.deepEqual(JSON.parse(body.toString()), {
           error: 'Unsupported Media Type',
-          message: 'Unsupported Media Type: unknown/type',
+          message: 'Unsupported Media Type: "unknown/type"',
           statusCode: 415,
         })
       })

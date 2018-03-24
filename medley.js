@@ -88,7 +88,7 @@ function medley(options) {
     // Body parsing
     addBodyParser,
     hasBodyParser,
-    _bodyParser: new BodyParser(),
+    _bodyParser: new BodyParser(!!options.allowUnsupportedMediaTypes),
 
     // Hooks
     addHook,

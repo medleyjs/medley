@@ -4,6 +4,7 @@ The Medley module exports a factory function that is used to create a new
 [**Medley `app`**](App.md) instance. This factory function accepts an options
 object which is used to customize the resulting instance. The options are:
 
++ [`allowUnsupportedMediaTypes`](#allowunsupportedmediatypes)
 + [`extraBodyParsingMethods`](#extrabodyparsingmethods)
 + [`http2`](#http2)
 + [`https`](#https)
@@ -12,6 +13,20 @@ object which is used to customize the resulting instance. The options are:
 + [`trustProxy`](#trustproxy)
 
 ## Options
+
+### `allowUnsupportedMediaTypes`
+
++ *boolean*
+
+Be default, if no [body parser](BodyParser.md) matches the `Content-Type` of a request with a body,
+Medley will respond with a `415 Unsupported Media Type` error. When this option is set to `true`,
+requests that don't match a body parser will be allowed to continue without parsing the body.
+
++ Default: `false`
+
+```js
+const app = medley({allowUnsupportedMediaTypes: true});
+```
 
 ### `extraBodyParsingMethods`
 
@@ -23,6 +38,10 @@ An array of HTTP methods (like "GET" or "DELETE") to allow request bodies to be 
 other methods that will have their request body parsed.
 
 + Default: `[]` (an empty array)
+
+```js
+const app = medley({extraBodyParsingMethods: ['DELETE']});
+```
 
 ### `http2`
 
@@ -96,8 +115,6 @@ strictApp.get('/foo/', (req, res) => {
   res.send('different foo')
 })
 ```
-
-This option applies to all route declarations, including those in sub-apps.
 
 ### `trustProxy`
 

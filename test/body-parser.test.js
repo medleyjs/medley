@@ -199,16 +199,17 @@ test('bodyParser should support encapsulation', (t) => {
 })
 
 test('bodyParser should not by default support requests with an unknown Content-Type', (t) => {
-  t.plan(5)
+  t.plan(7)
 
   const app = medley()
 
-  app.post('/', (req, res) => {
-    res.send(req.body)
-  })
-
   app.addBodyParser('application/json', (req, done) => {
     jsonParser(req.stream, done)
+  })
+
+  app.post('/', (req, res) => {
+    t.fail('route should not be called')
+    res.send(req.body)
   })
 
   app.listen(0, (err) => {
@@ -218,25 +219,101 @@ test('bodyParser should not by default support requests with an unknown Content-
     sget({
       method: 'POST',
       url: 'http://localhost:' + app.server.address().port,
-      body: 'unknown content type!',
+      body: 'unknown content type',
       headers: {
         'Content-Type': 'unknown',
       },
-    }, (err, response) => {
+    }, (err, response, body) => {
       t.error(err)
       t.equal(response.statusCode, 415)
+      t.strictDeepEqual(JSON.parse(body.toString()), {
+        statusCode: 415,
+        error: 'Unsupported Media Type',
+        message: 'Unsupported Media Type: "unknown"',
+      })
     })
 
     sget({
       method: 'POST',
       url: 'http://localhost:' + app.server.address().port,
-      body: 'undefined content type!',
+      body: 'undefined content type',
       headers: {
         // 'Content-Type': undefined
       },
-    }, (err, response) => {
+    }, (err, response, body) => {
       t.error(err)
       t.equal(response.statusCode, 415)
+      t.strictDeepEqual(JSON.parse(body.toString()), {
+        statusCode: 415,
+        error: 'Unsupported Media Type',
+        message: 'Unsupported Media Type: ""',
+      })
+    })
+  })
+})
+
+test('bodyParser should allow unknown Content-Types when the allowUnsupportedMediaTypes option is `true`', (t) => {
+  t.plan(13)
+
+  const app = medley({allowUnsupportedMediaTypes: true})
+
+  app.addBodyParser('application/json', (req, done) => {
+    jsonParser(req.stream, done)
+  })
+
+  app.post('/', (req, res) => {
+    t.equal(req.body, undefined)
+    res.send()
+  })
+
+  app.use((subApp) => {
+    subApp.post('/sub-app', (req, res) => {
+      t.equal(req.body, undefined)
+      res.send()
+    })
+  })
+
+  app.listen(0, (err) => {
+    t.error(err)
+    app.server.unref()
+
+    sget({
+      method: 'POST',
+      url: `http://localhost:${app.server.address().port}/`,
+      headers: {
+        'Content-Type': 'unknown',
+      },
+      body: 'unknown content type',
+    }, (err, response, body) => {
+      t.error(err)
+      t.equal(response.statusCode, 200)
+      t.equal(body.length, 0)
+    })
+
+    sget({
+      method: 'POST',
+      url: `http://localhost:${app.server.address().port}/`,
+      headers: {
+        // 'Content-Type': undefined
+      },
+      body: 'undefined content type',
+    }, (err, response, body) => {
+      t.error(err)
+      t.equal(response.statusCode, 200)
+      t.equal(body.length, 0)
+    })
+
+    sget({
+      method: 'POST',
+      url: `http://localhost:${app.server.address().port}/sub-app`,
+      headers: {
+        'Content-Type': 'unknown',
+      },
+      body: 'unknown content type',
+    }, (err, response, body) => {
+      t.error(err)
+      t.equal(response.statusCode, 200)
+      t.equal(body.length, 0)
     })
   })
 })
