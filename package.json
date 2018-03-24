@@ -1,7 +1,7 @@
 {
   "name": "@medley/medley",
   "version": "0.0.0",
-  "description": "Fast and extendable web framework for Node.js",
+  "description": "Fast and modern web framework for Node.js",
   "main": "medley.js",
   "files": {
     "lib": "lib",
@@ -22,6 +22,7 @@
   "homepage": "https://github.com/medleyjs/medley#readme",
   "keywords": [
     "fast",
+    "modern",
     "web",
     "framework",
     "router",

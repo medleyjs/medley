@@ -3,7 +3,50 @@
 [![Build Status](https://travis-ci.org/medleyjs/medley.svg?branch=master)](https://travis-ci.org/medleyjs/medley)
 [![Coverage Status](https://coveralls.io/repos/github/medleyjs/medley/badge.svg?branch=master)](https://coveralls.io/github/medleyjs/medley?branch=master)
 
-This project is under development and is not yet ready for production. Use at your own risk (you should probably just use [Fastify](https://github.com/fastify/fastify) instead).
+Medley is a fast and modern web framework for Node.js. It fully supports both `async`/`await` and
+callbacks and is compatible with Node 6 or greater. It's design incorporates concepts found in
+[Express](https://github.com/expressjs/express), [Koa](https://github.com/koajs/koa),
+[hapi](https://github.com/hapijs/hapi), and [Fastify](https://github.com/fastify/fastify).
+Most importantly, Medley aims to provide an API that is forward-compatible with future versions
+that will take full advantage of Node's [`HTTP/2` module](https://nodejs.org/api/http2.html).
+
+## Usage
+
+Install:
+
+```sh
+npm install @medley/medley --save
+```
+
+Create a web server:
+
+```js
+const medley = require('@medley/medley')
+const app = medley()
+
+app.get('/', (req, res) => {
+  res.send('Hello World')
+})
+
+app.listen(3000)
+```
+
+### Documentation
+
++ [Getting Started](https://github.com/medleyjs/medley/blob/master/docs/Getting-Started.md)
++ [The `medley()` function](https://github.com/medleyjs/medley/blob/master/docs/Medley.md)
++ [The `app` Object](https://github.com/medleyjs/medley/blob/master/docs/App.md)
++ [Routing](https://github.com/medleyjs/medley/blob/master/docs/Routes.md)
++ [The `req` Object](https://github.com/medleyjs/medley/blob/master/docs/Request.md)
++ [The `res` Object](https://github.com/medleyjs/medley/blob/master/docs/Response.md)
++ [The Request Lifecyle](https://github.com/medleyjs/medley/blob/master/docs/Lifecyle.md)
++ [Hooks](https://github.com/medleyjs/medley/blob/master/docs/Hooks.md)
++ [Decorators](https://github.com/medleyjs/medley/blob/master/docs/Decorators.md)
++ [JSON Serialization](https://github.com/medleyjs/medley/blob/master/docs/Serialization.md)
++ [Body Parsing](https://github.com/medleyjs/medley/blob/master/docs/BodyParser.md)
++ [HTTP/2](https://github.com/medleyjs/medley/blob/master/docs/HTTP2.md)
++ [Plugins](https://github.com/medleyjs/medley/blob/master/docs/Plugins.md)
++ [Testing](https://github.com/medleyjs/medley/blob/master/docs/Testing.md)
 
 ## Acknowledgements
 

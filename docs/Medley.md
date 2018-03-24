@@ -1,7 +1,7 @@
-# Factory
+# medley()
 
 The Medley module exports a factory function that is used to create a new
-[**Medley `app`**](App.md) instance. This factory function accepts an options
+[**`app`**](App.md) instance. This factory function accepts an options
 object which is used to customize the resulting instance. The options are:
 
 + [`allowUnsupportedMediaTypes`](#allowunsupportedmediatypes)

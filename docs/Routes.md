@@ -15,12 +15,11 @@ app.route(options)
 + `path`: The path to match the URL of the request.
 + `url`: Alias for `path`.
 + `responseSchema`: The schema for a JSON response. See the [`Serialization` documentation](Serialization.md).
-+ `beforeHandler(req, res, next)`: A function or an array of functions called just before the request handler. They are treated just like `preHandler` hooks (see [Hooks#beforehandler](Hooks.md#beforehandler)).
++ `beforeHandler(req, res, next)`: A function or an array of functions called just before the request handler. They are treated just like `preHandler` hooks (see [Hooks#beforeHandler](Hooks.md#beforehandler)).
 + `handler(req, res)`: The main function that will handle the request.
+  + `req` is defined in [Request](Request.md).
+  + `res` is defined in [Response](Response.md).
 + `config`: Object used to store custom configuration. Defaults to an empty object (`{}`).
-
-`req` is defined in [Request](Request.md).<br>
-`res` is defined in [Response](Response.md).
 
 Examples:
 
@@ -33,7 +32,7 @@ app.route({
       hello: { type: 'string' }
     }
   },
-  handler(req, res) {
+  handler: function(req, res) {
     res.send({ hello: 'world' })
   }
 })
@@ -54,17 +53,17 @@ app.route({
 ## Shorthand Methods
 
 ```js
-app.get(path, [options], handler)
-app.head(path, [options], handler)
-app.post(path, [options], handler)
-app.put(path, [options], handler)
-app.patch(path, [options], handler)
-app.delete(path, [options], handler)
-app.options(path, [options], handler)
+app.get(path, [options,] handler)
+app.head(path, [options,] handler)
+app.post(path, [options,] handler)
+app.put(path, [options,] handler)
+app.patch(path, [options,] handler)
+app.delete(path, [options,] handler)
+app.options(path, [options,] handler)
 // app.move(), app.search(), etc.
 
 // Registers a route that handles all supported methods
-app.all(path, [options], handler)
+app.all(path, [options,] handler)
 ```
 
 There is a shorthand for each method found in the

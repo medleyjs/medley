@@ -35,7 +35,7 @@ const app = medley();
 ```
 
 Similar to other frameworks, the `medley` module is function that creates a new
-`app`. The `medley` function accepts some [options](#Factory.md) that configure
+`app`. The `medley` function accepts some [options](Medley.md) that configure
 how the app will behave.
 
 ### Defining Routes
@@ -111,7 +111,7 @@ same property for different things.
 
 See the [**Decorators** documentation](Decorators.md) for more information.
 
-### Serialization
+### JSON Serialization
 
 Medley includes a feature for serializing JSON objects 2-5x faster than
 using `JSON.stringify()`. This is done by setting a `responseSchema` for

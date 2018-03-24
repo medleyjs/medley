@@ -70,7 +70,7 @@ req.headers
 
 *Read-only*
 
-The request host (`hostname:port`) if available. When the [`trustProxy`](Factory.md#trustproxy)
+The request host (`hostname:port`) if available. When the [`trustProxy`](Medley.md#trustproxy)
 setting is enabled, uses the `X-Forwarded-Host` header first, then the `Host` header.
 
 ```js
@@ -154,7 +154,7 @@ req.pathname // '/status/user'
 *Read-only*
 
 The request protocol ("http" or "https"). Supports `X-Forwarded-Proto` when
-the [`trustProxy`](Factory.md#trustproxy) setting is enabled.
+the [`trustProxy`](Medley.md#trustproxy) setting is enabled.
 
 ```js
 req.protocol // 'http'

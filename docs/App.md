@@ -1,6 +1,6 @@
 # App
 
-A new `app` is created by calling the [`medley` factory function](Factory.md). Sub-apps—created
+A new `app` is created by calling the [`medley` factory function](Medley.md). Sub-apps—created
 with [`app.use()`](#use)—are apps that inherit from the `app` that created them. Both an *app*
 and a *sub-app* may be referred to as an *app instance*.
 
