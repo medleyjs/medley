@@ -71,24 +71,6 @@ test('Should throw if one method is unsupported', (t) => {
   }
 })
 
-test('Should throw on duplicate body parser', (t) => {
-  t.plan(1)
-
-  const app = medley()
-
-  function customParser(req, done) {
-    done(null, '')
-  }
-
-  app.addBodyParser('application/qq', customParser)
-  try {
-    app.addBodyParser('application/qq', customParser)
-    t.fail()
-  } catch (e) {
-    t.pass()
-  }
-})
-
 test('Should throw on duplicate decorator', (t) => {
   t.plan(1)
 

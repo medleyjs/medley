@@ -79,13 +79,3 @@ app.addBodyParser('*', (req, done) => {
   }
 })
 ```
-
-## `app.hasBodyParser(contentType)`
-
-This method can be used to check if a specific body parser already exists.
-
-```js
-if (!app.hasBodyParser('application/json')){
-  app.addBodyParser('application/json', jsonParser)
-}
-```

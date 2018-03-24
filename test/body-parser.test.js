@@ -160,30 +160,12 @@ test('bodyParser should handle errors', (t) => {
 })
 
 test('bodyParser should support encapsulation', (t) => {
-  t.plan(6)
+  t.plan(7)
   const app = medley()
 
-  app.use((subApp) => {
-    subApp.addBodyParser('application/jsoff', () => {})
-    t.ok(subApp.hasBodyParser('application/jsoff'))
-
-    subApp.use((subApp2) => {
-      subApp2.addBodyParser('application/ffosj', () => {})
-      t.ok(subApp2.hasBodyParser('application/jsoff'))
-      t.ok(subApp2.hasBodyParser('application/ffosj'))
-    })
+  app.addBodyParser('application/json', function(req, done) {
+    jsonParser(req.stream, done)
   })
-
-  app.load((err) => {
-    t.error(err)
-    t.notOk(app.hasBodyParser('application/jsoff'))
-    t.notOk(app.hasBodyParser('application/ffosj'))
-  })
-})
-
-test('bodyParser should support encapsulation, second try', (t) => {
-  t.plan(4)
-  const app = medley()
 
   app.use((subApp) => {
     subApp.post('/', (req, response) => {
@@ -191,14 +173,26 @@ test('bodyParser should support encapsulation, second try', (t) => {
     })
 
     subApp.addBodyParser('application/jsoff', function(req, done) {
-      jsonParser(req.stream, function(err, body) {
-        done(err, body)
-      })
+      jsonParser(req.stream, done)
     })
   })
 
   app.listen(0, (err) => {
     t.error(err)
+    app.server.unref()
+
+    sget({
+      method: 'POST',
+      url: 'http://localhost:' + app.server.address().port,
+      body: '{"hello":"world"}',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }, (err, response, body) => {
+      t.error(err)
+      t.equal(response.statusCode, 200)
+      t.equal(body.toString(), '{"hello":"world"}')
+    })
 
     sget({
       method: 'POST',
@@ -209,9 +203,8 @@ test('bodyParser should support encapsulation, second try', (t) => {
       },
     }, (err, response, body) => {
       t.error(err)
-      t.strictEqual(response.statusCode, 200)
-      t.deepEqual(body.toString(), JSON.stringify({hello: 'world'}))
-      app.close()
+      t.equal(response.statusCode, 200)
+      t.equal(body.toString(), '{"hello":"world"}')
     })
   })
 })
@@ -225,9 +218,7 @@ test('bodyParser should not by default support requests without a Content-Type',
   })
 
   app.addBodyParser('application/jsoff', function(req, done) {
-    jsonParser(req.stream, function(err, body) {
-      done(err, body)
-    })
+    jsonParser(req.stream, done)
   })
 
   app.listen(0, (err) => {
@@ -257,9 +248,7 @@ test('bodyParser should not by default support requests with an unknown Content-
   })
 
   app.addBodyParser('application/jsoff', function(req, done) {
-    jsonParser(req.stream, function(err, body) {
-      done(err, body)
-    })
+    jsonParser(req.stream, done)
   })
 
   app.listen(0, (err) => {
@@ -317,7 +306,7 @@ test('the parser must be a function', (t) => {
 })
 
 test('catch all body parser', (t) => {
-  t.plan(11)
+  t.plan(10)
   const app = medley()
 
   app.post('/', (req, response) => {
@@ -334,8 +323,6 @@ test('catch all body parser', (t) => {
     })
   })
 
-  t.equal(app.hasBodyParser('*'), true)
-
   app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
@@ -349,8 +336,8 @@ test('catch all body parser', (t) => {
       },
     }, (err, response, body) => {
       t.error(err)
-      t.strictEqual(response.statusCode, 200)
-      t.deepEqual(body.toString(), 'hello')
+      t.equal(response.statusCode, 200)
+      t.equal(body.toString(), 'hello')
     })
 
     sget({
@@ -362,8 +349,8 @@ test('catch all body parser', (t) => {
       },
     }, (err, response, body) => {
       t.error(err)
-      t.strictEqual(response.statusCode, 200)
-      t.deepEqual(body.toString(), 'hello')
+      t.equal(response.statusCode, 200)
+      t.equal(body.toString(), 'hello')
     })
 
     sget({
@@ -375,8 +362,8 @@ test('catch all body parser', (t) => {
       },
     }, (err, response, body) => {
       t.error(err)
-      t.strictEqual(response.statusCode, 200)
-      t.deepEqual(body.toString(), 'hello')
+      t.equal(response.statusCode, 200)
+      t.equal(body.toString(), 'hello')
     })
   })
 })
@@ -497,28 +484,6 @@ test('cannot add body parser after binding', (t) => {
       t.pass()
     }
   })
-})
-
-test('Cannot add a parser multiple times', (t) => {
-  t.plan(1)
-  const app = medley()
-
-  app.addBodyParser('application/json', function(req, done) {
-    jsonParser(req.stream, function(err, body) {
-      done(err, body)
-    })
-  })
-
-  try {
-    app.addBodyParser('application/json', function(req, done) {
-      t.ok('called')
-      jsonParser(req.stream, function(err, body) {
-        done(err, body)
-      })
-    })
-  } catch (err) {
-    t.is(err.message, 'Body parser for content type \'application/json\' already present.')
-  }
 })
 
 test('The charset should not interfere with the content type handling', (t) => {
