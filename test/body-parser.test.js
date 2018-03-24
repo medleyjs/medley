@@ -4,18 +4,11 @@ if (require('./testUtils.js').supportsAsyncAwait) {
   require('./body-parser.async')
 }
 
-const fs = require('fs')
 const t = require('tap')
 const test = t.test
 const sget = require('simple-get').concat
 const medley = require('..')
 const jsonParser = require('fast-json-body')
-
-test('addBodyParser method should exist', (t) => {
-  t.plan(1)
-  const app = medley()
-  t.ok(app.addBodyParser)
-})
 
 test('addBodyParser should add a custom parser', (t) => {
   t.plan(3)
@@ -29,10 +22,8 @@ test('addBodyParser should add a custom parser', (t) => {
     response.send(req.body)
   })
 
-  app.addBodyParser('application/jsoff', function(req, done) {
-    jsonParser(req.stream, function(err, body) {
-      done(err, body)
-    })
+  app.addBodyParser('application/json', (req, done) => {
+    jsonParser(req.stream, done)
   })
 
   app.listen(0, (err) => {
@@ -48,7 +39,7 @@ test('addBodyParser should add a custom parser', (t) => {
         url: 'http://localhost:' + app.server.address().port,
         body: '{"hello":"world"}',
         headers: {
-          'Content-Type': 'application/jsoff',
+          'Content-Type': 'application/json',
         },
       }, (err, response, body) => {
         t.error(err)
@@ -65,7 +56,7 @@ test('addBodyParser should add a custom parser', (t) => {
         url: 'http://localhost:' + app.server.address().port,
         body: '{"hello":"world"}',
         headers: {
-          'Content-Type': 'application/jsoff',
+          'Content-Type': 'application/json',
         },
       }, (err, response, body) => {
         t.error(err)
@@ -89,13 +80,11 @@ test('bodyParser should handle multiple custom parsers', (t) => {
   })
 
   function customParser(req, done) {
-    jsonParser(req.stream, function(err, body) {
-      done(err, body)
-    })
+    jsonParser(req.stream, done)
   }
 
   app.addBodyParser('application/jsoff', customParser)
-  app.addBodyParser('application/ffosj', customParser)
+  app.addBodyParser('application/json', customParser)
 
   app.listen(0, (err) => {
     t.error(err)
@@ -119,7 +108,7 @@ test('bodyParser should handle multiple custom parsers', (t) => {
       url: 'http://localhost:' + app.server.address().port + '/hello',
       body: '{"hello":"world"}',
       headers: {
-        'Content-Type': 'application/ffosj',
+        'Content-Type': 'application/json',
       },
     }, (err, response, body) => {
       t.error(err)
@@ -137,7 +126,7 @@ test('bodyParser should handle errors', (t) => {
     response.send(req.body)
   })
 
-  app.addBodyParser('application/jsoff', function(req, done) {
+  app.addBodyParser('application/json', function(req, done) {
     done(new Error('kaboom!'), {})
   })
 
@@ -149,7 +138,7 @@ test('bodyParser should handle errors', (t) => {
       url: 'http://localhost:' + app.server.address().port,
       body: '{"hello":"world"}',
       headers: {
-        'Content-Type': 'application/jsoff',
+        'Content-Type': 'application/json',
       },
     }, (err, response) => {
       t.error(err)
@@ -209,50 +198,22 @@ test('bodyParser should support encapsulation', (t) => {
   })
 })
 
-test('bodyParser should not by default support requests without a Content-Type', (t) => {
-  t.plan(3)
-  const app = medley()
-
-  app.post('/', (req, response) => {
-    response.send(req.body)
-  })
-
-  app.addBodyParser('application/jsoff', function(req, done) {
-    jsonParser(req.stream, done)
-  })
-
-  app.listen(0, (err) => {
-    t.error(err)
-
-    sget({
-      method: 'POST',
-      url: 'http://localhost:' + app.server.address().port,
-      body: 'unknown content type!',
-      headers: {
-        // 'Content-Type': undefined
-      },
-    }, (err, response) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 415)
-      app.close()
-    })
-  })
-})
-
 test('bodyParser should not by default support requests with an unknown Content-Type', (t) => {
-  t.plan(3)
+  t.plan(5)
+
   const app = medley()
 
-  app.post('/', (req, response) => {
-    response.send(req.body)
+  app.post('/', (req, res) => {
+    res.send(req.body)
   })
 
-  app.addBodyParser('application/jsoff', function(req, done) {
+  app.addBodyParser('application/json', (req, done) => {
     jsonParser(req.stream, done)
   })
 
   app.listen(0, (err) => {
     t.error(err)
+    app.server.unref()
 
     sget({
       method: 'POST',
@@ -263,57 +224,160 @@ test('bodyParser should not by default support requests with an unknown Content-
       },
     }, (err, response) => {
       t.error(err)
-      t.strictEqual(response.statusCode, 415)
-      app.close()
+      t.equal(response.statusCode, 415)
+    })
+
+    sget({
+      method: 'POST',
+      url: 'http://localhost:' + app.server.address().port,
+      body: 'undefined content type!',
+      headers: {
+        // 'Content-Type': undefined
+      },
+    }, (err, response) => {
+      t.error(err)
+      t.equal(response.statusCode, 415)
     })
   })
 })
 
-test('contentType must be a string', (t) => {
-  t.plan(1)
-  const app = medley()
+test('contentType must be MIME pattern string, an array of such strings, or a function', (t) => {
+  t.plan(5)
 
-  try {
-    app.addBodyParser(null, () => {})
-    t.fail()
-  } catch (err) {
-    t.is(err.message, 'The content type must be a string and cannot be empty')
-  }
+  const app = medley()
+  const func = () => {}
+
+  t.throws(() => app.addBodyParser(null, func), TypeError)
+  t.throws(() => app.addBodyParser('', func), Error)
+  t.throws(() => app.addBodyParser(['text/plain', 'bogus'], func), Error)
+
+  t.doesNotThrow(() => app.addBodyParser(func, func))
+  t.doesNotThrow(() => app.addBodyParser(['text/plain', 'image/*'], func))
 })
 
-test('contentType cannot be an empty string', (t) => {
-  t.plan(1)
+test('bodyParser should run only if it exactly matches the given content-type', (t) => {
+  t.plan(7)
+
   const app = medley()
 
-  try {
-    app.addBodyParser('', () => {})
-    t.fail()
-  } catch (err) {
-    t.is(err.message, 'The content type must be a string and cannot be empty')
-  }
+  t.tearDown(() => app.close())
+
+  app.post('/', (req, res) => {
+    res.send(req.body)
+  })
+
+  app.addBodyParser('application/json', (req, done) => {
+    t.fail('application/json should never be matched')
+    jsonParser(req.stream, done)
+  })
+
+  app.addBodyParser('*/json', (req, done) => {
+    jsonParser(req.stream, done)
+  })
+
+  app.listen(0, (err) => {
+    t.error(err)
+
+    sget({
+      method: 'POST',
+      url: 'http://localhost:' + app.server.address().port,
+      headers: {
+        'Content-Type': 'application/jsons',
+      },
+      body: '{"hello":"world"}',
+    }, (err, response) => {
+      t.error(err)
+      t.equal(response.statusCode, 415)
+    })
+
+    sget({
+      method: 'POST',
+      url: 'http://localhost:' + app.server.address().port,
+      headers: {
+        'Content-Type': 'text/json',
+      },
+      body: '{"hello":"world"}',
+    }, (err, response, body) => {
+      t.error(err)
+      t.equal(response.statusCode, 200)
+      t.equal(response.headers['content-type'], 'application/json')
+      t.equal(body.toString(), '{"hello":"world"}')
+    })
+  })
+})
+
+test('parsers are matched in the order in which they are added', (t) => {
+  t.plan(8)
+
+  const app = medley()
+
+  t.tearDown(() => app.close())
+
+  var order = 0
+
+  app.addBodyParser(() => {
+    t.equal(order++, 0)
+    return false
+  }, () => t.fail('unmatched body parser should not be called'))
+
+  app.addBodyParser(() => {
+    t.equal(order++, 1)
+    return false
+  }, () => t.fail('unmatched body parser should not be called'))
+
+  app.addBodyParser('application/*', function(req, done) {
+    t.equal(order++, 2)
+    done(null, 'first')
+  })
+
+  app.addBodyParser('application/json', function() {
+    t.fail('the second body parser should never be called')
+  })
+
+  app.post('/', (req, res) => {
+    res.send(req.body)
+  })
+
+  app.listen(0, (err) => {
+    t.error(err)
+
+    sget({
+      method: 'POST',
+      url: `http://localhost:${app.server.address().port}`,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: 'true',
+    }, (err, response, body) => {
+      t.error(err)
+      t.equal(response.statusCode, 200)
+      t.match(response.headers['content-type'], 'text/plain')
+      t.equal(body.toString(), 'first')
+    })
+  })
 })
 
 test('the parser must be a function', (t) => {
   t.plan(1)
+
   const app = medley()
 
-  try {
-    app.addBodyParser('aaa', null)
-    t.fail()
-  } catch (err) {
-    t.is(err.message, 'The parser argument must be a function. Got: null')
-  }
+  t.throws(
+    () => app.addBodyParser('aaa', null),
+    new TypeError('The parser argument must be a function. Got: null')
+  )
 })
 
-test('catch all body parser', (t) => {
-  t.plan(10)
+test('"catch all" body parser', (t) => {
+  t.plan(7)
+
   const app = medley()
 
-  app.post('/', (req, response) => {
-    response.send(req.body)
+  app.post('/', (req, res) => {
+    res.send(req.body)
   })
 
-  app.addBodyParser('*', function(req, done) {
+  app.addBodyParser(() => true, function(req, done) {
     var data = ''
     req.stream.on('data', (chunk) => {
       data += chunk
@@ -326,19 +390,6 @@ test('catch all body parser', (t) => {
   app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
-
-    sget({
-      method: 'POST',
-      url: 'http://localhost:' + app.server.address().port,
-      body: 'hello',
-      headers: {
-        'Content-Type': 'application/jsoff',
-      },
-    }, (err, response, body) => {
-      t.error(err)
-      t.equal(response.statusCode, 200)
-      t.equal(body.toString(), 'hello')
-    })
 
     sget({
       method: 'POST',
@@ -364,101 +415,6 @@ test('catch all body parser', (t) => {
       t.error(err)
       t.equal(response.statusCode, 200)
       t.equal(body.toString(), 'hello')
-    })
-  })
-})
-
-test('catch all body parser should not interfere with other content type parsers', (t) => {
-  t.plan(7)
-  const app = medley()
-
-  app.post('/', (req, response) => {
-    response.send(req.body)
-  })
-
-  app.addBodyParser('*', function(req, done) {
-    var data = ''
-    req.stream.on('data', (chunk) => {
-      data += chunk
-    })
-    req.stream.on('end', () => {
-      done(null, data)
-    })
-  })
-
-  app.addBodyParser('application/jsoff', function(req, done) {
-    jsonParser(req.stream, function(err, body) {
-      done(err, body)
-    })
-  })
-
-  app.listen(0, (err) => {
-    t.error(err)
-
-    sget({
-      method: 'POST',
-      url: 'http://localhost:' + app.server.address().port,
-      body: '{"hello":"world"}',
-      headers: {
-        'Content-Type': 'application/jsoff',
-      },
-    }, (err, response, body) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 200)
-      t.deepEqual(body.toString(), JSON.stringify({hello: 'world'}))
-
-      sget({
-        method: 'POST',
-        url: 'http://localhost:' + app.server.address().port,
-        body: 'hello',
-        headers: {
-          'Content-Type': 'very-weird-content-type',
-        },
-      }, (err, response2, body2) => {
-        t.error(err)
-        t.strictEqual(response2.statusCode, 200)
-        t.deepEqual(body2.toString(), 'hello')
-        app.close()
-      })
-    })
-  })
-})
-
-// Issue 492 https://github.com/fastify/fastify/issues/492
-test('\'*\' catch undefined Content-Type requests', (t) => {
-  t.plan(4)
-
-  const app = medley()
-
-  t.tearDown(app.close.bind(app))
-
-  app.addBodyParser('*', function(req, done) {
-    var data = ''
-    req.stream.on('data', (chunk) => {
-      data += chunk
-    })
-    req.stream.on('end', () => {
-      done(null, data)
-    })
-  })
-
-  app.post('/', (req, res) => {
-    res.send(req.body)
-  })
-
-  app.listen(0, function(err) {
-    t.error(err)
-
-    const fileStream = fs.createReadStream(__filename)
-
-    sget({
-      method: 'POST',
-      url: 'http://localhost:' + app.server.address().port + '/',
-      body: fileStream,
-    }, (err, response, body) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 200)
-      t.strictEqual(body + '', fs.readFileSync(__filename).toString())
     })
   })
 })

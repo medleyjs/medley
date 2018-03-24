@@ -17,12 +17,42 @@ will be available only in that scope and its children.
 app.addBodyParser(contentType, parser)
 ```
 
-+ `contentType` *(string)* - The Content-Type (MIME type) to parse.
++ `contentType` *(string | string[] | function)* - The MIME type(s) to parse or a custom function to match the `Content-Type` header.
 + `parser(req, done)` *(function)* - A function to parse the request body that takes the following parameters:
   + `req` - The Medley [`Request`](Request.md) object.
   + `done(error, body)` - Callback to call when done parsing the body or if an error occurred. The parsed body must be passed as the second parameter.
 
-Example that uses [`raw-body`](https://github.com/stream-utils/raw-body):
+```js
+const bodyParser = require('@medley/body-parser')
+const medley = require('@medley/medley')
+const app = medley()
+
+app.addBodyParser('application/json', bodyParser.json())
+```
+
+The `contentType` parameter may be a string or an array of strings that match the formats allowed
+by [`compile-mime-match`](https://github.com/medleyjs/compile-mime-match#usage). It may also be a
+function that takes the received `Content-Type` header as the first parameter and returns `true`
+or `false` to indicate whether or not the corresponding parser should parse the request body.
+
+Example of the `contentType` parameter as a function:
+
+```js
+function matchType(contentType) {
+  if (contentType === 'application/octet-stream') {
+    return false
+  }
+  return true
+}
+
+app.addBodyParser(matchType, (req, done) => { /* ... */ })
+```
+
+**Note:** If the `Content-Type` header was missing, then the `contentType` matcher
+function will receive an empty string `''` as the first argument.
+
+In the `parser` function, the request body can be read from the `req.stream` property.
+Here's an example that uses [`raw-body`](https://github.com/stream-utils/raw-body):
 
 ```js
 const rawBody = require('raw-body')
@@ -36,7 +66,7 @@ app.addBodyParser('text/plain', (req, done) => {
 })
 ```
 
-If using an `async` function, return the parsed body instead of calling the `done` callback:
+If using an `async` function, the parsed body must be returned instead of calling the `done` callback:
 
 ```js
 const rawBody = require('raw-body')
@@ -64,18 +94,18 @@ app.addBodyParser('text/plain', (req) => {
 })
 ```
 
-#### Catch All
+#### Match Order
 
-Sometimes it may be necessary to handle requests that do not have a corresponding
-body parser (such as when a request does not have a `Content-Type` header). This
-can be done by setting a parser for the `'*'` content type.
+Body parsers are matched in the order in which they were added. In the following example,
+`application/json` requests will never be handled by the second body parser because they
+will always be matched by the first one.
 
 ```js
-app.addBodyParser('*', (req, done) => {
-  if (isACertainType(req.headers['content-type'])) {
-    parseBody(req.stream, done)
-  } else {
-    done()
-  }
-})
+const bodyParser = require('@medley/body-parser')
+
+app.addBodyParser('application/*', bodyParser.buffer())
+app.addBodyParser('application/json', bodyParser.json()) // Will never be matched
 ```
+
+For this reason, it is better to declare body parsers with specific MIME types
+*before* parsers with a type that has a wildcard.
