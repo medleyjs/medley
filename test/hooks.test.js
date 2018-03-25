@@ -200,31 +200,22 @@ test('onRequest hook should support encapsulation / 3', (t) => {
 })
 
 test('preHandler hook should support encapsulation / 5', (t) => {
-  t.plan(19)
+  t.plan(13)
   const app = medley()
 
-  app.decorateRequest('hello', 'world')
-
   app.addHook('preHandler', function(request, response, next) {
-    t.equal(request.hello, 'world')
     request.first = true
     next()
   })
 
   app.get('/first', (request, response) => {
-    t.equal(request.hello, 'world')
-    t.equal(request.hello2, undefined)
     t.ok(request.first)
     t.notOk(request.second)
     response.send({hello: 'world'})
   })
 
   app.use((subApp) => {
-    subApp.decorateRequest('hello2', 'world')
-
     subApp.addHook('preHandler', function(request, response, next) {
-      t.equal(request.hello, 'world')
-      t.equal(request.hello2, 'world')
       request.second = true
       next()
     })
@@ -411,35 +402,34 @@ test('onSend hook should support encapsulation / 1', (t) => {
 })
 
 test('onSend hook should support encapsulation / 2', (t) => {
-  t.plan(18)
+  t.plan(12)
   const app = medley()
 
-  app.decorateRequest('hello', 'world')
-
   app.addHook('onSend', (request, response, payload, next) => {
-    t.equal(request.hello, 'world')
-    t.ok('onSend called')
+    t.pass('first onSend hook called')
+    request.first = true
     next()
   })
 
   app.get('/first', (request, response) => {
-    t.equal(request.hello, 'world')
-    t.equal(request.hello2, undefined)
     response.send({hello: 'world'})
   })
 
   app.use((subApp) => {
-    subApp.decorateRequest('hello2', 'world')
-
     subApp.addHook('onSend', (request, response, payload, next) => {
-      t.equal(request.hello, 'world')
-      t.equal(request.hello2, 'world')
-      t.ok('onSend called')
+      t.equal(request.first, true)
+      request.second = true
       next()
     })
 
     subApp.get('/second', (request, response) => {
       response.send({hello: 'world'})
+    })
+  })
+
+  app.use((subApp2) => {
+    subApp2.addHook('onSend', () => {
+      t.fail('this should never be called')
     })
   })
 

@@ -41,6 +41,33 @@ app.doSomething()
 app.config.port // 3000
 ```
 
+#### Encapsulation
+
+App decorators are encapsulated to the scope in which they are defined and they are
+inherited by sub-apps. This means that any decorator defined on the root `app`
+will be available everywhere and decorators defined on a sub-app will only
+be available to that sub-app and its own sub-apps.
+
+```js
+app.decorate('top', true)
+
+app.use((subApp1) => {
+  subApp1.decorate('one', 1)
+  
+  console.log(subApp1.top) // true
+  console.log(subApp1.one) // 1
+  console.log(subApp1.two) // undefined
+})
+
+app.use((subApp2) => {
+  subApp2.decorate('two', 2)
+  
+  console.log(subApp2.top) // true
+  console.log(subApp2.one) // undefined
+  console.log(subApp2.two) // 2
+})
+```
+
 <a id="decorate-request"></a>
 ### `app.decorateRequest(name, value)`
 
@@ -49,13 +76,16 @@ will be available on the `req` object in handlers:
 
 ```js
 app.decorateRequest('logHello', function logHello() {
-  console.log('Hello')
+  console.log('Hello', this.url)
+  // `this` refers to the Request instance
 })
 
-app.get('/', (req, res) => {
-  req.logHello()  
+app.get('/path', (req, res) => {
+  req.logHello() // Logs: 'Hello /path'
 })
 ```
+
+Request decorators are not encapsulated and will be available in every route.
 
 <a id="decorate-response"></a>
 ### `app.decorateResponse(name, value)`
@@ -65,53 +95,13 @@ will be available on the `res` object in handlers:
 
 ```js
 app.decorateResponse('logGoodbye', function logGoodbye() {
-  console.log('Goodbye')
+  console.log('Goodbye', this.request.url)
+  // `this` refers to the Response instance
 })
 
-app.get('/', (req, res) => {
-  res.logGoodbye()  
-})
-```
-
-<a id="encapsulation"></a>
-## Decorators Encapsulation
-
-Decorators are encapsulated to the scope in which they are defined and they are
-inherited by sub-apps. This means that any decorator defined on the root `app`
-will be available everywhere and decorators defined on a sub-app will only
-be available to that sub-app and its own sub-apps.
-
-```js
-app.decorate('config', {
-  host: 'example.com',
-  port: 3000,
-})
-
-app.decorateRequest('top', true)
-
-app.use((subApp1) => {
-  console.log(subApp1.config) // { host: 'example.com', port: 3000 }
-  
-  subApp1.decorateRequest('one', 1)
-
-  subApp1.get('/route-1', (req, res) => {
-    console.log(req.top) // true
-    console.log(req.one) // 1
-    console.log(req.two) // undefined
-    res.send()
-  })
-})
-
-app.use((subApp2) => {
-  console.log(subApp2.config) // { host: 'example.com', port: 3000 }
-  
-  subApp2.decorateRequest('two', 2)
-
-  subApp2.get('/route-2', (req, res) => {
-    console.log(req.top) // true
-    console.log(req.one) // undefined
-    console.log(req.two) // 2
-    res.send()
-  })
+app.get('/path', (req, res) => {
+  res.logGoodbye() // Logs: 'Goodbye /path'
 })
 ```
+
+Response decorators are not encapsulated and will be available in every route.

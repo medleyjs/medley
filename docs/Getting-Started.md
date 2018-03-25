@@ -135,18 +135,9 @@ See the [`Serialization` documentation](Serialization.md) for more information.
 
 ### Encapsulating Functionality
 
-Hooks, decorators, and [body parsers](BodyParser.md) can be encapsulated
-within sub-apps so that different functionality can be isolated to
-specific parts of an app. Sub-apps are registered with the
-[`app.use()`](App.md#use) method.
-
-**userRoutes.js**
-```js
-module.exports = function userRoutes(app) {
-  app.addHook('onRequest', require('./authenticationHook'));
-  app.get('/user/:userId', (req, res) => { });
-};
-```
+Hooks, [body parsers](BodyParser.md), and app decorators can be encapsulated within sub-apps to
+isolate different functionality to specific parts of an application. Sub-apps are registered with
+the [`app.use()`](App.md#use) method.
 
 **app.js**
 ```js
@@ -156,9 +147,17 @@ const app = medley();
 app.use(require('./userRoutes'));
 ```
 
+**userRoutes.js**
+```js
+module.exports = function userRoutes(app) {
+  app.addHook('onRequest', require('./authenticationHook'));
+  app.get('/user/:userId', (req, res) => { });
+};
+```
+
 See [`app.use()`](App.md#use), [Hooks Encapsulation](Hooks.md#encapsulation),
-[Decorators Encapsulation](Decorators.md#decorators-encapsulation), and
-[Route Prefixing](Routes.md#route-prefixing) for details.
+[`app.decorate()`](Decorators.md#decorate), and [Route Prefixing](Routes.md#route-prefixing)
+for details.
 
 ### Starting the Server
 

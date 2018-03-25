@@ -73,7 +73,8 @@ function medley(options) {
     printRoutes: router.prettyPrint.bind(router),
     server,
 
-    use, // For sub-apps
+    use, // For creating sub-apps
+    _subApps: [],
 
     // Decorator methods
     decorate: decorateApp,
@@ -122,9 +123,8 @@ function medley(options) {
     registerPlugin,
     [kRegisteredPlugins]: [],
 
-    _Request: Request.buildRequest(undefined, !!options.trustProxy),
+    _Request: Request.buildRequest(!!options.trustProxy),
     _Response: Response.buildResponse(),
-    _subApps: [],
   }
   app._notFoundLevelApp = app
 
@@ -176,8 +176,6 @@ function medley(options) {
     parentApp._subApps.push(subApp)
 
     subApp._subApps = []
-    subApp._Request = Request.buildRequest(parentApp._Request)
-    subApp._Response = Response.buildResponse(parentApp._Response)
     subApp._bodyParser = parentApp._bodyParser.clone()
     subApp._hooks = Hooks.buildHooks(parentApp._hooks)
     subApp._routePrefix = buildRoutePrefix(parentApp._routePrefix, prefix)

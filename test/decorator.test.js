@@ -162,68 +162,22 @@ test('cannot decorate sub-app if parent app already has the decorator', (t) => {
   })
 })
 
-test('decorateResponse inside a sub-app', (t) => {
-  t.plan(12)
-  const app = medley()
-
-  app.use((subApp) => {
-    subApp.decorateResponse('test', 'test')
-    t.ok(subApp._Response.prototype.test)
-
-    subApp.get('/yes', (req, response) => {
-      t.ok(response.test, 'test exists')
-      response.send({hello: 'world'})
-    })
-  })
-
-  app.get('/no', (req, response) => {
-    t.notOk(response.test)
-    response.send({hello: 'world'})
-  })
-
-  app.listen(0, (err) => {
-    t.error(err)
-    app.server.unref()
-
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + app.server.address().port + '/yes',
-    }, (err, response, body) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 200)
-      t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), {hello: 'world'})
-    })
-
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + app.server.address().port + '/no',
-    }, (err, response, body) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 200)
-      t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), {hello: 'world'})
-    })
-  })
-})
-
 test('decorateRequest inside a sub-app', (t) => {
-  t.plan(12)
+  t.plan(9)
   const app = medley()
 
   app.use((subApp) => {
     subApp.decorateRequest('test', 'test')
-    t.ok(subApp._Request.prototype.test)
 
-    subApp.get('/yes', (req, response) => {
-      t.ok(req.test, 'test exists')
-      response.send({hello: 'world'})
+    subApp.get('/sub', (req, res) => {
+      t.equal(req.test, 'test')
+      res.send()
     })
   })
 
-  app.get('/no', (req, response) => {
-    t.notOk(req.test)
-    response.send({hello: 'world'})
+  app.get('/top', (req, res) => {
+    t.equal(req.test, 'test')
+    res.send()
   })
 
   app.listen(0, (err) => {
@@ -232,22 +186,62 @@ test('decorateRequest inside a sub-app', (t) => {
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + app.server.address().port + '/yes',
+      url: 'http://localhost:' + app.server.address().port + '/sub',
     }, (err, response, body) => {
       t.error(err)
-      t.strictEqual(response.statusCode, 200)
-      t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), {hello: 'world'})
+      t.equal(response.statusCode, 200)
+      t.equal(body.length, 0)
     })
 
     sget({
       method: 'GET',
-      url: 'http://localhost:' + app.server.address().port + '/no',
+      url: 'http://localhost:' + app.server.address().port + '/top',
     }, (err, response, body) => {
       t.error(err)
-      t.strictEqual(response.statusCode, 200)
-      t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), {hello: 'world'})
+      t.equal(response.statusCode, 200)
+      t.equal(body.length, 0)
+    })
+  })
+})
+
+test('decorateResponse inside a sub-app', (t) => {
+  t.plan(9)
+  const app = medley()
+
+  app.use((subApp) => {
+    subApp.decorateResponse('test', 'test')
+
+    subApp.get('/sub', (req, res) => {
+      t.equal(res.test, 'test')
+      res.send()
+    })
+  })
+
+  app.get('/top', (req, res) => {
+    t.equal(res.test, 'test')
+    res.send()
+  })
+
+  app.listen(0, (err) => {
+    t.error(err)
+    app.server.unref()
+
+    sget({
+      method: 'GET',
+      url: 'http://localhost:' + app.server.address().port + '/sub',
+    }, (err, response, body) => {
+      t.error(err)
+      t.equal(response.statusCode, 200)
+      t.equal(body.length, 0)
+    })
+
+    sget({
+      method: 'GET',
+      url: 'http://localhost:' + app.server.address().port + '/top',
+    }, (err, response, body) => {
+      t.error(err)
+      t.equal(response.statusCode, 200)
+      t.equal(body.length, 0)
     })
   })
 })
