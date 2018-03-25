@@ -4,6 +4,8 @@ const t = require('tap')
 const test = t.test
 const sget = require('simple-get').concat
 const fs = require('fs')
+const stream = require('stream')
+const http = require('http')
 const zlib = require('zlib')
 const pump = require('pump')
 const medley = require('..')
@@ -17,13 +19,13 @@ test('should respond with a stream', (t) => {
   const app = medley()
 
   app.get('/', function(req, response) {
-    const stream = fs.createReadStream(__filename, 'utf8')
-    response.send(stream)
+    const fileStream = fs.createReadStream(__filename, 'utf8')
+    response.send(fileStream)
   })
 
   app.get('/error', function(req, response) {
-    const stream = fs.createReadStream('not-existing-file', 'utf8')
-    response.send(stream)
+    const fileStream = fs.createReadStream('not-existing-file', 'utf8')
+    response.send(fileStream)
   })
 
   app.listen(0, (err) => {
@@ -134,8 +136,6 @@ test('Destroying streams prematurely', (t) => {
   t.plan(3)
 
   const app = medley()
-  const stream = require('stream')
-  const http = require('http')
 
   app.get('/', function(request, response) {
     t.pass('Received request')
@@ -176,10 +176,10 @@ test('should support stream1 streams', (t) => {
   const app = medley()
 
   app.get('/', function(request, response) {
-    const stream = JSONStream.stringify()
-    response.type('application/json').send(stream)
-    stream.write({hello: 'world'})
-    stream.end({a: 42})
+    const jsonStream = JSONStream.stringify()
+    response.type('application/json').send(jsonStream)
+    jsonStream.write({hello: 'world'})
+    jsonStream.end({a: 42})
   })
 
   app.listen(0, (err) => {
@@ -200,10 +200,10 @@ test('should support stream2 streams', (t) => {
   const app = medley()
 
   app.get('/', function(request, response) {
-    const stream = new StreamingJSONStringify()
-    response.type('application/json').send(stream)
-    stream.write({hello: 'world'})
-    stream.end({a: 42})
+    const jsonStream = new StreamingJSONStringify()
+    response.type('application/json').send(jsonStream)
+    jsonStream.write({hello: 'world'})
+    jsonStream.end({a: 42})
   })
 
   app.listen(0, (err) => {
@@ -224,13 +224,13 @@ test('should support send module 200 and 404', (t) => {
   const app = medley()
 
   app.get('/', function(req, response) {
-    const stream = send(req.stream, __filename)
-    response.send(stream)
+    const sendStream = send(req.stream, __filename)
+    response.send(sendStream)
   })
 
   app.get('/error', function(req, response) {
-    const stream = send(req.stream, 'non-existing-file')
-    response.send(stream)
+    const sendStream = send(req.stream, 'non-existing-file')
+    response.send(sendStream)
   })
 
   app.listen(0, (err) => {
@@ -276,6 +276,89 @@ test('should handle destroying a stream if headers are already sent', (t) => {
     })
 
     response.send(streamUntilHeaders)
+  })
+
+  app.listen(0, (err) => {
+    t.error(err)
+    app.server.unref()
+
+    sget(`http://localhost:${app.server.address().port}`, (err) => {
+      t.type(err, Error)
+      t.equal(err.code, 'ECONNRESET')
+    })
+  })
+})
+
+test('should call the onStreamError function if the stream was destroyed prematurely', (t) => {
+  t.plan(5)
+
+  function onStreamError(err) {
+    t.type(err, Error)
+    t.equal(err.message, 'premature close')
+  }
+
+  const app = medley({onStreamError})
+
+  app.get('/', (req, res) => {
+    t.pass('Received request')
+
+    var sent = false
+    var reallyLongStream = new stream.Readable({
+      read() {
+        if (!sent) {
+          this.push(Buffer.from('hello\n'))
+        }
+        sent = true
+      },
+    })
+
+    res.send(reallyLongStream)
+  })
+
+  app.listen(0, (err) => {
+    t.error(err)
+    app.server.unref()
+
+    http.get(`http://localhost:${app.server.address().port}`, (res) => {
+      t.equal(res.statusCode, 200)
+
+      res.on('readable', () => {
+        res.destroy()
+      })
+      res.on('close', () => {
+        t.pass('Response closed')
+      })
+    })
+  })
+})
+
+test('should call the onStreamError function if a stream was destroyed with headers already sent', (t) => {
+  t.plan(6)
+
+  const streamError = new Error('stream error')
+
+  function onStreamError(err) {
+    t.equal(err, streamError)
+  }
+
+  const app = medley({onStreamError})
+
+  app.get('/', (req, res) => {
+    t.pass('Received request')
+
+    const chunk = Buffer.alloc(100, 'c')
+    const streamUntilHeaders = new Readable({
+      read() {
+        if (res.headersSent) {
+          this.emit('error', streamError)
+          t.pass('emitted error')
+        } else {
+          this.push(chunk)
+        }
+      },
+    })
+
+    res.send(streamUntilHeaders)
   })
 
   app.listen(0, (err) => {

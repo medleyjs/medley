@@ -9,6 +9,7 @@ object which is used to customize the resulting instance. The options are:
 + [`http2`](#http2)
 + [`https`](#https)
 + [`maxParamLength`](#maxparamlength)
++ [`onStreamError`](#onstreamerror)
 + [`strictRouting`](#strictrouting)
 + [`trustProxy`](#trustproxy)
 
@@ -83,6 +84,28 @@ This can be useful to protect against [DoS attacks](https://www.owasp.org/index.
 for routes with regex parameters.
 
 *If the maximum length limit is reached, the not-found handler will be invoked.*
+
+### `onStreamError`
+
++ *(function)*
+
+A function that will be called with an error as the first parameter if an error occurs
+while sending a stream after headers have already been sent. Normally if an error occurs,
+it will be passed to the [error handler](App.md#set-error-handler), but when sending a
+stream it is possible for an error to occur after headers have already been sent. In that
+case, it is no longer possible to send a custom error response. This callback provides an
+opportunity to do something with the error (such as log it).
+
++ Default: `undefined`
+
+```js
+const app = medley({
+  onStreamError: function(err) {
+    console.error(err)
+    // NOTE: Always use a real logger instead of console.error()
+  }
+})
+```
 
 ### `strictRouting`
 

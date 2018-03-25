@@ -72,6 +72,7 @@ function medley(options) {
   const app = {
     printRoutes: router.prettyPrint.bind(router),
     server,
+    _onStreamError: options.onStreamError || function noop() {},
 
     use, // For creating sub-apps
     _subApps: [],
