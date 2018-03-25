@@ -84,7 +84,6 @@ function medley(options) {
 
     // Body parsing
     addBodyParser,
-    hasBodyParser,
     _bodyParser: new BodyParser(!!options.allowUnsupportedMediaTypes),
 
     // Hooks
@@ -242,10 +241,6 @@ function medley(options) {
     this._subApps.forEach(subApp => subApp.addBodyParser(contentType, parser))
 
     return this
-  }
-
-  function hasBodyParser(contentType) {
-    return this._bodyParser.hasParser(contentType)
   }
 
   function addHook(name, fn) {
