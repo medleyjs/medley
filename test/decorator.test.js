@@ -20,6 +20,7 @@ test('.decorateRequest() should be chainable', (t) => {
   medley()
     .decorateRequest('a', 'aVal')
     .decorateRequest('b', 'bVal')
+
   t.end()
 })
 
@@ -27,67 +28,52 @@ test('.decorateResponse() should be chainable', (t) => {
   medley()
     .decorateResponse('a', 'aVal')
     .decorateResponse('b', 'bVal')
+
   t.end()
 })
 
 test('.decorateRequest() should not allow decorating Medley values', (t) => {
   const app = medley()
 
-  try {
-    app.decorateRequest('stream', null)
-    t.fail('should not allow decorating Request with `stream`')
-  } catch (err) {
-    t.equal(err.message, "A decorator called 'stream' has been already added to Request")
-  }
+  t.throws(
+    () => app.decorateRequest('stream', null),
+    new Error("A decorator called 'stream' has been already added to Request")
+  )
 
-  try {
-    app.decorateRequest('headers', null)
-    t.fail('should not allow decorating Request with `headers`')
-  } catch (err) {
-    t.equal(err.message, "A decorator called 'headers' has been already added to Request")
-  }
+  t.throws(
+    () => app.decorateRequest('headers', null),
+    new Error("A decorator called 'headers' has been already added to Request")
+  )
 
-  try {
-    app.decorateRequest('params', null)
-    t.fail('should not allow decorating Request with `params`')
-  } catch (err) {
-    t.equal(err.message, "A decorator called 'params' has been already added to Request")
-  }
+  t.throws(
+    () => app.decorateRequest('params', null),
+    new Error("A decorator called 'params' has been already added to Request")
+  )
 
-  try {
-    app.decorateRequest('state', null)
-    t.fail('should not allow decorating Request with `state`')
-  } catch (err) {
-    t.equal(err.message, "A decorator called 'state' has been already added to Request")
-  }
+  t.throws(
+    () => app.decorateRequest('state', null),
+    new Error("A decorator called 'state' has been already added to Request")
+  )
 
-  try {
-    app.decorateRequest('body', null)
-    t.fail('should not allow decorating Request with `body`')
-  } catch (err) {
-    t.equal(err.message, "A decorator called 'body' has been already added to Request")
-  }
+  t.throws(
+    () => app.decorateRequest('body', null),
+    new Error("A decorator called 'body' has been already added to Request")
+  )
 
-  try {
-    app.decorateRequest('_query', null)
-    t.fail('should not allow decorating Request with `_query`')
-  } catch (err) {
-    t.equal(err.message, "A decorator called '_query' has been already added to Request")
-  }
+  t.throws(
+    () => app.decorateRequest('_query', null),
+    new Error("A decorator called '_query' has been already added to Request")
+  )
 
-  try {
-    app.decorateRequest('query', null)
-    t.fail('should not allow decorating Request with `query`')
-  } catch (err) {
-    t.equal(err.message, "A decorator called 'query' has been already added to Request")
-  }
+  t.throws(
+    () => app.decorateRequest('query', null),
+    new Error("A decorator called 'query' has been already added to Request")
+  )
 
-  try {
-    app.decorateRequest('_trustProxy', null)
-    t.fail('should not allow decorating Request with `_trustProxy`')
-  } catch (err) {
-    t.equal(err.message, "A decorator called '_trustProxy' has been already added to Request")
-  }
+  t.throws(
+    () => app.decorateRequest('_trustProxy', null),
+    new Error("A decorator called '_trustProxy' has been already added to Request")
+  )
 
   t.end()
 })
@@ -95,47 +81,35 @@ test('.decorateRequest() should not allow decorating Medley values', (t) => {
 test('.decorateResponse() should not allow decorating Medley values', (t) => {
   const app = medley()
 
-  try {
-    app.decorateResponse('stream', null)
-    t.fail('should not allow decorating Response with `stream`')
-  } catch (err) {
-    t.equal(err.message, "A decorator called 'stream' has been already added to Response")
-  }
+  t.throws(
+    () => app.decorateResponse('stream', null),
+    new Error("A decorator called 'stream' has been already added to Response")
+  )
 
-  try {
-    app.decorateResponse('request', null)
-    t.fail('should not allow decorating Response with `request`')
-  } catch (err) {
-    t.equal(err.message, "A decorator called 'request' has been already added to Response")
-  }
+  t.throws(
+    () => app.decorateResponse('request', null),
+    new Error("A decorator called 'request' has been already added to Response")
+  )
 
-  try {
-    app.decorateResponse('route', null)
-    t.fail('should not allow decorating Response with `route`')
-  } catch (err) {
-    t.equal(err.message, "A decorator called 'route' has been already added to Response")
-  }
+  t.throws(
+    () => app.decorateResponse('route', null),
+    new Error("A decorator called 'route' has been already added to Response")
+  )
 
-  try {
-    app.decorateResponse('sent', null)
-    t.fail('should not allow decorating Response with `sent`')
-  } catch (err) {
-    t.equal(err.message, "A decorator called 'sent' has been already added to Response")
-  }
+  t.throws(
+    () => app.decorateResponse('sent', null),
+    new Error("A decorator called 'sent' has been already added to Response")
+  )
 
-  try {
-    app.decorateResponse('_customError', null)
-    t.fail('should not allow decorating Response with `_customError`')
-  } catch (err) {
-    t.equal(err.message, "A decorator called '_customError' has been already added to Response")
-  }
+  t.throws(
+    () => app.decorateResponse('_customError', null),
+    new Error("A decorator called '_customError' has been already added to Response")
+  )
 
-  try {
-    app.decorateResponse('_ranHooks', null)
-    t.fail('should not allow decorating Response with `_ranHooks`')
-  } catch (err) {
-    t.equal(err.message, "A decorator called '_ranHooks' has been already added to Response")
-  }
+  t.throws(
+    () => app.decorateResponse('_ranHooks', null),
+    new Error("A decorator called '_ranHooks' has been already added to Response")
+  )
 
   t.end()
 })
@@ -254,8 +228,6 @@ test('decorateResponse inside a sub-app', (t) => {
 })
 
 test('decorators should be app-independant', (t) => {
-  t.plan(1)
-
   const app1 = medley()
   const app2 = medley()
 
@@ -268,5 +240,5 @@ test('decorators should be app-independant', (t) => {
   app1.decorateResponse('test', 'foo')
   app2.decorateResponse('test', 'foo')
 
-  t.pass()
+  t.end()
 })
