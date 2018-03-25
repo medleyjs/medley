@@ -448,6 +448,15 @@ function medley(options) {
     return this
   }
 
+  function onClose(handler) {
+    this._onCloseHandlers.push(handler.bind(this))
+    return this
+  }
+
+  function close(cb = () => {}) {
+    runOnCloseHandlers(this._onCloseHandlers, cb)
+  }
+
   function onLoad(handler) {
     onLoadHandlers.push(handler.bind(this))
     return this
@@ -486,15 +495,6 @@ function medley(options) {
     })
   }
 
-  function onClose(handler) {
-    this._onCloseHandlers.push(handler.bind(this))
-    return this
-  }
-
-  function close(cb = () => {}) {
-    runOnCloseHandlers(this._onCloseHandlers, cb)
-  }
-
   function listen(port, host, backlog, cb) {
     // Handle listen (port, cb)
     if (typeof host === 'function') {
@@ -521,7 +521,7 @@ function medley(options) {
       })
     }
 
-    this.load((err) => {
+    return load((err) => {
       if (err) {
         cb(err)
         return
@@ -543,8 +543,6 @@ function medley(options) {
         server.listen(port, host, handleListening)
       }
     })
-
-    return undefined
   }
 
   function inject(opts, cb) {
@@ -556,26 +554,23 @@ function medley(options) {
 
     if (!cb) {
       return new Promise((resolve, reject) => {
-        this.load((err) => {
+        inject(opts, (err, response) => {
           if (err) {
             reject(err)
           } else {
-            resolve()
+            resolve(response)
           }
         })
-      }).then(() => lightMyRequest(httpHandler, opts))
+      })
     }
 
-    this.load((err) => {
+    return load((err) => {
       if (err) {
         cb(err)
-        return
+      } else {
+        lightMyRequest(httpHandler, opts, cb)
       }
-
-      lightMyRequest(httpHandler, opts, cb)
     })
-
-    return undefined
   }
 }
 
