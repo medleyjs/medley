@@ -9,12 +9,13 @@ const sget = require('simple-get').concat
 const Request = require('../lib/Request').buildRequest()
 
 t.test('Request object', (t) => {
-  t.plan(5)
+  t.plan(6)
   const request = new Request('reqStream', 'headers', 'params')
   t.type(request, Request)
   t.equal(request.stream, 'reqStream')
   t.equal(request.headers, 'headers')
   t.equal(request.params, 'params')
+  t.type(request.state, 'object')
   t.equal(request.body, undefined)
 })
 
@@ -524,6 +525,11 @@ t.test('req.scheme is an alias for req.protocol', (t) => {
     Object.getOwnPropertyDescriptor(Request.prototype, 'protocol')
   )
   t.end()
+})
+
+t.test('req.state should be different for each req instance', (t) => {
+  t.plan(1)
+  t.notEqual(new Request().state, new Request().state)
 })
 
 t.test('request.url - get', (t) => {

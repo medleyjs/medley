@@ -30,6 +30,7 @@ app.get('/user/:id', function(req, res) {
 + [`.query`](#reqquery)
 + [`.querystring`](#reqquerystring)
 + [`.scheme`](#reqscheme)
++ [`.state`](#reqstate)
 + [`.stream`](#reqstream)
 + [`.url`](#requrl)
 
@@ -196,6 +197,16 @@ req.querystring // 'a=1&b=value'
 ### `req.scheme`
 
 HTTP/2-style alias for [`req.protocol`](#reqprotocol).
+
+### `req.state`
+
+A plain object for storing arbitrary data during a request. Recommended to be
+used as a namespace for passing information through hooks to frontend views.
+Starts as an empty object at the beginning of each request.
+
+```js
+req.state // {}
+```
 
 ### `req.stream`
 

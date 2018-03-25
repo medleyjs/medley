@@ -55,6 +55,13 @@ test('.decorateRequest() should not allow decorating Medley values', (t) => {
   }
 
   try {
+    app.decorateRequest('state', null)
+    t.fail('should not allow decorating Request with `state`')
+  } catch (err) {
+    t.equal(err.message, "A decorator called 'state' has been already added to Request")
+  }
+
+  try {
     app.decorateRequest('body', null)
     t.fail('should not allow decorating Request with `body`')
   } catch (err) {
