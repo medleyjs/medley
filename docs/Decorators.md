@@ -5,12 +5,11 @@ Decorators are just extra properties that are added to the `app`, `req`, and `re
 objects. The following methods can be used to decorate each object:
 
 + [`app.decorate(name, value)`](#decorate)
-+ [`app.decorateRequeste(name, value)`](#decorate-request)
++ [`app.decorateRequest(name, value)`](#decorate-request)
 + [`app.decorateResponse(name, value)`](#decorate-response)
 
-Decorators follow Medley's sub-app encapsulation model. See the
-[Decorators Encapsulation](#encapsulation) section to learn how
-decorators work with encapsulation.
+Decorators are not *overwritable*. If a decorator function is called with the `name` of an existing
+decorator (including the name of any property native to Medley) and error will be thrown.
 
 
 ## Usage
@@ -35,16 +34,12 @@ app.decorate('config', {
 })
 ```
 
-After adding a decorator, the property is immediately accessible on the `app`:
+After adding a decorator, the property can be accessed on the `app` object:
 
 ```js
 app.doSomething()
 app.config.port // 3000
 ```
-
-Decorators are not *overwritable*. If you try to declare a decorator that was
-previously declared *(in other words, uses the same name)*, `decorate` will
-throw an error.
 
 <a id="decorate-request"></a>
 ### `app.decorateRequest(name, value)`
