@@ -139,7 +139,10 @@ function medley(options) {
   const preLoadedHandlers = [] // Internal, synchronous handlers
 
   var registeringAutoHandlers = false
-  var loaded = false // true when all onLoad handlers have finished
+
+  var loadCallbackQueue = []
+  var loading = false
+  var loaded = false
 
   function throwIfAppIsLoaded(msg) {
     if (loaded) {
@@ -490,6 +493,13 @@ function medley(options) {
       return undefined
     }
 
+    if (loading) {
+      loadCallbackQueue.push(cb)
+      return undefined
+    }
+
+    loading = true
+
     return runOnLoadHandlers(onLoadHandlers, (err) => {
       if (err) {
         cb(err)
@@ -507,6 +517,8 @@ function medley(options) {
       preLoadedHandlers.forEach(handler => handler())
 
       cb(null)
+
+      loadCallbackQueue.forEach(callback => callback())
     })
   }
 

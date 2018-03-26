@@ -175,3 +175,27 @@ test('should pass any onLoad error to the callback', (t) => {
     t.equal(err, error)
   })
 })
+
+test('should only run onLoad handlers once', (t) => {
+  t.plan(4)
+
+  const app = medley()
+
+  app.onLoad((done) => {
+    t.pass('onLoad handler called')
+    setTimeout(done, 10)
+  })
+
+  app.onLoad((done) => {
+    t.pass('onLoad handler called')
+    setTimeout(done, 10)
+  })
+
+  app.inject('/', (err) => {
+    t.error(err)
+  })
+
+  app.inject('/', (err) => {
+    t.error(err)
+  })
+})

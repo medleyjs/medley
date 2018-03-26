@@ -177,3 +177,53 @@ t.test('calling .load() again does not run onLoad handlers a second time', (t) =
     })
   })
 })
+
+t.test('.load() should only run onLoad handlers once even if called multiple times', (t) => {
+  t.plan(4)
+
+  const app = medley()
+
+  app.onLoad((done) => {
+    t.pass('onLoad handler called')
+    setTimeout(done, 10)
+  })
+
+  app.onLoad((done) => {
+    t.pass('onLoad handler called')
+    setTimeout(done, 10)
+  })
+
+  app.load((err) => {
+    t.error(err)
+  })
+
+  app.load((err) => {
+    t.error(err)
+  })
+})
+
+t.test('.load() should only run onLoad handlers once even if called multiple times (promises)', (t) => {
+  t.plan(4)
+
+  const app = medley()
+
+  app.onLoad((done) => {
+    t.pass('onLoad handler called')
+    setTimeout(done, 10)
+  })
+
+  app.onLoad((done) => {
+    t.pass('onLoad handler called')
+    setTimeout(done, 10)
+  })
+
+  app.load().then(
+    () => t.pass('load complete'),
+    err => t.fail(err)
+  )
+
+  app.load().then(
+    () => t.pass('load complete'),
+    err => t.fail(err)
+  )
+})
