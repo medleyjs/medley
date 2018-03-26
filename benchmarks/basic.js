@@ -17,6 +17,6 @@ app.listen(3000, (err) => {
   if (err) {
     throw err
   }
-  // eslint-disable-next-line no-console
-  console.log(`Server listening on port ${app.server.address().port}`)
+
+  console.log('Server listening on port 3000') // eslint-disable-line no-console
 })
