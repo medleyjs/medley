@@ -43,8 +43,8 @@ test('addBodyParser should add a custom parser', (t) => {
         },
       }, (err, response, body) => {
         t.error(err)
-        t.strictEqual(response.statusCode, 200)
-        t.deepEqual(body.toString(), JSON.stringify({hello: 'world'}))
+        t.equal(response.statusCode, 200)
+        t.equal(body.toString(), '{"hello":"world"}')
       })
     })
 
@@ -60,8 +60,8 @@ test('addBodyParser should add a custom parser', (t) => {
         },
       }, (err, response, body) => {
         t.error(err)
-        t.strictEqual(response.statusCode, 200)
-        t.deepEqual(body.toString(), JSON.stringify({hello: 'world'}))
+        t.equal(response.statusCode, 200)
+        t.equal(body.toString(), '{"hello":"world"}')
       })
     })
   })
@@ -69,22 +69,28 @@ test('addBodyParser should add a custom parser', (t) => {
 
 test('bodyParser should handle multiple custom parsers', (t) => {
   t.plan(7)
+
   const app = medley()
 
   app.post('/', (req, response) => {
     response.send(req.body)
   })
 
-  app.post('/hello', (req, response) => {
-    response.send(req.body)
+  app.addBodyParser('application/json', (req, done) => {
+    jsonParser(req.stream, done)
   })
 
-  function customParser(req, done) {
-    jsonParser(req.stream, done)
-  }
-
-  app.addBodyParser('application/jsoff', customParser)
-  app.addBodyParser('application/json', customParser)
+  app.addBodyParser('application/jsoff', (req) => {
+    return new Promise((resolve, reject) => {
+      jsonParser(req.stream, (err, body) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve(body)
+        }
+      })
+    })
+  })
 
   app.listen(0, (err) => {
     t.error(err)
@@ -95,43 +101,49 @@ test('bodyParser should handle multiple custom parsers', (t) => {
       url: 'http://localhost:' + app.server.address().port,
       body: '{"hello":"world"}',
       headers: {
-        'Content-Type': 'application/jsoff',
-      },
-    }, (err, response, body) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 200)
-      t.deepEqual(body.toString(), JSON.stringify({hello: 'world'}))
-    })
-
-    sget({
-      method: 'POST',
-      url: 'http://localhost:' + app.server.address().port + '/hello',
-      body: '{"hello":"world"}',
-      headers: {
         'Content-Type': 'application/json',
       },
     }, (err, response, body) => {
       t.error(err)
-      t.strictEqual(response.statusCode, 200)
-      t.deepEqual(body.toString(), JSON.stringify({hello: 'world'}))
+      t.equal(response.statusCode, 200)
+      t.equal(body.toString(), '{"hello":"world"}')
+    })
+
+    sget({
+      method: 'POST',
+      url: 'http://localhost:' + app.server.address().port,
+      body: '{"hello":"world"}',
+      headers: {
+        'Content-Type': 'application/jsoff',
+      },
+    }, (err, response, body) => {
+      t.error(err)
+      t.equal(response.statusCode, 200)
+      t.equal(body.toString(), '{"hello":"world"}')
     })
   })
 })
 
 test('bodyParser should handle errors', (t) => {
-  t.plan(3)
+  t.plan(7)
+
   const app = medley()
 
-  app.post('/', (req, response) => {
-    response.send(req.body)
+  app.post('/', (req, res) => {
+    res.send(req.body)
   })
 
   app.addBodyParser('application/json', function(req, done) {
-    done(new Error('kaboom!'), {})
+    done(new Error('kaboom!'))
+  })
+
+  app.addBodyParser('application/jsoff', function() {
+    return Promise.reject(new Error('kaboom!'))
   })
 
   app.listen(0, (err) => {
     t.error(err)
+    app.server.unref()
 
     sget({
       method: 'POST',
@@ -140,10 +152,23 @@ test('bodyParser should handle errors', (t) => {
       headers: {
         'Content-Type': 'application/json',
       },
-    }, (err, response) => {
+    }, (err, response, body) => {
       t.error(err)
-      t.strictEqual(response.statusCode, 500)
-      app.close()
+      t.equal(response.statusCode, 500)
+      t.equal(JSON.parse(body.toString()).message, 'kaboom!')
+    })
+
+    sget({
+      method: 'POST',
+      url: 'http://localhost:' + app.server.address().port,
+      body: '{"hello":"world"}',
+      headers: {
+        'Content-Type': 'application/jsoff',
+      },
+    }, (err, response, body) => {
+      t.error(err)
+      t.equal(response.statusCode, 500)
+      t.equal(JSON.parse(body.toString()).message, 'kaboom!')
     })
   })
 })

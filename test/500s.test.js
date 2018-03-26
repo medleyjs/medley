@@ -182,7 +182,7 @@ test('cannot set errorHandler after binding', (t) => {
   })
 })
 
-test('custom error handler can response with a promise', (t) => {
+test('custom error handler can respond with a promise', (t) => {
   t.plan(4)
 
   const app = medley()
@@ -202,7 +202,28 @@ test('custom error handler can response with a promise', (t) => {
     t.error(err)
     t.strictEqual(res.statusCode, 500)
     t.strictEqual(res.headers['content-type'], 'text/plain; charset=utf-8')
-    t.deepEqual(res.payload.toString(), 'Error: kaboom')
+    t.strictEqual(res.payload, 'Error: kaboom')
+  })
+})
+
+test('default error handler is called if a custom error handler promise rejects', (t) => {
+  t.plan(4)
+
+  const app = medley()
+
+  app.get('/', (req, res) => {
+    res.error(new Error('kaboom'))
+  })
+
+  app.setErrorHandler(() => {
+    return Promise.reject(new Error('Custom error handler rejection'))
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 500)
+    t.equal(res.headers['content-type'], 'application/json')
+    t.equal(JSON.parse(res.payload).message, 'Custom error handler rejection')
   })
 })
 

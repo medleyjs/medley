@@ -95,6 +95,38 @@ test('hooks', (t) => {
   })
 })
 
+test('hooks can return a promise to continue', (t) => {
+  t.plan(5)
+
+  const app = medley()
+
+  app.addHook('onRequest', () => {
+    t.pass('onRequest hook called')
+    return Promise.resolve()
+  })
+
+  app.addHook('preHandler', () => {
+    t.pass('preHandler hook called')
+    return Promise.resolve()
+  })
+
+  app.addHook('onSend', () => {
+    t.pass('onSend hook called')
+    return Promise.resolve()
+  })
+
+  // onFinished hooks are synchronous so this doesn't apply to them
+
+  app.get('/', (req, res) => {
+    res.send()
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+  })
+})
+
 test('onRequest hook should support encapsulation / 1', (t) => {
   t.plan(6)
   const app = medley()
