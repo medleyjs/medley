@@ -20,7 +20,11 @@ test('app.all should add all the methods to the same URL', (t) => {
   function injectRequest(method) {
     app.inject({method, url: '/'}, (err, res) => {
       t.error(err)
-      t.strictDeepEqual(JSON.parse(res.payload), {method})
+      if (method === 'HEAD') {
+        t.equal(res.payload, '')
+      } else {
+        t.strictDeepEqual(JSON.parse(res.payload), {method})
+      }
     })
   }
 })

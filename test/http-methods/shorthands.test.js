@@ -25,7 +25,7 @@ t.test('app should a route shorthand for all supported HTTP methods', (t) => {
       url: '/',
     }, (err, res) => {
       t.error(err)
-      t.equal(res.payload, method)
+      t.equal(res.payload, method === 'HEAD' ? '' : method)
     })
   })
 })

@@ -17,6 +17,8 @@ const {kRegisteredPlugins, registerPlugin} = require('./lib/PluginUtils')
 const {
   routeHandler,
   methodHandlers: originalMethodHandlers,
+  createOptionsHandler,
+  create405Handler,
   defaultNotFoundHandler,
   notFoundFallbackHandler,
 } = require('./lib/RequestHandlers')
@@ -132,9 +134,11 @@ function medley(options) {
     app[method.toLowerCase()] = createShorthandRouteMethod(method)
   }
 
+  const routes = new Map()
   const onLoadHandlers = []
   const preLoadedHandlers = [] // Internal, synchronous handlers
 
+  var registeringAutoHandlers = false
   var loaded = false // true when all onLoad handlers have finished
 
   function throwIfAppIsLoaded(msg) {
@@ -319,14 +323,14 @@ function medley(options) {
     opts.prefix = prefix
     opts.config = opts.config || {}
 
-    for (const [methodHandler, method] of methodGroups) {
-      _route.call(this, method, methodHandler, path, opts, serializers)
+    for (const [methodHandler, methodNames] of methodGroups) {
+      _route.call(this, methodNames, methodHandler, path, opts, serializers)
     }
 
     return this // Chainable
   }
 
-  function _route(method, methodHandler, path, opts, serializers) {
+  function _route(methods, methodHandler, path, opts, serializers) {
     const routeContext = RouteContext.create(
       this,
       serializers,
@@ -335,7 +339,11 @@ function medley(options) {
       opts.config
     )
 
-    router.on(method, path, routeHandler, routeContext)
+    router.on(methods, path, routeHandler, routeContext)
+
+    if (!registeringAutoHandlers) {
+      recordRoute(path, methods, routeContext, this)
+    }
 
     // Users can add hooks, an error handler, and a not-found handler after
     // the route is registered, so add these to the routeContext just before
@@ -489,10 +497,72 @@ function medley(options) {
       if (app._canSetNotFoundHandler) {
         app.setNotFoundHandler(defaultNotFoundHandler)
       }
+
+      registeringAutoHandlers = true
+      registerAutoHandlers()
+
       loaded = true
       preLoadedHandlers.forEach(handler => handler())
+
       cb(null)
     })
+  }
+
+  function recordRoute(routePath, methods, routeContext, appInstance) {
+    if (!routes.has(routePath)) {
+      routes.set(routePath, {
+        appInstance,
+        methods,
+        GETContext: methods.indexOf('GET') >= 0 ? routeContext : null,
+      })
+      return
+    }
+
+    const routeData = routes.get(routePath)
+
+    routeData.methods = routeData.methods.concat(methods)
+
+    if (methods.indexOf('GET') >= 0) {
+      routeData.GETContext = routeContext
+    }
+  }
+
+  function registerAutoHandlers() {
+    for (const [routePath, routeData] of routes) {
+      const methods = routeData.methods.slice()
+
+      // Create a HEAD handler if a GET handler was set and a HEAD handler wasn't
+      if (routeData.GETContext !== null && methods.indexOf('HEAD') === -1) {
+        router.on('HEAD', routePath, routeHandler, routeData.GETContext)
+        methods.push('HEAD')
+      }
+
+      // Create an OPTIONS handler if one wasn't set
+      const optionsIndex = methods.indexOf('OPTIONS')
+      if (optionsIndex === -1) {
+        const optionsHandler = createOptionsHandler(methods.join(','))
+        routeData.appInstance.options(routePath, optionsHandler)
+      } else {
+        // Remove OPTIONS for the next part
+        methods.splice(optionsIndex, 1)
+      }
+
+      // Create a 405 handler for all unset, supported methods
+      const unsetMethods = supportedMethods.filter(
+        method => method !== 'OPTIONS' && methods.indexOf(method) === -1
+      )
+      if (unsetMethods.length > 0) {
+        routeData.appInstance.route({
+          method: unsetMethods,
+          path: routePath,
+          handler: create405Handler(methods.join(',')),
+        })
+      }
+
+      // Try to save memory since these are no longer needed
+      routeData.appInstance = null
+      routeData.GETContext = null
+    }
   }
 
   function listen(port, host, backlog, cb) {

@@ -8,22 +8,12 @@ const medley = require('..')
 const {methodHandlers} = require('../lib/RequestHandlers')
 
 test('default 404', (t) => {
-  t.plan(8)
+  t.plan(4)
 
   const app = medley()
 
   app.get('/', function(req, response) {
     response.send({hello: 'world'})
-  })
-
-  app.inject({
-    method: 'HEAD',
-    url: '/',
-  }, (err, res) => {
-    t.error(err)
-    t.equal(res.statusCode, 404)
-    t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
-    t.equal(res.payload, 'Not Found: HEAD /')
   })
 
   app.inject({
@@ -38,7 +28,7 @@ test('default 404', (t) => {
 })
 
 test('customized 404', (t) => {
-  t.plan(4)
+  t.plan(3)
 
   const app = medley()
 
@@ -58,18 +48,6 @@ test('customized 404', (t) => {
 
   app.listen(0, (err) => {
     t.error(err)
-
-    t.test('unhandled method', (t) => {
-      t.plan(3)
-      sget({
-        method: 'DELETE',
-        url: 'http://localhost:' + app.server.address().port,
-      }, (err, response, body) => {
-        t.error(err)
-        t.strictEqual(response.statusCode, 404)
-        t.strictEqual(body.toString(), 'this was not found')
-      })
-    })
 
     t.test('unsupported route', (t) => {
       t.plan(3)
@@ -126,7 +104,11 @@ test('has a 404 handler for all supported HTTP methods', (t) => {
       t.error(err)
       t.equal(res.statusCode, 404)
       t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
-      t.equal(res.payload, `Not Found: ${method} /not-found`)
+      if (method === 'HEAD') {
+        t.equal(res.payload, '')
+      } else {
+        t.equal(res.payload, `Not Found: ${method} /not-found`)
+      }
     })
   })
 })
@@ -149,7 +131,11 @@ test('has a custom 404 handler for all supported HTTP methods', (t) => {
       t.error(err)
       t.equal(res.statusCode, 404)
       t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
-      t.equal(res.payload, `Custom Not Found: ${method} /not-found`)
+      if (method === 'HEAD') {
+        t.equal(res.payload, '')
+      } else {
+        t.equal(res.payload, `Custom Not Found: ${method} /not-found`)
+      }
     })
   })
 })
@@ -257,7 +243,7 @@ test('setting a custom 404 handler multiple times is an error', (t) => {
 })
 
 test('encapsulated 404', (t) => {
-  t.plan(9)
+  t.plan(8)
 
   const app = medley()
 
@@ -291,18 +277,6 @@ test('encapsulated 404', (t) => {
 
   app.listen(0, (err) => {
     t.error(err)
-
-    t.test('root unhandled method', (t) => {
-      t.plan(3)
-      sget({
-        method: 'DELETE',
-        url: 'http://localhost:' + app.server.address().port,
-      }, (err, response, body) => {
-        t.error(err)
-        t.strictEqual(response.statusCode, 404)
-        t.strictEqual(body.toString(), 'this was not found')
-      })
-    })
 
     t.test('root unsupported route', (t) => {
       t.plan(3)
@@ -588,7 +562,7 @@ test('encapsulated custom 404 without prefix has the right encapsulation context
 })
 
 test('hooks check 404', (t) => {
-  t.plan(13)
+  t.plan(7)
 
   const app = medley()
 
@@ -611,18 +585,9 @@ test('hooks check 404', (t) => {
     t.ok(response, 'called onFinished')
   })
 
-  t.tearDown(app.close.bind(app))
-
   app.listen(0, (err) => {
     t.error(err)
-
-    sget({
-      method: 'DELETE',
-      url: 'http://localhost:' + app.server.address().port + '?foo=asd',
-    }, (err, response) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 404)
-    })
+    app.server.unref()
 
     sget({
       method: 'GET',
