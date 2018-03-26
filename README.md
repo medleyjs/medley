@@ -48,6 +48,27 @@ app.listen(3000)
 + [Plugins](https://github.com/medleyjs/medley/blob/master/docs/Plugins.md)
 + [Testing](https://github.com/medleyjs/medley/blob/master/docs/Testing.md)
 
+## Features
+
++ An API similar to [Express](https://github.com/expressjs/express)
++ Performance on par with [Fastify](https://github.com/fastify/fastify)
++ Full support for both `async`/`await` and callbacks
++ 100% test coverage
++ Facilities for safely extending the framework ([decorators](https://github.com/medleyjs/medley/blob/master/docs/Decorators.md))
++ HTTP/2 support
+
+### Forward-Compatibility with the `http2` Module
+
+HTTP/2 is the future of the web. It is faster than HTTP/1.x and comes with new, speed-boosting
+features such as [server push](https://www.smashingmagazine.com/2017/04/guide-http2-server-push/).
+Currently, Node.js has an `http2` module that is still in the experimental stage. The `http2`
+module has a very different API from the `http`/`https` modules, but it also provides a
+[compatibility API](https://nodejs.org/api/http2.html#http2_compatibility_api). Medley currently
+uses the compatibility API (to support both HTTP/1.x and HTTP/2), but Medley's API is designed such
+that when Medley upgrades to the full `http2` API, application code built on Medley should not need
+to change. Medley's goal is to shelter application code from this transition (as much as possible)
+so that you can start writing code now that won't require massive rewrites in the future.
+
 ## Acknowledgements
 
 This project was forked from [Fastify](https://github.com/fastify/fastify). The initial commit is a clone of [`fastify/fastify@dab20bd`](https://github.com/fastify/fastify/tree/dab20bd986a74682d385228e7ead08f43eee7485). All of the credit for that work goes to the [Fastify team](https://github.com/fastify/fastify#team).
