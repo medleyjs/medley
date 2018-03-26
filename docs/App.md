@@ -5,8 +5,8 @@ with [`app.use()`](#use)—are apps that inherit from the `app` that created the
 and a *sub-app* may be referred to as an *app instance*.
 
 ```js
-const medley = require('@medley/medley')
-const app = medley()
+const medley = require('@medley/medley');
+const app = medley();
 ```
 
 **Properties:**
@@ -44,12 +44,12 @@ The path that will be prefixed to routes in a sub-app. Example:
 
 ```js
 app.use('/v1', (subApp) => {
-  console.log(subApp.basePath) // '/v1'
+  console.log(subApp.basePath); // '/v1'
 
   subApp.use('/user', (subSubApp) => {
-    console.log(subSubApp.basePath) // '/v1/user'
-  })
-})
+    console.log(subSubApp.basePath); // '/v1/user'
+  });
+});
 ```
 
 <a id="server"></a>
@@ -125,11 +125,11 @@ remote server that should accept connections from any address).
 ```js
 app.listen(3000, (err) => {
   if (err) {
-    console.error(err)
-    process.exit(1)
+    console.error(err);
+    process.exit(1);
   }
-  console.log('Server listening on port ' + app.server.address().port)
-})
+  console.log('Server listening on port ' + app.server.address().port);
+});
 ```
 
 If no callback is provided, a Promise is returned:
@@ -138,9 +138,9 @@ If no callback is provided, a Promise is returned:
 app.listen(3000, '0.0.0.0')
   .then(() => console.log('Listening'))
   .catch((err) => {
-    console.log('Error starting server:', err)
-    process.exit(1)
-  })
+    console.log('Error starting server:', err);
+    process.exit(1);
+  });
 ```
 
 <a id="load"></a>
@@ -153,8 +153,8 @@ Starts the process of running all [`onLoad`](#on-load) handlers.
 
 ```js
 app.load((err) => {
-  if (err) throw err
-})
+  if (err) throw err;
+});
 ```
 
 If the `callback` argument is omitted, a Promise will be returned:
@@ -162,10 +162,10 @@ If the `callback` argument is omitted, a Promise will be returned:
 ```js
 app.load()
   .then(() => {
-    console.log('Successfully loaded!')
+    console.log('Successfully loaded!');
   }, (err) => {
-    console.log(err)
-  })
+    console.log(err);
+  });
 ```
 
 <a id="on-close"></a>
@@ -179,8 +179,8 @@ by [`app.close()`](#close)). Useful for things like releasing database connectio
 
 ```js
 app.onClose(function onCloseHandler(done) {
-  app.db.end(err => done(err))
-})
+  app.db.end(err => done(err));
+});
 ```
 
 If the `handler` is an `async` function (or returns a promise), the `done`
@@ -189,10 +189,10 @@ finished when the promise resolves (or rejects).
 
 ```js
 app.onClose(async function() {
-  console.log('closing database connections')
-  await app.db.end()
-  console.log('database connections closed')
-})
+  console.log('closing database connections');
+  await app.db.end();
+  console.log('database connections closed');
+});
 ```
 
 **Note:** Using both async functions/promises and the `done` callback will cause undefined behavior.
@@ -212,8 +212,8 @@ Useful for asynchronous setup operations.
 
 ```js
 app.onLoad(function onLoadHandler(done) {
-  app.db.connect(config, err => done(err))
-})
+  app.db.connect(config, err => done(err));
+});
 ```
 
 If the `handler` is an `async` function (or returns a promise), the `done`
@@ -222,10 +222,10 @@ finished when the promise resolves (or rejects).
 
 ```js
 app.onLoad(async function() {
-  console.log('setting up database connection')
-  await app.db.connect(config)
-  console.log('connected to database')
-})
+  console.log('setting up database connection');
+  await app.db.connect(config);
+  console.log('connected to database');
+});
 ```
 
 **Note:** Using both async functions/promises and the `done` callback will cause undefined behavior.
@@ -236,11 +236,11 @@ app.onLoad(async function() {
 Prints the representation of the internal radix tree used by the router. Useful for debugging.
 
 ```js
-app.get('/test', () => {})
-app.get('/test/hello', () => {})
-app.get('/hello/world', () => {})
+app.get('/test', () => {});
+app.get('/test/hello', () => {});
+app.get('/hello/world', () => {});
 
-console.log(app.printRoutes())
+console.log(app.printRoutes());
 // └── /
 //   ├── test (GET)
 //   │   └── /hello (GET)
@@ -273,7 +273,7 @@ is supported just like with [regular route handlers](Routes.md#async-await).
 ```js
 app.setErrorHandler((err, req, res) => {
   // Send error response
-})
+});
 ```
 
 Before the error handler is invoked, the response status code associated with the error
@@ -293,22 +293,22 @@ requests will go through the full [request lifecycle](Lifecycle.md).
 ```js
 app.setNotFoundHandler((req, res) => {
   // Send 404 Not Found response
-})
+});
 ```
 
 Additional not-found handlers can be set for sub-apps that are registered with
-a [`prefix`](SubApps.md#prefix). 
+a [`prefix`](SubApps.md#prefix).
 
 ```js
 app.setNotFoundHandler((req, res) => {
   // Default not-found handler
-})
+});
 
 app.use('/v1', (subApp) => {
   subApp.setNotFoundHandler((req, res) => {
     // Handle unmatched requests to URLs that begin with '/v1'
-  })
-})
+  });
+});
 ```
 
 <a id="use"></a>
@@ -322,34 +322,34 @@ a `prefix` string can be specified which will be the prefix for all routes
 defined on the `subApp`. Prefixes are compounded for nested sub-apps.
 
 ```js
-const medley = require('@medley/medley')
-const app = medley()
+const medley = require('@medley/medley');
+const app = medley();
 
 app.use((subApp) => {
   subApp.addHook('onRequest', (req, res, next) => {
     // This hook only runs for routes defined on this sub-app
-    next()  
-  })
-  
-  subApp.get('/status', (req, res) => res.send('OK'))
-})
+    next();
+  });
+
+  subApp.get('/status', (req, res) => res.send('OK'));
+});
 
 app.use('/api', (apiSubApp) => {
   apiSubApp.addHook('onRequest', (req, res, next) => {
     // This hook only runs for routes defined within the apiSubApp
-    next()  
-  })
-  
+    next();
+  });
+
   apiSubApp.get('/user', (req, res) => { // Route URL is: /api/user
-    // Get user  
-  })
-  
+    // Get user
+  });
+
   apiSubApp.use('/v1', (v1SubApp) => {
     v1SubApp.post('/user', (req, res) => { // Route URL is: /api/v1/user
-      // Create a new user  
-    })
-  })
-})
+      // Create a new user
+    });
+  });
+});
 ```
 
 See the [Route Prefixing](Routes.md#route-prefixing) section for details on
@@ -360,8 +360,8 @@ Note that the `subAppFn` is executed immediately:
 ```js
 app.use((subApp) => {
   // This code runs first
-})
+});
 
 // This code runs second
-app.decorate('a', {})
+app.decorate('a', {});
 ```

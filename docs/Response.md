@@ -61,7 +61,7 @@ app.route({
   handler: function(req, res) {
     res.route.config // { confValue: 22 }
   }
-})
+});
 ```
 
 ### `res.sent`
@@ -134,12 +134,12 @@ Sends an error response.
 app.get('/', function(req, res) {
   getData((err, data) => {
     if (err) {
-      res.error(err)
+      res.error(err);
     } else {
-      res.send(data)
+      res.send(data);
     }
-  })
-})
+  });
+});
 ```
 
 With a specific status code:
@@ -210,12 +210,12 @@ with [`app.setNotFoundHandler()`](App.md#set-not-found-handler)).
 
 ```js
 app.setNotFoundHandler((req, res) => {
-  res.status(404).send(req.url + ' not found')
-})
+  res.status(404).send(req.url + ' not found');
+});
 
 app.get('/never-found', (req, res) => {
-  res.notFound()
-})
+  res.notFound();
+});
 ```
 
 <a id="redirect"></a>
@@ -228,10 +228,10 @@ Redirects a request to the specified URL.
 
 ```js
 // "302 Found" redirect
-res.redirect('/home')
+res.redirect('/home');
 
 // With statusCode
-res.redirect(301, '/moved-permanently')
+res.redirect(301, '/moved-permanently');
 ```
 
 <a id="remove"></a>
@@ -289,9 +289,9 @@ If not already set, the `Content-Type` header will be set to `'application/octet
 const fs = require('fs')
 
 app.get('/stream', (req, res) => {
-  const stream = fs.createReadStream('some-file')
-  res.send(stream)
-})
+  const stream = fs.createReadStream('some-file');
+  res.send(stream);
+});
 ```
 
 #### JSON
@@ -310,8 +310,8 @@ app.get('/json', {
     }
   }
 }, (req, res) => {
-  res.send({ hello: 'world' })
-})
+  res.send({ hello: 'world' });
+});
 ```
 
 #### Async-Await / Promises
@@ -321,14 +321,14 @@ will be called automatically with the value.
 
 ```js
 app.get('/', async (req, res) => {
-  const user = await loadUser()
-  return user
-})
+  const user = await loadUser();
+  return user;
+});
 // Is the same as:
 app.get('/', async (req, res) => {
-  const user = await loadUser()
-  res.send(user)
-})
+  const user = await loadUser();
+  res.send(user);
+});
 ```
 
 This means that using `await` isn't always necessary since promises that resolve
@@ -337,8 +337,8 @@ above could be rewritten as:
 
 ```js
 app.get('/', (req, res) => { // No `async` (since `await` isn't used)
-  return loadUser()
-})
+  return loadUser();
+});
 ```
 
 If an error is thrown inside an `async` function, `res.error()` is called
@@ -346,12 +346,12 @@ automatically with the error.
 
 ```js
 app.get('/', async (req, res) => {
-  throw new Error('async error')
-})
+  throw new Error('async error');
+});
 // Is the same as:
 app.get('/', (req, res) => {
-  res.error(new Error('async error'))
-})
+  res.error(new Error('async error'));
+});
 ```
 
 See [Routes#async-await](Routes.md#async-await) for more examples.

@@ -9,22 +9,22 @@ unencrypted HTTP/2, but note that browsers only support encrypted HTTP/2.
 HTTP/2 is supported in browsers **only over a secure connection**:
 
 ```js
-const fs = require('fs')
-const path = require('path')
-const medley = require('@medley/medley')
+const fs = require('fs');
+const path = require('path');
+const medley = require('@medley/medley');
 
 const app = medley({
   http2: {
     key: fs.readFileSync(path.join(__dirname, 'https', 'app.key')),
     cert: fs.readFileSync(path.join(__dirname, 'https', 'app.cert'))
   }
-})
+});
 
 app.get('/', (req, res) => {
-  res.send({ hello: 'world' })
-})
+  res.send({ hello: 'world' });
+});
 
-app.listen(3000)
+app.listen(3000);
 ```
 
 ALPN negotiation allows to support both HTTPS and HTTP/2 over the same socket.
@@ -40,7 +40,7 @@ const app = medley({
     key: fs.readFileSync(path.join(__dirname, 'https', 'app.key')),
     cert: fs.readFileSync(path.join(__dirname, 'https', 'app.cert'))
   }
-})
+});
 ```
 
 ### Unencrypted
@@ -49,14 +49,14 @@ It is also possible to configure a server to use unencrypted HTTP/2,
 however this is not supported by browsers.
 
 ```js
-const medley = require('@medley/medley')
+const medley = require('@medley/medley');
 const app = medley({
   http2: true
-})
+});
 
 app.get('/', (req, res) => {
-  res.send({ hello: 'world' })
-})
+  res.send({ hello: 'world' });
+});
 
-app.listen(3000)
+app.listen(3000);
 ```

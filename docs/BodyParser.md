@@ -23,11 +23,11 @@ app.addBodyParser(contentType, parser)
   + `done(error, body)` - Callback to call when done parsing the body or if an error occurred. The parsed body must be passed as the second parameter.
 
 ```js
-const bodyParser = require('@medley/body-parser')
-const medley = require('@medley/medley')
-const app = medley()
+const bodyParser = require('@medley/body-parser');
+const medley = require('@medley/medley');
+const app = medley();
 
-app.addBodyParser('application/json', bodyParser.json())
+app.addBodyParser('application/json', bodyParser.json());
 ```
 
 The `contentType` parameter may be a string or an array of strings that match the formats allowed
@@ -40,12 +40,12 @@ Example of the `contentType` parameter as a function:
 ```js
 function matchType(contentType) {
   if (contentType === 'application/octet-stream') {
-    return false
+    return false;
   }
-  return true
+  return true;
 }
 
-app.addBodyParser(matchType, (req, done) => { /* ... */ })
+app.addBodyParser(matchType, (req, done) => { /* ... */ });
 ```
 
 **Note:** If the `Content-Type` header was missing, then the `contentType` matcher
@@ -55,30 +55,30 @@ In the `parser` function, the request body can be read from the `req.stream` pro
 Here's an example that uses [`raw-body`](https://github.com/stream-utils/raw-body):
 
 ```js
-const rawBody = require('raw-body')
+const rawBody = require('raw-body');
 
 app.addBodyParser('text/plain', (req, done) => {
   rawBody(req.stream, {
     length: req.headers['content-length'],
     limit: '1mb',
     encoding: 'utf8',
-  }, done)
-})
+  }, done);
+});
 ```
 
 If using an `async` function, the parsed body must be returned instead of calling the `done` callback:
 
 ```js
-const rawBody = require('raw-body')
+const rawBody = require('raw-body');
 
 app.addBodyParser('text/plain', async (req) => {
   const body = await rawBody(req.stream, {
     length: req.headers['content-length'],
     limit: '1mb',
     encoding: 'utf8',
-  })
-  return body
-})
+  });
+  return body;
+});
 ```
 
 Note that since there is only a single `await` in the example above,
@@ -90,8 +90,8 @@ app.addBodyParser('text/plain', (req) => {
     length: req.headers['content-length'],
     limit: '1mb',
     encoding: 'utf8',
-  })
-})
+  });
+});
 ```
 
 #### Match Order
@@ -101,10 +101,10 @@ Body parsers are matched in the order in which they were added. In the following
 will always be matched by the first one.
 
 ```js
-const bodyParser = require('@medley/body-parser')
+const bodyParser = require('@medley/body-parser');
 
-app.addBodyParser('application/*', bodyParser.buffer())
-app.addBodyParser('application/json', bodyParser.json()) // Will never be matched
+app.addBodyParser('application/*', bodyParser.buffer());
+app.addBodyParser('application/json', bodyParser.json()); // Will never be matched
 ```
 
 For this reason, it is better to declare body parsers with specific MIME types

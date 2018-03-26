@@ -101,10 +101,10 @@ opportunity to do something with the error (such as log it).
 ```js
 const app = medley({
   onStreamError: function(err) {
-    console.error(err)
+    console.error(err);
     // NOTE: Always use a real logger instead of console.error()
   }
-})
+});
 ```
 
 ### `strictRouting`
@@ -115,28 +115,28 @@ different. Otherwise, the router treats "/foo" and "/foo/" as the same.
 + Default: `false`
 
 ```js
-const medley = require('@medley/medley')
-const app = medley({ strictRouting: false })
+const medley = require('@medley/medley');
+const app = medley({ strictRouting: false });
 
 // Registers both "/foo" and "/foo/"
 app.get('/foo/', (req, res) => {
-  res.send('foo')
-})
+  res.send('foo');
+});
 
 // Registers both "/bar" and "/bar/"
 app.get('/bar', (req, res) => {
-  res.send('bar')
-})
+  res.send('bar');
+});
 
-const strictApp = medley({ strictRouting: true })
+const strictApp = medley({ strictRouting: true });
 
 strictApp.get('/foo', (req, res) => {
-  res.send('foo')
-})
+  res.send('foo');
+});
 
 strictApp.get('/foo/', (req, res) => {
-  res.send('different foo')
-})
+  res.send('different foo');
+});
 ```
 
 ### `trustProxy`

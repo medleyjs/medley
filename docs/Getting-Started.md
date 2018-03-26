@@ -167,7 +167,7 @@ app.listen(3000, (err) => {
     console.log(err);
     process.exit(1);
   }
-  
+
   console.log('Server listening at http://localhost:3000');
 });
 ```

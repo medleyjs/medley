@@ -43,7 +43,7 @@ The first step Medley takes after receiving a request is to look up a route that
 
 If no route matches the request, a not-found handler that matches the URL is selected (or the default not-found handler if none set with [`app.setNotFoundHandler()`](App.md#set-not-found-handler) were a match).
 
-If the request method is not one of the [supported HTTP methods](Routes.md#options), a `501 Not Implemented` error response is sent immediately and the entire lifecycle is skipped. 
+If the request method is not one of the [supported HTTP methods](Routes.md#options), a `501 Not Implemented` error response is sent immediately and the entire lifecycle is skipped.
 
 ## `onRequest` Hook
 
@@ -51,8 +51,8 @@ Next, the `onRequest` hooks are run.
 
 ```js
 app.addHook('onRequest', (req, res, next) => {
-  next()
-})
+  next();
+});
 ```
 
 These hooks may send an early response with `res.send()`. If a hook does this, the rest of the lifecycle will be skipped except for the `onFinished` hooks.
@@ -75,8 +75,8 @@ Next, the `preHandler` hooks are run.
 
 ```js
 app.addHook('preHandler', (req, res, next) => {
-  next()
-})
+  next();
+});
 ```
 
 These hooks may send an early response with `res.send()`. If a hooks does this, the rest of the hooks will be skipped and the lifecycle will go straight to the [*Serialize Payload*](#serialize-payload) step.
@@ -90,9 +90,11 @@ The *beforeHandlers* are treated exactly the same as the `preHandler` hooks. The
 ```js
 app.get('/', {
   beforeHandler: (req, res, next) => {
-    next()
+    next();
   }
-}, (request, response) => { ... })
+}, function handler(req, res) => {
+  res.send();
+});
 ```
 
 ## Route Handler
@@ -101,8 +103,8 @@ This is the main handler for the route. The route handler sends the response pay
 
 ```js
 app.get('/', (req, res) => {
-  res.send('payload')
-})
+  res.send('payload');
+});
 ```
 
 *Not-found handlers* (set with [`app.setNotFoundHandler()`](App.md#set-not-found-handler)) and *error handlers* (set with [`app.setErrorHandler()`](App.md#set-error-handler)) are also included in the part of the lifecycle.
@@ -119,8 +121,8 @@ Next, the `onSend` hooks are run.
 
 ```js
 app.addHook('onSend', (req, res, payload, next) => {
-  next()
-})
+  next();
+});
 ```
 
 If an error occurs during a hook, the rest of the hooks are skipped and the error handler is invoked. The `onSend` hooks will **not** be run again when the error response is sent.
@@ -137,5 +139,5 @@ the underlying connection was terminated before the response could finish sendin
 ```js
 app.addHook('onFinished', (req, res) => {
   // Do something like log the response time
-})
+});
 ```

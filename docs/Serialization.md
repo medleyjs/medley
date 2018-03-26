@@ -19,11 +19,11 @@ const responseSchema = {
       hello: { type: 'string' }
     }
   }
-}
+};
 
 app.get('/', { responseSchema }, (req, res) => {
-  res.send({ hello: 'world' })
-})
+  res.send({ hello: 'world' });
+});
 ```
 
 The structure of the schema is a mapping of a *status code* to a
@@ -46,16 +46,16 @@ const responseSchema = {
       error: { type: ['string', 'null'] }
     }
   }
-}
+};
 
 app.post('/info', { responseSchema }, (req, res) => {
   if (req.body.createInfo) {
     // Create info ...
-    res.status(201).send({ success: true, error: null })
+    res.status(201).send({ success: true, error: null });
   } else {
-    res.send({ value: 'medley', fast: true })
+    res.send({ value: 'medley', fast: true });
   }
-})
+});
 ```
 
 For more information on how to define a response schema, see the
@@ -73,11 +73,11 @@ const responseSchema = {
   200: {
     hello: { type: 'string' }
   }
-}
+};
 
 app.get('/', { responseSchema }, (req, res) => {
-  res.send({ hello: 'world' })
-})
+  res.send({ hello: 'world' });
+});
 ```
 
 ## Incorrect Types in the Payload
@@ -94,9 +94,9 @@ const responseSchema = {
       value: { type: 'string' }
     }
   }
-}
+};
 
 app.get('/mismatch', { responseSchema }, (req, res) => {
-  res.send({ value: [1, 2, 3] }) // Gets serialized to: '{"value":[1,2,3]}'
-})
+  res.send({ value: [1, 2, 3] }); // Gets serialized to: '{"value":[1,2,3]}'
+});
 ```

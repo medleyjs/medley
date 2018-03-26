@@ -32,21 +32,21 @@ app.route({
     }
   },
   handler: function(req, res) {
-    res.send({ hello: 'world' })
+    res.send({ hello: 'world' });
   }
-})
+});
 
 app.route({
   method: ['POST', 'PUT'],
   path: '/user',
   beforeHandler: function(req, res, next) {
     // Validate the request
-    next()  
+    next();
   },
   handler: function(req, res) {
     // Create a user
-  }  
-})
+  }
+});
 ```
 
 ## Shorthand Methods
@@ -130,14 +130,14 @@ name. For a **wildcard** path, use an *asterisk* (`*`).
 
 ```js
 // Static
-app.get('/api/user', (req, res) => {}))
+app.get('/api/user', (req, res) => {}));
 
 // Parametric
-app.get('/api/:userId', (req, res) => {}))
-app.get('/api/:userId/:secretToken', (req, res) => {}))
+app.get('/api/:userId', (req, res) => {}));
+app.get('/api/:userId/:secretToken', (req, res) => {}));
 
 // Wildcard
-app.get('/api/*', (req, res) => {}))
+app.get('/api/*', (req, res) => {}));
 ```
 
 Regular expression routes are also supported, but be aware that they are very
@@ -145,7 +145,7 @@ expensive in terms of performance.
 
 ```js
 // Parametric with regexp
-app.get('/api/:file(^\\d+).png', (req, res) => {}))
+app.get('/api/:file(^\\d+).png', (req, res) => {}));
 ```
 
 To define a path with more than one parameter within the same path part,
@@ -156,8 +156,7 @@ use a hyphen (`-`) to separate the parameters:
 app.get('/api/near/:lat-:lng/radius/:r', (req, res) => {
   // Matches: '/api/near/10.856-32.284/radius/50'
   req.params // { lat: '10.856', lng: '32.284', r: '50' }
-}))
-
+}));
 ```
 
 Multiple parameters also work with RegExp:
@@ -166,7 +165,7 @@ Multiple parameters also work with RegExp:
 app.get('/api/at/:hour(^\\d{2})h:minute(^\\d{2})m', (req, res) => {
   // Matches: '/api/at/02h:50m'
   req.params // { hour: '02', minute: '50' }
-}))
+}));
 ```
 
 In this case, the parameter separator can be any character that is not
@@ -186,15 +185,15 @@ it will be sent automatically.
 
 ```js
 app.get('/', async (req, res) => {
-  const data = await getDataAsync()
-  return data
-})
+  const data = await getDataAsync();
+  return data;
+});
 
 // Which is the same as:
 app.get('/', async (req, res) => {
-  const data = await getDataAsync()
-  res.send(data)
-})
+  const data = await getDataAsync();
+  res.send(data);
+});
 ```
 
 This means that using `async-await` might not be needed at all since awaitable
@@ -202,8 +201,8 @@ functions return a promise, which can be returned from a normal function:
 
 ```js
 app.get('/', (req, res) => {
-  return getDataAsync()
-})
+  return getDataAsync();
+});
 ```
 
 The default status code for responses is `200`. If needed, use `res.status()`
@@ -211,9 +210,9 @@ or `res.statusCode` to set the status code before returning:
 
 ```js
 app.post('/user', (req, res) => {
-  res.statusCode = 201 // "201 Created"
-  return createUserAsync()
-})
+  res.statusCode = 201; // "201 Created"
+  return createUserAsync();
+});
 ```
 
 Note that `res.send()` will not be called automatically if the value returned from an `async`
@@ -238,31 +237,31 @@ sub-apps with a different prefix for each group of routes:
 
 **app.js**
 ```js
-const medley = require('@medley/medley')
-const app = medley()
+const medley = require('@medley/medley');
+const app = medley();
 
-app.use('/v1', require('./routes/v1/user'))
-app.use('/v2', require('./routes/v2/user'))
+app.use('/v1', require('./routes/v1/user'));
+app.use('/v2', require('./routes/v2/user'));
 
-app.listen(3000)
+app.listen(3000);
 ```
 
 **./routes/v1/user.js**
 ```js
 module.exports = function v1Routes(subApp) {
   subApp.get('/user', (req, res) => {
-    // v1 implementation  
-  })
-}
+    // v1 implementation
+  });
+};
 ```
 
 **./routes/v2/user.js**
 ```js
 module.exports = function v2Routes(subApp) {
   subApp.get('/user', (req, res) => {
-    // v2 implementation  
-  })
-}
+    // v2 implementation
+  });
+};
 ```
 
 Now the following routes will be defined, each with a different implementation:

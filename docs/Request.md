@@ -47,7 +47,7 @@ The parsed body of the request. Is `undefined` if there was no request body or i
 ```js
 app.post('/user', (req, res) => {
   req.body // { name: 'medley', email: 'medley@example.com' }
-})
+});
 ```
 
 See the [`Body Parser`](BodyParser.md) documentation for information on how to implement custom body parsers.
@@ -132,7 +132,7 @@ An object of the parameters matched in the URL.
 app.get('/path/:user/:foo', (req, res) => {
   // URL: /path/100/bar
   req.params // { user: '100', foo: 'bar' }
-})
+});
 ```
 
 ### `req.path`
@@ -178,9 +178,9 @@ add an `onRequest` hook that parses `req.querystring` like so:
 const qs = require('qs')
 
 app.addHook('onRequest', (req, res, next) => {
-  req.query = qs.parse(req.querystring)
-  next()  
-})
+  req.query = qs.parse(req.querystring);
+  next();
+});
 ```
 
 ### `req.querystring`
@@ -219,19 +219,19 @@ server is using HTTP/2, this will instead be an instance of
 Example of writing the request body directly to a file:
 
 ```js
-const fs = require('fs')
-const pump = require('pump') // https://www.npmjs.com/package/pump
+const fs = require('fs');
+const pump = require('pump'); // https://www.npmjs.com/package/pump
 
 // Using GET because POST request bodies should already be handled by a body parser
 app.get('/', (req, res) => {
   pump(req.stream, fs.createWriteStream('./reqBody.txt'), (err) => {
     if (err) {
-      res.error(err)
+      res.error(err);
     } else {
-      res.send('Done!')
+      res.send('Done!');
     }
-  })
-})
+  });
+});
 ```
 
 This object generally should only ever be treated like a stream. Accessing

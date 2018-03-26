@@ -22,7 +22,7 @@ Adds a new property to the `app`.
 ```js
 app.decorate('doSomething', function doSomething() {
   // Does something
-})
+});
 ```
 
 The `value` can be anything:
@@ -31,14 +31,14 @@ The `value` can be anything:
 app.decorate('config', {
   host: 'ww.example.com',
   port: 3000
-})
+});
 ```
 
 After adding a decorator, the property can be accessed on the `app` object:
 
 ```js
-app.doSomething()
-app.config.port // 3000
+app.doSomething();
+app.config.port; // 3000
 ```
 
 #### Encapsulation
@@ -49,23 +49,23 @@ will be available everywhere and decorators defined on a sub-app will only
 be available to that sub-app and its own sub-apps.
 
 ```js
-app.decorate('top', true)
+app.decorate('top', true);
 
 app.use((subApp1) => {
-  subApp1.decorate('one', 1)
-  
-  console.log(subApp1.top) // true
-  console.log(subApp1.one) // 1
-  console.log(subApp1.two) // undefined
-})
+  subApp1.decorate('one', 1);
+
+  console.log(subApp1.top); // true
+  console.log(subApp1.one); // 1
+  console.log(subApp1.two); // undefined
+});
 
 app.use((subApp2) => {
-  subApp2.decorate('two', 2)
-  
-  console.log(subApp2.top) // true
-  console.log(subApp2.one) // undefined
-  console.log(subApp2.two) // 2
-})
+  subApp2.decorate('two', 2);
+
+  console.log(subApp2.top); // true
+  console.log(subApp2.one); // undefined
+  console.log(subApp2.two); // 2
+});
 ```
 
 <a id="decorate-request"></a>
@@ -76,13 +76,13 @@ will be available on the `req` object in handlers:
 
 ```js
 app.decorateRequest('logHello', function logHello() {
-  console.log('Hello', this.url)
+  console.log('Hello', this.url);
   // `this` refers to the Request instance
-})
+});
 
 app.get('/path', (req, res) => {
-  req.logHello() // Logs: 'Hello /path'
-})
+  req.logHello(); // Logs: 'Hello /path'
+});
 ```
 
 Request decorators are not encapsulated and will be available in every route.
@@ -95,13 +95,13 @@ will be available on the `res` object in handlers:
 
 ```js
 app.decorateResponse('logGoodbye', function logGoodbye() {
-  console.log('Goodbye', this.request.url)
+  console.log('Goodbye', this.request.url);
   // `this` refers to the Response instance
-})
+});
 
 app.get('/path', (req, res) => {
-  res.logGoodbye() // Logs: 'Goodbye /path'
-})
+  res.logGoodbye(); // Logs: 'Goodbye /path'
+});
 ```
 
 Response decorators are not encapsulated and will be available in every route.

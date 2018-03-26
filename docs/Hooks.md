@@ -22,29 +22,29 @@ in the request lifecycle.
 Hooks follow Medley's encapsulation model, and can thus be scoped to specific routes.
 See the [Encapsulation](#encapsulation) section for more information.
 
-<a id="onRequest-preHandler-hooks"></a> 
+<a id="onRequest-preHandler-hooks"></a>
 ## The `onRequest` and `preHandler` Hooks
 
 ```js
 // Callback version
 app.addHook('onRequest', (req, res, next) => {
   // Handle onRequest
-  next()
-})
+  next();
+});
 
 app.addHook('preHandler', (req, res, next) => {
   // Handle preHandler
-  next()
-})
+  next();
+});
 
 // Async version
 app.addHook('onRequest', async (req, res) => {
   // Handle onRequest
-})
+});
 
 app.addHook('preHandler', async (req, res) => {
   // Handle preHandler
-})
+});
 ```
 
 + `req` - Medley [Request](Request.md) object.
@@ -72,12 +72,12 @@ app.route({
   path: '/',
   beforeHandler(req, res, next) {
     // Do something, like authorization
-    next()
+    next();
   },
   handler(req, res) {
-    res.send({ hello: 'user' })
+    res.send({ hello: 'user' });
   }
-})
+});
 ```
 
 ### Sending a Response
@@ -88,8 +88,8 @@ the route handler.
 
 ```js
 app.addHook('preHandler', (req, res, next) => {
-  res.send({ early: 'response' })
-})
+  res.send({ early: 'response' });
+});
 ```
 
 If sending a response from inside a hook, **`next()` must not be called**.
@@ -105,46 +105,46 @@ If an error occurs during the execution of a hook, it should be passed to
 error will be handled by [`Response#error()`](Response.md#error).
 
 ```js
-const fs = require('fs')
+const fs = require('fs');
 
 app.addHook('onRequest', (req, res, next) => {
   fs.readFile('./someFile.txt', (err, buffer) => {
     if (err) {
-      next(err)
-      return
+      next(err);
+      return;
     }
     // Do something with the buffer
-  })
-})
+  });
+});
 ```
 
 Async-await/promise errors are automatically caught and handled by Medley.
 
 ```js
-const fs = require('fs')
-const util = require('util')
-const readFile = util.promisify(fs.readFile)
+const fs = require('fs');
+const util = require('util');
+const readFile = util.promisify(fs.readFile);
 
 app.addHook('onRequest', async (req, res) => {
-  const buffer = await fs.readFile('./someFile.txt')
+  const buffer = await fs.readFile('./someFile.txt');
   // Do something with the buffer
-})
+});
 ```
 
-<a id="onSend-hook"></a> 
+<a id="onSend-hook"></a>
 ## The `onSend` Hook
 
 ```js
 // Callback version
 app.addHook('onSend', (req, res, payload, next) => {
   // Handle onSend
-  next()
-})
+  next();
+});
 
 // Async version
 app.addHook('onSend', async (req, res, payload) => {
   // Handle onSend
-})
+});
 ```
 
 + `req` - Medley [Request](Request.md) object.
@@ -164,22 +164,22 @@ to a `string`, a `Buffer`, a `stream`, or `null`.
 
 ```js
 app.get('/', (req, res) => {
-  res.send({ hello: 'world' })  
-})
+  res.send({ hello: 'world' });
+});
 
 app.addHook('onSend', (req, res, payload, next) => {
-  console.log(payload) // '{"hello":"world"}'
-  const newPayload = Buffer.from(payload)
-  next(null, newPayload)
-})
+  console.log(payload); // '{"hello":"world"}'
+  const newPayload = Buffer.from(payload);
+  next(null, newPayload);
+});
 ```
 
 To modify the payload using an `async` hook, return the new payload:
 
 ```js
 app.addHook('onSend', async (req, res, payload) => {
-  return Buffer.from(payload)
-})
+  return Buffer.from(payload);
+});
 ```
 
 Changing the payload is mainly intended to be used for encoding the payload
@@ -193,13 +193,13 @@ Changing the payload is mainly intended to be used for encoding the payload
 executed again when the error response is sent. Because of this, it is best to
 handle errors in the hook when possible rather than forwarding the error.
 
-<a id="onFinished-hook"></a> 
+<a id="onFinished-hook"></a>
 ## The `onFinished` Hook
 
 ```js
 app.addHook('onFinished', (req, res) => {
   // Handle onFinished
-})
+});
 ```
 
 + `req` - Medley [Request](Request.md) object
@@ -212,11 +212,11 @@ Any errors that occur during this hook must be handled manually.
 ```js
 app.addHook('onFinished', async (req, res) => {
   try {
-    await asyncFunction()
+    await asyncFunction();
   } catch (error) {
     // Handle error
   }
-})
+});
 ```
 
 `onFinished` hooks are run once the response has finished sending (or if the underlying
@@ -230,35 +230,35 @@ that they will only run on routes in the same encapsulation scope.
 
 ```js
 app.addHook('onRequest', (req, res, next) => {
-  req.top = true // Runs for all routes
-  next()
-})
+  req.top = true; // Runs for all routes
+  next();
+});
 
 app.use((subApp1) => {
   subApp1.addHook('onRequest', (req, res, next) => {
-    req.one = 1 // Only runs for routes in `subApp1`
-    next()
-  })
+    req.one = 1; // Only runs for routes in `subApp1`
+    next();
+  });
 
   subApp1.get('/route-1', (req, res) => {
-    console.log(req.top) // true
-    console.log(req.one) // 1
-    console.log(req.two) // undefined
-    res.send()
-  })
-})
+    console.log(req.top); // true
+    console.log(req.one); // 1
+    console.log(req.two); // undefined
+    res.send();
+  });
+});
 
 app.use((subApp2) => {
   subApp2.addHook('onRequest', (req, res, next) => {
-    req.two = 2 // Only runs for routes in `subApp2`
-    next()
-  })
+    req.two = 2; // Only runs for routes in `subApp2`
+    next();
+  });
 
   subApp2.get('/route-2', (req, res) => {
-    console.log(req.top) // true
-    console.log(req.one) // undefined
-    console.log(req.two) // 2
-    res.send()
-  })
-})
+    console.log(req.top); // true
+    console.log(req.one); // undefined
+    console.log(req.two); // 2
+    res.send();
+  });
+});
 ```

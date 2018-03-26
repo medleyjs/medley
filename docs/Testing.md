@@ -21,7 +21,7 @@ app.inject({
   headers: Object
 }, (error, response) => {
   // Tests
-})
+});
 ```
 
 Or using a promise instead of a callback:
@@ -39,7 +39,7 @@ app
   })
   .catch(err => {
     // Handle error
-  })
+  });
 ```
 
 Async-await is supported as well:
@@ -51,7 +51,7 @@ try {
     url: String,
     payload: Object,
     headers: Object
-  })
+  });
   // Tests
 } catch (err) {
   // Handle error
@@ -63,52 +63,52 @@ There is also a shorthand signature to make a GET request:
 ```js
 app.inject('/url', (error, response) => {
   // Tests
-})
+});
 ```
 
 #### Example:
 
 **app.js**
 ```js
-const medley = require('@medley/medley')
+const medley = require('@medley/medley');
 
 function buildApp () {
-  const app = medley()
+  const app = medley();
 
   app.get('/', (req, res) => {
-    res.send({ hello: 'world' })
-  })
-  
-  return app
+    res.send({ hello: 'world' });
+  });
+
+  return app;
 }
 
-module.exports = buildApp
+module.exports = buildApp;
 ```
 
 **test.js**
 ```js
-const tap = require('tap')
-const buildApp = require('./app')
+const tap = require('tap');
+const buildApp = require('./app');
 
 tap.test('GET `/` route', t => {
-  t.plan(4)
-  
-  const app = buildApp()
-  
+  t.plan(4);
+
+  const app = buildApp();
+
   // It is highly recommended to call `app.close()` at the end of tests
   // to ensure that all connections to external services get closed.
-  t.tearDown(() => app.close())
+  t.tearDown(() => app.close());
 
   app.inject({
     method: 'GET',
     url: '/'
   }, (err, response) => {
-    t.error(err)
-    t.strictEqual(response.statusCode, 200)
-    t.strictEqual(response.headers['content-type'], 'application/json')
-    t.deepEqual(JSON.parse(response.payload), { hello: 'world' })
-  })
-})
+    t.error(err);
+    t.strictEqual(response.statusCode, 200);
+    t.strictEqual(response.headers['content-type'], 'application/json');
+    t.deepEqual(JSON.parse(response.payload), { hello: 'world' });
+  });
+});
 ```
 
 ### Testing with a running server
@@ -122,50 +122,50 @@ Uses **app.js** from the previous example.
 
 **test-listen.js** (testing with [`Request`](https://www.npmjs.com/package/request))
 ```js
-const tap = require('tap')
-const request = require('request')
-const buildApp = require('./app')
+const tap = require('tap');
+const request = require('request');
+const buildApp = require('./app');
 
 tap.test('GET `/` route', t => {
-  t.plan(5)
-  
-  const app = buildApp()
-  
-  t.tearDown(() => app.close())
-  
+  t.plan(5);
+
+  const app = buildApp();
+
+  t.tearDown(() => app.close());
+
   app.listen(0, (err) => {
-    t.error(err)
-    
+    t.error(err);
+
     request({
       method: 'GET',
       url: 'http://localhost:' + app.server.address().port
     }, (err, response, body) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 200)
-      t.strictEqual(response.headers['content-type'], 'application/json')
-      t.deepEqual(JSON.parse(body), { hello: 'world' })
-    })
-  })
-})
+      t.error(err);
+      t.strictEqual(response.statusCode, 200);
+      t.strictEqual(response.headers['content-type'], 'application/json');
+      t.deepEqual(JSON.parse(body), { hello: 'world' });
+    });
+  });
+});
 ```
 
 **test-load.js** (testing with [`SuperTest`](https://www.npmjs.com/package/supertest))
 ```js
-const tap = require('tap')
-const supertest = require('supertest')
-const buildApp = require('./app')
+const tap = require('tap');
+const supertest = require('supertest');
+const buildApp = require('./app');
 
 tap.test('GET `/` route', async (t) => {
-  const app = buildApp()
+  const app = buildApp();
 
-  t.tearDown(() => app.close())
-  
-  await app.load()
-  
+  t.tearDown(() => app.close());
+
+  await app.load();
+
   const response = await supertest(app.server)
     .get('/')
     .expect(200)
-    .expect('content-type', 'application/json')
-  t.deepEqual(response.body, { hello: 'world' })
-})
+    .expect('content-type', 'application/json');
+  t.deepEqual(response.body, { hello: 'world' });
+});
 ```

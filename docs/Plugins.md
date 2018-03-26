@@ -26,9 +26,9 @@ function myPlugin(app, options) {
   app.decorate('myPluginData', {
     receivedOptions: options,
     example: 'value'
-  })
-  app.addHook('onRequest', (req, res, next) => { ... })
-  app.get('/my-plugin/route', (req, res) => { ... })
+  });
+  app.addHook('onRequest', (req, res, next) => { ... });
+  app.get('/my-plugin/route', (req, res) => { ... });
   // etc.
 }
 module.exports = myPlugin
@@ -36,20 +36,20 @@ module.exports = myPlugin
 
 **app.js**
 ```js
-const medley = require('@medley/medley')
-const app = medley()
+const medley = require('@medley/medley');
+const app = medley();
 
-app.registerPlugin(require('./my-plugin'), {optional: 'options'})
+app.registerPlugin(require('./my-plugin'), {optional: 'options'});
 
-console.log(app.myPluginData.receivedOptions) // {optional: 'options'}
-console.log(app.myPluginData.example) // 'value'
+console.log(app.myPluginData.receivedOptions); // {optional: 'options'}
+console.log(app.myPluginData.example); // 'value'
 ```
 
 Using `app.registerPlugin()` is essentially the same as doing the following:
 
 ```js
-const myPlugin = require('./my-plugin')
-myPlugin(app, options)
+const myPlugin = require('./my-plugin');
+myPlugin(app, options);
 ```
 
 It is perfectly acceptable to do that, however, `.registerPlugin()` is a
@@ -74,9 +74,9 @@ function myPlugin(app, options) {
 myPlugin.meta = {
   name: 'my-plugin',
   dependencies: [] // Array of plugin names
-}
+};
 
-module.exports = myPlugin
+module.exports = myPlugin;
 ```
 
 The `name` property tells Medley the plugin's name and the `dependencies`
@@ -90,9 +90,9 @@ function cookiePlugin(app, options) { }
 
 cookiePlugin.meta = {
   name: 'cookie-plugin'
-}
+};
 
-module.exports = cookiePlugin
+module.exports = cookiePlugin;
 ```
 
 **session-plugin.js**
@@ -102,26 +102,26 @@ function sessionPlugin(app, options) { }
 sessionPlugin.meta = {
   name: 'session-plugin',
   dependencies: ['cookie-plugin']
-}
+};
 
-module.exports = sessionPlugin
+module.exports = sessionPlugin;
 ```
 
 **app.js**
 ```js
-const medley = require('@medley/medley')
-const app = medley()
+const medley = require('@medley/medley');
+const app = medley();
 
-app.registerPlugin(require('./cookie-plugin'))
-app.registerPlugin(require('./session-plugin'))
+app.registerPlugin(require('./cookie-plugin'));
+app.registerPlugin(require('./session-plugin'));
 ```
 
 Everything works because the `cookie-plugin` was registered before the
 `session-plugin`. But if the `session-plugin` were registered first:
 
 ```js
-app.registerPlugin(require('./session-plugin')) // AssertionError!
-app.registerPlugin(require('./cookie-plugin'))
+app.registerPlugin(require('./session-plugin')); // AssertionError!
+app.registerPlugin(require('./cookie-plugin'));
 ```
 
 An error is thrown because the `session-plugin` depends on the `cookie-plugin`
