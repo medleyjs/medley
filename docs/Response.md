@@ -176,7 +176,7 @@ compatible with HTTP/2.
 
 + `field` *(string)*
 + Returns: *(string|string[])*
-+ Alias: `response.getHeader()`
++ Alias: `res.getHeader()`
 
 Gets a previously set response header.
 
@@ -192,7 +192,7 @@ and for consistency with HTTP/2 (which always sends header names in lowercase).
 
 + `field` *(string)*
 + Returns: *(boolean)*
-+ Alias: `response.hasHeader()`
++ Alias: `res.hasHeader()`
 
 Returns `true` if the specified response header was previously set, otherwise returns `false`.
 
