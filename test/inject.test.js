@@ -2,7 +2,7 @@
 
 const t = require('tap')
 const test = t.test
-const Stream = require('stream')
+const stream = require('stream')
 const util = require('util')
 const medley = require('..')
 
@@ -35,13 +35,13 @@ test('should wait for the app to load before injecting the request', (t) => {
   })
 })
 
-test('inject get request', (t) => {
-  t.plan(4)
-  const app = medley()
-  const payload = {hello: 'world'}
+test('inject response', (t) => {
+  t.plan(5)
 
-  app.get('/', (req, response) => {
-    response.send(payload)
+  const app = medley()
+
+  app.get('/', (req, res) => {
+    res.send({hello: 'world'})
   })
 
   app.inject({
@@ -49,185 +49,77 @@ test('inject get request', (t) => {
     url: '/',
   }, (err, res) => {
     t.error(err)
-    t.deepEqual(payload, JSON.parse(res.payload))
-    t.strictEqual(res.statusCode, 200)
-    t.strictEqual(res.headers['content-length'], '17')
-  })
-})
-
-test('inject get request - code check', (t) => {
-  t.plan(4)
-  const app = medley()
-  const payload = {hello: 'world'}
-
-  app.get('/', (req, response) => {
-    response.status(201).send(payload)
-  })
-
-  app.inject({
-    method: 'GET',
-    url: '/',
-  }, (err, res) => {
-    t.error(err)
-    t.deepEqual(payload, JSON.parse(res.payload))
-    t.strictEqual(res.statusCode, 201)
-    t.strictEqual(res.headers['content-length'], '17')
-  })
-})
-
-test('inject get request - headers check', (t) => {
-  t.plan(4)
-  const app = medley()
-
-  app.get('/', (req, response) => {
-    response.send('')
-  })
-
-  app.inject({
-    method: 'GET',
-    url: '/',
-  }, (err, res) => {
-    t.error(err)
-    t.strictEqual('', res.payload)
-    t.strictEqual(res.headers['content-type'], 'text/plain; charset=utf-8')
-    t.strictEqual(res.headers['content-length'], '0')
-  })
-})
-
-test('inject get request - querystring', (t) => {
-  t.plan(4)
-  const app = medley()
-
-  app.get('/', (req, response) => {
-    response.send(req.query)
-  })
-
-  app.inject({
-    method: 'GET',
-    url: '/?hello=world',
-  }, (err, res) => {
-    t.error(err)
-    t.deepEqual({hello: 'world'}, JSON.parse(res.payload))
-    t.strictEqual(res.statusCode, 200)
-    t.strictEqual(res.headers['content-length'], '17')
-  })
-})
-
-test('inject get request - params', (t) => {
-  t.plan(4)
-  const app = medley()
-
-  app.get('/:hello', (req, response) => {
-    response.send(req.params)
-  })
-
-  app.inject({
-    method: 'GET',
-    url: '/world',
-  }, (err, res) => {
-    t.error(err)
-    t.deepEqual({hello: 'world'}, JSON.parse(res.payload))
-    t.strictEqual(res.statusCode, 200)
-    t.strictEqual(res.headers['content-length'], '17')
-  })
-})
-
-test('inject get request - wildcard', (t) => {
-  t.plan(4)
-  const app = medley()
-
-  app.get('/test/*', (req, response) => {
-    response.send(req.params)
-  })
-
-  app.inject({
-    method: 'GET',
-    url: '/test/wildcard',
-  }, (err, res) => {
-    t.error(err)
-    t.deepEqual({'*': 'wildcard'}, JSON.parse(res.payload))
-    t.strictEqual(res.statusCode, 200)
-    t.strictEqual(res.headers['content-length'], '16')
-  })
-})
-
-test('inject get request - headers', (t) => {
-  t.plan(4)
-  const app = medley()
-
-  app.get('/', (req, response) => {
-    response.send(req.headers)
-  })
-
-  app.inject({
-    method: 'GET',
-    url: '/',
-    headers: {hello: 'world'},
-  }, (err, res) => {
-    t.error(err)
-    t.strictEqual('world', JSON.parse(res.payload).hello)
-    t.strictEqual(res.statusCode, 200)
-    t.strictEqual(res.headers['content-length'], '69')
+    t.equal(res.statusCode, 200)
+    t.equal(res.headers['content-length'], '17')
+    t.equal(res.headers['content-type'], 'application/json')
+    t.equal(res.payload, '{"hello":"world"}')
   })
 })
 
 test('inject get request - response stream', (t) => {
   t.plan(3)
+
   const app = medley()
 
-  app.get('/', (req, response) => {
-    response.send(getStream())
+  // https://github.com/hapijs/shot/blob/master/test/index.js#L836
+  function getStream() {
+    function Read() {
+      stream.Readable.call(this)
+    }
+
+    util.inherits(Read, stream.Readable)
+
+    const word = '{"hello":"world"}'
+    var i = 0
+
+    Read.prototype._read = function() {
+      this.push(word[i] ? word[i++] : null)
+    }
+
+    return new Read()
+  }
+
+  app.get('/', (req, res) => {
+    res.send(getStream())
   })
 
-  app.inject({
-    method: 'GET',
-    url: '/',
-  }, (err, res) => {
+  app.inject('/', (err, res) => {
     t.error(err)
-    t.deepEqual('{"hello":"world"}', res.payload)
-    t.strictEqual(res.statusCode, 200)
+    t.equal(res.statusCode, 200)
+    t.equal(res.payload, '{"hello":"world"}')
   })
 })
 
 test('inject promisify - waiting for load event', (t) => {
   t.plan(1)
-  const app = medley()
-  const payload = {hello: 'world'}
 
-  app.get('/', (req, response) => {
-    response.send(payload)
+  const app = medley()
+
+  app.get('/', (req, res) => {
+    res.send('')
   })
 
-  const injectParams = {
-    method: 'GET',
-    url: '/',
-  }
-  app.inject(injectParams)
+  return app.inject('/')
     .then((res) => {
-      t.strictEqual(res.statusCode, 200)
+      t.equal(res.statusCode, 200)
     })
-    .catch(t.fail)
 })
 
 test('inject promisify - after the load event', (t) => {
   t.plan(2)
-  const app = medley()
-  const payload = {hello: 'world'}
 
-  app.get('/', (req, response) => {
-    response.send(payload)
+  const app = medley()
+
+  app.get('/', (req, res) => {
+    res.send('')
   })
 
   app.load((err) => {
     t.error(err)
 
-    const injectParams = {
-      method: 'GET',
-      url: '/',
-    }
-    app.inject(injectParams)
+    app.inject('/')
       .then((res) => {
-        t.strictEqual(res.statusCode, 200)
+        t.equal(res.statusCode, 200)
       })
       .catch(t.fail)
   })
@@ -235,15 +127,16 @@ test('inject promisify - after the load event', (t) => {
 
 test('inject promisify - when the server is up', (t) => {
   t.plan(2)
-  const app = medley()
-  const payload = {hello: 'world'}
 
-  app.get('/', (req, response) => {
-    response.send(payload)
+  const app = medley()
+
+  app.get('/', (req, res) => {
+    res.send('')
   })
 
-  app.load((err) => {
+  app.listen(0, (err) => {
     t.error(err)
+    app.server.unref()
 
     app.inject('/')
       .then((res) => {
@@ -263,10 +156,7 @@ test('should reject in error case', (t) => {
     done(error)
   })
 
-  app.inject({
-    method: 'GET',
-    url: '/',
-  }).catch((err) => {
+  app.inject('/').catch((err) => {
     t.strictEqual(err, error)
   })
 })
@@ -281,28 +171,7 @@ test('should pass any onLoad error to the callback', (t) => {
     done(error)
   })
 
-  app.inject({
-    method: 'GET',
-    url: '/',
-  }, (err) => {
+  app.inject('/', (err) => {
     t.equal(err, error)
   })
 })
-
-// https://github.com/hapijs/shot/blob/master/test/index.js#L836
-function getStream() {
-  function Read() {
-    Stream.Readable.call(this)
-  }
-
-  util.inherits(Read, Stream.Readable)
-
-  const word = '{"hello":"world"}'
-  var i = 0
-
-  Read.prototype._read = function() {
-    this.push(word[i] ? word[i++] : null)
-  }
-
-  return new Read()
-}
