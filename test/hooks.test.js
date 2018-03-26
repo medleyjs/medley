@@ -763,6 +763,30 @@ test('onRequest hooks should be able to send a response', (t) => {
   })
 })
 
+test('async onRequest hooks should be able to send a response', (t) => {
+  t.plan(3)
+  const app = medley()
+
+  app.addHook('onRequest', (req, res) => {
+    res.send('hello')
+    return Promise.resolve()
+  })
+
+  app.addHook('preHandler', () => {
+    t.fail('this should not be called')
+  })
+
+  app.get('/', () => {
+    t.fail('this should not be called')
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.payload, 'hello')
+  })
+})
+
 test('preHandler hooks should be able to send a response', (t) => {
   t.plan(5)
   const app = medley()
@@ -795,6 +819,30 @@ test('preHandler hooks should be able to send a response', (t) => {
     t.error(err)
     t.is(res.statusCode, 200)
     t.is(res.payload, 'hello')
+  })
+})
+
+test('async preHandler hooks should be able to send a response', (t) => {
+  t.plan(3)
+  const app = medley()
+
+  app.addHook('preHandler', (req, res) => {
+    res.send('hello')
+    return Promise.resolve()
+  })
+
+  app.get('/', {
+    beforeHandler() {
+      t.fail('this should not be called')
+    },
+  }, () => {
+    t.fail('this should not be called')
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.payload, 'hello')
   })
 })
 
@@ -1002,5 +1050,55 @@ test('onFinished hooks should run in the order in which they are defined', (t) =
     t.error(err)
     t.strictEqual(res.statusCode, 200)
     t.deepEqual(JSON.parse(res.payload), {hello: 'world'})
+  })
+})
+
+test('async onRequest hooks should handle errors', (t) => {
+  t.plan(3)
+  const app = medley()
+
+  app.addHook('onRequest', () => {
+    return Promise.reject(new Error('onRequest error'))
+  })
+
+  app.addHook('onRequest', () => {
+    t.fail('this should not be called')
+  })
+
+  app.addHook('preHandler', () => {
+    t.fail('this should not be called')
+  })
+
+  app.get('/', () => {
+    t.fail('this should not be called')
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 500)
+    t.equal(JSON.parse(res.payload).message, 'onRequest error')
+  })
+})
+
+test('async preHandler hooks should handle errors', (t) => {
+  t.plan(3)
+  const app = medley()
+
+  app.addHook('preHandler', () => {
+    return Promise.reject(new Error('preHandler error'))
+  })
+
+  app.addHook('preHandler', () => {
+    t.fail('this should not be called')
+  })
+
+  app.get('/', () => {
+    t.fail('this should not be called')
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 500)
+    t.equal(JSON.parse(res.payload).message, 'preHandler error')
   })
 })
