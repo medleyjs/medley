@@ -12,8 +12,7 @@ app.route(options)
 ### Options
 
 + `method`: The name of an HTTP method or an array of methods. Can be any method found in the [`http.METHODS`](https://nodejs.org/api/http.html#http_http_methods) array.
-+ `path`: The path to match the URL of the request.
-+ `url`: Alias for `path`.
++ `path`: The path to match the URL of the request. (Alias: `url`)
 + `responseSchema`: The schema for a JSON response. See the [`Serialization` documentation](Serialization.md).
 + `beforeHandler(req, res, next)`: A function or an array of functions called just before the request handler. They are treated just like `preHandler` hooks (see [Hooks#beforeHandler](Hooks.md#beforehandler)).
 + `handler(req, res)`: The main function that will handle the request.
@@ -73,24 +72,49 @@ Example:
 
 ```js
 const beforeHandler = [
-  function authenticate(req, res, next) { ... },
-  function validate(req, res, next) { ... },
-]
-app.get('/', { beforeHandler }, (req, res) => {
-  res.send({ hello: 'world' })
-})
+  function authenticate(req, res, next) { },
+  function validate(req, res, next) { },
+];
+const responseSchema = {
+  200: {
+    hello: { type: 'string' }
+  }
+};
+app.get('/', { beforeHandler, responseSchema }, (req, res) => {
+  res.send({ hello: 'world' });
+});
+
+app.get('/no-options', (req, res) => {
+  res.send('hello world');
+});
 ```
 
-The `handler` may be specified in the `options` object if the third parameter is omitted:
+If the `options` parameter is an array, it will be treated as an array of *beforeHandlers*:
+
+```js
+function authenticate(req, res, next) {
+  // Authenticate a user
+}
+function validate(req, res, next) {
+  // Validate the request
+}
+
+app.get('/', [authenticate, validate], (req, res) => {
+  res.send({ hello: 'world' });
+});
+```
+
+Alternatively, the `handler` may be specified in the `options` object if the
+third parameter is omitted:
 
 ```js
 app.get('/path', {
-  beforeHandler: [ ... ],
-  responseSchema: { ... },
+  beforeHandler: [ /* ... */ ],
+  responseSchema: { /* ... */ },
   handler: function(req, res) {
-    res.send()
+    res.send();
   }
-})
+});
 ```
 
 *If the `handler` is specified in both the `options` object and as the

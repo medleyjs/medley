@@ -266,6 +266,8 @@ function medley(options) {
         } else {
           handler = opts && opts.handler
         }
+      } else if (Array.isArray(opts)) {
+        opts = {beforeHandler: opts}
       }
 
       opts = Object.assign({}, opts, {

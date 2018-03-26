@@ -180,3 +180,41 @@ test('beforeHandler does not interfere with preHandler', (t) => {
     t.equal(res.payload, 'a')
   })
 })
+
+test('beforeHandlers can be passed as the second parameter to route shorthand methods', (t) => {
+  t.plan(4)
+
+  const app = medley()
+
+  app.get('/', [
+    (req, res, done) => {
+      req.sendVal = 'first'
+      done()
+    },
+  ], (req, res) => {
+    res.send(req.sendVal)
+  })
+
+  app.get('/multi', [
+    (req, res, done) => {
+      req.sendVal = 'a'
+      done()
+    },
+    (req, res, done) => {
+      req.sendVal += 'b'
+      done()
+    },
+  ], (req, res) => {
+    res.send(req.sendVal)
+  })
+
+  app.inject('/', (err, res) => {
+    t.error(err)
+    t.equal(res.payload, 'first')
+  })
+
+  app.inject('/multi', (err, res) => {
+    t.error(err)
+    t.equal(res.payload, 'ab')
+  })
+})
