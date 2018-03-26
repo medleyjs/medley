@@ -107,8 +107,8 @@ test('.decorateResponse() should not allow decorating Medley values', (t) => {
   )
 
   t.throws(
-    () => app.decorateResponse('_ranHooks', null),
-    new Error("A decorator called '_ranHooks' has been already added to Response")
+    () => app.decorateResponse('_ranOnSendHooks', null),
+    new Error("A decorator called '_ranOnSendHooks' has been already added to Response")
   )
 
   t.end()
