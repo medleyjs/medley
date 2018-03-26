@@ -9,10 +9,16 @@ const medley = require('../..')
 if (require('../testUtils.js').supportsHTTP2) {
   require('./http2')
 } else {
-  t.throws(
-    () => medley({http2: true}),
-    new Error('http2 is available only from Node >= 8.8.0')
-  )
+  const http2Error = new Error('http2 is available only from Node >= 8.8.0')
+
+  t.throws(() => medley({http2: true}), http2Error)
+  t.throws(() => medley({http2: {peerMaxConcurrentStreams: 20}}), http2Error)
+  t.throws(() => medley({
+    http2: {
+      key: fs.readFileSync(path.join(__dirname, 'app.key')),
+      cert: fs.readFileSync(path.join(__dirname, 'app.cert')),
+    },
+  }), http2Error)
 }
 
 var app = medley({
