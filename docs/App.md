@@ -352,6 +352,9 @@ app.use('/api', (apiSubApp) => {
 })
 ```
 
+See the [Route Prefixing](Routes.md#route-prefixing) section for details on
+how the `prefix` option affects routes.
+
 Note that the `subAppFn` is executed immediately:
 
 ```js
