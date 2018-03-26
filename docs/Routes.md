@@ -173,8 +173,7 @@ In this case, the parameter separator can be any character that is not
 matched by the regular expression.
 
 Having a route with multiple parameters may affect negatively the performance,
-so prefer the single parameter approach whenever possible, especially on routes
-that are on the hot path of your application.
+so prefer the single parameter approach whenever possible.
 
 For more information on the router used by Medley, check out
 [`find-my-way`](https://github.com/delvedor/find-my-way).
@@ -226,15 +225,15 @@ are used at the same time because a response cannot be sent twice.
 
 ## Route Prefixing
 
-Sometimes you need to maintain two or more different versions of the same API.
-A classic approach is to prefix all the routes with the API version number,
-`/v1` for example. To do this, defining every route like this would work:
+Sometimes it is necessary to maintain two or more different versions of the same API. A classic
+approach is to prefix a set of routes with the API version number, `/v1` for example. A simple
+way to accomplish this would be to include the prefix in every route declaration:
 
 ```js
 app.get('/v1/user', (req, res) => { ... })
 ```
 
-But an alternative is to use [`app.use()`](App.md#use) to create separate
+But an alternative would be to use [`app.use()`](App.md#use) to create separate
 sub-apps with a different prefix for each group of routes:
 
 **app.js**

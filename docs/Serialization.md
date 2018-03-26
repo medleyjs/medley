@@ -63,10 +63,10 @@ For more information on how to define a response schema, see the
 
 ## Object Shorthand
 
-Medley lets you use a "shorthand" format for object schema definitions. If the
-schema is missing the `type` and `properties` keyword properties, Medley will
-wrap it in a `{type: 'object', properties: yourSchema}` object so that it will
-be compiled properly.
+Medley allows schemas to use a "shorthand" format for object schema definitions.
+If the schema for a status code is missing the `type` and `properties` keyword
+properties, Medley will wrap it in a `{type: 'object', properties: statusSchema}`
+object so that it will be compiled properly.
 
 ```js
 const responseSchema = {

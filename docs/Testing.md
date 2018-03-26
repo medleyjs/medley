@@ -95,7 +95,7 @@ tap.test('GET `/` route', t => {
   
   const app = buildApp()
   
-  // At the end of your tests it is highly recommended to call `.close()`
+  // It is highly recommended to call `app.close()` at the end of tests
   // to ensure that all connections to external services get closed.
   t.tearDown(() => app.close())
 

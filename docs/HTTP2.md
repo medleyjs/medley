@@ -45,7 +45,7 @@ const app = medley({
 
 ### Unencrypted
 
-If you are building microservices, you can use the unencrypted form of HTTP/2,
+It is also possible to configure a server to use unencrypted HTTP/2,
 however this is not supported by browsers.
 
 ```js

@@ -1,6 +1,6 @@
 # Hooks
 
-Hooks allow you to hook into different parts of the request [lifecycle](Lifecycle.md).
+Hooks are functions that run during different parts of the request [lifecycle](Lifecycle.md).
 They provide similar functionality to Express and Koa middleware.
 
 Hooks can be added with the `app.addHook()` method:
@@ -16,9 +16,10 @@ The possible `hookName` values are:
 + [`'onSend'`](#onSend-hook)
 + [`'onFinished'`](#onFinished-hook)
 
-Check out the [lifecycle docs](Lifecycle.md) to see where each hook is executed in the request lifecycle.
+Check out the [lifecycle docs](Lifecycle.md) to see where each hook is executed
+in the request lifecycle.
 
-Hooks are affected by Medley's encapsulation, and can thus be scoped to selected routes.
+Hooks follow Medley's encapsulation model, and can thus be scoped to specific routes.
 See the [Encapsulation](#encapsulation) section for more information.
 
 <a id="onRequest-preHandler-hooks"></a> 

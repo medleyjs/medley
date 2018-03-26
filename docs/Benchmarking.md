@@ -1,16 +1,15 @@
 # Benchmarking
 
-Benchmarking is important if you want to measure how a change can impact
-performance. This document describes some benchmarking techniques from the
-point of view of a contributor. This setup allows you to run benchmarks on
-different branches and with different Node.js versions.
+Benchmarking is important for measuring how a change can impact performance. This document
+describes some benchmarking techniques from the point of view of a contributor. This setup
+allows benchmarks to be run on different branches and with different Node.js versions.
 
 The modules used:
 
-- [autocannon](https://github.com/mcollina/autocannon): An HTTP/1.1 benchmarking tool for Node.
-- [branch-comparer](https://github.com/StarpTech/branch-comparer): Checks out multiple git branches, executes scripts, and logs the results.
-- [concurrently](https://github.com/kimmobrunfeldt/concurrently): Run commands concurrently.
-- [npx](https://github.com/zkat/npx) NPM package runner - We using it to run scripts against different Node.js versions and execute local binaries. Shipped with `npm@5.2.0`.
++ [autocannon](https://github.com/mcollina/autocannon): An HTTP/1.1 benchmarking tool for Node.
++ [branch-comparer](https://github.com/StarpTech/branch-comparer): Checks out multiple git branches, executes scripts, and logs the results.
++ [concurrently](https://github.com/kimmobrunfeldt/concurrently): Run commands concurrently.
++ [npx](https://github.com/zkat/npx) NPM package runner - We using it to run scripts against different Node.js versions and execute local binaries. Shipped with `npm@5.2.0`.
 
 ## Simple
 
