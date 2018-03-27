@@ -109,3 +109,11 @@ app.addBodyParser('application/json', bodyParser.json()); // Will never be match
 
 For this reason, it is better to declare body parsers with specific MIME types
 *before* parsers with a type that has a wildcard.
+
+#### Content-Type Match Caching
+
+When the incoming `Content-Type` header matches a body parser, the pair is cached to speed up future
+lookups of the body parser for the same `Content-Type`. This fact may need to be taken into account
+when implementing a custom `contentType` matching function since the function will not always be
+called for requests with the same `Content-Type` header if it previously returned `true` for a
+request with that `Content-Type` header.
