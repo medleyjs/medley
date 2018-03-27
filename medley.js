@@ -214,30 +214,30 @@ function medley(options) {
     return basePrefix + pluginPrefix
   }
 
-  function decorateApp(name, fn) {
+  function decorateApp(name, value) {
     if (name in this) {
       throw new Error(`A decorator called '${name}' has been already added`)
     }
 
-    this[name] = fn
+    this[name] = value
     return this
   }
 
-  function decorateRequest(name, fn) {
+  function decorateRequest(name, value) {
     if (name in this._Request.prototype) {
       throw new Error(`A decorator called '${name}' has been already added to Request`)
     }
 
-    this._Request.prototype[name] = fn
+    this._Request.prototype[name] = value
     return this
   }
 
-  function decorateResponse(name, fn) {
+  function decorateResponse(name, value) {
     if (name in this._Response.prototype) {
       throw new Error(`A decorator called '${name}' has been already added to Response`)
     }
 
-    this._Response.prototype[name] = fn
+    this._Response.prototype[name] = value
     return this
   }
 
@@ -250,11 +250,11 @@ function medley(options) {
     return this
   }
 
-  function addHook(name, fn) {
+  function addHook(hookName, hookHandler) {
     throwIfAppIsLoaded('Cannot call "addHook()" when app is already loaded')
 
-    this._hooks.add(name, fn)
-    this._subApps.forEach(subApp => subApp.addHook(name, fn))
+    this._hooks.add(hookName, hookHandler)
+    this._subApps.forEach(subApp => subApp.addHook(hookName, hookHandler))
 
     return this
   }
