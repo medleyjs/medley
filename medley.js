@@ -203,7 +203,7 @@ function medley(options) {
 
   function decorateApp(name, value) {
     if (name in this) {
-      throw new Error(`A decorator called '${name}' has been already added`)
+      throw new Error(`A decorator called '${name}' has already been added`)
     }
 
     this[name] = value
@@ -212,7 +212,7 @@ function medley(options) {
 
   function decorateRequest(name, value) {
     if (name in this._Request.prototype) {
-      throw new Error(`A decorator called '${name}' has been already added to Request`)
+      throw new Error(`A decorator called '${name}' has already been added to Request`)
     }
 
     this._Request.prototype[name] = value
@@ -221,7 +221,7 @@ function medley(options) {
 
   function decorateResponse(name, value) {
     if (name in this._Response.prototype) {
-      throw new Error(`A decorator called '${name}' has been already added to Response`)
+      throw new Error(`A decorator called '${name}' has already been added to Response`)
     }
 
     this._Response.prototype[name] = value

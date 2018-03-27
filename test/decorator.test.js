@@ -32,47 +32,86 @@ test('.decorateResponse() should be chainable', (t) => {
   t.end()
 })
 
+test('.decorate() should throw on duplicate decorator', (t) => {
+  t.plan(1)
+
+  const app = medley()
+
+  app.decorate('foo', 'value')
+
+  t.throws(
+    () => app.decorate('foo', 'value'),
+    new Error("A decorator called 'foo' has already been added")
+  )
+})
+
+test('.decorateRequest() should throw on duplicate decorator', (t) => {
+  t.plan(1)
+
+  const app = medley()
+
+  app.decorateRequest('foo', 'value')
+
+  t.throws(
+    () => app.decorateRequest('foo', 'value'),
+    new Error("A decorator called 'foo' has already been added to Request")
+  )
+})
+
+test('.decorateResponse() should throw on duplicate decorator', (t) => {
+  t.plan(1)
+
+  const app = medley()
+
+  app.decorateResponse('foo', 'value')
+
+  t.throws(
+    () => app.decorateResponse('foo', 'value'),
+    new Error("A decorator called 'foo' has already been added to Response")
+  )
+})
+
 test('.decorateRequest() should not allow decorating Medley values', (t) => {
   const app = medley()
 
   t.throws(
     () => app.decorateRequest('stream', null),
-    new Error("A decorator called 'stream' has been already added to Request")
+    new Error("A decorator called 'stream' has already been added to Request")
   )
 
   t.throws(
     () => app.decorateRequest('headers', null),
-    new Error("A decorator called 'headers' has been already added to Request")
+    new Error("A decorator called 'headers' has already been added to Request")
   )
 
   t.throws(
     () => app.decorateRequest('params', null),
-    new Error("A decorator called 'params' has been already added to Request")
+    new Error("A decorator called 'params' has already been added to Request")
   )
 
   t.throws(
     () => app.decorateRequest('state', null),
-    new Error("A decorator called 'state' has been already added to Request")
+    new Error("A decorator called 'state' has already been added to Request")
   )
 
   t.throws(
     () => app.decorateRequest('body', null),
-    new Error("A decorator called 'body' has been already added to Request")
+    new Error("A decorator called 'body' has already been added to Request")
   )
 
   t.throws(
     () => app.decorateRequest('_query', null),
-    new Error("A decorator called '_query' has been already added to Request")
+    new Error("A decorator called '_query' has already been added to Request")
   )
 
   t.throws(
     () => app.decorateRequest('query', null),
-    new Error("A decorator called 'query' has been already added to Request")
+    new Error("A decorator called 'query' has already been added to Request")
   )
 
   t.throws(
     () => app.decorateRequest('_trustProxy', null),
-    new Error("A decorator called '_trustProxy' has been already added to Request")
+    new Error("A decorator called '_trustProxy' has already been added to Request")
   )
 
   t.end()
@@ -83,32 +122,32 @@ test('.decorateResponse() should not allow decorating Medley values', (t) => {
 
   t.throws(
     () => app.decorateResponse('stream', null),
-    new Error("A decorator called 'stream' has been already added to Response")
+    new Error("A decorator called 'stream' has already been added to Response")
   )
 
   t.throws(
     () => app.decorateResponse('request', null),
-    new Error("A decorator called 'request' has been already added to Response")
+    new Error("A decorator called 'request' has already been added to Response")
   )
 
   t.throws(
     () => app.decorateResponse('route', null),
-    new Error("A decorator called 'route' has been already added to Response")
+    new Error("A decorator called 'route' has already been added to Response")
   )
 
   t.throws(
     () => app.decorateResponse('sent', null),
-    new Error("A decorator called 'sent' has been already added to Response")
+    new Error("A decorator called 'sent' has already been added to Response")
   )
 
   t.throws(
     () => app.decorateResponse('_ranCustomError', null),
-    new Error("A decorator called '_ranCustomError' has been already added to Response")
+    new Error("A decorator called '_ranCustomError' has already been added to Response")
   )
 
   t.throws(
     () => app.decorateResponse('_ranOnSendHooks', null),
-    new Error("A decorator called '_ranOnSendHooks' has been already added to Response")
+    new Error("A decorator called '_ranOnSendHooks' has already been added to Response")
   )
 
   t.end()
@@ -138,7 +177,7 @@ test('cannot decorate sub-app if parent app already has the decorator', (t) => {
   app.use((subApp) => {
     t.throws(
       () => subApp.decorate('foo', 'other'),
-      new Error("A decorator called 'foo' has been already added")
+      new Error("A decorator called 'foo' has already been added")
     )
   })
 })
