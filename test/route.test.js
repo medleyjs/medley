@@ -11,7 +11,7 @@ test('.route() should throw on unsupported method', (t) => {
 
   t.throws(
     () => app.route({method: 'TROLL'}),
-    new Error('"TROLL" method is not supported')
+    new RangeError('"TROLL" method is not supported')
   )
 })
 
@@ -22,7 +22,7 @@ test('.route() should throw if one method in an array is unsupported', (t) => {
 
   t.throws(
     () => app.route({method: ['GET', 'TROLL']}),
-    new Error('"TROLL" method is not supported')
+    new RangeError('"TROLL" method is not supported')
   )
 })
 
@@ -36,7 +36,7 @@ test('Should throw on missing handler', (t) => {
     new TypeError("Route 'handler' must be a function. Got a value of type 'undefined': undefined")
   )
   t.throws(
-    () => app.route({method: 'GET', path: '/path', handler: false}),
+    () => app.route({method: 'GET', path: '/', handler: false}),
     new TypeError("Route 'handler' must be a function. Got a value of type 'boolean': false")
   )
 })

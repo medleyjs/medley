@@ -282,7 +282,7 @@ function medley(options) {
       const methodHandler = methodHandlers[method]
 
       if (methodHandler === undefined) {
-        throw new Error(`"${method}" method is not supported`)
+        throw new RangeError(`"${method}" method is not supported`)
       }
 
       if (methodGroups.has(methodHandler)) {
