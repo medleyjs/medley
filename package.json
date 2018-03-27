@@ -1,6 +1,6 @@
 {
   "name": "@medley/medley",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Fast and modern web framework for Node.js",
   "main": "medley.js",
   "files": [
