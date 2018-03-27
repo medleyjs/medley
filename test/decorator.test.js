@@ -102,8 +102,8 @@ test('.decorateResponse() should not allow decorating Medley values', (t) => {
   )
 
   t.throws(
-    () => app.decorateResponse('_customError', null),
-    new Error("A decorator called '_customError' has been already added to Response")
+    () => app.decorateResponse('_ranCustomError', null),
+    new Error("A decorator called '_ranCustomError' has been already added to Response")
   )
 
   t.throws(
