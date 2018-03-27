@@ -3,10 +3,10 @@
   "version": "0.0.0",
   "description": "Fast and modern web framework for Node.js",
   "main": "medley.js",
-  "files": {
-    "lib": "lib",
-    "medley": "medley"
-  },
+  "files": [
+    "medley.js",
+    "lib"
+  ],
   "engines": {
     "node": ">=6"
   },
