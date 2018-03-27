@@ -35,12 +35,12 @@
     "end-of-stream": "^1.4.1",
     "find-my-way": "^1.11.1",
     "flatstr": "^1.0.5",
-    "light-my-request": "^2.0.1",
-    "tiny-lru": "^1.5.0"
+    "hashlru": "^2.2.1",
+    "light-my-request": "^2.0.1"
   },
   "devDependencies": {
     "JSONStream": "^1.3.2",
-    "autocannon": "^2.1.0",
+    "autocannon": "^2.1.1",
     "branch-comparer": "^0.4.0",
     "concurrently": "^3.5.1",
     "coveralls": "^3.0.0",
