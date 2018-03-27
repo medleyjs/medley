@@ -2,8 +2,12 @@
 
 ## Installation
 
-```
+```sh
+# npm
 npm install @medley/medley --save
+
+# yarn
+yarn add @medley/medley
 ```
 
 ## Creating a Medley App
