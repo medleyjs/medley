@@ -34,7 +34,6 @@
     "destroy": "^1.0.4",
     "end-of-stream": "^1.4.1",
     "find-my-way": "^1.11.1",
-    "flatstr": "^1.0.5",
     "hashlru": "^2.2.1",
     "light-my-request": "^2.0.1"
   },
