@@ -99,7 +99,7 @@ function medley(options) {
     get basePath() {
       return this._routePrefix
     },
-    _routePrefix: '',
+    _routePrefix: '/',
 
     setNotFoundHandler,
     _canSetNotFoundHandler: true,
@@ -304,10 +304,6 @@ function medley(options) {
       path = this._routePrefix + path
     }
 
-    if (path === '' || path[0] !== '/') {
-      path = '/' + path
-    }
-
     if (typeof opts.handler !== 'function') {
       throw new TypeError(
         `Route 'handler' must be a function. Got a value of type '${typeof opts.handler}': ${opts.handler}`
@@ -352,10 +348,8 @@ function medley(options) {
   function setNotFoundHandler(opts, handler) {
     throwIfAppIsLoaded('Cannot call "setNotFoundHandler()" when app is already loaded')
 
-    const prefix = this._routePrefix || '/'
-
     if (this._canSetNotFoundHandler === false) {
-      throw new Error(`Not found handler already set for app instance with prefix: '${prefix}'`)
+      throw new Error(`Not found handler already set for app instance with prefix: '${this._routePrefix}'`)
     }
 
     // Set values on the "_notFoundLevelApp" so that they
@@ -388,7 +382,6 @@ function medley(options) {
     for (const [methodHandler, methods] of methodGroups) {
       _setNotFoundHandler.call(
         this,
-        prefix,
         methods,
         methodHandler,
         opts,
@@ -401,7 +394,6 @@ function medley(options) {
   }
 
   function _setNotFoundHandler(
-    prefix,
     methods,
     methodHandler,
     opts,
@@ -417,6 +409,8 @@ function medley(options) {
     )
 
     this._notFoundRouteContexts.set(methodHandler, routeContext)
+
+    const prefix = this._routePrefix
 
     if (prefix.endsWith('/')) {
       notFoundRouter.on(methods, prefix + '*', routeHandler, routeContext)

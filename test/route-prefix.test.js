@@ -74,6 +74,52 @@ test('prefix joined with "" and "/" route path when strictRouting=true', (t) => 
   })
 })
 
+test('prefix is "" or "/"', (t) => {
+  t.plan(8)
+
+  const app = medley()
+
+  app.use('/', function(subApp) {
+    subApp.get('first', (req, res) => {
+      res.send('1')
+    })
+
+    subApp.get('/second', (req, res) => {
+      res.send('2')
+    })
+  })
+
+  app.use('', function(subApp) {
+    subApp.get('third', (req, res) => {
+      res.send('3')
+    })
+
+    subApp.get('/fourth', (req, res) => {
+      res.send('4')
+    })
+  })
+
+  app.inject('/first', (err, res) => {
+    t.error(err)
+    t.equal(res.payload, '1')
+  })
+
+  app.inject('/second', (err, res) => {
+    t.error(err)
+    t.equal(res.payload, '2')
+  })
+
+  app.inject('/third', (err, res) => {
+    t.error(err)
+    t.equal(res.payload, '3')
+  })
+
+  app.inject('/fourth', (err, res) => {
+    t.error(err)
+    t.equal(res.payload, '4')
+  })
+})
+
 test('prefix is prepended to all the routes inside a sub-app', (t) => {
   t.plan(8)
 
@@ -217,9 +263,12 @@ test('prefix should support parameters', (t) => {
   })
 })
 
-test('.basePath within an encapsulated app instance', (t) => {
-  t.plan(2)
+test('app.basePath gets the route prefix', (t) => {
+  t.plan(3)
+
   const app = medley()
+
+  t.equal(app.basePath, '/')
 
   app.use('/v1', (subApp) => {
     t.equal(subApp.basePath, '/v1')
