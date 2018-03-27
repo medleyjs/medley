@@ -43,6 +43,17 @@ t.test('.use() throws if prefix is not a string', (t) => {
   t.end()
 })
 
+t.test('.use() throws if prefix does not start with a "/"', (t) => {
+  const app = medley()
+
+  t.throws(
+    () => app.use('v1', noop),
+    new Error("'prefix' must start with a '/' character. Got: 'v1'")
+  )
+
+  t.end()
+})
+
 t.test('.use() creates a new app that inherits from the app that .use() was called on', (t) => {
   t.plan(2)
 
@@ -112,8 +123,6 @@ t.test('.use() nested calls with prefix', (t) => {
   t.plan(4)
 
   const app = medley()
-
-  t.tearDown(app.close.bind(app))
 
   app.use('/parent', (subApp) => {
     subApp.use('/child1', (subApp1) => {

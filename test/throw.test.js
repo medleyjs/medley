@@ -14,63 +14,6 @@ test('medley should throw on wrong options', (t) => {
   }
 })
 
-test('medley should throw on multiple assignment to the same route', (t) => {
-  t.plan(1)
-
-  const app = medley()
-
-  app.get('/', () => {})
-
-  t.throws(
-    () => app.get('/', () => {}),
-    new Error("Method 'GET' already declared for route '/'")
-  )
-})
-
-test('Should throw on unsupported method', (t) => {
-  t.plan(1)
-  const app = medley()
-  try {
-    app.route({
-      method: 'TROLL',
-      url: '/',
-      handler() { },
-    })
-    t.fail()
-  } catch (e) {
-    t.pass()
-  }
-})
-
-test('Should throw on missing handler', (t) => {
-  t.plan(1)
-  const app = medley()
-  try {
-    app.route({
-      method: 'GET',
-      url: '/',
-    })
-    t.fail()
-  } catch (e) {
-    t.pass()
-  }
-})
-
-test('Should throw if one method is unsupported', (t) => {
-  const app = medley()
-  t.plan(1)
-  try {
-    app.route({
-      method: ['GET', 'TROLL'],
-      url: '/',
-      handler() { },
-    })
-    t.fail()
-  } catch (e) {
-    t.pass()
-  }
-})
-
 test('Should throw on duplicate decorator', (t) => {
   t.plan(1)
 

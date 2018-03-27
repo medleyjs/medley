@@ -169,6 +169,10 @@ function medley(options) {
     if (typeof prefix !== 'string') {
       throw new TypeError(`'prefix' must be a string. Got a value of type '${typeof prefix}': ${prefix}`)
     }
+    if (prefix !== '' && prefix[0] !== '/') {
+      throw new Error(`'prefix' must start with a '/' character. Got: '${prefix}'`)
+    }
+
     if (typeof subAppFn !== 'function') {
       throw new TypeError(`'subAppFn' must be a function. Got a value of type '${typeof subAppFn}': ${subAppFn}`)
     }
@@ -185,33 +189,16 @@ function medley(options) {
     subApp._subApps = []
     subApp._bodyParser = parentApp._bodyParser.clone()
     subApp._hooks = Hooks.buildHooks(parentApp._hooks)
-    subApp._routePrefix = buildRoutePrefix(parentApp._routePrefix, prefix)
     subApp[kRegisteredPlugins] = parentApp[kRegisteredPlugins].slice()
 
-    if (prefix) {
+    if (prefix.length > 0) {
+      subApp._routePrefix += subApp._routePrefix.endsWith('/') ? prefix.slice(1) : prefix
+
       subApp._canSetNotFoundHandler = true
       subApp._notFoundLevelApp = subApp
     }
 
     return subApp
-  }
-
-  function buildRoutePrefix(basePrefix, pluginPrefix) {
-    if (!pluginPrefix) {
-      return basePrefix
-    }
-
-    // Ensure that there is a '/' between the prefixes
-    if (basePrefix.endsWith('/')) {
-      if (pluginPrefix[0] === '/') {
-        // Remove the extra '/' to avoid: '/first//second'
-        pluginPrefix = pluginPrefix.slice(1)
-      }
-    } else if (pluginPrefix[0] !== '/') {
-      pluginPrefix = '/' + pluginPrefix
-    }
-
-    return basePrefix + pluginPrefix
   }
 
   function decorateApp(name, value) {
@@ -295,7 +282,7 @@ function medley(options) {
       const methodHandler = methodHandlers[method]
 
       if (methodHandler === undefined) {
-        throw new Error(`${method} method is not supported!`)
+        throw new Error(`"${method}" method is not supported`)
       }
 
       if (methodGroups.has(methodHandler)) {
@@ -305,27 +292,29 @@ function medley(options) {
       }
     }
 
+    var path = opts.path === undefined ? opts.url : opts.path
+
+    if (typeof path !== 'string') {
+      throw new TypeError(`Route 'path' must be a string. Got a value of type '${typeof path}': ${path}`)
+    }
+
+    if (this._routePrefix.endsWith('/') && path.startsWith('/')) {
+      path = this._routePrefix + path.slice(1)
+    } else {
+      path = this._routePrefix + path
+    }
+
+    if (path === '' || path[0] !== '/') {
+      path = '/' + path
+    }
+
     if (typeof opts.handler !== 'function') {
-      throw new Error(
-        `Got '${opts.handler}' as the handler for the ${opts.method}:${opts.url} route. Expected a function.`
+      throw new TypeError(
+        `Route 'handler' must be a function. Got a value of type '${typeof opts.handler}': ${opts.handler}`
       )
     }
 
     const serializers = buildSerializers(opts.responseSchema)
-    const prefix = this._routePrefix
-
-    var path = opts.path || opts.url
-    if (path === '/' && prefix.length > 0) {
-      // Ensure that '/prefix' + '/' gets registered as '/prefix'
-      path = ''
-    } else if (path[0] === '/' && prefix.endsWith('/')) {
-      // Ensure that '/prefix/' + '/route' gets registered as '/prefix/route'
-      path = path.slice(1)
-    }
-    path = prefix + path
-
-    opts.path = opts.url = path
-    opts.prefix = prefix
     opts.config = opts.config || {}
 
     for (const [methodHandler, methodNames] of methodGroups) {
@@ -429,18 +418,12 @@ function medley(options) {
 
     this._notFoundRouteContexts.set(methodHandler, routeContext)
 
-    notFoundRouter.on(
-      methods,
-      prefix + (prefix.endsWith('/') ? '*' : '/*'),
-      routeHandler,
-      routeContext
-    )
-    notFoundRouter.on(
-      methods,
-      prefix,
-      routeHandler,
-      routeContext
-    )
+    if (prefix.endsWith('/')) {
+      notFoundRouter.on(methods, prefix + '*', routeHandler, routeContext)
+    } else {
+      notFoundRouter.on(methods, prefix, routeHandler, routeContext)
+      notFoundRouter.on(methods, prefix + '/*', routeHandler, routeContext)
+    }
 
     preLoadedHandlers.push(() => {
       RouteContext.setHooks(routeContext, this._hooks, opts.beforeHandler)
