@@ -1,7 +1,9 @@
 # Medley
 
+<!-- [![npm Version](https://img.shields.io/npm/v/@medley/medley.svg)](https://www.npmjs.com/package/@medley/medley) -->
 [![Build Status](https://travis-ci.org/medleyjs/medley.svg?branch=master)](https://travis-ci.org/medleyjs/medley)
 [![Coverage Status](https://coveralls.io/repos/github/medleyjs/medley/badge.svg?branch=master)](https://coveralls.io/github/medleyjs/medley?branch=master)
+[![dependencies Status](https://david-dm.org/medleyjs/medley/status.svg)](https://david-dm.org/medleyjs/medley)
 
 Medley is a fast and modern web framework for Node.js. It fully supports both `async`/`await` and
 callbacks and is compatible with Node 6 or greater. It's design incorporates concepts found in
