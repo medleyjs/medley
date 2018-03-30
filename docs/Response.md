@@ -19,6 +19,7 @@ app.get('/user/:id', function(req, res) {
 + [`.request`](#resrequest)
 + [`.route`](#resroute)
 + [`.sent`](#ressent)
++ [`.state`](#resstate)
 + [`.statusCode`](#resstatuscode)
 + [`.stream`](#resstream)
 
@@ -67,6 +68,16 @@ app.route({
 ### `res.sent`
 
 Boolean. `true` if a response has already been sent, `false` otherwise.
+
+### `res.state`
+
+A plain object for storing arbitrary data during a request. Recommended to be
+used as a namespace for passing information through hooks to front-end views.
+Is a new, empty object for each request.
+
+```js
+res.state // {}
+```
 
 ### `res.statusCode`
 

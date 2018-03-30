@@ -90,11 +90,6 @@ test('.decorateRequest() should not allow decorating Medley values', (t) => {
   )
 
   t.throws(
-    () => app.decorateRequest('state', null),
-    new Error("A decorator called 'state' has already been added to Request")
-  )
-
-  t.throws(
     () => app.decorateRequest('body', null),
     new Error("A decorator called 'body' has already been added to Request")
   )
@@ -138,6 +133,11 @@ test('.decorateResponse() should not allow decorating Medley values', (t) => {
   t.throws(
     () => app.decorateResponse('sent', null),
     new Error("A decorator called 'sent' has already been added to Response")
+  )
+
+  t.throws(
+    () => app.decorateResponse('state', null),
+    new Error("A decorator called 'state' has already been added to Response")
   )
 
   t.throws(

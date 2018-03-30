@@ -19,8 +19,10 @@ test('Response properties', (t) => {
   t.equal(response.route, routeContext)
   t.equal(response.route.config, config)
   t.equal(response.sent, false)
+  t.type(response.state, 'object')
   t.equal(response.headersSent, false)
   t.equal(response.statusCode, 200)
+
   t.end()
 })
 
@@ -346,6 +348,11 @@ test('res.remove() removes response headers', (t) => {
     t.notOk('x-custom-header-2' in res.headers)
     t.notOk('x-custom-header-3' in res.headers)
   })
+})
+
+t.test('res.state should be different for each res instance', (t) => {
+  t.plan(1)
+  t.notEqual(new Response().state, new Response().state)
 })
 
 test('res.type() does not allow setting a header value to `undefined`', (t) => {
