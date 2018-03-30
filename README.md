@@ -3,7 +3,7 @@
 [![npm Version](https://img.shields.io/npm/v/@medley/medley.svg)](https://www.npmjs.com/package/@medley/medley)
 [![Build Status](https://travis-ci.org/medleyjs/medley.svg?branch=master)](https://travis-ci.org/medleyjs/medley)
 [![Coverage Status](https://coveralls.io/repos/github/medleyjs/medley/badge.svg?branch=master)](https://coveralls.io/github/medleyjs/medley?branch=master)
-[![dependencies Status](https://david-dm.org/medleyjs/medley/status.svg)](https://david-dm.org/medleyjs/medley)
+[![dependencies Status](https://img.shields.io/david/medleyjs/medley.svg)](https://david-dm.org/medleyjs/medley)
 
 Medley is a fast and modern web framework for Node.js. It fully supports both `async`/`await` and
 callbacks and is compatible with Node 6 or greater. It's design incorporates concepts found in
@@ -11,6 +11,7 @@ callbacks and is compatible with Node 6 or greater. It's design incorporates con
 [hapi](https://github.com/hapijs/hapi), and [Fastify](https://github.com/fastify/fastify).
 Most importantly, Medley aims to provide an API that is forward-compatible with future versions
 that will take full advantage of Node's [`HTTP/2` module](https://nodejs.org/api/http2.html).
+
 
 ## Usage
 
@@ -50,6 +51,7 @@ app.listen(3000)
 + [Plugins](https://github.com/medleyjs/medley/blob/master/docs/Plugins.md)
 + [Testing](https://github.com/medleyjs/medley/blob/master/docs/Testing.md)
 
+
 ## Features
 
 + An API similar to [Express](https://github.com/expressjs/express)
@@ -68,8 +70,26 @@ module has a very different API from the `http`/`https` modules, but it also pro
 [compatibility API](https://nodejs.org/api/http2.html#http2_compatibility_api). Medley currently
 uses the compatibility API (to support both HTTP/1.x and HTTP/2), but Medley's API is designed such
 that when Medley upgrades to the full `http2` API, application code built on Medley should not need
-to change. Medley's goal is to shelter application code from this transition (as much as possible)
+to change. Medley's goal is to insulate application code from this transition (as much as possible)
 so that you can start writing code now that won't require massive rewrites in the future.
+
+
+## Ecosystem
+
+#### Body Parsing
+
++ [`@medley/body-parser`](https://www.npmjs.com/package/@medley/body-parser) - Essential body parsers for Medley.
+
+#### Validation
+
++ [`ajv-request-validator`](https://www.npmjs.com/package/ajv-request-validator) - Tool for validating the `request` object of popular frameworks with Ajv.
+
+#### Plugins
+
++ [`@medley/cookie`](https://www.npmjs.com/package/@medley/cookie) - Medley plugin for parsing and setting cookies.
++ [`@medley/serve-favicon`](https://www.npmjs.com/package/@medley/serve-favicon) - Medley plugin for serving the default favicon.
++ [`@medley/serve-static`](https://www.npmjs.com/package/@medley/serve-static) - Medley plugin for serving static files.
+
 
 ## Acknowledgements
 
