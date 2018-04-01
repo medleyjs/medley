@@ -29,7 +29,6 @@ app.get('/user/:id', function(req, res) {
 + [`.error([statusCode,] error)`](#error)
 + [`.get(field)`](#get)
 + [`.has(field)`](#has)
-+ [`.notFound()`](#not-found)
 + [`.redirect([statusCode,] url)`](#redirect)
 + [`.remove(field)`](#remove)
 + [`.send([payload])`](#send)
@@ -211,22 +210,6 @@ Returns `true` if the specified response header was previously set, otherwise re
 res.has('content-type') // false
 res.set('content-type', 'application/json')
 res.has('content-type') // true
-```
-
-<a id="not-found"></a>
-### `res.notFound()`
-
-Forwards the request to the not-found handler (either the default or one set
-with [`app.setNotFoundHandler()`](App.md#set-not-found-handler)).
-
-```js
-app.setNotFoundHandler((req, res) => {
-  res.status(404).send(req.url + ' not found');
-});
-
-app.get('/never-found', (req, res) => {
-  res.notFound();
-});
 ```
 
 <a id="redirect"></a>

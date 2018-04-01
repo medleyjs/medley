@@ -286,18 +286,18 @@ for more information on where this status code may come from.
 + `options` *object* - Accepts the `responseSchema`, `beforeHandler`, and `config` options defined in [Routes#options](Routes.md#options).
 + `handler(req, res)` *(function)* - A request handler function that receives the [`request`](Request.md) and [`response`](Response.md) objects.
 
-Sets the handler that will be called when no registered routes match the
+Sets the handler that will be called when no registered route matches the
 incoming request. The handler is treated like a regular route handler so
 requests will go through the full [request lifecycle](Lifecycle.md).
 
 ```js
 app.setNotFoundHandler((req, res) => {
-  // Send 404 Not Found response
+  // Send "404 Not Found" response
 });
 ```
 
-Additional not-found handlers can be set for sub-apps that are registered with
-a [`prefix`](SubApps.md#prefix).
+Sub-apps that are registered with a [`prefix`](SubApps.md#prefix) can have
+their own not-found handler.
 
 ```js
 app.setNotFoundHandler((req, res) => {

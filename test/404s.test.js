@@ -28,7 +28,7 @@ test('default 404', (t) => {
 })
 
 test('customized 404', (t) => {
-  t.plan(3)
+  t.plan(4)
 
   const app = medley()
 
@@ -36,41 +36,21 @@ test('customized 404', (t) => {
     response.send({hello: 'world'})
   })
 
-  app.get('/with-notFound', function(req, response) {
-    response.notFound()
-  })
-
   app.setNotFoundHandler(function(req, response) {
     response.status(404).send('this was not found')
   })
 
-  t.tearDown(app.close.bind(app))
-
   app.listen(0, (err) => {
     t.error(err)
+    app.server.unref()
 
-    t.test('unsupported route', (t) => {
-      t.plan(3)
-      sget({
-        method: 'GET',
-        url: 'http://localhost:' + app.server.address().port + '/notSupported',
-      }, (err, response, body) => {
-        t.error(err)
-        t.strictEqual(response.statusCode, 404)
-        t.strictEqual(body.toString(), 'this was not found')
-      })
-    })
-
-    t.test('with calling .notFound()', (t) => {
-      t.plan(3)
-      sget({
-        method: 'GET',
-        url: 'http://localhost:' + app.server.address().port + '/with-notFound',
-      }, (err, response, body) => {
-        t.error(err)
-        t.strictEqual(response.statusCode, 404)
-        t.strictEqual(body.toString(), 'this was not found')
-      })
+    sget({
+      method: 'GET',
+      url: 'http://localhost:' + app.server.address().port + '/notSupported',
+    }, (err, response, body) => {
+      t.error(err)
+      t.strictEqual(response.statusCode, 404)
+      t.strictEqual(body.toString(), 'this was not found')
     })
   })
 })
@@ -599,47 +579,6 @@ test('hooks check 404', (t) => {
   })
 })
 
-test('the default 404 handler can be invoked inside a prefixed plugin', (t) => {
-  t.plan(4)
-
-  const app = medley()
-
-  app.use('/v1', (subApp) => {
-    subApp.get('/path', (request, response) => {
-      response.notFound()
-    })
-  })
-
-  app.inject('/v1/path', (err, res) => {
-    t.error(err)
-    t.equal(res.statusCode, 404)
-    t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
-    t.equal(res.payload, 'Not Found: GET /v1/path')
-  })
-})
-
-test('an inherited custom 404 handler can be invoked inside a prefixed plugin', (t) => {
-  t.plan(3)
-
-  const app = medley()
-
-  app.setNotFoundHandler((request, response) => {
-    response.status(404).send('custom handler')
-  })
-
-  app.use('/v1', (subApp) => {
-    subApp.get('/path', (request, response) => {
-      response.notFound()
-    })
-  })
-
-  app.inject('/v1/path', (err, res) => {
-    t.error(err)
-    t.equal(res.statusCode, 404)
-    t.equal(res.payload, 'custom handler')
-  })
-})
-
 test('encapsulated custom 404 handler without a prefix is the handler for the entire 404 level', (t) => {
   t.plan(6)
 
@@ -687,48 +626,5 @@ test('cannot set notFoundHandler after binding', (t) => {
     } catch (e) {
       t.pass()
     }
-  })
-})
-
-test('async not-found handler triggered by response.notFound()', (t) => {
-  t.plan(3)
-
-  const app = medley()
-
-  app.get('/', function(request, response) {
-    response.notFound()
-  })
-
-  app.setNotFoundHandler((request, response) => {
-    response.status(404)
-    return Promise.resolve('Custom 404')
-  })
-
-  app.inject('/', (err, res) => {
-    t.error(err)
-    t.equal(res.statusCode, 404)
-    t.equal(res.payload, 'Custom 404')
-  })
-})
-
-test('the Content-Type header should be unset before calling a not-found handler', (t) => {
-  t.plan(4)
-
-  const app = medley()
-
-  app.get('/', (request, response) => {
-    response.type('application/json')
-    response.notFound()
-  })
-
-  app.setNotFoundHandler((request, response) => {
-    response.status(404).send('plain text')
-  })
-
-  app.inject('/', (err, res) => {
-    t.error(err)
-    t.equal(res.statusCode, 404)
-    t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
-    t.equal(res.payload, 'plain text')
   })
 })

@@ -83,7 +83,7 @@ parametric (standard, regex, and multi-parametric) routes.
 This can be useful to protect against [DoS attacks](https://www.owasp.org/index.php/Regular_expression_Denial_of_Service_-_ReDoS)
 for routes with regex parameters.
 
-*If the maximum length limit is reached, the not-found handler will be invoked.*
+*If the maximum length limit is reached, the request will not match the route.*
 
 ### `onStreamError`
 

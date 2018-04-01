@@ -104,7 +104,6 @@ function medley(options) {
     setNotFoundHandler,
     _canSetNotFoundHandler: true,
     _notFoundLevelApp: null,
-    _notFoundRouteContexts: null,
 
     setErrorHandler,
     _errorHandler: null,
@@ -335,12 +334,10 @@ function medley(options) {
       recordRoute(path, methods, routeContext, this)
     }
 
-    // Users can add hooks, an error handler, and a not-found handler after
-    // the route is registered, so add these to the routeContext just before
-    // the app is loaded.
+    // Users can add hooks and error handlers after the route is registered,
+    // so add these to the routeContext just before the app is loaded.
     preLoadedHandlers.push(() => {
       RouteContext.setHooks(routeContext, this._hooks, opts.beforeHandler)
-      routeContext.notFoundRouteContext = this._notFoundRouteContexts.get(methodHandler)
       routeContext.errorHandler = this._errorHandler
     })
   }
@@ -352,10 +349,9 @@ function medley(options) {
       throw new Error(`Not found handler already set for app instance with prefix: '${this._routePrefix}'`)
     }
 
-    // Set values on the "_notFoundLevelApp" so that they
+    // Set value on the "_notFoundLevelApp" so that it
     // can be inherited by all of that app's children.
     this._notFoundLevelApp._canSetNotFoundHandler = false
-    this._notFoundLevelApp._notFoundRouteContexts = new Map()
 
     if (handler === undefined) {
       handler = opts
@@ -407,8 +403,6 @@ function medley(options) {
       handler,
       opts.config
     )
-
-    this._notFoundRouteContexts.set(methodHandler, routeContext)
 
     const prefix = this._routePrefix
 

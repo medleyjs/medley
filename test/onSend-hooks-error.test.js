@@ -127,29 +127,6 @@ t.test('onSend hooks do not run again if they errored before - response.error() 
   })
 })
 
-t.test('onSend hooks do not run again if they errored before - Not-found handler triggered', (t) => {
-  t.plan(4)
-
-  const app = medley()
-
-  app.get('/', (request, response) => {
-    response.notFound()
-  })
-
-  var onSendCalled = false
-  app.addHook('onSend', (request, response, payload, next) => {
-    t.equal(onSendCalled, false, 'onSend called twice')
-    onSendCalled = true
-    next(new Error('onSend error'))
-  })
-
-  app.inject('/', (err, res) => {
-    t.error(err)
-    t.equal(res.statusCode, 500)
-    t.equal(JSON.parse(res.payload).message, 'onSend error')
-  })
-})
-
 t.test('onSend hooks do not run again if they errored before - response.send() starts + custom error handler response.send()', (t) => {
   t.plan(6)
 
@@ -208,35 +185,6 @@ t.test('onSend hooks do not run again if they errored before - response.error() 
   })
 })
 
-t.test('onSend hooks do not run again if they errored before - Not-found handler triggered + custom error handler response.send()', (t) => {
-  t.plan(6)
-
-  const app = medley()
-
-  app.get('/', (request, response) => {
-    response.notFound()
-  })
-
-  var onSendCalled = false
-  app.addHook('onSend', (request, response, payload, next) => {
-    t.equal(onSendCalled, false, 'onSend called twice')
-    onSendCalled = true
-    next(new Error('onSend error'))
-  })
-
-  app.setErrorHandler((err, request, response) => {
-    t.equal(err.message, 'onSend error')
-    response.send('Custom error handler message')
-  })
-
-  app.inject('/', (err, res) => {
-    t.error(err)
-    t.equal(res.statusCode, 500)
-    t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
-    t.equal(res.payload, 'Custom error handler message')
-  })
-})
-
 t.test('onSend hooks do not run again if they errored before - response.send() starts + custom error handler response.error()', (t) => {
   t.plan(6)
 
@@ -292,34 +240,5 @@ t.test('onSend hooks do not run again if they errored before - response.error() 
     t.equal(res.statusCode, 500)
     t.equal(res.headers['content-type'], 'application/json')
     t.equal(JSON.parse(res.payload).message, 'onSend error')
-  })
-})
-
-t.test('onSend hooks do not run again if they errored before - Not-found handler triggered + custom error handler response.error()', (t) => {
-  t.plan(6)
-
-  const app = medley()
-
-  app.get('/', (request, response) => {
-    response.notFound()
-  })
-
-  var onSendCalled = false
-  app.addHook('onSend', (request, response, payload, next) => {
-    t.equal(onSendCalled, false, 'onSend called twice')
-    onSendCalled = true
-    next(new Error('onSend error'))
-  })
-
-  app.setErrorHandler((err, request, response) => {
-    t.equal(err.message, 'onSend error')
-    response.error(new Error('Custom error handler message'))
-  })
-
-  app.inject('/', (err, res) => {
-    t.error(err)
-    t.equal(res.statusCode, 500)
-    t.equal(res.headers['content-type'], 'application/json')
-    t.equal(JSON.parse(res.payload).message, 'Custom error handler message')
   })
 })
