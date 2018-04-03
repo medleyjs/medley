@@ -76,11 +76,23 @@ See the [Hooks](Hooks.md) documentation.
 <a id="close"></a>
 ### `app.close([callback])`
 
-Shuts down the app by closing the server and running the [`'onClose'`](#on-close) handlers.
-If a `callback` is provided, it will be called once all of the handlers have completed.
++ `callback(err)` *(function)* - Called when all [`onClose`](#on-close) handlers have finished.
+  + `err` *(null | Error | Error[])*
 
+Shuts down the app by closing the server and running the [`onClose`](#on-close) handlers.
+If a `callback` is provided, it will be called once all of the handlers have completed.
 The `callback` will receive an error object as the first parameter if one of
-the handlers failed, or an array or errors if multiple handlers failed.
+the handlers failed, or an array of errors if multiple handlers failed.
+
+```js
+app.close((err) => {
+  if (err) {
+    console.error(err);
+    process.exit(1);
+  }
+  process.exit();
+});
+```
 
 <a id="decorate"></a>
 ### `app.decorate(name, value)`
