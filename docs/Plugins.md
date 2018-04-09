@@ -2,21 +2,21 @@
 
 Plugins are useful for adding specific functionality to a Medley app
 (or sub-app) in a configurable way. A plugin can be added to an app
-with the `app.registerPlugin()` method.
+with the `app.register()` method.
 
 ```js
-app.registerPlugin(plugin [, options])
+app.register(plugin [, options])
 ```
 
-The `.registerPlugin()` method takes two parameters:
+The `.register()` method takes two parameters:
 
 + `plugin` *(function)* - The plugin function that adds functionality to the `app`.
 + `options` *(object | any)* - The options that will be passed to the `plugin` function.
 
 The `plugin` function will receive two parameters:
 
-+ `app` - The `app` instance the plugin is being registered on.
-+ `options` *(object | any)* - The options that were passed to `.registerPlugin()`.
++ `app` - The [`app` instance](App.md) the plugin is being registered on.
++ `options` *(object | any)* - The options that were passed to `.register()`.
 
 #### Example:
 
@@ -39,20 +39,20 @@ module.exports = myPlugin
 const medley = require('@medley/medley');
 const app = medley();
 
-app.registerPlugin(require('./my-plugin'), {optional: 'options'});
+app.register(require('./my-plugin'), {optional: 'options'});
 
 console.log(app.myPluginData.receivedOptions); // {optional: 'options'}
 console.log(app.myPluginData.example); // 'value'
 ```
 
-Using `app.registerPlugin()` is essentially the same as doing the following:
+Using `app.register()` is essentially the same as doing the following:
 
 ```js
 const myPlugin = require('./my-plugin');
 myPlugin(app, options);
 ```
 
-It is perfectly acceptable to do that, however, `.registerPlugin()` is a
+It is perfectly acceptable to do that, however, `.register()` is a
 slightly more convenient way of writing the code above, and it also
 provides the following additional functionality:
 
@@ -112,16 +112,16 @@ module.exports = sessionPlugin;
 const medley = require('@medley/medley');
 const app = medley();
 
-app.registerPlugin(require('./cookie-plugin'));
-app.registerPlugin(require('./session-plugin'));
+app.register(require('./cookie-plugin'));
+app.register(require('./session-plugin'));
 ```
 
 Everything works because the `cookie-plugin` was registered before the
 `session-plugin`. But if the `session-plugin` were registered first:
 
 ```js
-app.registerPlugin(require('./session-plugin')); // AssertionError!
-app.registerPlugin(require('./cookie-plugin'));
+app.register(require('./session-plugin')); // AssertionError!
+app.register(require('./cookie-plugin'));
 ```
 
 An error is thrown because the `session-plugin` depends on the `cookie-plugin`

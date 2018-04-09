@@ -409,7 +409,7 @@ test('run hooks on custom 404', (t) => {
     })
   }
 
-  app.registerPlugin(plugin)
+  app.register(plugin)
 
   app.get('/', (request, response) => {
     response.send({hello: 'world'})
@@ -419,7 +419,7 @@ test('run hooks on custom 404', (t) => {
     response.status(404).send('this was not found')
   })
 
-  app.registerPlugin(plugin) // Registering plugin after handler also works
+  app.register(plugin) // Registering plugin after handler also works
 
   app.inject({url: '/not-found'}, (err, res) => {
     t.error(err)

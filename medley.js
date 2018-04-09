@@ -13,7 +13,7 @@ const runOnCloseHandlers = require('./lib/utils/runOnCloseHandlers')
 const runOnLoadHandlers = require('./lib/utils/runOnLoadHandlers')
 
 const {buildSerializers} = require('./lib/Serializer')
-const {kRegisteredPlugins, registerPlugin} = require('./lib/PluginUtils')
+const {kRegisteredPlugins, register} = require('./lib/PluginUtils')
 const {
   routeHandler,
   methodHandlers: originalMethodHandlers,
@@ -121,7 +121,7 @@ function medley(options) {
     inject, // Fake HTTP injection
 
     // Plugins
-    registerPlugin,
+    register,
     [kRegisteredPlugins]: [],
 
     _Request: Request.buildRequest(!!options.trustProxy),

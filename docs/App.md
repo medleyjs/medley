@@ -29,7 +29,7 @@ const app = medley();
 + [`.onClose(callback)`](#on-close)
 + [`.onLoad(callback)`](#on-load)
 + [`.printRoutes()`](#print-routes)
-+ [`.registerPlugin(plugin [, options])`](#register-plugin)
++ [`.register(plugin [, options])`](#register)
 + [`.route(options)`](#route)
 + [`.setErrorHandler(handler)`](#set-error-handler)
 + [`.setNotFoundHandler([options,] handler)`](#set-not-found-handler)
@@ -314,8 +314,8 @@ console.log(app.printRoutes());
 //   └── hello/world (GET)
 ```
 
-<a id="register-plugin"></a>
-### `app.registerPlugin(plugin [, options])`
+<a id="register"></a>
+### `app.register(plugin [, options])`
 
 Registers a plugin with the `app`. See the [Plugins](Plugins.md) documentation.
 

@@ -862,7 +862,7 @@ test('onRequest hooks should run in the order in which they are defined', (t) =>
       response.send({hello: 'world'})
     })
 
-    subApp.registerPlugin(function(appInstance) {
+    subApp.register(function(appInstance) {
       appInstance.addHook('onRequest', (request, response, next) => {
         t.strictEqual(request.previous, 1)
         request.previous = 2
@@ -871,15 +871,15 @@ test('onRequest hooks should run in the order in which they are defined', (t) =>
     })
   })
 
-  app.registerPlugin(function(subApp) {
+  app.register(function(subApp) {
     subApp.addHook('onRequest', (request, response, next) => {
       t.strictEqual(request.previous, 2)
       request.previous = 3
       next()
     })
 
-    subApp.registerPlugin(function(i) {
-      i.addHook('onRequest', (request, response, next) => {
+    subApp.register(function(pluginApp) {
+      pluginApp.addHook('onRequest', (request, response, next) => {
         t.strictEqual(request.previous, 3)
         request.previous = 4
         next()
@@ -916,8 +916,8 @@ test('preHandler hooks should run in the order in which they are defined', (t) =
       response.send({hello: 'world'})
     })
 
-    subApp.registerPlugin(function(i) {
-      i.addHook('preHandler', function(request, response, next) {
+    subApp.register(function(pluginApp) {
+      pluginApp.addHook('preHandler', function(request, response, next) {
         t.strictEqual(request.previous, 1)
         request.previous = 2
         next()
@@ -925,15 +925,15 @@ test('preHandler hooks should run in the order in which they are defined', (t) =
     })
   })
 
-  app.registerPlugin(function(subApp) {
+  app.register(function(subApp) {
     subApp.addHook('preHandler', function(request, response, next) {
       t.strictEqual(request.previous, 2)
       request.previous = 3
       next()
     })
 
-    subApp.registerPlugin(function(i) {
-      i.addHook('preHandler', function(request, response, next) {
+    subApp.register(function(pluginApp) {
+      pluginApp.addHook('preHandler', function(request, response, next) {
         t.strictEqual(request.previous, 3)
         request.previous = 4
         next()
@@ -969,8 +969,8 @@ test('onSend hooks should run in the order in which they are defined', (t) => {
       response.send({})
     })
 
-    subApp.registerPlugin(function(i) {
-      i.addHook('onSend', function(request, response, payload, next) {
+    subApp.register(function(pluginApp) {
+      pluginApp.addHook('onSend', function(request, response, payload, next) {
         t.strictEqual(request.previous, 1)
         request.previous = 2
         next()
@@ -978,15 +978,15 @@ test('onSend hooks should run in the order in which they are defined', (t) => {
     })
   })
 
-  app.registerPlugin(function(subApp) {
+  app.register(function(subApp) {
     subApp.addHook('onSend', function(request, response, payload, next) {
       t.strictEqual(request.previous, 2)
       request.previous = 3
       next()
     })
 
-    subApp.registerPlugin(function(i) {
-      i.addHook('onSend', function(request, response, payload, next) {
+    subApp.register(function(pluginApp) {
+      pluginApp.addHook('onSend', function(request, response, payload, next) {
         t.strictEqual(request.previous, 3)
         request.previous = 4
         next()
@@ -1020,22 +1020,22 @@ test('onFinished hooks should run in the order in which they are defined', (t) =
       response.send({hello: 'world'})
     })
 
-    subApp.registerPlugin(function(i) {
-      i.addHook('onFinished', (request, response) => {
+    subApp.register(function(pluginApp) {
+      pluginApp.addHook('onFinished', (request, response) => {
         t.strictEqual(response.previous, 1)
         response.previous = 2
       })
     })
   })
 
-  app.registerPlugin(function(subApp) {
+  app.register(function(subApp) {
     subApp.addHook('onFinished', (request, response) => {
       t.strictEqual(response.previous, 2)
       response.previous = 3
     })
 
-    subApp.registerPlugin(function(i) {
-      i.addHook('onFinished', (request, response) => {
+    subApp.register(function(pluginApp) {
+      pluginApp.addHook('onFinished', (request, response) => {
         t.strictEqual(response.previous, 3)
         response.previous = 4
       })
