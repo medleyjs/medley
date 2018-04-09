@@ -30,7 +30,7 @@ test('inside a sub-app', (t) => {
 
   const app = medley()
 
-  app.use(function(subApp) {
+  app.encapsulate(function(subApp) {
     subApp.onClose(function(done) {
       t.equal(this, subApp)
       done()
@@ -52,7 +52,7 @@ test('close order', (t) => {
   const app = medley()
   let order = 1
 
-  app.use((subApp) => {
+  app.encapsulate((subApp) => {
     subApp.onClose((done) => {
       t.equal(order++, 1)
       setImmediate(done)

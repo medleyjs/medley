@@ -181,7 +181,7 @@ test('bodyParser should support encapsulation', (t) => {
     jsonParser(req.stream, done)
   })
 
-  app.use((subApp) => {
+  app.encapsulate((subApp) => {
     subApp.post('/', (req, response) => {
       response.send(req.body)
     })
@@ -291,7 +291,7 @@ test('bodyParser should allow unknown Content-Types when the allowUnsupportedMed
     res.send()
   })
 
-  app.use((subApp) => {
+  app.encapsulate((subApp) => {
     subApp.post('/sub-app', (req, res) => {
       t.equal(req.body, undefined)
       res.send()
@@ -587,7 +587,7 @@ test('body parsers added after a sub-app has been created should be inherited by
     res.send(req.body)
   })
 
-  app.use((subApp) => {
+  app.encapsulate((subApp) => {
     subApp.post('/sub-app', (req, res) => {
       res.send(req.body)
     })

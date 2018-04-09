@@ -141,7 +141,7 @@ test('setting a custom 404 handler multiple times is an error', (t) => {
 
     const app = medley()
 
-    app.use('/prefix', (subApp) => {
+    app.encapsulate('/prefix', (subApp) => {
       subApp.setNotFoundHandler(() => {})
 
       t.throws(
@@ -158,7 +158,7 @@ test('setting a custom 404 handler multiple times is an error', (t) => {
 
     app.setNotFoundHandler(() => {})
 
-    app.use((subApp) => {
+    app.encapsulate((subApp) => {
       t.throws(
         () => subApp.setNotFoundHandler(() => {}),
         new Error("Not found handler already set for app instance with prefix: '/'")
@@ -171,7 +171,7 @@ test('setting a custom 404 handler multiple times is an error', (t) => {
 
     const app = medley()
 
-    app.use((subApp) => {
+    app.encapsulate((subApp) => {
       subApp.setNotFoundHandler(() => {})
     })
 
@@ -188,10 +188,10 @@ test('setting a custom 404 handler multiple times is an error', (t) => {
 
     app.setNotFoundHandler(() => {})
 
-    app.use('/prefix', (subApp) => {
+    app.encapsulate('/prefix', (subApp) => {
       subApp.setNotFoundHandler(() => {})
 
-      subApp.use((subApp2) => {
+      subApp.encapsulate((subApp2) => {
         t.throws(
           () => subApp2.setNotFoundHandler(() => {}),
           new Error("Not found handler already set for app instance with prefix: '/prefix'")
@@ -205,12 +205,12 @@ test('setting a custom 404 handler multiple times is an error', (t) => {
 
     const app = medley()
 
-    app.use('/prefix', (subApp) => {
-      subApp.use((subApp2A) => {
+    app.encapsulate('/prefix', (subApp) => {
+      subApp.encapsulate((subApp2A) => {
         subApp2A.setNotFoundHandler(() => {})
       })
 
-      subApp.use((subApp2B) => {
+      subApp.encapsulate((subApp2B) => {
         t.throws(
           () => subApp2B.setNotFoundHandler(() => {}),
           new Error("Not found handler already set for app instance with prefix: '/prefix'")
@@ -235,19 +235,19 @@ test('encapsulated 404', (t) => {
     res.status(404).send('this was not found')
   })
 
-  app.use('/test', (subApp) => {
+  app.encapsulate('/test', (subApp) => {
     subApp.setNotFoundHandler(function(req, res) {
       res.status(404).send('this was not found 2')
     })
   })
 
-  app.use('/test2', (subApp) => {
+  app.encapsulate('/test2', (subApp) => {
     subApp.setNotFoundHandler(function(req, res) {
       res.status(404).send('this was not found 3')
     })
   })
 
-  app.use('/test3/', (subApp) => {
+  app.encapsulate('/test3/', (subApp) => {
     subApp.setNotFoundHandler(function(req, res) {
       res.status(404).send('this was not found 4')
     })
@@ -452,7 +452,7 @@ test('run hooks with encapsulated 404', (t) => {
     t.ok(response, 'onFinished called')
   })
 
-  app.use('/test', (subApp) => {
+  app.encapsulate('/test', (subApp) => {
     subApp.setNotFoundHandler((request, response) => {
       response.status(404).send('this was not found 2')
     })
@@ -500,7 +500,7 @@ test('encapsulated custom 404 without prefix has the right encapsulation context
   app.decorateRequest('foo', 42)
   app.decorateResponse('foo', 42)
 
-  app.use((subApp) => {
+  app.encapsulate((subApp) => {
     subApp.decorateRequest('bar', 84)
 
     subApp.addHook('onRequest', (request, response, next) => {
@@ -584,14 +584,14 @@ test('encapsulated custom 404 handler without a prefix is the handler for the en
 
   const app = medley()
 
-  app.use((subApp) => {
+  app.encapsulate((subApp) => {
     subApp.setNotFoundHandler((request, response) => {
       response.status(404).send('custom handler')
     })
   })
 
-  app.use('/prefixed', (subApp) => {
-    subApp.use((subApp2) => {
+  app.encapsulate('/prefixed', (subApp) => {
+    subApp.encapsulate((subApp2) => {
       subApp2.setNotFoundHandler((request, response) => {
         response.status(404).send('custom handler 2')
       })

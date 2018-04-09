@@ -76,7 +76,7 @@ function medley(options) {
     server,
     _onStreamError: options.onStreamError || function noop() {},
 
-    use, // For creating sub-apps
+    encapsulate, // For creating sub-apps
     _subApps: [],
 
     // Decorator methods
@@ -159,7 +159,7 @@ function medley(options) {
 
   return app
 
-  function use(prefix, subAppFn) {
+  function encapsulate(prefix, subAppFn) {
     if (subAppFn === undefined) {
       subAppFn = prefix
       prefix = ''
@@ -171,7 +171,6 @@ function medley(options) {
     if (prefix !== '' && prefix[0] !== '/') {
       throw new Error(`'prefix' must start with a '/' character. Got: '${prefix}'`)
     }
-
     if (typeof subAppFn !== 'function') {
       throw new TypeError(`'subAppFn' must be a function. Got a value of type '${typeof subAppFn}': ${subAppFn}`)
     }

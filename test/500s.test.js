@@ -90,7 +90,7 @@ test('encapsulated 500', (t) => {
     response.error(new Error('kaboom'))
   })
 
-  app.use('/test', function(subApp) {
+  app.encapsulate('/test', function(subApp) {
     subApp.get('/', function(req, response) {
       response.error(new Error('kaboom'))
     })

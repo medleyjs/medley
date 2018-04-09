@@ -157,7 +157,7 @@ test('app decorators are encapsulated in sub-apps', (t) => {
   t.plan(2)
   const app = medley()
 
-  app.use((subApp) => {
+  app.encapsulate((subApp) => {
     subApp.decorate('test', () => {})
     t.ok(subApp.test)
   })
@@ -174,7 +174,7 @@ test('cannot decorate sub-app if parent app already has the decorator', (t) => {
 
   app.decorate('foo', true)
 
-  app.use((subApp) => {
+  app.encapsulate((subApp) => {
     t.throws(
       () => subApp.decorate('foo', 'other'),
       new Error("A decorator called 'foo' has already been added")
@@ -186,7 +186,7 @@ test('decorateRequest inside a sub-app', (t) => {
   t.plan(9)
   const app = medley()
 
-  app.use((subApp) => {
+  app.encapsulate((subApp) => {
     subApp.decorateRequest('test', 'test')
 
     subApp.get('/sub', (req, res) => {
@@ -228,7 +228,7 @@ test('decorateResponse inside a sub-app', (t) => {
   t.plan(9)
   const app = medley()
 
-  app.use((subApp) => {
+  app.encapsulate((subApp) => {
     subApp.decorateResponse('test', 'test')
 
     subApp.get('/sub', (req, res) => {

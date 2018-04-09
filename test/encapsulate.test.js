@@ -5,73 +5,73 @@ const medley = require('..')
 
 function noop() { }
 
-t.test('.use() throws if subAppFn is not a function', (t) => {
+t.test('.encapsulate() throws if subAppFn is not a function', (t) => {
   const app = medley()
 
   t.throws(
-    () => app.use(),
+    () => app.encapsulate(),
     new TypeError("'subAppFn' must be a function. Got a value of type 'undefined': undefined")
   )
   t.throws(
-    () => app.use(null),
+    () => app.encapsulate(null),
     new TypeError("'subAppFn' must be a function. Got a value of type 'object': null")
   )
   t.throws(
-    () => app.use('string'),
+    () => app.encapsulate('string'),
     new TypeError("'subAppFn' must be a function. Got a value of type 'string': string")
   )
 
   t.end()
 })
 
-t.test('.use() throws if prefix is not a string', (t) => {
+t.test('.encapsulate() throws if prefix is not a string', (t) => {
   const app = medley()
 
   t.throws(
-    () => app.use(undefined, noop),
+    () => app.encapsulate(undefined, noop),
     new TypeError("'prefix' must be a string. Got a value of type 'undefined': undefined")
   )
   t.throws(
-    () => app.use(null, noop),
+    () => app.encapsulate(null, noop),
     new TypeError("'prefix' must be a string. Got a value of type 'object': null")
   )
   t.throws(
-    () => app.use(2, noop),
+    () => app.encapsulate(2, noop),
     new TypeError("'prefix' must be a string. Got a value of type 'number': 2")
   )
 
   t.end()
 })
 
-t.test('.use() throws if prefix does not start with a "/"', (t) => {
+t.test('.encapsulate() throws if prefix does not start with a "/"', (t) => {
   const app = medley()
 
   t.throws(
-    () => app.use('v1', noop),
+    () => app.encapsulate('v1', noop),
     new Error("'prefix' must start with a '/' character. Got: 'v1'")
   )
 
   t.end()
 })
 
-t.test('.use() creates a new app that inherits from the app that .use() was called on', (t) => {
+t.test('.encapsulate() creates a new app that inherits from the app that .encapsulate() was called on', (t) => {
   t.plan(2)
 
   const app = medley()
 
-  app.use(function(subApp) {
+  app.encapsulate(function(subApp) {
     t.notEqual(subApp, app)
     t.ok(app.isPrototypeOf(subApp))
   })
 })
 
-t.test('.use() executes the subAppFn immediately', (t) => {
+t.test('.encapsulate() executes the subAppFn immediately', (t) => {
   t.plan(2)
 
   const app = medley()
   var executed = false
 
-  app.use(function() {
+  app.encapsulate(function() {
     t.equal(executed, false)
     executed = true
   })
@@ -79,14 +79,14 @@ t.test('.use() executes the subAppFn immediately', (t) => {
   t.equal(executed, true)
 })
 
-t.test('.use() creates different sub-apps that can both define routes', (t) => {
+t.test('.encapsulate() creates different sub-apps that can both define routes', (t) => {
   t.plan(9)
 
   const app = medley()
   var subApp1
   var subApp2
 
-  app.use(function(subApp) {
+  app.encapsulate(function(subApp) {
     t.notEqual(subApp, app)
     subApp1 = subApp
 
@@ -95,7 +95,7 @@ t.test('.use() creates different sub-apps that can both define routes', (t) => {
     })
   })
 
-  app.use(function(subApp) {
+  app.encapsulate(function(subApp) {
     t.notEqual(subApp, app)
     subApp2 = subApp
 
@@ -119,19 +119,19 @@ t.test('.use() creates different sub-apps that can both define routes', (t) => {
   })
 })
 
-t.test('.use() nested calls with prefix', (t) => {
+t.test('.encapsulate() nested calls with prefix', (t) => {
   t.plan(4)
 
   const app = medley()
 
-  app.use('/parent', (subApp) => {
-    subApp.use('/child1', (subApp1) => {
+  app.encapsulate('/parent', (subApp) => {
+    subApp.encapsulate('/child1', (subApp1) => {
       subApp1.get('/', (req, res) => {
         res.send('child 1')
       })
     })
 
-    subApp.use('/child2', (subApp2) => {
+    subApp.encapsulate('/child2', (subApp2) => {
       subApp2.get('/', (req, res) => {
         res.send('child 2')
       })

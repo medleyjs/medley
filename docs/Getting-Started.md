@@ -141,14 +141,14 @@ See the [`Serialization` documentation](Serialization.md) for more information.
 
 Hooks, [body parsers](BodyParser.md), and app decorators can be encapsulated within sub-apps to
 isolate different functionality to specific parts of an application. Sub-apps are registered with
-the [`app.use()`](App.md#use) method.
+the [`app.encapsulate()`](App.md#encapsulate) method.
 
 **app.js**
 ```js
 const medley = require('@medley/medley');
 const app = medley();
 
-app.use(require('./userRoutes'));
+app.encapsulate(require('./userRoutes'));
 ```
 
 **userRoutes.js**
@@ -159,7 +159,7 @@ module.exports = function userRoutes(app) {
 };
 ```
 
-See [`app.use()`](App.md#use), [Hooks Encapsulation](Hooks.md#encapsulation),
+See [`app.encapsulate()`](App.md#encapsulate), [Hooks Encapsulation](Hooks.md#encapsulation),
 [`app.decorate()`](Decorators.md#decorate), and [Route Prefixing](Routes.md#route-prefixing)
 for details.
 

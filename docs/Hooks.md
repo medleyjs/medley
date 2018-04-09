@@ -234,7 +234,7 @@ app.addHook('onRequest', (req, res, next) => {
   next();
 });
 
-app.use((subApp1) => {
+app.encapsulate((subApp1) => {
   subApp1.addHook('onRequest', (req, res, next) => {
     req.one = 1; // Only runs for routes in `subApp1`
     next();
@@ -248,7 +248,7 @@ app.use((subApp1) => {
   });
 });
 
-app.use((subApp2) => {
+app.encapsulate((subApp2) => {
   subApp2.addHook('onRequest', (req, res, next) => {
     req.two = 2; // Only runs for routes in `subApp2`
     next();

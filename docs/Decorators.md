@@ -51,7 +51,7 @@ be available to that sub-app and its own sub-apps.
 ```js
 app.decorate('top', true);
 
-app.use((subApp1) => {
+app.encapsulate((subApp1) => {
   subApp1.decorate('one', 1);
 
   console.log(subApp1.top); // true
@@ -59,7 +59,7 @@ app.use((subApp1) => {
   console.log(subApp1.two); // undefined
 });
 
-app.use((subApp2) => {
+app.encapsulate((subApp2) => {
   subApp2.decorate('two', 2);
 
   console.log(subApp2.top); // true

@@ -60,7 +60,7 @@ test('within a sub-app', (t) => {
     response.redirect(301, '/')
   })
 
-  app.use(function(subApp) {
+  app.encapsulate(function(subApp) {
     subApp.addHook('onSend', function(request, response, payload, next) {
       response.set('x-onsend', 'yes')
       next()
