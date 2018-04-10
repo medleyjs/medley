@@ -4,7 +4,7 @@ const t = require('tap')
 const test = t.test
 const medley = require('..')
 
-test('default 500', (t) => {
+test('default error handler', (t) => {
   t.plan(4)
 
   const app = medley()
@@ -28,7 +28,7 @@ test('default 500', (t) => {
   })
 })
 
-test('custom 500', (t) => {
+test('custom error handler', (t) => {
   t.plan(6)
 
   const app = medley()
@@ -81,7 +81,7 @@ test('.setErrorHandler() should throw if not passed a function', (t) => {
   t.end()
 })
 
-test('encapsulated 500', (t) => {
+test('encapsulated error handler', (t) => {
   t.plan(10)
 
   const app = medley()
@@ -127,7 +127,7 @@ test('encapsulated 500', (t) => {
   })
 })
 
-test('custom 500 with hooks', (t) => {
+test('custom error handler with hooks', (t) => {
   t.plan(8)
 
   const app = medley()
@@ -164,7 +164,7 @@ test('custom 500 with hooks', (t) => {
   })
 })
 
-test('cannot set errorHandler after binding', (t) => {
+test('cannot set error handler after server is listening', (t) => {
   t.plan(2)
 
   const app = medley()
