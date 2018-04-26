@@ -274,6 +274,10 @@ function medley(options) {
   function route(opts) {
     throwIfAppIsLoaded('Cannot add route when app is already loaded')
 
+    if (opts.method === undefined) {
+      throw new TypeError('Route `method` is required')
+    }
+
     const methods = Array.isArray(opts.method) ? opts.method : [opts.method]
     const methodGroups = new Map()
 

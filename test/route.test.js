@@ -4,6 +4,17 @@ const t = require('tap')
 const test = t.test
 const medley = require('..')
 
+test('.route() should throw on missing method', (t) => {
+  t.plan(1)
+
+  const app = medley()
+
+  t.throws(
+    () => app.route({}),
+    new TypeError('Route `method` is required')
+  )
+})
+
 test('.route() should throw on unsupported method', (t) => {
   t.plan(1)
 
