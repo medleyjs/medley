@@ -72,7 +72,6 @@ function medley(options) {
   }
 
   const app = {
-    printRoutes: router.prettyPrint.bind(router),
     server,
     _onStreamError: options.onStreamError || function noop() {},
 
@@ -123,6 +122,10 @@ function medley(options) {
     // Plugins
     register,
     [kRegisteredPlugins]: [],
+
+    // For debugging routes
+    [Symbol.iterator]: routesIterator,
+    routesToString,
 
     _Request: Request.buildRequest(!!options.trustProxy),
     _Response: Response.buildResponse(),
@@ -493,31 +496,28 @@ function medley(options) {
   }
 
   function recordRoute(routePath, methods, routeContext, appInstance) {
+    const methodRoutes = {}
+    for (var i = 0; i < methods.length; i++) {
+      methodRoutes[methods[i]] = routeContext
+    }
+
     if (!routes.has(routePath)) {
-      routes.set(routePath, {
-        appInstance,
-        methods,
-        GETContext: methods.indexOf('GET') >= 0 ? routeContext : null,
-      })
+      routes.set(routePath, {appInstance, methodRoutes})
       return
     }
 
     const routeData = routes.get(routePath)
-
-    routeData.methods = routeData.methods.concat(methods)
-
-    if (methods.indexOf('GET') >= 0) {
-      routeData.GETContext = routeContext
-    }
+    Object.assign(routeData.methodRoutes, methodRoutes)
   }
 
   function registerAutoHandlers() {
     for (const [routePath, routeData] of routes) {
-      const methods = routeData.methods.slice()
+      const {methodRoutes} = routeData
+      const methods = Object.keys(methodRoutes)
 
       // Create a HEAD handler if a GET handler was set and a HEAD handler wasn't
-      if (routeData.GETContext !== null && methods.indexOf('HEAD') === -1) {
-        router.on('HEAD', routePath, routeHandler, routeData.GETContext)
+      if (methodRoutes.GET !== undefined && methodRoutes.HEAD === undefined) {
+        router.on('HEAD', routePath, routeHandler, methodRoutes.GET)
         methods.push('HEAD')
       }
 
@@ -543,9 +543,8 @@ function medley(options) {
         })
       }
 
-      // Try to save memory since these are no longer needed
+      // Try to save memory since this is no longer needed
       routeData.appInstance = null
-      routeData.GETContext = null
     }
   }
 
@@ -625,6 +624,25 @@ function medley(options) {
         lightMyRequest(httpHandler, opts, cb)
       }
     })
+  }
+
+  function *routesIterator() {
+    for (const [routePath, {methodRoutes}] of routes) {
+      yield [routePath, methodRoutes]
+    }
+  }
+
+  function routesToString() {
+    let str = ''
+
+    for (const [routePath, {methodRoutes}] of routes) {
+      if (str !== '') {
+        str += '\n'
+      }
+      str += routePath + ' (' + Object.keys(methodRoutes).join(',') + ')'
+    }
+
+    return str
   }
 }
 

@@ -28,11 +28,12 @@ const app = medley();
 + [`.load([callback])`](#load)
 + [`.onClose(callback)`](#on-close)
 + [`.onLoad(callback)`](#on-load)
-+ [`.printRoutes()`](#print-routes)
 + [`.register(plugin [, options])`](#register)
 + [`.route(options)`](#route)
++ [`.routesToString()`](#routes-to-string)
 + [`.setErrorHandler(handler)`](#set-error-handler)
 + [`.setNotFoundHandler([options,] handler)`](#set-not-found-handler)
++ [`[@@iterator]()`](#iterator)
 
 
 ## Properties
@@ -297,23 +298,6 @@ app.onLoad(async function() {
 
 **Note:** Using both async functions/promises and the `done` callback will cause undefined behavior.
 
-<a id="print-routes"></a>
-### `app.printRoutes()`
-
-Prints the representation of the internal radix tree used by the router. Useful for debugging.
-
-```js
-app.get('/test', () => {});
-app.get('/test/hello', () => {});
-app.get('/hello/world', () => {});
-
-console.log(app.printRoutes());
-// └── /
-//   ├── test (GET)
-//   │   └── /hello (GET)
-//   └── hello/world (GET)
-```
-
 <a id="register"></a>
 ### `app.register(plugin [, options])`
 
@@ -324,6 +308,24 @@ Registers a plugin with the `app`. See the [Plugins](Plugins.md) documentation.
 
 Registers a new route handler. There are also shorthand methods (like `app.post()`)
 that aren't included here. See the [Routes](Routes.md) documentation.
+
+<a id="routes-to-string"></a>
+### `app.routesToString()`
+
+Returns a string representing the registered routes and their methods.
+
+```js
+app.get('/test', () => {});
+app.get('/v1/user', () => {});
+app.post('/v1/user', () => {});
+
+console.log(app.routesToString());
+```
+
+```
+/test (GET)
+/v1/user (GET,POST)
+```
 
 <a id="set-error-handler"></a>
 ### `app.setErrorHandler(handler)`
@@ -377,3 +379,39 @@ app.encapsulate('/v1', (subApp) => {
   });
 });
 ```
+
+<a id="iterator"></a>
+### `app.[@@iterator]()`
+
+Returns an iterator that can be used to iterate over the registered routes.
+
+```js
+app.get('/test', () => {});
+app.get('/v1/user', () => {});
+app.post('/v1/user', () => {});
+
+const iterator = app[Symbol.iterator]();
+const route1 = iterator.next().value;
+const route2 = iterator.next().value;
+// etc.
+console.log(route1); // ['/test', { GET: {...} }]
+```
+
+Instead of calling the method, the `app` would normally be iterated over using `for...of`.
+
+```js
+for (const [routePath, methods] of app) {
+  console.log(routePath, '-', methods);
+}
+```
+
+```
+/test - { GET: {...} }
+/v1/user - { GET: {...}, POST: {...} }
+```
+
+The route `methods` value is an object that maps method names to the route context
+(the same value that will be available as [`res.route`](Response.md#resroute)).
+
+Note that some values in the route context are not set until the `app` has
+finished [loading](#load).
