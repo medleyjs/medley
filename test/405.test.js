@@ -35,13 +35,21 @@ t.test('auto 405 response for unset methods', (t) => {
   })
 })
 
-t.test('auto 405 response for non-GET/HEAD route', (t) => {
-  t.plan(10)
+t.test('auto 405 response for non-GET/HEAD routes', (t) => {
+  t.plan(14)
 
   const app = medley()
 
   app.delete('/', (req, res) => {
     res.send({hello: 'world'})
+  })
+
+  app.route({
+    method: ['PUT', 'POST'],
+    url: '/user',
+    handler(req, res) {
+      res.send('hello')
+    },
   })
 
   app.inject({
@@ -63,6 +71,13 @@ t.test('auto 405 response for non-GET/HEAD route', (t) => {
     t.equal(res.statusCode, 405)
     t.equal(res.headers.allow, 'DELETE')
     t.equal(res.headers['content-length'], undefined)
+    t.equal(res.payload, '')
+  })
+
+  app.inject('/user', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 405)
+    t.equal(res.headers.allow, 'POST,PUT')
     t.equal(res.payload, '')
   })
 })

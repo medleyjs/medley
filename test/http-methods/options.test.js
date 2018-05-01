@@ -19,7 +19,7 @@ t.test('auto OPTIONS response', (t) => {
   })
 
   app.route({
-    method: ['GET', 'HEAD', 'DELETE', 'POST'],
+    method: ['DELETE', 'GET', 'HEAD', 'POST'],
     path: '/multi',
     handler() {
       t.fail('handler should not be called')
@@ -52,8 +52,8 @@ t.test('auto OPTIONS response', (t) => {
   }, (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 200)
-    t.equal(res.headers.allow, 'GET,HEAD,DELETE,POST')
-    t.equal(res.payload, 'GET,HEAD,DELETE,POST')
+    t.equal(res.headers.allow, 'DELETE,GET,HEAD,POST')
+    t.equal(res.payload, 'DELETE,GET,HEAD,POST')
   })
 })
 

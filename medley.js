@@ -525,6 +525,8 @@ function medley(options) {
         methods.push('HEAD')
       }
 
+      methods.sort() // For consistent Allow headers
+
       // Create an OPTIONS handler if one wasn't set
       const optionsIndex = methods.indexOf('OPTIONS')
       if (optionsIndex === -1) {
