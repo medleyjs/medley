@@ -19,8 +19,8 @@ t.test('auto 405 response for unset methods', (t) => {
     t.error(err)
     t.equal(res.statusCode, 405)
     t.equal(res.headers.allow, 'GET,HEAD')
-    t.equal(res.headers['content-length'], '0')
-    t.equal(res.payload, '')
+    t.equal(res.headers['content-length'], '28')
+    t.equal(res.payload, 'Method Not Allowed: DELETE /')
   })
 
   app.inject({
@@ -30,8 +30,8 @@ t.test('auto 405 response for unset methods', (t) => {
     t.error(err)
     t.equal(res.statusCode, 405)
     t.equal(res.headers.allow, 'GET,HEAD')
-    t.equal(res.headers['content-length'], '0')
-    t.equal(res.payload, '')
+    t.equal(res.headers['content-length'], '26')
+    t.equal(res.payload, 'Method Not Allowed: POST /')
   })
 })
 
@@ -59,8 +59,8 @@ t.test('auto 405 response for non-GET/HEAD routes', (t) => {
     t.error(err)
     t.equal(res.statusCode, 405)
     t.equal(res.headers.allow, 'DELETE')
-    t.equal(res.headers['content-length'], '0')
-    t.equal(res.payload, '')
+    t.equal(res.headers['content-length'], '25')
+    t.equal(res.payload, 'Method Not Allowed: GET /')
   })
 
   app.inject({
@@ -78,7 +78,7 @@ t.test('auto 405 response for non-GET/HEAD routes', (t) => {
     t.error(err)
     t.equal(res.statusCode, 405)
     t.equal(res.headers.allow, 'POST,PUT')
-    t.equal(res.payload, '')
+    t.equal(res.payload, 'Method Not Allowed: GET /user')
   })
 })
 
@@ -88,12 +88,12 @@ t.test('hooks run on auto 405 response', (t) => {
   const app = medley()
 
   app.addHook('onRequest', (req, res, next) => {
-    t.deepEqual(req.query, {foo: 'asd'})
+    t.deepEqual(req.query, {foo: 'bar'})
     next()
   })
 
   app.addHook('preHandler', (req, res, next) => {
-    t.deepEqual(req.query, {foo: 'asd'})
+    t.deepEqual(req.query, {foo: 'bar'})
     next()
   })
 
@@ -102,32 +102,32 @@ t.test('hooks run on auto 405 response', (t) => {
   })
 
   app.addHook('onSend', (req, res, payload, next) => {
-    t.deepEqual(req.query, {foo: 'asd'})
+    t.deepEqual(req.query, {foo: 'bar'})
     next()
   })
 
   app.addHook('onFinished', (req, res) => {
-    t.deepEqual(req.query, {foo: 'asd'})
+    t.deepEqual(req.query, {foo: 'bar'})
     t.equal(res.headersSent, true)
   })
 
   app.inject({
     method: 'DELETE',
-    url: '/?foo=asd',
+    url: '/?foo=bar',
   }, (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 405)
     t.equal(res.headers.allow, 'GET,HEAD')
-    t.equal(res.payload, '')
+    t.equal(res.payload, 'Method Not Allowed: DELETE /?foo=bar')
   })
 
   app.inject({
     method: 'POST',
-    url: '/?foo=asd',
+    url: '/?foo=bar',
   }, (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 405)
     t.equal(res.headers.allow, 'GET,HEAD')
-    t.equal(res.payload, '')
+    t.equal(res.payload, 'Method Not Allowed: POST /?foo=bar')
   })
 })
