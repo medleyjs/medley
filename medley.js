@@ -585,22 +585,22 @@ function medley(options) {
         cb(err)
         return
       }
+
       if (this.server.listening) {
         cb(new Error('app is already listening'))
         return
       }
 
-      function handleListening(err) {
-        server.removeListener('error', handleListening)
+      function handleListeningOrError(err) {
+        server.removeListener('listening', handleListeningOrError)
+        server.removeListener('error', handleListeningOrError)
         cb(err)
       }
 
-      server.on('error', handleListening)
-      if (backlog) {
-        server.listen(port, host, backlog, handleListening)
-      } else {
-        server.listen(port, host, handleListening)
-      }
+      server.on('listening', handleListeningOrError)
+      server.on('error', handleListeningOrError)
+
+      server.listen(port, host, backlog)
     })
   }
 
