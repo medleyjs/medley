@@ -11,12 +11,12 @@ app.register(plugin [, options])
 The `.register()` method takes two parameters:
 
 + `plugin` *(function)* - The plugin function that adds functionality to the `app`.
-+ `options` *(object | any)* - The options that will be passed to the `plugin` function.
++ `options` *(object | any)* - Options that will be passed to the `plugin` function.
 
 The `plugin` function will receive two parameters:
 
 + `app` - The [`app` instance](App.md) the plugin is being registered on.
-+ `options` *(object | any)* - The options that were passed to `.register()`.
++ `options` *(object | any)* - The options passed to `.register()`.
 
 #### Example:
 
@@ -25,12 +25,12 @@ The `plugin` function will receive two parameters:
 function myPlugin(app, options) {
   app.decorate('myPluginData', {
     receivedOptions: options,
-    example: 'value'
+    exampleData: 'value'
   });
+
   app.addHook('onRequest', (req, res, next) => { ... });
-  app.get('/my-plugin/route', (req, res) => { ... });
-  // etc.
 }
+
 module.exports = myPlugin
 ```
 
@@ -39,25 +39,31 @@ module.exports = myPlugin
 const medley = require('@medley/medley');
 const app = medley();
 
-app.register(require('./my-plugin'), {optional: 'options'});
+app.register(require('./my-plugin'), {x: 1, y: 2});
 
-console.log(app.myPluginData.receivedOptions); // {optional: 'options'}
-console.log(app.myPluginData.example); // 'value'
+console.log(app.myPluginData.receivedOptions); // {x: 1, y: 2}
+console.log(app.myPluginData.exampleData); // 'value'
 ```
 
-Using `app.register()` is essentially the same as doing the following:
+#### Side Note
+
+From the above, it looks like `app.register()` could be avoided by doing the following:
 
 ```js
 const myPlugin = require('./my-plugin');
 myPlugin(app, options);
 ```
 
-It is perfectly acceptable to do that, however, `.register()` is a
-slightly more convenient way of writing the code above, and it also
-provides the following additional functionality:
+While that should work in most cases, using `app.register()` is the preferred
+way to register plugins because the code is clearer and it ensures that all
+plugins will provide the same, consistent interface.
+
+Furthermore, `app.register()` provides the following additional functionality:
 
 
 ## Plugin Dependency-Checking
+
+> **Status:** Experimental
 
 Sometimes a plugin may depend on the functionality of another plugin. In that
 case it helps to ensure that plugin dependencies are met when a plugin is
