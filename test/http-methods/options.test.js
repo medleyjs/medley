@@ -96,3 +96,26 @@ t.test('hooks run on auto OPTIONS response', (t) => {
     t.equal(res.payload, 'DELETE')
   })
 })
+
+t.test('OPTIONS request with Content-Type but no body', (t) => {
+  t.plan(4)
+
+  const app = medley()
+
+  app.options('/', (req, res) => {
+    t.equal(req.body, undefined)
+    res.send('success')
+  })
+
+  app.inject({
+    method: 'OPTIONS',
+    url: '/',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  }, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.payload, 'success')
+  })
+})
