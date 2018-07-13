@@ -57,8 +57,9 @@ app.listen(3000)
 + An API similar to [Express](https://github.com/expressjs/express)
 + Performance on par with [Fastify](https://github.com/fastify/fastify)
 + Full support for both `async`/`await` and callbacks
-+ 100% test coverage
++ Automatic `HEAD`, `OPTIONS`, and `405` responses
 + Facilities for safely extending the framework ([decorators](https://github.com/medleyjs/medley/blob/master/docs/Decorators.md))
++ 100% test coverage
 + HTTP/2 support
 
 ### Forward-Compatibility with the `http2` Module
