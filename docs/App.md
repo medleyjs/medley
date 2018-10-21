@@ -176,19 +176,21 @@ Performs a fake HTTP request on the `app` (for testing purposes). See the [Testi
 ### `app.listen(port [, host][, backlog][, callback])`
 
 + `port` *(number)* - The port to listen on.
-+ `host` *(string)* - The host (or IP address) from which incoming connections will be accepted. Default: `127.0.0.1`.
++ `host` *(string)* - The host (or IP address) from which incoming connections will be accepted. Default: `localhost`.
 + `backlog` *(number)* - The maximum length of the queue of pending connections. Default: `511`.
 + `callback` *(function)* - A function that is called once the server has started listening for incoming connections.
 + Returns: *(?Promise)* - A Promise is returned if the `callback` parameter is not used.
 
 Starts the server on the given port after all plugins and sub-apps have loaded.
 
-By default, the server will only listen for requests from the local IP address
-(`127.0.0.1`). If listening for requests from any IP address is desired, then
-`0.0.0.0` can be used to listen on all IPv4 addresses and `::` can be used to
-listen on all IPv6 addresses, and on most OSs, may also listen on all IPv4
-addresses (this would be desirable when using Node inside Docker or on a
-remote server that should accept connections from any address).
+By default, the server will only listen for requests from the `localhost`
+address (`127.0.0.1` or `::1` depending on the OS).
+
+If listening for requests from any IP address is desired, then `0.0.0.0` can
+be used to listen on all IPv4 addresses and `::` can be used to listen on all
+IPv6 addresses (as well as all IPv4 addresses, depending on the OS). Listening
+on all addresses would be desirable when using Node inside Docker or on a
+remote server that should accept connections from any address.
 
 ```js
 app.listen(3000, (err) => {

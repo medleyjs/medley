@@ -560,7 +560,7 @@ function medley(options) {
       cb = host
       host = undefined
     }
-    host = host || '127.0.0.1'
+    host = host || 'localhost'
 
     // Handle listen (port, host, cb)
     if (typeof backlog === 'function') {
