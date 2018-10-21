@@ -13,7 +13,7 @@ Incoming Request
               |     |     │
               |     |     ├─▶ beforeHandler
               |     |     |     │
-        Error ├ ─ ─ ┴ ─ ─ ┼ ─ ─ ┼─▶ Route Handler / Not-Found Handler / Error Handler
+        Error ├ ─ ─ ┴ ─ ─ ┼ ─ ─ ┼─▶ Route Handler || Not-Found Handler || Error Handler
               |           |     |     │
        send() └ ─ ─ ─ ─ ─ ┴ ─ ─ ┴ ─ ─ ┴─▶ Serialize Payload
                                             │
@@ -41,47 +41,47 @@ Incoming Request
 
 The first step Medley takes after receiving a request is to look up a route that matches the URL of the request.
 
-If no route matches the request, a not-found handler that matches the URL is selected (or the default not-found handler if none set with [`app.setNotFoundHandler()`](App.md#set-not-found-handler) were a match).
+If no route matches the request, a not-found handler that matches the URL is selected (or the default not-found handler is used if no handlers set with [`app.setNotFoundHandler()`](App.md#set-not-found-handler) were a match).
 
-If the request method is not one of the [supported HTTP methods](Routes.md#options), a `501 Not Implemented` error response is sent immediately and the entire lifecycle is skipped.
+If the request method is not one of the [supported HTTP methods](https://nodejs.org/api/http.html#http_http_methods), a `501 Not Implemented` error response is sent immediately and the entire lifecycle is skipped.
 
 ## `onRequest` Hook
 
-Next, the `onRequest` hooks are run.
+[`onRequest` hooks](Hooks.md#onRequest-preHandler-hooks) are the first hooks that are run once a request is matched with a route.
 
 ```js
 app.addHook('onRequest', (req, res, next) => {
+  // Do something, like authenticate the user
   next();
 });
 ```
 
-These hooks may send an early response with `res.send()`. If a hook does this, the rest of the lifecycle will be skipped except for the `onFinished` hooks.
-
-If an error occurs during a hook, the rest of the lifecycle up to the *Route Handler* is skipped and the error handler is invoked as the *Route Handler*.
+These hooks may send an early response with `res.send()`. If a hook does this, the rest of the hooks will be skipped and the lifecycle will go straight to the [*Serialize Payload*](#serialize-payload) step.
 
 ## Body Parsing
 
 In this step, a [`BodyParser`](BodyParser.md) is used to parse the body of the request and set `req.body`.
 
-Body parsing is skipped if the request method is `GET` or `HEAD`.
+```js
+const bodyParser = require('@medley/body-parser');
+
+app.addBodyParser('application/json', bodyParser.json());
+```
 
 A `415 Unsupported Media Type` error is thrown if the request has a body but there is no parser that matches the `Content-Type` header of the request.
 
-If an error occurs while parsing the request body (including the `415` error mentioned above), the rest of the lifecycle up to the *Route Handler* is skipped and the error handler is invoked as the *Route Handler*.
-
 ## `preHandler` Hook
 
-Next, the `preHandler` hooks are run.
+[`preHandler` hooks](Hooks.md#onRequest-preHandler-hooks) are run just before the main [route handler](#route-handler).
 
 ```js
 app.addHook('preHandler', (req, res, next) => {
+  // Do something, like check if the user is to allowed access the resource
   next();
 });
 ```
 
-These hooks may send an early response with `res.send()`. If a hooks does this, the rest of the hooks will be skipped and the lifecycle will go straight to the [*Serialize Payload*](#serialize-payload) step.
-
-If an error occurs during a hook, the rest of the lifecycle up to the *Route Handler* is skipped and the error handler is invoked as the *Route Handler*.
+These hooks may send an early response with `res.send()`. If a hook does this, the rest of the hooks will be skipped and the lifecycle will go straight to the [*Serialize Payload*](#serialize-payload) step.
 
 ## `beforeHandler`
 
@@ -90,6 +90,7 @@ The *beforeHandlers* are treated exactly the same as the `preHandler` hooks. The
 ```js
 app.get('/', {
   beforeHandler: (req, res, next) => {
+    // Do something, like validate the request body
     next();
   }
 }, function handler(req, res) => {
@@ -107,7 +108,15 @@ app.get('/', (req, res) => {
 });
 ```
 
-*Not-found handlers* (set with [`app.setNotFoundHandler()`](App.md#set-not-found-handler)) and *error handlers* (set with [`app.setErrorHandler()`](App.md#set-error-handler)) are also included in the part of the lifecycle.
+See the [`Routes` documentation](Routes.md) for more information on route handlers.
+
+#### Not-Found Handler
+
+If the request URL does not match any routes, a *not-found handler* (set with [`app.setNotFoundHandler()`](App.md#set-not-found-handler)) is invoked. Global hooks **are** run before the not-found handler.
+
+#### Error handler
+
+If an error occurs at any point in the request lifecycle, the request skips straight to the *error handler*, which sends an error response. A custom error handler can be set with [`app.setErrorHandler()`](App.md#set-error-handler).
 
 ## Serialize Payload
 
@@ -117,10 +126,11 @@ See the [`res.send()`](Response.md#send) and [Serialization](Serialization.md) d
 
 ## `onSend` Hook
 
-Next, the `onSend` hooks are run.
+[`onSend` hooks](Hooks.md#onSend-hook) are run after the payload has been serialized and before the payload is sent to the client.
 
 ```js
 app.addHook('onSend', (req, res, payload, next) => {
+  // Do something, like save the session state
   next();
 });
 ```
@@ -133,11 +143,11 @@ The serialized payload is sent to the client. Medley handles this step automatic
 
 ## `onFinished` Hook
 
-Finally, the `onFinished` hooks are run once the response has finished sending (or if
-the underlying connection was terminated before the response could finish sending).
+[`onFinished` hooks](Hooks.md#onFinished-hook) are run once the response has finished sending
+(or if the underlying connection was terminated before the response could finish sending).
 
 ```js
 app.addHook('onFinished', (req, res) => {
-  // Do something like log the response time
+  // Do something, like log the response time
 });
 ```
