@@ -60,23 +60,28 @@ If the hook is an `async` function (or it returns a promise), the `next`
 callback should **not** be used. The request will continue to the next hook
 when the async hook ends or throws (or the promise resolves or rejects).
 
-### `beforeHandler`
+### Route-level `preHandler`
 
-Functions passed as the `beforeHandler` option to [`app.route()`](Routes.md#route-method)
-have exactly the same signature as `preHandler` hooks and are executed immediately after
-any `preHandler` hooks. This is similar to route-level middleware in Express.
+Route-level `preHandler` hooks can be specified by passing a `preHandler`
+option to [`app.route()`](Routes.md#route-method) (or a shorthand method).
+This is similar to route-level middleware in Express.
 
 ```js
 app.route({
   method: 'GET',
   path: '/',
-  beforeHandler(req, res, next) {
+  preHandler(req, res, next) {
     // Do something, like authorization
     next();
   },
   handler(req, res) {
     res.send({ hello: 'user' });
   }
+});
+
+// Route shorthand, using an array to be more Express-like
+app.get('/', [preHandler], function handler(req, res) {
+  res.send('hello');
 });
 ```
 

@@ -4,12 +4,12 @@ const t = require('tap')
 const test = t.test
 const medley = require('..')
 
-test('beforeHandler', (t) => {
+test('preHandler', (t) => {
   t.plan(2)
   const app = medley()
 
   app.get('/', {
-    beforeHandler: (req, res, done) => {
+    preHandler: (req, res, done) => {
       req.sendVal = true
       done()
     },
@@ -23,7 +23,7 @@ test('beforeHandler', (t) => {
   })
 })
 
-test('beforeHandler should be called after preHandler hook', (t) => {
+test('preHandler should be called after preHandler hook', (t) => {
   t.plan(2)
   const app = medley()
 
@@ -33,7 +33,7 @@ test('beforeHandler should be called after preHandler hook', (t) => {
   })
 
   app.get('/', {
-    beforeHandler: (req, res, done) => {
+    preHandler: (req, res, done) => {
       req.sendVal += 'b'
       done()
     },
@@ -47,12 +47,12 @@ test('beforeHandler should be called after preHandler hook', (t) => {
   })
 })
 
-test('beforeHandler should be unique per route', (t) => {
+test('preHandler should be unique per route', (t) => {
   t.plan(4)
   const app = medley()
 
   app.get('/', {
-    beforeHandler: (req, res, done) => {
+    preHandler: (req, res, done) => {
       req.sendVal = 'hello'
       done()
     },
@@ -75,12 +75,12 @@ test('beforeHandler should be unique per route', (t) => {
   })
 })
 
-test('beforeHandler should handle errors', (t) => {
+test('preHandler should handle errors', (t) => {
   t.plan(3)
   const app = medley()
 
   app.get('/', {
-    beforeHandler: (req, res, done) => {
+    preHandler: (req, res, done) => {
       done(new Error('kaboom'))
     },
   }, (req, res) => {
@@ -99,12 +99,12 @@ test('beforeHandler should handle errors', (t) => {
   })
 })
 
-test('beforeHandler should handle errors with custom status code', (t) => {
+test('preHandler should handle errors with custom status code', (t) => {
   t.plan(3)
   const app = medley()
 
   app.get('/', {
-    beforeHandler: (req, res, done) => {
+    preHandler: (req, res, done) => {
       done(Object.assign(new Error('go away'), {status: 401}))
     },
   }, (req, res) => {
@@ -123,12 +123,12 @@ test('beforeHandler should handle errors with custom status code', (t) => {
   })
 })
 
-test('beforeHandler could accept an array of functions', (t) => {
+test('preHandler could accept an array of functions', (t) => {
   t.plan(2)
   const app = medley()
 
   app.get('/', {
-    beforeHandler: [
+    preHandler: [
       (req, res, done) => {
         req.sendVal = 'a'
         done()
@@ -148,7 +148,7 @@ test('beforeHandler could accept an array of functions', (t) => {
   })
 })
 
-test('beforeHandler does not interfere with preHandler', (t) => {
+test('preHandler does not interfere with preHandler', (t) => {
   t.plan(4)
   const app = medley()
 
@@ -158,7 +158,7 @@ test('beforeHandler does not interfere with preHandler', (t) => {
   })
 
   app.get('/', {
-    beforeHandler: (req, res, done) => {
+    preHandler: (req, res, done) => {
       req.sendVal += 'b'
       done()
     },
@@ -181,7 +181,7 @@ test('beforeHandler does not interfere with preHandler', (t) => {
   })
 })
 
-test('beforeHandlers can be passed as the second parameter to route shorthand methods', (t) => {
+test('preHandlers can be passed as the second parameter to route shorthand methods', (t) => {
   t.plan(4)
 
   const app = medley()

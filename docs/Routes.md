@@ -14,7 +14,7 @@ app.route(options)
 + `method`: The name of an HTTP method or an array of methods. Can be any method found in the [`http.METHODS`](https://nodejs.org/api/http.html#http_http_methods) array.
 + `path`: The path to match the URL of the request. (Alias: `url`)
 + `responseSchema`: The schema for a JSON response. See the [`Serialization` documentation](Serialization.md).
-+ `beforeHandler(req, res, next)`: A function or an array of functions called just before the request handler. They are treated just like `preHandler` hooks (see [Hooks#beforeHandler](Hooks.md#beforehandler)).
++ `preHandler(req, res, next)`: Route-level [`preHandler` hooks](Hooks.md#prehandler). Can be a function or an array of functions. Similar to route-level middleware in Express.
 + `handler(req, res)`: The main function that will handle the request.
   + `req` is defined in [Request](Request.md).
   + `res` is defined in [Response](Response.md).
@@ -39,7 +39,7 @@ app.route({
 app.route({
   method: ['POST', 'PUT'],
   path: '/user',
-  beforeHandler: function(req, res, next) {
+  preHandler: function(req, res, next) {
     // Validate the request
     next();
   },
@@ -71,7 +71,7 @@ There is a shorthand for each method found in the
 Example:
 
 ```js
-const beforeHandler = [
+const preHandler = [
   function authenticate(req, res, next) { },
   function validate(req, res, next) { },
 ];
@@ -80,7 +80,7 @@ const responseSchema = {
     hello: { type: 'string' }
   }
 };
-app.get('/', { beforeHandler, responseSchema }, (req, res) => {
+app.get('/', { preHandler, responseSchema }, (req, res) => {
   res.send({ hello: 'world' });
 });
 
@@ -89,7 +89,7 @@ app.get('/no-options', (req, res) => {
 });
 ```
 
-If the `options` parameter is an array, it will be treated as an array of *beforeHandlers*:
+If the `options` parameter is an array, it will be treated as an array of *preHandlers*:
 
 ```js
 function authenticate(req, res, next) {
@@ -109,7 +109,7 @@ third parameter is omitted:
 
 ```js
 app.get('/path', {
-  beforeHandler: [ /* ... */ ],
+  preHandler: [ /* ... */ ],
   responseSchema: { /* ... */ },
   handler: function(req, res) {
     res.send();

@@ -258,7 +258,7 @@ function medley(options) {
           handler = opts && opts.handler
         }
       } else if (Array.isArray(opts)) {
-        opts = {beforeHandler: opts}
+        opts = {preHandler: opts}
       }
 
       opts = Object.assign({}, opts, {
@@ -343,7 +343,7 @@ function medley(options) {
     // Users can add hooks and error handlers after the route is registered,
     // so add these to the routeContext just before the app is loaded.
     preLoadedHandlers.push(() => {
-      RouteContext.setHooks(routeContext, this._hooks, opts.beforeHandler)
+      RouteContext.setHooks(routeContext, this._hooks, opts.preHandler)
       routeContext.errorHandler = this._errorHandler
     })
   }
@@ -420,7 +420,7 @@ function medley(options) {
     }
 
     preLoadedHandlers.push(() => {
-      RouteContext.setHooks(routeContext, this._hooks, opts.beforeHandler)
+      RouteContext.setHooks(routeContext, this._hooks, opts.preHandler)
       routeContext.errorHandler = this._errorHandler
     })
   }

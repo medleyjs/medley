@@ -3,17 +3,17 @@
 const t = require('tap')
 const medley = require('..')
 
-t.test('not-found route beforeHandler', (t) => {
+t.test('not-found route preHandler', (t) => {
   t.plan(2)
   const app = medley()
 
   app.setNotFoundHandler({
-    beforeHandler: (req, res, next) => {
-      req.beforeHandler = true
+    preHandler: (req, res, next) => {
+      req.preHandler = true
       next()
     },
   }, (req, res) => {
-    t.equal(req.beforeHandler, true)
+    t.equal(req.preHandler, true)
     res.send()
   })
 
@@ -22,7 +22,7 @@ t.test('not-found route beforeHandler', (t) => {
   })
 })
 
-t.test('not-found route beforeHandler should be called after preHandler hook', (t) => {
+t.test('not-found route preHandler should be called after global preHandler hook', (t) => {
   t.plan(2)
   const app = medley()
 
@@ -32,7 +32,7 @@ t.test('not-found route beforeHandler should be called after preHandler hook', (
   })
 
   app.setNotFoundHandler({
-    beforeHandler: (req, res, next) => {
+    preHandler: (req, res, next) => {
       req.sendVal += 'b'
       next()
     },
@@ -46,12 +46,12 @@ t.test('not-found route beforeHandler should be called after preHandler hook', (
   })
 })
 
-t.test('not-found route beforeHandler could accept an array of functions', (t) => {
+t.test('not-found route preHandler should accept an array of functions', (t) => {
   t.plan(2)
   const app = medley()
 
   app.setNotFoundHandler({
-    beforeHandler: [
+    preHandler: [
       (req, res, next) => {
         req.sendVal = 'a'
         next()

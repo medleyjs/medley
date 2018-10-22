@@ -354,7 +354,7 @@ for more information on where this status code may come from.
 <a id="set-not-found-handler"></a>
 ### `app.setNotFoundHandler([options,] handler)`
 
-+ `options` *object* - Accepts the `responseSchema`, `beforeHandler`, and `config` options defined in [Routes#options](Routes.md#options).
++ `options` *object* - Accepts the `responseSchema`, `preHandler`, and `config` options defined in [Routes#options](Routes.md#options).
 + `handler(req, res)` *(function)* - A request handler function that receives the [`request`](Request.md) and [`response`](Response.md) objects.
 
 Sets the handler that will be called when no registered route matches the

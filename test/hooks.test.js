@@ -832,7 +832,7 @@ test('async preHandler hooks should be able to send a response', (t) => {
   })
 
   app.get('/', {
-    beforeHandler() {
+    preHandler() {
       t.fail('this should not be called')
     },
   }, () => {

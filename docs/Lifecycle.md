@@ -11,17 +11,15 @@ Incoming Request
               |     │
               |     ├─▶ preHandler Hook
               |     |     │
-              |     |     ├─▶ beforeHandler
-              |     |     |     │
-        Error ├ ─ ─ ┴ ─ ─ ┼ ─ ─ ┼─▶ Route Handler || Not-Found Handler || Error Handler
-              |           |     |     │
-       send() └ ─ ─ ─ ─ ─ ┴ ─ ─ ┴ ─ ─ ┴─▶ Serialize Payload
+        Error ├ ─ ─ ┴ ─ ─ ┼─▶ Route Handler || Not-Found Handler || Error Handler
+              |           |     │
+   res.send() └ ─ ─ ─ ─ ─ ┴ ─ ─ ┴─▶ Serialize Payload
+                                      │
+                                      └─▶ onSend Hook
                                             │
-                                            └─▶ onSend Hook
+                                            └─▶ Send Response
                                                   │
-                                                  └─▶ Send Response
-                                                        │
-                                                        └─▶ onFinished Hook
+                                                  └─▶ onFinished Hook
 ```
 
 **Table of Contents:**
@@ -30,7 +28,6 @@ Incoming Request
 1. [onRequest Hook](#onrequest-hook)
 1. [Body Parsing](#body-parsing)
 1. [preHandler Hook](#prehandler-hook)
-1. [beforeHandler](#beforehandler)
 1. [Route Handler](#route-handler)
 1. [Serialize Payload](#serialize-payload)
 1. [onSend Hook](#onsend-hook)
@@ -83,13 +80,13 @@ app.addHook('preHandler', (req, res, next) => {
 
 These hooks may send an early response with `res.send()`. If a hook does this, the rest of the hooks will be skipped and the lifecycle will go straight to the [*Serialize Payload*](#serialize-payload) step.
 
-## `beforeHandler`
+#### Route-level `preHandler`
 
-The *beforeHandlers* are treated exactly the same as the `preHandler` hooks. They are always run after the `preHandler` hooks.
+`preHandler` hooks may also be defined at the route level. They are run after the global `preHandler` hooks.
 
 ```js
 app.get('/', {
-  beforeHandler: (req, res, next) => {
+  preHandler: (req, res, next) => {
     // Do something, like validate the request body
     next();
   }
