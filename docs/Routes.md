@@ -59,14 +59,10 @@ app.put(path, [options,] handler)
 app.patch(path, [options,] handler)
 app.delete(path, [options,] handler)
 app.options(path, [options,] handler)
-// app.move(), app.search(), etc.
 
 // Registers a route that handles all supported methods
 app.all(path, [options,] handler)
 ```
-
-There is a shorthand for each method found in the
-[`http.METHODS`](https://nodejs.org/api/http.html#http_http_methods) array.
 
 Example:
 

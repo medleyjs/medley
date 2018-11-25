@@ -72,10 +72,6 @@ t.test('hooks run on auto OPTIONS response', (t) => {
     next()
   })
 
-  app.delete('/', (req, res) => {
-    res.send({hello: 'world'})
-  })
-
   app.addHook('onSend', (req, res, payload, next) => {
     t.deepEqual(req.query, {foo: 'asd'})
     next()
@@ -84,6 +80,10 @@ t.test('hooks run on auto OPTIONS response', (t) => {
   app.addHook('onFinished', (req, res) => {
     t.deepEqual(req.query, {foo: 'asd'})
     t.equal(res.headersSent, true)
+  })
+
+  app.delete('/', (req, res) => {
+    res.send({hello: 'world'})
   })
 
   app.inject({

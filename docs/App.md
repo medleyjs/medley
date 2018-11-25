@@ -308,7 +308,7 @@ Registers a plugin with the `app`. See the [Plugins](Plugins.md) documentation.
 <a id="route"></a>
 ### `app.route(options)`
 
-Registers a new route handler. There are also shorthand methods (like `app.post()`)
+Registers a new route handler. There are also shorthand methods (like `app.get()`)
 that aren't included here. See the [Routes](Routes.md) documentation.
 
 <a id="routes-to-string"></a>

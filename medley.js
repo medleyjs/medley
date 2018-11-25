@@ -39,7 +39,7 @@ function medley(options) {
         throw new RangeError(`"${method}" in the 'extraBodyParsingMethods' option is not a supported method (make sure it is UPPERCASE)`)
       }
       if (method === 'POST' || method === 'PUT' || method === 'PATCH' || method === 'OPTIONS') {
-        throw new RangeError(`"${method}" already has request bodies parsed`)
+        throw new RangeError(`Bodies are already parsed for "${method}" requests`)
       }
       // Parse other methods' bodies using the semantics of an OPTIONS request
       methodHandlers[method] = methodHandlers.OPTIONS
@@ -93,6 +93,13 @@ function medley(options) {
 
     // Routing
     route,
+    get: createShorthandRouteMethod('GET'),
+    head: createShorthandRouteMethod('HEAD'),
+    delete: createShorthandRouteMethod('DELETE'),
+    post: createShorthandRouteMethod('POST'),
+    put: createShorthandRouteMethod('PUT'),
+    patch: createShorthandRouteMethod('PATCH'),
+    options: createShorthandRouteMethod('OPTIONS'),
     all: createShorthandRouteMethod(supportedMethods),
 
     get basePath() {
@@ -131,10 +138,6 @@ function medley(options) {
     _Response: Response.buildResponse(),
   }
   app._notFoundLevelApp = app
-
-  for (const method of supportedMethods) {
-    app[method.toLowerCase()] = createShorthandRouteMethod(method)
-  }
 
   const routes = new Map()
   const onLoadHandlers = []

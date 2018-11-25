@@ -1,19 +1,25 @@
 'use strict'
 
 const t = require('tap')
-const http = require('http')
 const runBodyTests = require('./body-tests')
 const medley = require('../..')
 
-http.METHODS.forEach((method) => {
-  if (method === 'CONNECT') {
-    return // CONNECT doesn't work the same as other methods
-  }
+const methods = [
+  'GET',
+  'HEAD',
+  'DELETE',
+  'POST',
+  'PUT',
+  'PATCH',
+  'OPTIONS',
+  'MOVE', // WebDAV method
+]
 
+methods.forEach((method) => {
   if (/^(?:POST|PUT|PATCH|OPTIONS)$/.test(method)) {
     t.throws(
       () => medley({extraBodyParsingMethods: [method]}),
-      new RangeError(`"${method}" already has request bodies parsed`)
+      new RangeError(`Bodies are already parsed for "${method}" requests`)
     )
     return
   }
