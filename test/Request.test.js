@@ -508,6 +508,19 @@ t.test('request.querystring - get', (t) => {
   t.end()
 })
 
+t.test('request.search - get', (t) => {
+  t.equal(new Request({url: '/'}).search, '')
+  t.equal(new Request({url: '/no-query'}).search, '')
+  t.equal(new Request({url: '/?'}).search, '?')
+  t.equal(new Request({url: '/path?'}).search, '?')
+  t.equal(new Request({url: '/path?search=1'}).search, '?search=1')
+  t.equal(new Request({url: '/?qu?ery'}).search, '?qu?ery')
+  t.equal(new Request({url: '/??query'}).search, '??query')
+  t.equal(new Request({url: '/?query?'}).search, '?query?')
+  t.equal(new Request({url: '/?a&b=1%23-&c='}).search, '?a&b=1%23-&c=')
+  t.end()
+})
+
 t.test('req.scheme is an alias for req.protocol', (t) => {
   t.notEqual(Object.getOwnPropertyDescriptor(Request.prototype, 'scheme'), undefined)
   t.strictDeepEqual(

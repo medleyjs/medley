@@ -29,6 +29,7 @@ app.get('/user/:id', function(req, res) {
 + [`.query`](#reqquery)
 + [`.querystring`](#reqquerystring)
 + [`.scheme`](#reqscheme)
++ [`.search`](#reqsearch)
 + [`.stream`](#reqstream)
 + [`.url`](#requrl)
 
@@ -182,16 +183,33 @@ app.addHook('onRequest', (req, res, next) => {
 
 *Read-only*
 
-The query string found in the request's URL.
+The query string found in the request's URL (without the `?`).
 
 ```js
 // URL: /path?a=1&b=value
 req.querystring // 'a=1&b=value'
+
+// URL: /path/no-query
+req.querystring // ''
 ```
 
 ### `req.scheme`
 
 HTTP/2-style alias for [`req.protocol`](#reqprotocol).
+
+### `req.search`
+
+*Read-only*
+
+The query string found in the request's URL (with the `?`).
+
+```js
+// URL: /path?a=1&b=value
+req.search // '?a=1&b=value'
+
+// URL: /path/no-query
+req.search // ''
+```
 
 ### `req.stream`
 
