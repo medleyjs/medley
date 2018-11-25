@@ -628,3 +628,46 @@ test('cannot set notFoundHandler after binding', (t) => {
     }
   })
 })
+
+test('not-found requests with a body receive a 404 response', (t) => {
+  t.plan(3)
+
+  const app = medley()
+
+  app.inject({
+    method: 'POST',
+    url: '/not-found',
+    headers: {'Content-Type': 'application/json'},
+    payload: '{"hello":"world"}',
+  }, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 404)
+    t.equal(res.payload, 'Not Found: POST /not-found')
+  })
+})
+
+test('request bodies are not parsed for not-found routes', (t) => {
+  t.plan(4)
+
+  const app = medley()
+
+  app.addBodyParser('application/json', () => {
+    t.fail('body parser should not be called')
+  })
+
+  app.setNotFoundHandler((req, res) => {
+    t.equal(req.body, undefined)
+    res.status(404).send('not found')
+  })
+
+  app.inject({
+    method: 'POST',
+    url: '/not-found',
+    headers: {'Content-Type': 'application/json'},
+    payload: '{"hello":"world"}',
+  }, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 404)
+    t.equal(res.payload, 'not found')
+  })
+})

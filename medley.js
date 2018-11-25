@@ -41,8 +41,8 @@ function medley(options) {
       if (method === 'POST' || method === 'PUT' || method === 'PATCH' || method === 'OPTIONS') {
         throw new RangeError(`Bodies are already parsed for "${method}" requests`)
       }
-      // Parse other methods' bodies using the semantics of an OPTIONS request
-      methodHandlers[method] = methodHandlers.OPTIONS
+      // Parse the method's bodies using the semantics of an OPTIONS request
+      methodHandlers[method] = originalMethodHandlers.OPTIONS
     }
   }
 
@@ -354,8 +354,10 @@ function medley(options) {
   function setNotFoundHandler(opts, handler) {
     throwIfAppIsLoaded('Cannot call "setNotFoundHandler()" when app is already loaded')
 
+    const prefix = this._routePrefix
+
     if (this._canSetNotFoundHandler === false) {
-      throw new Error(`Not found handler already set for app instance with prefix: '${this._routePrefix}'`)
+      throw new Error(`Not found handler already set for app instance with prefix: '${prefix}'`)
     }
 
     // Set value on the "_notFoundLevelApp" so that it
@@ -368,58 +370,19 @@ function medley(options) {
     }
 
     const serializers = buildSerializers(opts.responseSchema)
-    const methodGroups = new Map()
-
-    // Group up methods with the same methodHandler
-    for (var i = 0; i < supportedMethods.length; i++) {
-      const method = supportedMethods[i]
-      const methodHandler = methodHandlers[method]
-
-      if (methodGroups.has(methodHandler)) {
-        methodGroups.get(methodHandler).push(method)
-      } else {
-        methodGroups.set(methodHandler, [method])
-      }
-    }
-
-    opts.config = opts.config || {}
-
-    for (const [methodHandler, methods] of methodGroups) {
-      _setNotFoundHandler.call(
-        this,
-        methods,
-        methodHandler,
-        opts,
-        handler,
-        serializers
-      )
-    }
-
-    return this
-  }
-
-  function _setNotFoundHandler(
-    methods,
-    methodHandler,
-    opts,
-    handler,
-    serializers
-  ) {
     const routeContext = RouteContext.create(
       this,
       serializers,
-      methodHandler,
+      originalMethodHandlers.GET, // Use the GET handler to avoid running the body parser
       handler,
-      opts.config
+      opts.config || {}
     )
 
-    const prefix = this._routePrefix
-
     if (prefix.endsWith('/')) {
-      notFoundRouter.on(methods, prefix + '*', routeHandler, routeContext)
+      notFoundRouter.on(supportedMethods, prefix + '*', routeHandler, routeContext)
     } else {
-      notFoundRouter.on(methods, prefix, routeHandler, routeContext)
-      notFoundRouter.on(methods, prefix + '/*', routeHandler, routeContext)
+      notFoundRouter.on(supportedMethods, prefix, routeHandler, routeContext)
+      notFoundRouter.on(supportedMethods, prefix + '/*', routeHandler, routeContext)
     }
 
     preLoadedHandlers.push(() => {
