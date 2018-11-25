@@ -121,7 +121,7 @@ test('has a custom 404 handler for all supported HTTP methods', (t) => {
 })
 
 test('setting a custom 404 handler multiple times is an error', (t) => {
-  t.plan(6)
+  t.plan(2)
 
   t.test('at the root level', (t) => {
     t.plan(1)
@@ -149,76 +149,6 @@ test('setting a custom 404 handler multiple times is an error', (t) => {
         new Error("Not found handler already set for app instance with prefix: '/prefix'")
       )
     })
-  })
-
-  t.test('at multiple levels', (t) => {
-    t.plan(1)
-
-    const app = medley()
-
-    app.setNotFoundHandler(() => {})
-
-    app.encapsulate((subApp) => {
-      t.throws(
-        () => subApp.setNotFoundHandler(() => {}),
-        new Error("Not found handler already set for app instance with prefix: '/'")
-      )
-    })
-  })
-
-  t.test('at multiple levels > sub-app sets the not-found handler first', (t) => {
-    t.plan(1)
-
-    const app = medley()
-
-    app.encapsulate((subApp) => {
-      subApp.setNotFoundHandler(() => {})
-    })
-
-    t.throws(
-      () => app.setNotFoundHandler(() => {}),
-      new Error("Not found handler already set for app instance with prefix: '/'")
-    )
-  })
-
-  t.test('at multiple levels / 2', (t) => {
-    t.plan(1)
-
-    const app = medley()
-
-    app.setNotFoundHandler(() => {})
-
-    app.encapsulate('/prefix', (subApp) => {
-      subApp.setNotFoundHandler(() => {})
-
-      subApp.encapsulate((subApp2) => {
-        t.throws(
-          () => subApp2.setNotFoundHandler(() => {}),
-          new Error("Not found handler already set for app instance with prefix: '/prefix'")
-        )
-      })
-    })
-  })
-
-  t.test('in separate plugins at the same level', (t) => {
-    t.plan(1)
-
-    const app = medley()
-
-    app.encapsulate('/prefix', (subApp) => {
-      subApp.encapsulate((subApp2A) => {
-        subApp2A.setNotFoundHandler(() => {})
-      })
-
-      subApp.encapsulate((subApp2B) => {
-        t.throws(
-          () => subApp2B.setNotFoundHandler(() => {}),
-          new Error("Not found handler already set for app instance with prefix: '/prefix'")
-        )
-      })
-    })
-
-    app.setNotFoundHandler(() => {})
   })
 })
 
@@ -492,55 +422,6 @@ test('run hooks with encapsulated 404', (t) => {
   })
 })
 
-test('encapsulated custom 404 without prefix has the right encapsulation context', (t) => {
-  t.plan(17)
-
-  const app = medley()
-
-  app.decorateRequest('foo', 42)
-  app.decorateResponse('foo', 42)
-
-  app.encapsulate((subApp) => {
-    subApp.decorateRequest('bar', 84)
-
-    subApp.addHook('onRequest', (request, response, next) => {
-      t.equal(request.foo, 42)
-      t.equal(request.bar, 84)
-      t.equal(response.foo, 42)
-      next()
-    })
-    subApp.addHook('preHandler', (request, response, next) => {
-      t.equal(request.foo, 42)
-      t.equal(request.bar, 84)
-      t.equal(response.foo, 42)
-      next()
-    })
-    subApp.addHook('onSend', (request, response, payload, next) => {
-      t.equal(request.foo, 42)
-      t.equal(request.bar, 84)
-      t.equal(response.foo, 42)
-      next()
-    })
-    subApp.addHook('onFinished', (request, response) => {
-      t.equal(request.foo, 42)
-      t.equal(request.bar, 84)
-      t.equal(response.foo, 42)
-    })
-
-    subApp.setNotFoundHandler((request, response) => {
-      t.equal(request.foo, 42)
-      t.equal(request.bar, 84)
-      response.status(404).send('custom not found')
-    })
-  })
-
-  app.inject('/not-found', (err, res) => {
-    t.error(err)
-    t.equal(res.statusCode, 404)
-    t.equal(res.payload, 'custom not found')
-  })
-})
-
 test('hooks check 404', (t) => {
   t.plan(7)
 
@@ -579,35 +460,25 @@ test('hooks check 404', (t) => {
   })
 })
 
-test('encapsulated custom 404 handler without a prefix is the handler for the entire 404 level', (t) => {
-  t.plan(6)
+test('calling setNotFoundHandler() on a sub-app without a prefix is an error', (t) => {
+  t.plan(2)
 
   const app = medley()
 
   app.encapsulate((subApp) => {
-    subApp.setNotFoundHandler((request, response) => {
-      response.status(404).send('custom handler')
-    })
+    t.throws(
+      () => subApp.setNotFoundHandler(() => {}),
+      new Error('Cannot call "setNotFoundHandler()" on a sub-app created without a prefix')
+    )
   })
 
   app.encapsulate('/prefixed', (subApp) => {
     subApp.encapsulate((subApp2) => {
-      subApp2.setNotFoundHandler((request, response) => {
-        response.status(404).send('custom handler 2')
-      })
+      t.throws(
+        () => subApp2.setNotFoundHandler(() => {}),
+        new Error('Cannot call "setNotFoundHandler()" on a sub-app created without a prefix')
+      )
     })
-  })
-
-  app.inject('/not-found', (err, res) => {
-    t.error(err)
-    t.equal(res.statusCode, 404)
-    t.equal(res.payload, 'custom handler')
-  })
-
-  app.inject('/prefixed/not-found', (err, res) => {
-    t.error(err)
-    t.equal(res.statusCode, 404)
-    t.equal(res.payload, 'custom handler 2')
   })
 })
 

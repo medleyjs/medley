@@ -23,6 +23,8 @@ const {
   notFoundFallbackHandler,
 } = require('./lib/RequestHandlers')
 
+const kIsNotFoundHandlerSet = Symbol('isNotFoundHandlerSet')
+
 const supportedMethods = Object.keys(originalMethodHandlers)
 
 function medley(options) {
@@ -108,8 +110,7 @@ function medley(options) {
     _routePrefix: '/',
 
     setNotFoundHandler,
-    _canSetNotFoundHandler: true,
-    _notFoundLevelApp: null,
+    [kIsNotFoundHandlerSet]: false,
 
     setErrorHandler,
     _errorHandler: null,
@@ -137,7 +138,6 @@ function medley(options) {
     _Request: Request.buildRequest(!!options.trustProxy),
     _Response: Response.buildResponse(),
   }
-  app._notFoundLevelApp = app
 
   const routes = new Map()
   const onLoadHandlers = []
@@ -197,9 +197,7 @@ function medley(options) {
 
     if (prefix.length > 0) {
       subApp._routePrefix += subApp._routePrefix.endsWith('/') ? prefix.slice(1) : prefix
-
-      subApp._canSetNotFoundHandler = true
-      subApp._notFoundLevelApp = subApp
+      subApp[kIsNotFoundHandlerSet] = false
     }
 
     return subApp
@@ -354,15 +352,17 @@ function medley(options) {
   function setNotFoundHandler(opts, handler) {
     throwIfAppIsLoaded('Cannot call "setNotFoundHandler()" when app is already loaded')
 
+    if (!this.hasOwnProperty('_routePrefix')) {
+      throw new Error('Cannot call "setNotFoundHandler()" on a sub-app created without a prefix')
+    }
+
     const prefix = this._routePrefix
 
-    if (this._canSetNotFoundHandler === false) {
+    if (this[kIsNotFoundHandlerSet]) {
       throw new Error(`Not found handler already set for app instance with prefix: '${prefix}'`)
     }
 
-    // Set value on the "_notFoundLevelApp" so that it
-    // can be inherited by all of that app's children.
-    this._notFoundLevelApp._canSetNotFoundHandler = false
+    this[kIsNotFoundHandlerSet] = true
 
     if (handler === undefined) {
       handler = opts
@@ -449,7 +449,7 @@ function medley(options) {
         return
       }
 
-      if (app._canSetNotFoundHandler) {
+      if (!app[kIsNotFoundHandlerSet]) {
         app.setNotFoundHandler(defaultNotFoundHandler)
       }
 
