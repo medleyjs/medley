@@ -14,7 +14,7 @@ const shortHandMethods = [
 ]
 
 t.test('app should register a route when a shorthand method is used', (t) => {
-  t.plan(shortHandMethods.length * 3)
+  t.plan(shortHandMethods.length * 4)
 
   const app = medley()
 
@@ -51,11 +51,23 @@ t.test('app should register a route when a shorthand method is used', (t) => {
     app[method.toLowerCase()]('/with-options', {
       config: {a: 'value'},
       preHandler,
+    }, handler)
+    t.strictDeepEqual(routeArgs, [{
+      method,
+      path: '/with-options',
+      config: {a: 'value'},
+      preHandler,
+      handler,
+    }])
+
+    app[method.toLowerCase()]('/with-options-including-handler', {
+      config: {a: 'value'},
+      preHandler,
       handler,
     })
     t.strictDeepEqual(routeArgs, [{
       method,
-      path: '/with-options',
+      path: '/with-options-including-handler',
       config: {a: 'value'},
       preHandler,
       handler,
