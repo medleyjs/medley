@@ -95,7 +95,7 @@ test('route - get', (t) => {
 
   app.route({
     method: 'GET',
-    url: '/',
+    path: '/',
     responseSchema: {
       200: {
         type: 'object',
@@ -237,26 +237,6 @@ test('cannot add another route after server is listening', (t) => {
     } catch (err) {
       t.equal(err.message, 'Cannot add route when app is already loaded')
     }
-  })
-})
-
-test('url can be specified in place of path', (t) => {
-  t.plan(3)
-
-  const app = medley()
-
-  app.route({
-    method: 'GET',
-    url: '/url',
-    handler(request, response) {
-      response.send({hello: 'world'})
-    },
-  })
-
-  app.inject('/url', (err, res) => {
-    t.error(err)
-    t.strictEqual(res.statusCode, 200)
-    t.deepEqual(JSON.parse(res.payload), {hello: 'world'})
   })
 })
 

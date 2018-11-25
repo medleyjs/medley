@@ -26,14 +26,14 @@ test('config', (t) => {
 
   app.route({
     method: 'GET',
-    url: '/route',
+    path: '/route',
     handler,
     config: Object.assign({}, routeOptions.config),
   })
 
   app.route({
     method: 'GET',
-    url: '/no-config',
+    path: '/no-config',
     handler,
   })
 

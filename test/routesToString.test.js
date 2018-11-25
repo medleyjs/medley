@@ -17,7 +17,7 @@ test('app.routesToString()', (t) => {
   app.encapsulate('/v1', (subApp) => {
     subApp.route({
       method: ['POST', 'PUT'],
-      url: '/user',
+      path: '/user',
       handler() {},
     })
     subApp.delete('/user', () => {})

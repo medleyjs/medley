@@ -21,7 +21,7 @@ test('app[@@iterator] iterates over registered routes', (t) => {
   app.encapsulate('/v1', (subApp) => {
     subApp.route({
       method: ['POST', 'PUT'],
-      url: '/user',
+      path: '/user',
       handler: handlePostPut,
     })
     subApp.delete('/user', handleDelete)

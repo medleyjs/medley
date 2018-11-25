@@ -20,7 +20,7 @@ test('chainable - route', (t) => {
   t.plan(1)
   t.equal(app.route({
     method: 'PUT',
-    url: '/other',
+    path: '/other',
     handler,
   }), app)
 })

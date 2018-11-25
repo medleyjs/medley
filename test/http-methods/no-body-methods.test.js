@@ -31,7 +31,7 @@ methods.forEach((method) => {
 
     app.route({
       method,
-      url: '/',
+      path: '/',
       handler(req, res) {
         t.equal(req.body, undefined)
         res.send()

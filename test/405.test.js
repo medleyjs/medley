@@ -46,7 +46,7 @@ t.test('auto 405 response for non-GET/HEAD routes', (t) => {
 
   app.route({
     method: ['PUT', 'POST'],
-    url: '/user',
+    path: '/user',
     handler(req, res) {
       res.send('hello')
     },

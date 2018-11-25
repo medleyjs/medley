@@ -300,7 +300,7 @@ function medley(options) {
       }
     }
 
-    var path = opts.path === undefined ? opts.url : opts.path
+    var {path} = opts
 
     if (typeof path !== 'string') {
       throw new TypeError(`Route 'path' must be a string. Got a value of type '${typeof path}': ${path}`)
