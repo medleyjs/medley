@@ -25,7 +25,6 @@ app.get('/user/:id', function(req, res) {
 + [`.origin`](#reqorigin)
 + [`.params`](#reqparams)
 + [`.path`](#reqpath)
-+ [`.pathname`](#reqpathname)
 + [`.protocol`](#reqprotocol)
 + [`.query`](#reqquery)
 + [`.querystring`](#reqquerystring)
@@ -90,7 +89,7 @@ The request host (domain) name (the [`host`](#reqhost) without the `port`).
 req.hostname // 'www.example.com'
 
 // IPv6 example
-req.hostname // [::1]
+req.hostname // '[::1]'
 ```
 
 ### `req.href`
@@ -136,28 +135,25 @@ app.get('/path/:user/:foo', (req, res) => {
 
 ### `req.path`
 
-Alias for [`req.url`](#requrl).
-
-### `req.pathname`
-
 *Read-only*
 
-The request pathname (the [URL](#requrl) without the [query string](#reqquerystring)).
+The [pathname](https://nodejs.org/dist/latest/docs/api/url.html#url_url_pathname)
+part of the request URL.
 
 ```js
 // URL: /status/user?name=medley
-req.pathname // '/status/user'
+req.path // '/status/user'
 ```
 
 ### `req.protocol`
 
 *Read-only*
 
-The request protocol ("http" or "https"). Supports `X-Forwarded-Proto` when
-the [`trustProxy`](Medley.md#trustproxy) setting is enabled.
+The request protocol (e.g. "http" or "https"). Supports reading the `X-Forwarded-Proto`
+header when the [`trustProxy`](Medley.md#trustproxy) setting is enabled.
 
 ```js
-req.protocol // 'http'
+req.protocol // 'https'
 ```
 
 ### `req.query`

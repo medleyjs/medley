@@ -364,23 +364,14 @@ t.test('req.origin - trustProxy=true', (t) => {
   })
 })
 
-t.test('req.path is an alias for req.url', (t) => {
-  t.notEqual(Object.getOwnPropertyDescriptor(Request.prototype, 'path'), undefined)
-  t.strictDeepEqual(
-    Object.getOwnPropertyDescriptor(Request.prototype, 'path'),
-    Object.getOwnPropertyDescriptor(Request.prototype, 'url')
-  )
-  t.end()
-})
-
-t.test('req.pathname - get', (t) => {
-  t.equal(new Request({url: '/'}).pathname, '/')
-  t.equal(new Request({url: '/no-query'}).pathname, '/no-query')
-  t.equal(new Request({url: '/?'}).pathname, '/')
-  t.equal(new Request({url: '/path?'}).pathname, '/path')
-  t.equal(new Request({url: '/path?search=1'}).pathname, '/path')
-  t.equal(new Request({url: '/with/multi/parts?qu?ery'}).pathname, '/with/multi/parts')
-  t.equal(new Request({url: '/trailing/slash/??query'}).pathname, '/trailing/slash/')
+t.test('req.path - get', (t) => {
+  t.equal(new Request({url: '/'}).path, '/')
+  t.equal(new Request({url: '/no-query'}).path, '/no-query')
+  t.equal(new Request({url: '/?'}).path, '/')
+  t.equal(new Request({url: '/path?'}).path, '/path')
+  t.equal(new Request({url: '/path?search=1'}).path, '/path')
+  t.equal(new Request({url: '/with/multi/parts?qu?ery'}).path, '/with/multi/parts')
+  t.equal(new Request({url: '/trailing/slash/??query'}).path, '/trailing/slash/')
   t.end()
 })
 
