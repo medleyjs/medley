@@ -19,7 +19,6 @@ t.test('Request object', (t) => {
 })
 
 t.test('req.authority is an alias for req.host', (t) => {
-  t.notEqual(Object.getOwnPropertyDescriptor(Request.prototype, 'authority'), undefined)
   t.strictDeepEqual(
     Object.getOwnPropertyDescriptor(Request.prototype, 'authority'),
     Object.getOwnPropertyDescriptor(Request.prototype, 'host')
@@ -522,7 +521,6 @@ t.test('request.search - get', (t) => {
 })
 
 t.test('req.scheme is an alias for req.protocol', (t) => {
-  t.notEqual(Object.getOwnPropertyDescriptor(Request.prototype, 'scheme'), undefined)
   t.strictDeepEqual(
     Object.getOwnPropertyDescriptor(Request.prototype, 'scheme'),
     Object.getOwnPropertyDescriptor(Request.prototype, 'protocol')

@@ -104,11 +104,6 @@ test('.decorateRequest() should not allow decorating Medley values', (t) => {
     new Error("A decorator called 'query' has already been added to Request")
   )
 
-  t.throws(
-    () => app.decorateRequest('_trustProxy', null),
-    new Error("A decorator called '_trustProxy' has already been added to Request")
-  )
-
   t.end()
 })
 
@@ -266,7 +261,7 @@ test('decorateResponse inside a sub-app', (t) => {
   })
 })
 
-test('decorators should be app-independant', (t) => {
+test('decorators should be app-independent', (t) => {
   const app1 = medley()
   const app2 = medley()
 
