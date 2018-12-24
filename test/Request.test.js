@@ -6,7 +6,7 @@ const medley = require('..')
 const path = require('path')
 const sget = require('simple-get').concat
 
-const Request = require('../lib/Request').buildRequest()
+const Request = require('../lib/Request').buildRequest(false)
 
 t.test('Request object', (t) => {
   t.plan(5)

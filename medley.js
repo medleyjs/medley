@@ -33,6 +33,10 @@ function medley(options) {
     throw new TypeError('Options must be an object')
   }
 
+  if (options.queryParser !== undefined && typeof options.queryParser !== 'function') {
+    throw new TypeError(`'queryParser' option must be an function. Got a '${typeof options.queryParser}'`)
+  }
+
   const methodHandlers = Object.assign({}, originalMethodHandlers)
 
   if (options.extraBodyParsingMethods) {
@@ -135,7 +139,7 @@ function medley(options) {
     [Symbol.iterator]: routesIterator,
     routesToString,
 
-    _Request: Request.buildRequest(!!options.trustProxy),
+    _Request: Request.buildRequest(!!options.trustProxy, options.queryParser),
     _Response: Response.buildResponse(),
   }
 

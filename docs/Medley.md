@@ -10,6 +10,7 @@ object which is used to customize the resulting instance. The options are:
 + [`https`](#https)
 + [`maxParamLength`](#maxparamlength)
 + [`onStreamError`](#onstreamerror)
++ [`queryParser`](#queryparser)
 + [`strictRouting`](#strictrouting)
 + [`trustProxy`](#trustproxy)
 
@@ -108,6 +109,21 @@ const app = medley({
     // NOTE: Always use a real logger instead of console.error()
   }
 });
+```
+
+### `queryParser`
+
++ Default: [`querystring.parse`](https://nodejs.org/dist/latest/docs/api/querystring.html#querystring_querystring_parse_str_sep_eq_options)
+
+A custom function to parse the URL's query string into the value for
+[`req.query`](Request.md#reqquery). It will receive the complete query
+string and should return an object of query keys and their values.
+
+```js
+const medley = require('@medley/medley');
+const qs = require('qs'); // https://github.com/ljharb/qs
+
+const app = medley({ queryParser: qs.parse });
 ```
 
 ### `strictRouting`

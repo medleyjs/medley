@@ -166,18 +166,8 @@ Object parsed from the query string. If there was no query string, the object wi
 req.query // { a: '1', b: 'value' }
 ```
 
-By default the query string is parsed with [`querystring.parse`](https://nodejs.org/api/querystring.html#querystring_querystring_parse_str_sep_eq_options).
-To use a different query string parser (such as [`qs`](https://github.com/ljharb/qs)),
-add an `onRequest` hook that parses `req.querystring` like so:
-
-```js
-const qs = require('qs')
-
-app.addHook('onRequest', (req, res, next) => {
-  req.query = qs.parse(req.querystring);
-  next();
-});
-```
+By default, the query string is parsed with [`querystring.parse`](https://nodejs.org/api/querystring.html#querystring_querystring_parse_str_sep_eq_options).
+To use a different query string parser, set the [`queryParser`](Medley.md#queryparser) option.
 
 ### `req.querystring`
 
@@ -201,7 +191,7 @@ HTTP/2-style alias for [`req.protocol`](#reqprotocol).
 
 *Read-only*
 
-The query string found in the request's URL (with the `?`).
+The search string found in the request's URL (query string with the `?`).
 
 ```js
 // URL: /path?a=1&b=value
