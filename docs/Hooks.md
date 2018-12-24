@@ -210,6 +210,9 @@ app.addHook('onFinished', (req, res) => {
 + `req` - Medley [Request](Request.md) object
 + `res` - Medley [Response](Response.md) object
 
+`onFinished` hooks are run once the response has finished sending (or if the underlying
+connection was terminated before the response could finish sending).
+
 The `onFinished` hook is different from the other hooks. It only receives the
 [`req`](Request.md) and [`res`](Response.md) objects and is executed synchronously.
 Any errors that occur during this hook must be handled manually.
@@ -223,9 +226,6 @@ app.addHook('onFinished', async (req, res) => {
   }
 });
 ```
-
-`onFinished` hooks are run once the response has finished sending (or if the underlying
-connection was terminated before the response could finish sending).
 
 <a id="encapsulation"></a>
 ## Hooks Encapsulation
