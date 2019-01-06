@@ -95,11 +95,6 @@ test('.decorateRequest() should not allow decorating Medley values', (t) => {
   )
 
   t.throws(
-    () => app.decorateRequest('_query', null),
-    new Error("A decorator called '_query' has already been added to Request")
-  )
-
-  t.throws(
     () => app.decorateRequest('query', null),
     new Error("A decorator called 'query' has already been added to Request")
   )
@@ -136,13 +131,8 @@ test('.decorateResponse() should not allow decorating Medley values', (t) => {
   )
 
   t.throws(
-    () => app.decorateResponse('_ranCustomError', null),
-    new Error("A decorator called '_ranCustomError' has already been added to Response")
-  )
-
-  t.throws(
-    () => app.decorateResponse('_ranOnSendHooks', null),
-    new Error("A decorator called '_ranOnSendHooks' has already been added to Response")
+    () => app.decorateResponse('_headers', null),
+    new Error("A decorator called '_headers' has already been added to Response")
   )
 
   t.end()
