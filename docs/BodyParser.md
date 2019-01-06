@@ -17,10 +17,11 @@ will respond with a `415 Unsupported Media Type` error. However, this is also
 
 #### Encapsulation
 
-Similar to hooks, body parsers are encapsulated within the scope in which they
-are declared. This means that if a parser is declared in the root scope, it
-will be available everywhere, whereas if it is declared inside a sub-app, it
-will be available only to that sub-app and its children.
+Similar to [hooks encapsulation](Hooks.md#encapsulation), body parsers are
+encapsulated within the scope in which they are declared. This means that if a
+parser is declared in the root scope, it will be available everywhere, whereas
+if it is declared on a sub-app, it will be available only to that sub-app
+and its children.
 
 ## `app.addBodyParser()`
 

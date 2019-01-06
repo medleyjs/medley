@@ -846,210 +846,226 @@ test('async preHandler hooks should be able to send a response', (t) => {
   })
 })
 
-test('onRequest hooks should run in the order in which they are defined', (t) => {
-  t.plan(9)
+test('onRequest hooks can be added after the route is defined', (t) => {
+  t.plan(13)
   const app = medley()
 
   app.encapsulate(function(subApp) {
-    subApp.addHook('onRequest', (request, response, next) => {
-      t.strictEqual(request.previous, undefined)
-      request.previous = 1
+    subApp.addHook('onRequest', (req, res, next) => {
+      t.strictEqual(req.previous, undefined)
+      req.previous = 1
       next()
     })
 
-    subApp.get('/', (request, response) => {
-      t.strictEqual(request.previous, 5)
-      response.send({hello: 'world'})
+    subApp.get('/encapsulated', (req, res) => {
+      t.strictEqual(req.previous, 2)
+      res.send('hello world')
     })
 
-    subApp.register(function(appInstance) {
-      appInstance.addHook('onRequest', (request, response, next) => {
-        t.strictEqual(request.previous, 1)
-        request.previous = 2
-        next()
-      })
+    subApp.addHook('onRequest', (req, res, next) => {
+      t.strictEqual(req.previous, 1)
+      req.previous = 2
+      next()
     })
   })
 
-  app.register(function(subApp) {
-    subApp.addHook('onRequest', (request, response, next) => {
-      t.strictEqual(request.previous, 2)
-      request.previous = 3
-      next()
-    })
+  app.get('/', (req, res) => {
+    t.strictEqual(req.previous, 3)
+    res.send('hello world')
+  })
 
-    subApp.register(function(pluginApp) {
-      pluginApp.addHook('onRequest', (request, response, next) => {
-        t.strictEqual(request.previous, 3)
-        request.previous = 4
-        next()
-      })
-    })
+  app.addHook('onRequest', (req, res, next) => {
+    t.strictEqual(req.previous, undefined)
+    req.previous = 1
+    next()
+  })
 
-    subApp.addHook('onRequest', (request, response, next) => {
-      t.strictEqual(request.previous, 4)
-      request.previous = 5
-      next()
-    })
+  app.addHook('onRequest', (req, res, next) => {
+    t.strictEqual(req.previous, 1)
+    req.previous = 2
+    next()
+  })
+
+  app.addHook('onRequest', (req, res, next) => {
+    t.strictEqual(req.previous, 2)
+    req.previous = 3
+    next()
+  })
+
+  app.inject('/encapsulated', (err, res) => {
+    t.error(err)
+    t.strictEqual(res.statusCode, 200)
+    t.deepEqual(res.payload, 'hello world')
   })
 
   app.inject('/', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 200)
-    t.deepEqual(JSON.parse(res.payload), {hello: 'world'})
+    t.deepEqual(res.payload, 'hello world')
   })
 })
 
-test('preHandler hooks should run in the order in which they are defined', (t) => {
-  t.plan(9)
+test('preHandler hooks can be added after the route is defined', (t) => {
+  t.plan(13)
   const app = medley()
 
   app.encapsulate(function(subApp) {
-    subApp.addHook('preHandler', function(request, response, next) {
-      t.strictEqual(request.previous, undefined)
-      request.previous = 1
+    subApp.addHook('preHandler', (req, res, next) => {
+      t.strictEqual(req.previous, undefined)
+      req.previous = 1
       next()
     })
 
-    subApp.get('/', function(request, response) {
-      t.strictEqual(request.previous, 5)
-      response.send({hello: 'world'})
+    subApp.get('/encapsulated', (req, res) => {
+      t.strictEqual(req.previous, 2)
+      res.send('hello world')
     })
 
-    subApp.register(function(pluginApp) {
-      pluginApp.addHook('preHandler', function(request, response, next) {
-        t.strictEqual(request.previous, 1)
-        request.previous = 2
-        next()
-      })
+    subApp.addHook('preHandler', (req, res, next) => {
+      t.strictEqual(req.previous, 1)
+      req.previous = 2
+      next()
     })
   })
 
-  app.register(function(subApp) {
-    subApp.addHook('preHandler', function(request, response, next) {
-      t.strictEqual(request.previous, 2)
-      request.previous = 3
-      next()
-    })
+  app.get('/', (req, res) => {
+    t.strictEqual(req.previous, 3)
+    res.send('hello world')
+  })
 
-    subApp.register(function(pluginApp) {
-      pluginApp.addHook('preHandler', function(request, response, next) {
-        t.strictEqual(request.previous, 3)
-        request.previous = 4
-        next()
-      })
-    })
+  app.addHook('preHandler', (req, res, next) => {
+    t.strictEqual(req.previous, undefined)
+    req.previous = 1
+    next()
+  })
 
-    subApp.addHook('preHandler', function(request, response, next) {
-      t.strictEqual(request.previous, 4)
-      request.previous = 5
-      next()
-    })
+  app.addHook('preHandler', (req, res, next) => {
+    t.strictEqual(req.previous, 1)
+    req.previous = 2
+    next()
+  })
+
+  app.addHook('preHandler', (req, res, next) => {
+    t.strictEqual(req.previous, 2)
+    req.previous = 3
+    next()
+  })
+
+  app.inject('/encapsulated', (err, res) => {
+    t.error(err)
+    t.strictEqual(res.statusCode, 200)
+    t.deepEqual(res.payload, 'hello world')
   })
 
   app.inject('/', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 200)
-    t.deepEqual(JSON.parse(res.payload), {hello: 'world'})
+    t.deepEqual(res.payload, 'hello world')
   })
 })
 
-test('onSend hooks should run in the order in which they are defined', (t) => {
-  t.plan(8)
+test('onSend hooks can be added after the route is defined', (t) => {
+  t.plan(11)
   const app = medley()
 
   app.encapsulate(function(subApp) {
-    subApp.addHook('onSend', function(request, response, payload, next) {
-      t.strictEqual(request.previous, undefined)
-      request.previous = 1
+    subApp.addHook('onSend', function(req, res, payload, next) {
+      t.strictEqual(req.previous, undefined)
+      req.previous = 1
       next()
     })
 
-    subApp.get('/', function(request, response) {
-      response.send({})
+    subApp.get('/encapsulated', function(req, res) {
+      res.send({})
     })
 
-    subApp.register(function(pluginApp) {
-      pluginApp.addHook('onSend', function(request, response, payload, next) {
-        t.strictEqual(request.previous, 1)
-        request.previous = 2
-        next()
-      })
+    subApp.addHook('onSend', function(req, res, payload, next) {
+      t.strictEqual(req.previous, 1)
+      next(null, '2')
     })
   })
 
-  app.register(function(subApp) {
-    subApp.addHook('onSend', function(request, response, payload, next) {
-      t.strictEqual(request.previous, 2)
-      request.previous = 3
-      next()
-    })
+  app.get('/', function(req, res) {
+    res.send({})
+  })
 
-    subApp.register(function(pluginApp) {
-      pluginApp.addHook('onSend', function(request, response, payload, next) {
-        t.strictEqual(request.previous, 3)
-        request.previous = 4
-        next()
-      })
-    })
+  app.addHook('onSend', function(req, res, payload, next) {
+    t.strictEqual(req.previous, undefined)
+    req.previous = 1
+    next()
+  })
 
-    subApp.addHook('onSend', function(request, response, payload, next) {
-      t.strictEqual(request.previous, 4)
-      next(null, '5')
-    })
+  app.addHook('onSend', function(req, res, payload, next) {
+    t.strictEqual(req.previous, 1)
+    req.previous = 2
+    next()
+  })
+
+  app.addHook('onSend', function(req, res, payload, next) {
+    t.strictEqual(req.previous, 2)
+    next(null, '3')
+  })
+
+  app.inject('/encapsulated', (err, res) => {
+    t.error(err)
+    t.strictEqual(res.statusCode, 200)
+    t.deepEqual(res.payload, '2')
   })
 
   app.inject('/', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 200)
-    t.deepEqual(JSON.parse(res.payload), 5)
+    t.deepEqual(res.payload, '3')
   })
 })
 
-test('onFinished hooks should run in the order in which they are defined', (t) => {
-  t.plan(8)
+test('onFinished hooks can be added after the route is defined', (t) => {
+  t.plan(11)
   const app = medley()
 
   app.encapsulate(function(subApp) {
-    subApp.addHook('onFinished', (request, response) => {
-      t.strictEqual(response.previous, undefined)
-      response.previous = 1
+    subApp.addHook('onFinished', (req, res) => {
+      t.strictEqual(res.previous, undefined)
+      res.previous = 1
     })
 
-    subApp.get('/', function(request, response) {
-      response.send({hello: 'world'})
+    subApp.get('/encapsulated', function(req, res) {
+      res.send('hello world')
     })
 
-    subApp.register(function(pluginApp) {
-      pluginApp.addHook('onFinished', (request, response) => {
-        t.strictEqual(response.previous, 1)
-        response.previous = 2
-      })
+    subApp.addHook('onFinished', (req, res) => {
+      t.strictEqual(res.previous, 1)
     })
   })
 
-  app.register(function(subApp) {
-    subApp.addHook('onFinished', (request, response) => {
-      t.strictEqual(response.previous, 2)
-      response.previous = 3
-    })
+  app.get('/', (req, res) => {
+    res.send('hello world')
+  })
 
-    subApp.register(function(pluginApp) {
-      pluginApp.addHook('onFinished', (request, response) => {
-        t.strictEqual(response.previous, 3)
-        response.previous = 4
-      })
-    })
+  app.addHook('onFinished', (req, res) => {
+    t.strictEqual(res.previous, undefined)
+    res.previous = 1
+  })
 
-    subApp.addHook('onFinished', (request, response) => {
-      t.strictEqual(response.previous, 4)
-    })
+  app.addHook('onFinished', (req, res) => {
+    t.strictEqual(res.previous, 1)
+    res.previous = 2
+  })
+
+  app.addHook('onFinished', (req, res) => {
+    t.strictEqual(res.previous, 2)
+  })
+
+  app.inject('/encapsulated', (err, res) => {
+    t.error(err)
+    t.strictEqual(res.statusCode, 200)
+    t.deepEqual(res.payload, 'hello world')
   })
 
   app.inject('/', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 200)
-    t.deepEqual(JSON.parse(res.payload), {hello: 'world'})
+    t.deepEqual(res.payload, 'hello world')
   })
 })
 

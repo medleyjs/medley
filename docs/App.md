@@ -122,6 +122,12 @@ Creates a new sub-app and passes it to the `subAppFn` function. Optionally,
 a `prefix` string can be specified which will be the prefix for all routes
 defined on the `subApp`. Prefixes are compounded for nested sub-apps.
 
+A sub-app is created as as snapshot of its parent and inherits its parent's
+[hooks](Hooks.md), [body parsers](BodyParser.md), and
+[app decorators](Decorators.md#decorate). New hooks, body parsers, and app
+decorators added to the sub-app are scoped only to that sub-app and its own
+sub-apps.
+
 ```js
 const medley = require('@medley/medley');
 const app = medley();
@@ -137,7 +143,7 @@ app.encapsulate((subApp) => {
 
 app.encapsulate('/api', (apiSubApp) => {
   apiSubApp.addHook('onRequest', (req, res, next) => {
-    // This hook only runs for routes defined within the apiSubApp
+    // This hook only runs for routes defined on the apiSubApp and v1SubApp
     next();
   });
 

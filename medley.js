@@ -82,7 +82,6 @@ function medley(options) {
     _onStreamError: options.onStreamError || function noop() {},
 
     encapsulate, // For creating sub-apps
-    _subApps: [],
 
     // Decorator methods
     decorate: decorateApp,
@@ -192,9 +191,6 @@ function medley(options) {
   function createSubApp(parentApp, prefix) {
     const subApp = Object.create(parentApp)
 
-    parentApp._subApps.push(subApp)
-
-    subApp._subApps = []
     subApp._bodyParser = parentApp._bodyParser.clone()
     subApp._hooks = Hooks.buildHooks(parentApp._hooks)
     subApp[kRegisteredPlugins] = parentApp[kRegisteredPlugins].slice()
@@ -238,7 +234,6 @@ function medley(options) {
     throwIfAppIsLoaded('Cannot call "addBodyParser()" when app is already loaded')
 
     this._bodyParser.add(contentType, parser)
-    this._subApps.forEach(subApp => subApp.addBodyParser(contentType, parser))
 
     return this
   }
@@ -247,7 +242,6 @@ function medley(options) {
     throwIfAppIsLoaded('Cannot call "addHook()" when app is already loaded')
 
     this._hooks.add(hookName, hookHandler)
-    this._subApps.forEach(subApp => subApp.addHook(hookName, hookHandler))
 
     return this
   }

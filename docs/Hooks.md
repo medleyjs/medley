@@ -230,8 +230,11 @@ app.addHook('onFinished', async (req, res) => {
 <a id="encapsulation"></a>
 ## Hooks Encapsulation
 
-Hooks can be encapsulated following Medley's sub-app encapsulation model so
-that they will only run on routes in the same encapsulation scope.
+Hooks can be scoped to run for only a certain set of routes by wrapping the
+hooks and routes in a call to [`app.encapsulate()`](App.md#encapsulate).
+
+The encapsulated scope will inherit any hooks defined before the call to
+`app.encapsulate()`.
 
 ```js
 app.addHook('onRequest', (req, res, next) => {
@@ -248,9 +251,13 @@ app.encapsulate((subApp1) => {
   subApp1.get('/route-1', (req, res) => {
     console.log(req.top); // true
     console.log(req.one); // 1
-    console.log(req.two); // undefined
     res.send();
   });
+});
+
+app.addHook('onRequest', (req, res, next) => {
+  req.top2 = true; // Runs for all routes defined after this hook
+  next();
 });
 
 app.encapsulate((subApp2) => {
@@ -260,9 +267,9 @@ app.encapsulate((subApp2) => {
   });
 
   subApp2.get('/route-2', (req, res) => {
-    console.log(req.top); // true
-    console.log(req.one); // undefined
-    console.log(req.two); // 2
+    console.log(req.top);  // true
+    console.log(req.top2); // true
+    console.log(req.two);  // 2
     res.send();
   });
 });
