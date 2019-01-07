@@ -31,7 +31,6 @@ const app = medley();
 + [`.onLoad(callback)`](#on-load)
 + [`.register(plugin [, options])`](#register)
 + [`.route(options)`](#route)
-+ [`.routesToString()`](#routes-to-string)
 + [`.setErrorHandler(handler)`](#set-error-handler)
 + [`.setNotFoundHandler([options,] handler)`](#set-not-found-handler)
 + [`[@@iterator]()`](#iterator)
@@ -334,24 +333,6 @@ Registers a plugin with the `app`. See the [Plugins](Plugins.md) documentation.
 
 Registers a new route handler. There are also shorthand methods (like `app.get()`)
 that aren't included here. See the [Routes](Routes.md) documentation.
-
-<a id="routes-to-string"></a>
-### `app.routesToString()`
-
-Returns a string representing the registered routes and their methods.
-
-```js
-app.get('/test', () => {});
-app.get('/v1/user', () => {});
-app.post('/v1/user', () => {});
-
-console.log(app.routesToString());
-```
-
-```
-/test (GET)
-/v1/user (GET,POST)
-```
 
 <a id="set-error-handler"></a>
 ### `app.setErrorHandler(handler)`

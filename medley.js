@@ -106,6 +106,8 @@ function medley(options) {
     options: createShorthandRouteMethod('OPTIONS'),
     all: createShorthandRouteMethod(supportedMethods),
 
+    [Symbol.iterator]: routesIterator,
+
     get basePath() {
       return this._routePrefix
     },
@@ -132,10 +134,6 @@ function medley(options) {
     // Plugins
     register,
     [kRegisteredPlugins]: [],
-
-    // For debugging routes
-    [Symbol.iterator]: routesIterator,
-    routesToString,
 
     _Request: Request.buildRequest(!!options.trustProxy, options.queryParser),
     _Response: Response.buildResponse(),
@@ -589,19 +587,6 @@ function medley(options) {
     for (const [routePath, {methodRoutes}] of routes) {
       yield [routePath, methodRoutes]
     }
-  }
-
-  function routesToString() {
-    let str = ''
-
-    for (const [routePath, {methodRoutes}] of routes) {
-      if (str !== '') {
-        str += '\n'
-      }
-      str += routePath + ' (' + Object.keys(methodRoutes).join(',') + ')'
-    }
-
-    return str
   }
 }
 
