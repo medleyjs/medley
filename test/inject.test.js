@@ -13,19 +13,17 @@ test('should wait for the app to load before injecting the request', (t) => {
   const payload = {hello: 'world'}
   let loaded = false
 
-  app.encapsulate((subApp) => {
-    subApp.get('/', (req, res) => {
+  app.createSubApp()
+    .get('/', (req, res) => {
       t.equal(loaded, true)
       res.send(payload)
     })
-
-    subApp.onLoad((done) => {
+    .onLoad((done) => {
       setTimeout(() => {
         loaded = true
         done()
       }, 10)
     })
-  })
 
   app.inject('/', (err, res) => {
     t.error(err)

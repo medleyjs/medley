@@ -18,14 +18,13 @@ test('app[@@iterator] iterates over registered routes', (t) => {
 
   function handleDelete() {}
 
-  app.encapsulate('/v1', (subApp) => {
-    subApp.route({
+  app.createSubApp('/v1')
+    .route({
       method: ['POST', 'PUT'],
       path: '/user',
       handler: handlePostPut,
     })
-    subApp.delete('/user', handleDelete)
-  })
+    .delete('/user', handleDelete)
 
   const routes = []
   for (const route of app) {

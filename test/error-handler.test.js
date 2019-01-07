@@ -82,7 +82,7 @@ test('.setErrorHandler() should throw if not passed a function', (t) => {
 })
 
 test('encapsulated error handler', (t) => {
-  t.plan(10)
+  t.plan(9)
 
   const app = medley()
 
@@ -90,17 +90,14 @@ test('encapsulated error handler', (t) => {
     response.error(new Error('kaboom'))
   })
 
-  app.encapsulate('/test', function(subApp) {
-    subApp.get('/', function(req, response) {
-      response.error(new Error('kaboom'))
+  app.createSubApp('/test')
+    .get('/', function(req, res) {
+      res.error(new Error('kaboom'))
     })
-
-    subApp.setErrorHandler(function(err, request, response) {
-      t.type(request, 'object')
-      t.type(request, subApp._Request)
-      response.send('an error happened: ' + err.message)
+    .setErrorHandler(function(err, req, res) {
+      t.type(req, 'object')
+      res.send('an error happened: ' + err.message)
     })
-  })
 
   app.inject({
     method: 'GET',

@@ -51,21 +51,30 @@ be available to that sub-app and its own sub-apps.
 ```js
 app.decorate('top', true);
 
-app.encapsulate((subApp1) => {
+console.log(app.top); // true
+
+{
+  const subApp1 = app.createSubApp();
+
   subApp1.decorate('one', 1);
 
   console.log(subApp1.top); // true
   console.log(subApp1.one); // 1
   console.log(subApp1.two); // undefined
-});
+}
 
-app.encapsulate((subApp2) => {
+{
+  const subApp2 = app.createSubApp();
+
   subApp2.decorate('two', 2);
 
   console.log(subApp2.top); // true
   console.log(subApp2.one); // undefined
   console.log(subApp2.two); // 2
-});
+}
+
+console.log(app.one); // undefined
+console.log(app.two); // undefined
 ```
 
 <a id="decorate-request"></a>

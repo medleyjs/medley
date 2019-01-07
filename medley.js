@@ -81,7 +81,7 @@ function medley(options) {
     server,
     _onStreamError: options.onStreamError || function noop() {},
 
-    encapsulate, // For creating sub-apps
+    createSubApp,
 
     // Decorator methods
     decorate: decorateApp,
@@ -168,34 +168,22 @@ function medley(options) {
 
   return app
 
-  function encapsulate(prefix, subAppFn) {
-    if (subAppFn === undefined) {
-      subAppFn = prefix
-      prefix = ''
-    }
-
+  function createSubApp(prefix = '') {
     if (typeof prefix !== 'string') {
       throw new TypeError(`'prefix' must be a string. Got a value of type '${typeof prefix}': ${prefix}`)
     }
-    if (prefix !== '' && prefix[0] !== '/') {
-      throw new Error(`'prefix' must start with a '/' character. Got: '${prefix}'`)
-    }
-    if (typeof subAppFn !== 'function') {
-      throw new TypeError(`'subAppFn' must be a function. Got a value of type '${typeof subAppFn}': ${subAppFn}`)
-    }
 
-    const subApp = createSubApp(this, prefix)
-    subAppFn(subApp)
-  }
+    const subApp = Object.create(this)
 
-  function createSubApp(parentApp, prefix) {
-    const subApp = Object.create(parentApp)
-
-    subApp._bodyParser = parentApp._bodyParser.clone()
-    subApp._hooks = Hooks.buildHooks(parentApp._hooks)
-    subApp[kRegisteredPlugins] = parentApp[kRegisteredPlugins].slice()
+    subApp._bodyParser = this._bodyParser.clone()
+    subApp._hooks = Hooks.buildHooks(this._hooks)
+    subApp[kRegisteredPlugins] = this[kRegisteredPlugins].slice()
 
     if (prefix.length > 0) {
+      if (prefix[0] !== '/') {
+        throw new Error(`'prefix' must start with a '/' character. Got: '${prefix}'`)
+      }
+
       subApp._routePrefix += subApp._routePrefix.endsWith('/') ? prefix.slice(1) : prefix
       subApp[kIsNotFoundHandlerSet] = false
     }
@@ -387,6 +375,8 @@ function medley(options) {
       RouteContext.setHooks(routeContext, this._hooks, opts.preHandler)
       routeContext.errorHandler = this._errorHandler
     })
+
+    return this
   }
 
   function setErrorHandler(handler) {

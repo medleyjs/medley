@@ -31,11 +31,10 @@ test('prefix joined with "/" route path when strictRouting=false', (t) => {
 
   const app = medley({strictRouting: false})
 
-  app.encapsulate('/v1', function(subApp) {
-    subApp.get('/', (req, res) => {
+  app.createSubApp('/v1')
+    .get('/', (req, res) => {
       res.send('payload')
     })
-  })
 
   app.inject('/v1', (err, res) => {
     t.error(err)
@@ -53,15 +52,13 @@ test('prefix joined with "" and "/" route path when strictRouting=true', (t) => 
 
   const app = medley({strictRouting: true})
 
-  app.encapsulate('/v1', function(subApp) {
-    subApp.get('', (req, res) => {
+  app.createSubApp('/v1')
+    .get('', (req, res) => {
       res.send('no slash')
     })
-
-    subApp.get('/', (req, res) => {
+    .get('/', (req, res) => {
       res.send('with slash')
     })
-  })
 
   app.inject('/v1', (err, res) => {
     t.error(err)
@@ -79,25 +76,21 @@ test('prefix is "" or "/"', (t) => {
 
   const app = medley()
 
-  app.encapsulate('/', function(subApp) {
-    subApp.get('first', (req, res) => {
+  app.createSubApp('/')
+    .get('first', (req, res) => {
       res.send('1')
     })
-
-    subApp.get('/second', (req, res) => {
+    .get('/second', (req, res) => {
       res.send('2')
     })
-  })
 
-  app.encapsulate('', function(subApp) {
-    subApp.get('third', (req, res) => {
+  app.createSubApp('')
+    .get('third', (req, res) => {
       res.send('3')
     })
-
-    subApp.get('/fourth', (req, res) => {
+    .get('/fourth', (req, res) => {
       res.send('4')
     })
-  })
 
   app.inject('/first', (err, res) => {
     t.error(err)
@@ -129,21 +122,19 @@ test('prefix is prepended to all the routes inside a sub-app', (t) => {
     res.send('1')
   })
 
-  app.encapsulate('/v1', function(subApp) {
-    subApp.get('/first', (req, res) => {
-      res.send('2')
-    })
+  const subApp = app.createSubApp('/v1')
 
-    subApp.get('/second', (req, res) => {
-      res.send('3')
-    })
-
-    subApp.encapsulate('/user', function(subApp2) {
-      subApp2.get('/first', (req, res) => {
-        res.send('4')
-      })
-    })
+  subApp.get('/first', (req, res) => {
+    res.send('2')
   })
+  subApp.get('/second', (req, res) => {
+    res.send('3')
+  })
+
+  subApp.createSubApp('/user')
+    .get('/first', (req, res) => {
+      res.send('4')
+    })
 
   app.inject('/first', (err, res) => {
     t.error(err)
@@ -170,30 +161,25 @@ test('Prefix with trailing /', (t) => {
   t.plan(8)
 
   const app = medley()
+  const subApp = app.createSubApp('/v1/')
 
-  app.encapsulate('/v1/', function(subApp) {
-
-    subApp.get('/route1', (req, res) => {
-      res.send('1')
-    })
-
-    subApp.get('route2', (req, res) => {
-      res.send('2')
-    })
-
-    subApp.encapsulate('/empty/', function(subApp2) {
-      subApp2.get('', (req, res) => {
-        res.send('3')
-      })
-    })
-
-    subApp.encapsulate('/slash/', function(subApp2) {
-      subApp2.get('/', (req, res) => {
-        res.send('4')
-      })
-    })
-
+  subApp.get('/route1', (req, res) => {
+    res.send('1')
   })
+
+  subApp.get('route2', (req, res) => {
+    res.send('2')
+  })
+
+  subApp.createSubApp('/empty/')
+    .get('', (req, res) => {
+      res.send('3')
+    })
+
+  subApp.createSubApp('/slash/')
+    .get('/', (req, res) => {
+      res.send('4')
+    })
 
   app.inject('/v1/route1', (err, res) => {
     t.error(err)
@@ -221,25 +207,13 @@ test('prefix works many levels deep', (t) => {
 
   const app = medley()
 
-  app.encapsulate('/v1', function(subApp) {
-
-    subApp.encapsulate('/v2', function(subApp2) {
-
-      subApp2.encapsulate(function(subApp3) { // No prefix on this level
-
-        subApp3.encapsulate('/v3', function(subApp4) {
-
-          subApp4.get('/', (req, res) => {
-            res.send('payload')
-          })
-
-        })
-
-      })
-
+  app.createSubApp('/v1')
+    .createSubApp('/v2')
+    .createSubApp() // No prefix on this level
+    .createSubApp('/v3')
+    .get('/', (req, res) => {
+      res.send('payload')
     })
-
-  })
 
   app.inject('/v1/v2/v3', (err, res) => {
     t.error(err)
@@ -251,11 +225,10 @@ test('prefix should support parameters', (t) => {
   t.plan(2)
   const app = medley()
 
-  app.encapsulate('/v1/:id', function(subApp) {
-    subApp.get('/hello', (req, res) => {
+  app.createSubApp('/v1/:id')
+    .get('/hello', (req, res) => {
       res.send(req.params.id)
     })
-  })
 
   app.inject('/v1/param/hello', (err, res) => {
     t.error(err)
@@ -267,14 +240,11 @@ test('app.basePath gets the route prefix', (t) => {
   t.plan(3)
 
   const app = medley()
-
   t.equal(app.basePath, '/')
 
-  app.encapsulate('/v1', (subApp) => {
-    t.equal(subApp.basePath, '/v1')
+  const subApp = app.createSubApp('/v1')
+  t.equal(subApp.basePath, '/v1')
 
-    subApp.encapsulate('/v2', (subApp2) => {
-      t.equal(subApp2.basePath, '/v1/v2')
-    })
-  })
+  const subApp2 = subApp.createSubApp('/v2')
+  t.equal(subApp2.basePath, '/v1/v2')
 })

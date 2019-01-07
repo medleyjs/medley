@@ -127,21 +127,19 @@ test('hooks can return a promise to continue', (t) => {
   })
 })
 
-test('onRequest hook should support encapsulation / 1', (t) => {
+test('onRequest hook should support encapsulation', (t) => {
   t.plan(6)
   const app = medley()
 
-  app.encapsulate((subApp) => {
-    subApp.addHook('onRequest', (request, response, next) => {
+  app.createSubApp()
+    .addHook('onRequest', (request, response, next) => {
       t.equal(request.url, '/plugin')
       t.equal(response.sent, false)
       next()
     })
-
-    subApp.get('/plugin', (request, response) => {
+    .get('/plugin', (request, response) => {
       response.send()
     })
-  })
 
   app.get('/root', (request, response) => {
     response.send()
@@ -158,26 +156,7 @@ test('onRequest hook should support encapsulation / 1', (t) => {
   })
 })
 
-test('onRequest hook should support encapsulation / 2', (t) => {
-  t.plan(3)
-  const app = medley()
-  var pluginInstance
-
-  app.addHook('onRequest', () => {})
-
-  app.encapsulate((subApp) => {
-    subApp.addHook('onRequest', () => {})
-    pluginInstance = subApp
-  })
-
-  app.load((err) => {
-    t.error(err)
-    t.is(app._hooks.onRequest.length, 1)
-    t.is(pluginInstance._hooks.onRequest.length, 2)
-  })
-})
-
-test('onRequest hook should support encapsulation / 3', (t) => {
+test('onRequest hooks in sub-app should run after parent’s hooks', (t) => {
   t.plan(13)
   const app = medley()
 
@@ -192,18 +171,16 @@ test('onRequest hook should support encapsulation / 3', (t) => {
     response.send({hello: 'world'})
   })
 
-  app.encapsulate((subApp) => {
-    subApp.addHook('onRequest', (request, response, next) => {
+  app.createSubApp()
+    .addHook('onRequest', (request, response, next) => {
       request.second = true
       next()
     })
-
-    subApp.get('/second', (request, response) => {
+    .get('/second', (request, response) => {
       t.equal(request.first, true)
       t.equal(request.second, true)
       response.send({hello: 'world'})
     })
-  })
 
   app.listen(0, (err) => {
     t.error(err)
@@ -231,7 +208,36 @@ test('onRequest hook should support encapsulation / 3', (t) => {
   })
 })
 
-test('preHandler hook should support encapsulation / 5', (t) => {
+test('preHandler hook should support encapsulation', (t) => {
+  t.plan(6)
+  const app = medley()
+
+  app.createSubApp()
+    .addHook('preHandler', (req, res, next) => {
+      t.equal(req.url, '/plugin')
+      t.equal(res.sent, false)
+      next()
+    })
+    .get('/plugin', (req, res) => {
+      res.send()
+    })
+
+  app.get('/root', (req, res) => {
+    res.send()
+  })
+
+  app.inject('/root', (err, res) => {
+    t.error(err)
+    t.strictEqual(res.statusCode, 200)
+  })
+
+  app.inject('/plugin', (err, res) => {
+    t.error(err)
+    t.strictEqual(res.statusCode, 200)
+  })
+})
+
+test('preHandler hooks in sub-app should run after parent’s hooks', (t) => {
   t.plan(13)
   const app = medley()
 
@@ -246,18 +252,16 @@ test('preHandler hook should support encapsulation / 5', (t) => {
     response.send({hello: 'world'})
   })
 
-  app.encapsulate((subApp) => {
-    subApp.addHook('preHandler', function(request, response, next) {
+  app.createSubApp()
+    .addHook('preHandler', function(request, response, next) {
       request.second = true
       next()
     })
-
-    subApp.get('/second', (request, response) => {
+    .get('/second', (request, response) => {
       t.ok(request.first)
       t.ok(request.second)
       response.send({hello: 'world'})
     })
-  })
 
   app.listen(0, (err) => {
     t.error(err)
@@ -285,20 +289,18 @@ test('preHandler hook should support encapsulation / 5', (t) => {
   })
 })
 
-test('onFinished hook should support encapsulation / 1', (t) => {
+test('onFinished hook should support encapsulation', (t) => {
   t.plan(5)
   const app = medley()
 
-  app.encapsulate((subApp) => {
-    subApp.addHook('onFinished', (request, response) => {
+  app.createSubApp()
+    .addHook('onFinished', (request, response) => {
       t.strictEqual(response.plugin, true)
     })
-
-    subApp.get('/plugin', (request, response) => {
+    .get('/plugin', (request, response) => {
       response.plugin = true
       response.send()
     })
-  })
 
   app.get('/root', (request, response) => {
     response.send()
@@ -315,26 +317,7 @@ test('onFinished hook should support encapsulation / 1', (t) => {
   })
 })
 
-test('onFinished hook should support encapsulation / 2', (t) => {
-  t.plan(3)
-  const app = medley()
-  var pluginInstance
-
-  app.addHook('onFinished', () => {})
-
-  app.encapsulate((subApp) => {
-    subApp.addHook('onFinished', () => {})
-    pluginInstance = subApp
-  })
-
-  app.load((err) => {
-    t.error(err)
-    t.is(app._hooks.onFinished.length, 1)
-    t.is(pluginInstance._hooks.onFinished.length, 2)
-  })
-})
-
-test('onFinished hook should support encapsulation / 3', (t) => {
+test('onFinished hooks in sub-app should run after parent’s hooks', (t) => {
   t.plan(15)
   const app = medley()
 
@@ -347,16 +330,14 @@ test('onFinished hook should support encapsulation / 3', (t) => {
     response.send({hello: 'world'})
   })
 
-  app.encapsulate((subApp) => {
-    subApp.addHook('onFinished', (request, response) => {
+  app.createSubApp()
+    .addHook('onFinished', (request, response) => {
       t.ok(request)
       t.ok(response)
     })
-
-    subApp.get('/second', (req, response) => {
+    .get('/second', (req, response) => {
       response.send({hello: 'world'})
     })
-  })
 
   app.listen(0, (err) => {
     t.error(err)
@@ -414,26 +395,35 @@ test('onFinished hook should run if the client closes the connection', (t) => {
   })
 })
 
-test('onSend hook should support encapsulation / 1', (t) => {
-  t.plan(3)
+test('onSend hook should support encapsulation', (t) => {
+  t.plan(5)
   const app = medley()
-  var pluginInstance
 
-  app.addHook('onSend', () => {})
+  app.createSubApp()
+    .addHook('onSend', (req, res, payload, next) => {
+      t.equal(req.url, '/plugin')
+      next()
+    })
+    .get('/plugin', (req, res) => {
+      res.send()
+    })
 
-  app.encapsulate((subApp) => {
-    subApp.addHook('onSend', () => {})
-    pluginInstance = subApp
+  app.get('/root', (req, res) => {
+    res.send()
   })
 
-  app.load((err) => {
+  app.inject('/root', (err, res) => {
     t.error(err)
-    t.is(app._hooks.onSend.length, 1)
-    t.is(pluginInstance._hooks.onSend.length, 2)
+    t.strictEqual(res.statusCode, 200)
+  })
+
+  app.inject('/plugin', (err, res) => {
+    t.error(err)
+    t.strictEqual(res.statusCode, 200)
   })
 })
 
-test('onSend hook should support encapsulation / 2', (t) => {
+test('onSend hooks in sub-app should run after parent’s hooks', (t) => {
   t.plan(12)
   const app = medley()
 
@@ -447,23 +437,20 @@ test('onSend hook should support encapsulation / 2', (t) => {
     response.send({hello: 'world'})
   })
 
-  app.encapsulate((subApp) => {
-    subApp.addHook('onSend', (request, response, payload, next) => {
+  app.createSubApp()
+    .addHook('onSend', (request, response, payload, next) => {
       t.equal(request.first, true)
       request.second = true
       next()
     })
-
-    subApp.get('/second', (request, response) => {
+    .get('/second', (request, response) => {
       response.send({hello: 'world'})
     })
-  })
 
-  app.encapsulate((subApp2) => {
-    subApp2.addHook('onSend', () => {
+  app.createSubApp()
+    .addHook('onSend', () => {
       t.fail('this should never be called')
     })
-  })
 
   app.listen(0, (err) => {
     t.error(err)
@@ -495,48 +482,46 @@ test('onSend hook is called after payload is serialized and headers are set', (t
   t.plan(24)
   const app = medley()
 
-  app.encapsulate((subApp) => {
+  {
     const payload = {hello: 'world'}
 
-    subApp.addHook('onSend', (request, response, serializedPayload, next) => {
-      t.strictDeepEqual(JSON.parse(serializedPayload), payload)
-      t.equal(response.get('content-type'), 'application/json')
-      next()
-    })
+    app.createSubApp()
+      .addHook('onSend', (req, res, serializedPayload, next) => {
+        t.strictDeepEqual(JSON.parse(serializedPayload), payload)
+        t.equal(res.get('content-type'), 'application/json')
+        next()
+      })
+      .get('/json', (req, res) => {
+        res.send(payload)
+      })
+  }
 
-    subApp.get('/json', (request, response) => {
-      response.send(payload)
-    })
-  })
-
-  app.encapsulate((subApp) => {
-    subApp.addHook('onSend', (request, response, serializedPayload, next) => {
+  app.createSubApp()
+    .addHook('onSend', (req, res, serializedPayload, next) => {
       t.strictEqual(serializedPayload, 'some text')
-      t.strictEqual(response.get('content-type'), 'text/plain; charset=utf-8')
+      t.strictEqual(res.get('content-type'), 'text/plain; charset=utf-8')
       next()
     })
-
-    subApp.get('/text', (request, response) => {
-      response.send('some text')
+    .get('/text', (req, res) => {
+      res.send('some text')
     })
-  })
 
-  app.encapsulate((subApp) => {
+  {
     const payload = Buffer.from('buffer payload')
 
-    subApp.addHook('onSend', (request, response, serializedPayload, next) => {
-      t.strictEqual(serializedPayload, payload)
-      t.strictEqual(response.get('content-type'), 'application/octet-stream')
-      next()
-    })
+    app.createSubApp()
+      .addHook('onSend', (req, res, serializedPayload, next) => {
+        t.strictEqual(serializedPayload, payload)
+        t.strictEqual(res.get('content-type'), 'application/octet-stream')
+        next()
+      })
+      .get('/buffer', (req, res) => {
+        res.send(payload)
+      })
+  }
 
-    subApp.get('/buffer', (request, response) => {
-      response.send(payload)
-    })
-  })
-
-  app.encapsulate((subApp) => {
-    var chunk = 'stream payload'
+  {
+    let chunk = 'stream payload'
     const payload = new stream.Readable({
       read() {
         this.push(chunk)
@@ -544,16 +529,16 @@ test('onSend hook is called after payload is serialized and headers are set', (t
       },
     })
 
-    subApp.addHook('onSend', (request, response, serializedPayload, next) => {
-      t.strictEqual(serializedPayload, payload)
-      t.strictEqual(response.get('content-type'), 'application/octet-stream')
-      next()
-    })
-
-    subApp.get('/stream', (request, response) => {
-      response.send(payload)
-    })
-  })
+    app.createSubApp()
+      .addHook('onSend', (req, res, serializedPayload, next) => {
+        t.strictEqual(serializedPayload, payload)
+        t.strictEqual(res.get('content-type'), 'application/octet-stream')
+        next()
+      })
+      .get('/stream', (req, res) => {
+        res.send(payload)
+      })
+  }
 
   app.inject({
     method: 'GET',
@@ -850,24 +835,21 @@ test('onRequest hooks can be added after the route is defined', (t) => {
   t.plan(13)
   const app = medley()
 
-  app.encapsulate(function(subApp) {
-    subApp.addHook('onRequest', (req, res, next) => {
+  app.createSubApp()
+    .addHook('onRequest', (req, res, next) => {
       t.strictEqual(req.previous, undefined)
       req.previous = 1
       next()
     })
-
-    subApp.get('/encapsulated', (req, res) => {
+    .get('/encapsulated', (req, res) => {
       t.strictEqual(req.previous, 2)
       res.send('hello world')
     })
-
-    subApp.addHook('onRequest', (req, res, next) => {
+    .addHook('onRequest', (req, res, next) => {
       t.strictEqual(req.previous, 1)
       req.previous = 2
       next()
     })
-  })
 
   app.get('/', (req, res) => {
     t.strictEqual(req.previous, 3)
@@ -909,24 +891,21 @@ test('preHandler hooks can be added after the route is defined', (t) => {
   t.plan(13)
   const app = medley()
 
-  app.encapsulate(function(subApp) {
-    subApp.addHook('preHandler', (req, res, next) => {
+  app.createSubApp()
+    .addHook('preHandler', (req, res, next) => {
       t.strictEqual(req.previous, undefined)
       req.previous = 1
       next()
     })
-
-    subApp.get('/encapsulated', (req, res) => {
+    .get('/encapsulated', (req, res) => {
       t.strictEqual(req.previous, 2)
       res.send('hello world')
     })
-
-    subApp.addHook('preHandler', (req, res, next) => {
+    .addHook('preHandler', (req, res, next) => {
       t.strictEqual(req.previous, 1)
       req.previous = 2
       next()
     })
-  })
 
   app.get('/', (req, res) => {
     t.strictEqual(req.previous, 3)
@@ -968,22 +947,19 @@ test('onSend hooks can be added after the route is defined', (t) => {
   t.plan(11)
   const app = medley()
 
-  app.encapsulate(function(subApp) {
-    subApp.addHook('onSend', function(req, res, payload, next) {
+  app.createSubApp()
+    .addHook('onSend', function(req, res, payload, next) {
       t.strictEqual(req.previous, undefined)
       req.previous = 1
       next()
     })
-
-    subApp.get('/encapsulated', function(req, res) {
+    .get('/encapsulated', function(req, res) {
       res.send({})
     })
-
-    subApp.addHook('onSend', function(req, res, payload, next) {
+    .addHook('onSend', function(req, res, payload, next) {
       t.strictEqual(req.previous, 1)
       next(null, '2')
     })
-  })
 
   app.get('/', function(req, res) {
     res.send({})
@@ -1023,20 +999,17 @@ test('onFinished hooks can be added after the route is defined', (t) => {
   t.plan(11)
   const app = medley()
 
-  app.encapsulate(function(subApp) {
-    subApp.addHook('onFinished', (req, res) => {
+  app.createSubApp()
+    .addHook('onFinished', (req, res) => {
       t.strictEqual(res.previous, undefined)
       res.previous = 1
     })
-
-    subApp.get('/encapsulated', function(req, res) {
+    .get('/encapsulated', function(req, res) {
       res.send('hello world')
     })
-
-    subApp.addHook('onFinished', (req, res) => {
+    .addHook('onFinished', (req, res) => {
       t.strictEqual(res.previous, 1)
     })
-  })
 
   app.get('/', (req, res) => {
     res.send('hello world')

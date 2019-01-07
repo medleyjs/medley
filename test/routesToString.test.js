@@ -14,14 +14,13 @@ test('app.routesToString()', (t) => {
   app.get('/hello/world', () => {})
   app.post('/hello/world', () => {})
 
-  app.encapsulate('/v1', (subApp) => {
-    subApp.route({
+  app.createSubApp('/v1')
+    .route({
       method: ['POST', 'PUT'],
       path: '/user',
       handler() {},
     })
-    subApp.delete('/user', () => {})
-  })
+    .delete('/user', () => {})
 
   const expected =
 `/test (GET)

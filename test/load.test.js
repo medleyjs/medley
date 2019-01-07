@@ -13,11 +13,10 @@ t.test('.load() runs onLoad handlers in the context of the app or sub-app', (t) 
     done()
   })
 
-  app.encapsulate((subApp) => {
-    subApp.onLoad(function(done) {
-      t.equal(this, subApp)
-      done()
-    })
+  const subApp = app.createSubApp()
+  subApp.onLoad(function(done) {
+    t.equal(this, subApp)
+    done()
   })
 
   app.load((err) => {
@@ -31,12 +30,11 @@ t.test('load order', (t) => {
   const app = medley()
   let order = 1
 
-  app.encapsulate((subApp) => {
-    subApp.onLoad((done) => {
+  app.createSubApp()
+    .onLoad((done) => {
       t.equal(order++, 1)
       setImmediate(done)
     })
-  })
 
   app.onLoad((done) => {
     t.equal(order++, 2)

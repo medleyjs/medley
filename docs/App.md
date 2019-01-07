@@ -1,8 +1,9 @@
 # App
 
-A new `app` is created by calling the [`medley` factory function](Medley.md). Sub-apps—created
-with [`app.encapsulate()`](#encapsulate)—are apps that inherit from the `app` that created them. Both an *app*
-and a *sub-app* may be referred to as an *app instance*.
+A new `app` is created by calling the [`medley` factory function](Medley.md).
+Sub-apps—created with [`app.createSubApp()`](#createsubapp)—are child apps
+that inherit from the `app` that created them. Both an *app* and a *sub-app*
+may be referred to as an *app instance*.
 
 ```js
 const medley = require('@medley/medley');
@@ -19,10 +20,10 @@ const app = medley();
 + [`.addBodyParser(contentType, parser)`](#add-body-parser)
 + [`.addHook(hookName, hookHandler)`](#add-hook)
 + [`.close([callback])`](#close)
++ [`.createSubApp([prefix])`](#createsubapp)
 + [`.decorate(name, value)`](#decorate)
 + [`.decorateRequest(name, value)`](#decorate-request)
 + [`.decorateResponse(name, value)`](#decorate-response)
-+ [`.encapsulate([prefix,] subAppFn)`](#encapsulate)
 + [`.inject(options [, callback])`](#inject)
 + [`.listen(port [, host][, backlog][, callback])`](#listen)
 + [`.load([callback])`](#load)
@@ -44,13 +45,11 @@ const app = medley();
 The path that will be prefixed to routes in a sub-app. Example:
 
 ```js
-app.encapsulate('/v1', (subApp) => {
-  console.log(subApp.basePath); // '/v1'
+const subApp = app.createSubApp('/v1');
+console.log(subApp.basePath); // '/v1'
 
-  subApp.encapsulate('/user', (subSubApp) => {
-    console.log(subSubApp.basePath); // '/v1/user'
-  });
-});
+const subSubApp = subApp.createSubApp('/user');
+console.log(subSubApp.basePath); // '/v1/user'
 ```
 
 <a id="server"></a>
@@ -95,6 +94,86 @@ app.close((err) => {
 });
 ```
 
+<a id="createsubapp"></a>
+### `app.createSubApp([prefix])`
+
++ `prefix` *(string)* - A prefix for all routes defined in the sub-app (e.g `'/v1'`).
+
+Returns a new sub-app.
+
+A sub-app is created as as snapshot of its parent and inherits its parent's
+[hooks](Hooks.md), [body parsers](BodyParser.md), and
+[app decorators](Decorators.md#decorate). New hooks, body parsers, and app
+decorators added to the sub-app are scoped only to that sub-app and its own
+sub-apps.
+
+A `prefix` string can be specified which will be the prefix for all routes
+defined on the sub-app. Prefixes are compounded for nested sub-apps. See the
+[Route Prefixing](Routes.md#route-prefixing) section for details on how the
+`prefix` option affects routes.
+
+```js
+const medley = require('@medley/medley');
+const app = medley();
+
+{
+  const subApp = app.createSubApp();
+
+  subApp.addHook('onRequest', (req, res, next) => {
+    // This hook only runs for routes defined on this sub-app
+    next();
+  });
+
+  subApp.get('/status', (req, res) => res.send('OK'));
+}
+
+{
+  const apiApp = app.createSubApp('/api');
+
+  apiApp.addHook('onRequest', (req, res, next) => {
+    // This hook only runs for routes defined on the apiApp and v1App
+    next();
+  });
+
+  apiApp.get('/me', (req, res) => { // Route URL is: /api/me
+    // Get current user
+  });
+
+  const v1App = apiApp.createSubApp('/v1');
+
+  v1App.post('/login', (req, res) => { // Route URL is: /api/v1/login
+    // Log user in
+  });
+}
+```
+
+A more common pattern than the example above would be to define routes in a
+separate file like a plugin and use [`app.register()`](#register) to register
+the routes on the sub-app.
+
+**routes.js**
+
+```js
+module.exports = function routes(subApp) {
+  subApp.get('/user/:id', (req, res) => {
+    // Get a user
+  });
+
+  subApp.post('/user', (req, res) => {
+    // Create a user
+  });
+};
+```
+
+**app.js**
+
+```js
+const medley = require('@medley/medley');
+const app = medley();
+
+app.createSubApp('/api').register(require('./routes'));
+```
+
 <a id="decorate"></a>
 ### `app.decorate(name, value)`
 
@@ -111,67 +190,6 @@ Safely adds a new property to the [`Request`](Request.md) object for the current
 
 Safely adds a new property to the [`Response`](Response.md) object for the current
 `app` instance. See the [Decorators](Decorators.md) documentation.
-
-<a id="encapsulate"></a>
-### `app.encapsulate([prefix,] subAppFn)`
-
-+ `prefix` *(string)* - A prefix for all routes defined in the sub-app (e.g `'/v1'`).
-+ `subAppFn(subApp)` *(function)* - A function that will be called immediately with the created sub-app.
-
-Creates a new sub-app and passes it to the `subAppFn` function. Optionally,
-a `prefix` string can be specified which will be the prefix for all routes
-defined on the `subApp`. Prefixes are compounded for nested sub-apps.
-
-A sub-app is created as as snapshot of its parent and inherits its parent's
-[hooks](Hooks.md), [body parsers](BodyParser.md), and
-[app decorators](Decorators.md#decorate). New hooks, body parsers, and app
-decorators added to the sub-app are scoped only to that sub-app and its own
-sub-apps.
-
-```js
-const medley = require('@medley/medley');
-const app = medley();
-
-app.encapsulate((subApp) => {
-  subApp.addHook('onRequest', (req, res, next) => {
-    // This hook only runs for routes defined on this sub-app
-    next();
-  });
-
-  subApp.get('/status', (req, res) => res.send('OK'));
-});
-
-app.encapsulate('/api', (apiSubApp) => {
-  apiSubApp.addHook('onRequest', (req, res, next) => {
-    // This hook only runs for routes defined on the apiSubApp and v1SubApp
-    next();
-  });
-
-  apiSubApp.get('/user', (req, res) => { // Route URL is: /api/user
-    // Get user
-  });
-
-  apiSubApp.encapsulate('/v1', (v1SubApp) => {
-    v1SubApp.post('/user', (req, res) => { // Route URL is: /api/v1/user
-      // Create a new user
-    });
-  });
-});
-```
-
-See the [Route Prefixing](Routes.md#route-prefixing) section for details on
-how the `prefix` option affects routes.
-
-Note that the `subAppFn` is executed immediately:
-
-```js
-app.encapsulate((subApp) => {
-  // This code runs first
-});
-
-// This code runs second
-app.decorate('a', {});
-```
 
 <a id="inject"></a>
 ### `app.inject(options [, callback])`
@@ -373,7 +391,7 @@ app.setNotFoundHandler((req, res) => {
 });
 ```
 
-Sub-apps that are registered with a [`prefix`](SubApps.md#prefix) can have
+Sub-apps that are registered with a [`prefix`](#createsubapp) can have
 their own not-found handler.
 
 ```js
@@ -381,15 +399,15 @@ app.setNotFoundHandler((req, res) => {
   // Default not-found handler
 });
 
-app.encapsulate('/v1', (subApp) => {
-  subApp.setNotFoundHandler((req, res) => {
-    // Handle unmatched requests to URLs that begin with '/v1'
-  });
+const subApp = app.createSubApp('/v1');
+
+subApp.setNotFoundHandler((req, res) => {
+  // Handle unmatched requests to URLs that begin with '/v1'
 });
 ```
 
 <a id="iterator"></a>
-### `app.[@@iterator]()`
+### `app[@@iterator]()`
 
 Returns an iterator that can be used to iterate over the registered routes.
 

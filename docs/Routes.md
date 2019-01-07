@@ -228,7 +228,7 @@ way to accomplish this would be to include the prefix in every route declaration
 app.get('/v1/user', (req, res) => { ... })
 ```
 
-But an alternative would be to use [`app.encapsulate()`](App.md#encapsulate) to create separate
+But an alternative would be to use [`app.createSubApp()`](App.md#createsubapp) to create separate
 sub-apps with a different prefix for each group of routes:
 
 **app.js**
@@ -236,8 +236,8 @@ sub-apps with a different prefix for each group of routes:
 const medley = require('@medley/medley');
 const app = medley();
 
-app.encapsulate('/v1', require('./routes/v1/user'));
-app.encapsulate('/v2', require('./routes/v2/user'));
+app.createSubApp('/v1').register(require('./routes/v1/user'));
+app.createSubApp('/v2').register(require('./routes/v2/user'));
 
 app.listen(3000);
 ```

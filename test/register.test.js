@@ -132,14 +132,11 @@ t.test('plugin dependency-checking should follow sub-app encapsulation', (t) => 
 
   app.register(plugin1)
 
-  app.encapsulate((subApp) => {
-    subApp.register(plugin2)
-  })
+  app.createSubApp().register(plugin2)
 
-  app.encapsulate((subApp) => {
-    t.throws(
-      () => subApp.register(plugin3),
-      new Error("Could not register plugin 'plugin3' because dependency 'plugin2' was not registered")
-    )
-  })
+  const subApp = app.createSubApp()
+  t.throws(
+    () => subApp.register(plugin3),
+    new Error("Could not register plugin 'plugin3' because dependency 'plugin2' was not registered")
+  )
 })

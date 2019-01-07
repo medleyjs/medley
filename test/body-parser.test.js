@@ -174,22 +174,24 @@ test('bodyParser should handle errors', (t) => {
 })
 
 test('bodyParser should support encapsulation', (t) => {
-  t.plan(7)
+  t.plan(13)
   const app = medley()
 
   app.addBodyParser('application/json', function(req, done) {
     jsonParser(req.stream, done)
   })
 
-  app.encapsulate((subApp) => {
-    subApp.post('/', (req, response) => {
-      response.send(req.body)
-    })
+  app.post('/', (req, res) => {
+    res.send(req.body)
+  })
 
-    subApp.addBodyParser('application/jsoff', function(req, done) {
+  app.createSubApp()
+    .post('/sub', (req, res) => {
+      res.send(req.body)
+    })
+    .addBodyParser('application/jsoff', function(req, done) {
       jsonParser(req.stream, done)
     })
-  })
 
   app.listen(0, (err) => {
     t.error(err)
@@ -211,6 +213,36 @@ test('bodyParser should support encapsulation', (t) => {
     sget({
       method: 'POST',
       url: 'http://localhost:' + app.server.address().port,
+      body: '{"hello":"world"}',
+      headers: {
+        'Content-Type': 'application/jsoff',
+      },
+    }, (err, response, body) => {
+      t.error(err)
+      t.equal(response.statusCode, 415)
+      t.strictDeepEqual(JSON.parse(body.toString()), {
+        statusCode: 415,
+        error: 'Unsupported Media Type',
+        message: 'Unsupported Media Type: "application/jsoff"',
+      })
+    })
+
+    sget({
+      method: 'POST',
+      url: 'http://localhost:' + app.server.address().port + '/sub',
+      body: '{"hello":"world"}',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }, (err, response, body) => {
+      t.error(err)
+      t.equal(response.statusCode, 200)
+      t.equal(body.toString(), '{"hello":"world"}')
+    })
+
+    sget({
+      method: 'POST',
+      url: 'http://localhost:' + app.server.address().port + '/sub',
       body: '{"hello":"world"}',
       headers: {
         'Content-Type': 'application/jsoff',
@@ -291,12 +323,11 @@ test('bodyParser should allow unknown Content-Types when the allowUnsupportedMed
     res.send()
   })
 
-  app.encapsulate((subApp) => {
-    subApp.post('/sub-app', (req, res) => {
+  app.createSubApp()
+    .post('/sub-app', (req, res) => {
       t.equal(req.body, undefined)
       res.send()
     })
-  })
 
   app.listen(0, (err) => {
     t.error(err)

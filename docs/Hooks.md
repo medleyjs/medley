@@ -230,11 +230,8 @@ app.addHook('onFinished', async (req, res) => {
 <a id="encapsulation"></a>
 ## Hooks Encapsulation
 
-Hooks can be scoped to run for only a certain set of routes by wrapping the
-hooks and routes in a call to [`app.encapsulate()`](App.md#encapsulate).
-
-The encapsulated scope will inherit any hooks defined before the call to
-`app.encapsulate()`.
+Hooks can be scoped to run for only a certain set of routes by adding the hooks
+and routes to their own sub-app—created with [`app.createSubApp()`](App.md#createsubapp).
 
 ```js
 app.addHook('onRequest', (req, res, next) => {
@@ -242,7 +239,9 @@ app.addHook('onRequest', (req, res, next) => {
   next();
 });
 
-app.encapsulate((subApp1) => {
+{
+  const subApp1 = app.createSubApp();
+
   subApp1.addHook('onRequest', (req, res, next) => {
     req.one = 1; // Only runs for routes in `subApp1`
     next();
@@ -253,14 +252,16 @@ app.encapsulate((subApp1) => {
     console.log(req.one); // 1
     res.send();
   });
-});
+}
 
 app.addHook('onRequest', (req, res, next) => {
   req.top2 = true; // Runs for all routes defined after this hook
   next();
 });
 
-app.encapsulate((subApp2) => {
+{
+  const subApp2 = app.createSubApp();
+
   subApp2.addHook('onRequest', (req, res, next) => {
     req.two = 2; // Only runs for routes in `subApp2`
     next();
@@ -272,5 +273,5 @@ app.encapsulate((subApp2) => {
     console.log(req.two);  // 2
     res.send();
   });
-});
+}
 ```

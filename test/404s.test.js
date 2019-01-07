@@ -140,15 +140,14 @@ test('setting a custom 404 handler multiple times is an error', (t) => {
     t.plan(1)
 
     const app = medley()
+    const subApp = app.createSubApp('/prefix')
 
-    app.encapsulate('/prefix', (subApp) => {
-      subApp.setNotFoundHandler(() => {})
+    subApp.setNotFoundHandler(() => {})
 
-      t.throws(
-        () => subApp.setNotFoundHandler(() => {}),
-        new Error("Not found handler already set for app instance with prefix: '/prefix'")
-      )
-    })
+    t.throws(
+      () => subApp.setNotFoundHandler(() => {}),
+      new Error("Not found handler already set for app instance with prefix: '/prefix'")
+    )
   })
 })
 
@@ -165,23 +164,20 @@ test('encapsulated 404', (t) => {
     res.status(404).send('this was not found')
   })
 
-  app.encapsulate('/test', (subApp) => {
-    subApp.setNotFoundHandler(function(req, res) {
+  app.createSubApp('/test')
+    .setNotFoundHandler(function(req, res) {
       res.status(404).send('this was not found 2')
     })
-  })
 
-  app.encapsulate('/test2', (subApp) => {
-    subApp.setNotFoundHandler(function(req, res) {
+  app.createSubApp('/test2')
+    .setNotFoundHandler(function(req, res) {
       res.status(404).send('this was not found 3')
     })
-  })
 
-  app.encapsulate('/test3/', (subApp) => {
-    subApp.setNotFoundHandler(function(req, res) {
+  app.createSubApp('/test3/')
+    .setNotFoundHandler(function(req, res) {
       res.status(404).send('this was not found 4')
     })
-  })
 
   t.tearDown(app.close.bind(app))
 
@@ -382,30 +378,25 @@ test('run hooks with encapsulated 404', (t) => {
     t.ok(response, 'onFinished called')
   })
 
-  app.encapsulate('/test', (subApp) => {
-    subApp.setNotFoundHandler((request, response) => {
-      response.status(404).send('this was not found 2')
+  app.createSubApp('/test')
+    .setNotFoundHandler((req, res) => {
+      res.status(404).send('this was not found 2')
     })
-
-    subApp.addHook('onRequest', function(req, res, next) {
+    .addHook('onRequest', function(req, res, next) {
       t.pass('onRequest 2 called')
       next()
     })
-
-    subApp.addHook('preHandler', function(request, response, next) {
+    .addHook('preHandler', function(req, res, next) {
       t.pass('preHandler 2 called')
       next()
     })
-
-    subApp.addHook('onSend', function(request, response, payload, next) {
+    .addHook('onSend', function(req, res, payload, next) {
       t.pass('onSend 2 called')
       next()
     })
-
-    subApp.addHook('onFinished', (request, response) => {
-      t.ok(response, 'onFinished 2 called')
+    .addHook('onFinished', (req, res) => {
+      t.ok(res, 'onFinished 2 called')
     })
-  })
 
   t.tearDown(app.close.bind(app))
 
@@ -464,22 +455,20 @@ test('calling setNotFoundHandler() on a sub-app without a prefix is an error', (
   t.plan(2)
 
   const app = medley()
+  const subApp = app.createSubApp()
 
-  app.encapsulate((subApp) => {
-    t.throws(
-      () => subApp.setNotFoundHandler(() => {}),
-      new Error('Cannot call "setNotFoundHandler()" on a sub-app created without a prefix')
-    )
-  })
+  t.throws(
+    () => subApp.setNotFoundHandler(() => {}),
+    new Error('Cannot call "setNotFoundHandler()" on a sub-app created without a prefix')
+  )
 
-  app.encapsulate('/prefixed', (subApp) => {
-    subApp.encapsulate((subApp2) => {
-      t.throws(
-        () => subApp2.setNotFoundHandler(() => {}),
-        new Error('Cannot call "setNotFoundHandler()" on a sub-app created without a prefix')
-      )
-    })
-  })
+  const prefixedSubApp = app.createSubApp('/prefixed')
+  const unprefixedSubApp = prefixedSubApp.createSubApp()
+
+  t.throws(
+    () => unprefixedSubApp.setNotFoundHandler(() => {}),
+    new Error('Cannot call "setNotFoundHandler()" on a sub-app created without a prefix')
+  )
 })
 
 test('cannot set notFoundHandler after binding', (t) => {
