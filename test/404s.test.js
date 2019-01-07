@@ -531,3 +531,22 @@ test('request bodies are not parsed for not-found routes', (t) => {
     t.equal(res.payload, 'not found')
   })
 })
+
+test('not-found route lookups do not fail with the Accept-Version header', (t) => {
+  t.plan(3)
+
+  medley()
+    .setNotFoundHandler((req, res) => {
+      res.status(404).send('not found')
+    })
+    .inject({
+      url: '/',
+      headers: {
+        'Accept-Version': '1.0.0',
+      },
+    }, (err, res) => {
+      t.error(err)
+      t.equal(res.statusCode, 404)
+      t.equal(res.payload, 'not found')
+    })
+})

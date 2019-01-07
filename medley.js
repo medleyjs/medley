@@ -15,17 +15,17 @@ const runOnLoadHandlers = require('./lib/utils/runOnLoadHandlers')
 const {buildSerializers} = require('./lib/Serializer')
 const {kRegisteredPlugins, register} = require('./lib/PluginUtils')
 const {
-  routeHandler,
+  createRequestHandler,
   methodHandlers: originalMethodHandlers,
   createOptionsHandler,
   create405Handler,
   defaultNotFoundHandler,
-  notFoundFallbackHandler,
 } = require('./lib/RequestHandlers')
 
 const kIsNotFoundHandlerSet = Symbol('isNotFoundHandlerSet')
 
 const supportedMethods = Object.keys(originalMethodHandlers)
+const noop = () => {}
 
 function medley(options) {
   options = options || {}
@@ -52,13 +52,12 @@ function medley(options) {
     }
   }
 
-  const notFoundRouter = findMyWay({defaultRoute: notFoundFallbackHandler})
   const router = findMyWay({
-    defaultRoute: notFoundRouter.lookup.bind(notFoundRouter),
     ignoreTrailingSlash: !options.strictRouting,
     maxParamLength: options.maxParamLength,
   })
-  const httpHandler = router.lookup.bind(router)
+  const notFoundRouter = findMyWay()
+  const httpHandler = createRequestHandler(router, notFoundRouter)
 
   var server
   if (options.http2) {
@@ -79,7 +78,7 @@ function medley(options) {
 
   const app = {
     server,
-    _onStreamError: options.onStreamError || function noop() {},
+    _onStreamError: options.onStreamError || noop,
 
     createSubApp,
 
@@ -321,7 +320,7 @@ function medley(options) {
       opts.config
     )
 
-    router.on(methods, path, routeHandler, routeContext)
+    router.on(methods, path, noop, routeContext)
 
     if (!registeringAutoHandlers) {
       recordRoute(path, methods, routeContext, this)
@@ -365,10 +364,10 @@ function medley(options) {
     )
 
     if (prefix.endsWith('/')) {
-      notFoundRouter.on(supportedMethods, prefix + '*', routeHandler, routeContext)
+      notFoundRouter.on(supportedMethods, prefix + '*', noop, routeContext)
     } else {
-      notFoundRouter.on(supportedMethods, prefix, routeHandler, routeContext)
-      notFoundRouter.on(supportedMethods, prefix + '/*', routeHandler, routeContext)
+      notFoundRouter.on(supportedMethods, prefix, noop, routeContext)
+      notFoundRouter.on(supportedMethods, prefix + '/*', noop, routeContext)
     }
 
     preLoadedHandlers.push(() => {
@@ -475,7 +474,7 @@ function medley(options) {
 
       // Create a HEAD handler if a GET handler was set and a HEAD handler wasn't
       if (methodRoutes.GET !== undefined && methodRoutes.HEAD === undefined) {
-        router.on('HEAD', routePath, routeHandler, methodRoutes.GET)
+        router.on('HEAD', routePath, noop, methodRoutes.GET)
         methods.push('HEAD')
       }
 

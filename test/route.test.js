@@ -277,3 +277,22 @@ test('handler as the third parameter of a shorthand method takes precedence over
     t.deepEqual(JSON.parse(res.payload), {hello: 'parameter'})
   })
 })
+
+test('route lookups do not fail with the Accept-Version header', (t) => {
+  t.plan(3)
+
+  medley()
+    .get('/', (req, res) => {
+      res.send('hello')
+    })
+    .inject({
+      url: '/',
+      headers: {
+        'Accept-Version': '1.0.0',
+      },
+    }, (err, res) => {
+      t.error(err)
+      t.equal(res.statusCode, 200)
+      t.equal(res.payload, 'hello')
+    })
+})
