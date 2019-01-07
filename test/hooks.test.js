@@ -1,9 +1,5 @@
 'use strict'
 
-if (require('./testUtils.js').supportsAsyncAwait) {
-  require('./hooks.async')
-}
-
 const t = require('tap')
 const test = t.test
 const http = require('http')
