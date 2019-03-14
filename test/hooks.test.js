@@ -7,6 +7,28 @@ const sget = require('simple-get').concat
 const stream = require('stream')
 const medley = require('..')
 
+test('adding a hook should throw if given invalid parameters', (t) => {
+  t.plan(3)
+
+  const app = medley()
+  const noop = () => null
+
+  t.throws(
+    () => app.addHook(null, noop),
+    new TypeError('The hook name must be a string')
+  )
+
+  t.throws(
+    () => app.addHook('notHook', noop),
+    new Error("'notHook' is not a valid hook name. Valid hooks are: 'onRequest', 'preHandler', 'onSend', 'onFinished'")
+  )
+
+  t.throws(
+    () => app.addHook('onRequest', null),
+    new TypeError('The hook callback must be a function')
+  )
+})
+
 test('hooks', (t) => {
   t.plan(22)
 

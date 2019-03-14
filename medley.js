@@ -173,7 +173,7 @@ function medley(options) {
     const subApp = Object.create(this)
 
     subApp._bodyParser = this._bodyParser.clone()
-    subApp._hooks = Hooks.buildHooks(this._hooks)
+    subApp._hooks = this._hooks.clone()
     subApp[kRegisteredPlugins] = this[kRegisteredPlugins].slice()
 
     if (prefix.length > 0) {
