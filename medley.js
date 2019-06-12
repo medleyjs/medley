@@ -403,7 +403,12 @@ function medley(options) {
     return this
   }
 
+  /* eslint-disable consistent-return */
   function load(cb) {
+    if (loaded) {
+      return cb ? process.nextTick(cb) : Promise.resolve()
+    }
+
     if (!cb) {
       return new Promise((resolve, reject) => {
         load((err) => {
@@ -416,19 +421,14 @@ function medley(options) {
       })
     }
 
-    if (loaded) {
-      process.nextTick(cb)
-      return undefined
-    }
-
     if (loading) {
       loadCallbackQueue.push(cb)
-      return undefined
+      return
     }
 
     loading = true
 
-    return runOnLoadHandlers(onLoadHandlers, (err) => {
+    runOnLoadHandlers(onLoadHandlers, (err) => {
       if (err) {
         cb(err)
         return
@@ -444,11 +444,12 @@ function medley(options) {
       loaded = true
       preLoadedHandlers.forEach(handler => handler())
 
-      cb(null)
+      cb()
 
       loadCallbackQueue.forEach(callback => callback())
     })
   }
+  /* eslint-enable consistent-return */
 
   function recordRoute(routePath, methods, routeContext, appInstance) {
     const methodRoutes = {}
