@@ -51,7 +51,7 @@
     "send": "^0.17.1",
     "simple-get": "^3.0.3",
     "streaming-json-stringify": "^3.1.0",
-    "tap": "^12.1.1",
+    "tap": "^14.2.3",
     "then-sleep": "^1.0.1"
   },
   "pre-commit": [
@@ -62,8 +62,8 @@
     "benchmark": "concurrently -k -s first \"node ./benchmarks/basic.js\" \"npm run cannon\"",
     "cannon": "autocannon -c 100 -d 5 -p 10 localhost:3000/",
     "lint": "eslint --cache --cache-location node_modules/.cache/.eslintcache --ignore-pattern coverage .",
-    "test": "tap -J test/*.test.js test/*/*.test.js",
-    "coverage": "npm run test -- --cov --coverage-report=html",
+    "test": "tap -J --reporter=classic --no-coverage --no-esm test/*.test.js test/*/*.test.js",
+    "coverage": "npm run test -- --cov --coverage-report=text --coverage-report=html --no-browser",
     "coveralls": "npm run test -- -j4 -c --cov --100",
     "ci": "npm run lint && npm run coveralls",
     "bumpMinor": "npm version minor -m \"v%s\""

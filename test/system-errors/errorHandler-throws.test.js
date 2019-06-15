@@ -2,9 +2,16 @@
 
 const t = require('tap')
 const medley = require('../..')
-const app = medley()
 
-let errored = false
+t.plan(1)
+
+process.removeAllListeners('unhandledRejection')
+
+process.on('unhandledRejection', (err) => {
+  t.equal(err.message, 'kaboom')
+})
+
+const app = medley()
 
 app.route({
   method: 'GET',
@@ -14,23 +21,14 @@ app.route({
   },
 })
 
-app.setErrorHandler((_, req, res) => {
-  return Promise.resolve().then(() => res.send())
+app.setErrorHandler(async (_, req, res) => { // eslint-disable-line require-await
+  res.send()
 })
 
 app.addHook('onSend', () => {
   throw new Error('kaboom')
 })
 
-process.on('unhandledRejection', (err) => {
-  errored = true
-  t.equal(err.message, 'kaboom')
-})
-
 app.inject('/', () => {
   t.fail('should not be called')
-})
-
-process.on('beforeExit', () => {
-  t.ok(errored)
 })
