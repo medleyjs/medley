@@ -28,6 +28,13 @@
     "router",
     "api"
   ],
+  "tap": {
+    "browser": false,
+    "coverage": false,
+    "esm": false,
+    "files": ["test/*.test.js", "test/*/*.test.js"],
+    "reporter": "classic"
+  },
   "dependencies": {
     "compile-json-stringify": "^0.1.2",
     "compile-mime-match": "^0.1.0",
@@ -62,9 +69,9 @@
     "benchmark": "concurrently -k -s first \"node ./benchmarks/basic.js\" \"npm run cannon\"",
     "cannon": "autocannon -c 100 -d 5 -p 10 localhost:3000/",
     "lint": "eslint --cache --cache-location node_modules/.cache/.eslintcache --ignore-pattern coverage .",
-    "test": "tap -J --reporter=classic --no-coverage --no-esm test/*.test.js test/*/*.test.js",
-    "coverage": "npm run test -- --cov --coverage-report=text --coverage-report=html --no-browser",
-    "coveralls": "npm run test -- -j4 -c --cov --100",
+    "test": "tap -J",
+    "coverage": "tap -J --cov --coverage-report=text --coverage-report=html",
+    "coveralls": "tap -j4 -c --cov --100",
     "ci": "npm run lint && npm run coveralls",
     "bumpMinor": "npm version minor -m \"v%s\""
   }
