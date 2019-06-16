@@ -65,7 +65,7 @@ t.test('secure', (t) => {
   var app = medley({
     http2: {
       key: fs.readFileSync(path.join(__dirname, 'app.key')),
-      cert: fs.readFileSync(path.join(__dirname, 'app.cert')),
+      cert: fs.readFileSync(path.join(__dirname, 'app.crt')),
     },
   })
 
@@ -93,7 +93,7 @@ t.test('secure with fallback', (t) => {
     http2: {
       allowHTTP1: true,
       key: fs.readFileSync(path.join(__dirname, 'app.key')),
-      cert: fs.readFileSync(path.join(__dirname, 'app.cert')),
+      cert: fs.readFileSync(path.join(__dirname, 'app.crt')),
     },
   })
 

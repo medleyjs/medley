@@ -440,7 +440,7 @@ t.test('req.protocol - https', (t) => {
   const app = medley({
     https: {
       key: fs.readFileSync(path.join(__dirname, 'https/app.key')),
-      cert: fs.readFileSync(path.join(__dirname, 'https/app.cert')),
+      cert: fs.readFileSync(path.join(__dirname, 'https/app.crt')),
     },
     trustProxy: true,
   })

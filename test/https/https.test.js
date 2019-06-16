@@ -9,7 +9,7 @@ const medley = require('../..')
 var app = medley({
   https: {
     key: fs.readFileSync(path.join(__dirname, 'app.key')),
-    cert: fs.readFileSync(path.join(__dirname, 'app.cert')),
+    cert: fs.readFileSync(path.join(__dirname, 'app.crt')),
   },
 })
 
