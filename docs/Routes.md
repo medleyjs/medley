@@ -11,7 +11,7 @@ app.route(options)
 
 ### Options
 
-+ `method`: The name of an HTTP method or an array of methods. Can be any method found in the [`http.METHODS`](https://nodejs.org/api/http.html#http_http_methods) array.
++ `method`: The name of an HTTP method or an array of methods. Can be any method found in the [`http.METHODS`](https://nodejs.org/api/http.html#http_http_methods) array (except for `CONNECT`).
 + `path`: The path to match the URL of the request.
 + `responseSchema`: The schema for a JSON response. See the [`Serialization` documentation](Serialization.md).
 + `preHandler(req, res, next)`: Route-level [`preHandler` hooks](Hooks.md#prehandler). Can be a function or an array of functions. Similar to route-level middleware in Express.
