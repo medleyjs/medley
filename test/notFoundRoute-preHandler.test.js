@@ -2,6 +2,7 @@
 
 const t = require('tap')
 const medley = require('..')
+const request = require('./utils/request')
 
 t.test('not-found route preHandler', (t) => {
   t.plan(2)
@@ -17,7 +18,7 @@ t.test('not-found route preHandler', (t) => {
     res.send()
   })
 
-  app.inject('/', (err) => {
+  request(app, '/', (err) => {
     t.error(err)
   })
 })
@@ -40,9 +41,9 @@ t.test('not-found route preHandler should be called after global preHandler hook
     res.send(req.sendVal)
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
-    t.equal(res.payload, 'ab')
+    t.equal(res.body, 'ab')
   })
 })
 
@@ -65,8 +66,8 @@ t.test('not-found route preHandler should accept an array of functions', (t) => 
     res.send(req.sendVal)
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
-    t.equal(res.payload, 'ab')
+    t.equal(res.body, 'ab')
   })
 })

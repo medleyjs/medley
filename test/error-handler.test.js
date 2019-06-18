@@ -1,26 +1,23 @@
 'use strict'
 
-const t = require('tap')
-const test = t.test
+const {test} = require('tap')
 const medley = require('..')
+const request = require('./utils/request')
 
 test('default error handler', (t) => {
   t.plan(4)
 
   const app = medley()
 
-  app.get('/', function(req, response) {
-    response.error(new Error('kaboom'))
+  app.get('/', function(req, res) {
+    res.error(new Error('kaboom'))
   })
 
-  app.inject({
-    method: 'GET',
-    url: '/',
-  }, (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 500)
     t.strictEqual(res.headers['content-type'], 'application/json')
-    t.strictDeepEqual(JSON.parse(res.payload), {
+    t.strictDeepEqual(JSON.parse(res.body), {
       error: 'Internal Server Error',
       message: 'kaboom',
       statusCode: 500,
@@ -33,24 +30,21 @@ test('custom error handler', (t) => {
 
   const app = medley()
 
-  app.get('/', function(req, response) {
-    response.error(new Error('kaboom'))
+  app.get('/', function(req, res) {
+    res.error(new Error('kaboom'))
   })
 
-  app.setErrorHandler(function(err, request, response) {
-    t.type(request, 'object')
-    t.type(request, app._Request)
-    response.send('an error happened: ' + err.message)
+  app.setErrorHandler(function(err, req, res) {
+    t.type(req, 'object')
+    t.type(req, app._Request)
+    res.send('an error happened: ' + err.message)
   })
 
-  app.inject({
-    method: 'GET',
-    url: '/',
-  }, (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 500)
     t.strictEqual(res.headers['content-type'], 'text/plain; charset=utf-8')
-    t.deepEqual(res.payload.toString(), 'an error happened: kaboom')
+    t.deepEqual(res.body, 'an error happened: kaboom')
   })
 })
 
@@ -99,24 +93,18 @@ test('encapsulated error handler', (t) => {
       res.send('an error happened: ' + err.message)
     })
 
-  app.inject({
-    method: 'GET',
-    url: '/test',
-  }, (err, res) => {
+  request(app, '/test', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 500)
     t.strictEqual(res.headers['content-type'], 'text/plain; charset=utf-8')
-    t.deepEqual(res.payload.toString(), 'an error happened: kaboom')
+    t.deepEqual(res.body, 'an error happened: kaboom')
   })
 
-  app.inject({
-    method: 'GET',
-    url: '/',
-  }, (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 500)
     t.strictEqual(res.headers['content-type'], 'application/json')
-    t.strictDeepEqual(JSON.parse(res.payload), {
+    t.strictDeepEqual(JSON.parse(res.body), {
       error: 'Internal Server Error',
       message: 'kaboom',
       statusCode: 500,
@@ -129,23 +117,23 @@ test('custom error handler with hooks', (t) => {
 
   const app = medley()
 
-  app.get('/', (request, response) => {
-    response.error(new Error('kaboom'))
+  app.get('/', (req, res) => {
+    res.error(new Error('kaboom'))
   })
 
-  app.setErrorHandler((err, request, response) => {
-    response.send('an error happened: ' + err.message)
+  app.setErrorHandler((err, req, res) => {
+    res.send('an error happened: ' + err.message)
   })
 
-  app.addHook('onRequest', (request, response, next) => {
+  app.addHook('onRequest', (req, res, next) => {
     t.ok('called', 'onRequest')
     next()
   })
-  app.addHook('preHandler', (request, response, next) => {
+  app.addHook('preHandler', (req, res, next) => {
     t.ok('called', 'preHandler')
     next()
   })
-  app.addHook('onSend', (request, response, payload, next) => {
+  app.addHook('onSend', (req, res, body, next) => {
     t.ok('called', 'onSend')
     next()
   })
@@ -153,11 +141,11 @@ test('custom error handler with hooks', (t) => {
     t.ok('called', 'onFinished')
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 500)
     t.strictEqual(res.headers['content-type'], 'text/plain; charset=utf-8')
-    t.deepEqual(res.payload.toString(), 'an error happened: kaboom')
+    t.deepEqual(res.body, 'an error happened: kaboom')
   })
 })
 
@@ -184,22 +172,19 @@ test('custom error handler can respond with a promise', (t) => {
 
   const app = medley()
 
-  app.get('/', (request, response) => {
-    response.error(new Error('kaboom'))
+  app.get('/', (req, res) => {
+    res.error(new Error('kaboom'))
   })
 
   app.setErrorHandler((err) => {
     return Promise.resolve('Error: ' + err.message)
   })
 
-  app.inject({
-    method: 'GET',
-    url: '/',
-  }, (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 500)
     t.strictEqual(res.headers['content-type'], 'text/plain; charset=utf-8')
-    t.strictEqual(res.payload, 'Error: kaboom')
+    t.strictEqual(res.body, 'Error: kaboom')
   })
 })
 
@@ -216,11 +201,11 @@ test('default error handler is called if a custom error handler promise rejects'
     return Promise.reject(new Error('Custom error handler rejection'))
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 500)
     t.equal(res.headers['content-type'], 'application/json')
-    t.equal(JSON.parse(res.payload).message, 'Custom error handler rejection')
+    t.equal(JSON.parse(res.body).message, 'Custom error handler rejection')
   })
 })
 
@@ -229,23 +214,20 @@ test('async custom error handler can still use .send()', (t) => {
 
   const app = medley()
 
-  app.get('/', (request, response) => {
-    response.error(new Error('kaboom'))
+  app.get('/', (req, res) => {
+    res.error(new Error('kaboom'))
   })
 
-  app.setErrorHandler((err, request, response) => {
-    response.send('Error: ' + err.message)
+  app.setErrorHandler((err, req, res) => {
+    res.send('Error: ' + err.message)
     return Promise.resolve()
   })
 
-  app.inject({
-    method: 'GET',
-    url: '/',
-  }, (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 500)
     t.strictEqual(res.headers['content-type'], 'text/plain; charset=utf-8')
-    t.deepEqual(res.payload.toString(), 'Error: kaboom')
+    t.deepEqual(res.body, 'Error: kaboom')
   })
 })
 
@@ -254,19 +236,19 @@ test('the Content-Type header should be unset before calling a custom error hand
 
   const app = medley()
 
-  app.get('/', (request, response) => {
-    response.type('application/json')
-    response.error(new Error('error message')) // Cause the error handler to be invoked
+  app.get('/', (req, res) => {
+    res.type('application/json')
+    res.error(new Error('error message')) // Cause the error handler to be invoked
   })
 
-  app.setErrorHandler((err, request, response) => {
-    response.status(500).send(err.message)
+  app.setErrorHandler((err, req, res) => {
+    res.status(500).send(err.message)
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 500)
     t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
-    t.equal(res.payload, 'error message')
+    t.equal(res.body, 'error message')
   })
 })

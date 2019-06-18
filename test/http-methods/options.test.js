@@ -4,6 +4,7 @@ require('./body-tests')('OPTIONS')
 
 const t = require('tap')
 const medley = require('../..')
+const request = require('../utils/request')
 
 t.test('auto OPTIONS response', (t) => {
   t.plan(12)
@@ -26,34 +27,34 @@ t.test('auto OPTIONS response', (t) => {
     },
   })
 
-  app.inject({
+  request(app, {
     method: 'OPTIONS',
     url: '/',
   }, (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 200)
     t.equal(res.headers.allow, 'GET,HEAD')
-    t.equal(res.payload, 'GET,HEAD')
+    t.equal(res.body, 'GET,HEAD')
   })
 
-  app.inject({
+  request(app, {
     method: 'OPTIONS',
     url: '/put',
   }, (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 200)
     t.equal(res.headers.allow, 'PUT')
-    t.equal(res.payload, 'PUT')
+    t.equal(res.body, 'PUT')
   })
 
-  app.inject({
+  request(app, {
     method: 'OPTIONS',
     url: '/multi',
   }, (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 200)
     t.equal(res.headers.allow, 'DELETE,GET,HEAD,POST')
-    t.equal(res.payload, 'DELETE,GET,HEAD,POST')
+    t.equal(res.body, 'DELETE,GET,HEAD,POST')
   })
 })
 
@@ -86,14 +87,14 @@ t.test('hooks run on auto OPTIONS response', (t) => {
     res.send({hello: 'world'})
   })
 
-  app.inject({
+  request(app, {
     method: 'OPTIONS',
     url: '/?foo=asd',
   }, (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 200)
     t.equal(res.headers.allow, 'DELETE')
-    t.equal(res.payload, 'DELETE')
+    t.equal(res.body, 'DELETE')
   })
 })
 
@@ -107,7 +108,7 @@ t.test('OPTIONS request with Content-Type but no body', (t) => {
     res.send('success')
   })
 
-  app.inject({
+  request(app, {
     method: 'OPTIONS',
     url: '/',
     headers: {
@@ -116,6 +117,6 @@ t.test('OPTIONS request with Content-Type but no body', (t) => {
   }, (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 200)
-    t.equal(res.payload, 'success')
+    t.equal(res.body, 'success')
   })
 })

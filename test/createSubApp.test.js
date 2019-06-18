@@ -2,6 +2,7 @@
 
 const t = require('tap')
 const medley = require('..')
+const request = require('./utils/request')
 
 t.test('.createSubApp() throws if prefix is not a string', (t) => {
   const app = medley()
@@ -58,16 +59,16 @@ t.test('.createSubApp() creates different sub-apps that can both define routes',
 
   t.notEqual(subApp1, subApp2)
 
-  app.inject('/first', (err, res) => {
+  request(app, '/first', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 200)
-    t.equal(res.payload, 'first')
+    t.equal(res.body, 'first')
   })
 
-  app.inject('/second', (err, res) => {
+  request(app, '/second', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 200)
-    t.equal(res.payload, 'second')
+    t.equal(res.body, 'second')
   })
 })
 
@@ -87,13 +88,13 @@ t.test('.createSubApp() nested calls with prefix', (t) => {
       res.send('child 2')
     })
 
-  app.inject('/parent/child1', (err, res) => {
+  request(app, '/parent/child1', (err, res) => {
     t.error(err)
-    t.equal(res.payload, 'child 1')
+    t.equal(res.body, 'child 1')
   })
 
-  app.inject('/parent/child2', (err, res) => {
+  request(app, '/parent/child2', (err, res) => {
     t.error(err)
-    t.equal(res.payload, 'child 2')
+    t.equal(res.body, 'child 2')
   })
 })

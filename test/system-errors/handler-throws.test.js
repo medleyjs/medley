@@ -2,6 +2,7 @@
 
 const t = require('tap')
 const medley = require('../..')
+const request = require('../utils/request')
 
 t.plan(1)
 
@@ -16,11 +17,12 @@ const app = medley()
 app.route({
   method: 'GET',
   path: '/',
-  handler() {
+  handler(req) {
+    req.stream.socket.destroy()
     throw new Error('kaboom')
   },
 })
 
-app.inject('/', () => {
-  t.fail('should not be called')
+request(app, '/', () => {
+  // Ignroe error
 })

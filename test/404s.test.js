@@ -1,8 +1,7 @@
 'use strict'
 
-const t = require('tap')
-const test = t.test
-const sget = require('simple-get').concat
+const {test} = require('tap')
+const request = require('./utils/request')
 const medley = require('..')
 
 const {methodHandlers} = require('../lib/RequestHandlers')
@@ -12,46 +11,35 @@ test('default 404', (t) => {
 
   const app = medley()
 
-  app.get('/', function(req, response) {
-    response.send({hello: 'world'})
+  app.get('/', function(req, res) {
+    res.send({hello: 'world'})
   })
 
-  app.inject({
-    method: 'GET',
-    url: '/not-defined',
-  }, (err, res) => {
+  request(app, '/not-defined', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 404)
     t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
-    t.equal(res.payload, 'Not Found: GET /not-defined')
+    t.equal(res.body, 'Not Found: GET /not-defined')
   })
 })
 
 test('customized 404', (t) => {
-  t.plan(4)
+  t.plan(3)
 
   const app = medley()
 
-  app.get('/', function(req, response) {
-    response.send({hello: 'world'})
+  app.get('/', function(req, res) {
+    res.send({hello: 'world'})
   })
 
-  app.setNotFoundHandler(function(req, response) {
-    response.status(404).send('this was not found')
+  app.setNotFoundHandler(function(req, res) {
+    res.status(404).send('this was not found')
   })
 
-  app.listen(0, (err) => {
+  request(app, '/notSupported', (err, res) => {
     t.error(err)
-    app.server.unref()
-
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + app.server.address().port + '/notSupported',
-    }, (err, response, body) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 404)
-      t.strictEqual(body.toString(), 'this was not found')
-    })
+    t.equal(res.statusCode, 404)
+    t.equal(res.body, 'this was not found')
   })
 })
 
@@ -60,13 +48,13 @@ test('custom 404 handler accepts options', (t) => {
 
   const app = medley()
 
-  app.setNotFoundHandler({config: {a: 1}}, (request, response) => {
-    response.send(response.route.config)
+  app.setNotFoundHandler({config: {a: 1}}, (req, res) => {
+    res.send(res.route.config)
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
-    t.strictDeepEqual(JSON.parse(res.payload), {a: 1})
+    t.strictDeepEqual(JSON.parse(res.body), {a: 1})
   })
 })
 
@@ -75,22 +63,23 @@ test('has a 404 handler for all supported HTTP methods', (t) => {
 
   const app = medley()
 
-  app.all('/', (request, response) => {
-    response.send('Found')
+  app.all('/', (req, res) => {
+    res.send('Found')
   })
 
-  Object.keys(methodHandlers).forEach((method) => {
-    app.inject({method, url: '/not-found'}, (err, res) => {
+  for (const method of Object.keys(methodHandlers)) {
+    request(app, {method, url: '/not-found'}, (err, res) => {
       t.error(err)
       t.equal(res.statusCode, 404)
       t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
+
       if (method === 'HEAD') {
-        t.equal(res.payload, '')
+        t.equal(res.body, '')
       } else {
-        t.equal(res.payload, `Not Found: ${method} /not-found`)
+        t.equal(res.body, `Not Found: ${method} /not-found`)
       }
     })
-  })
+  }
 })
 
 test('has a custom 404 handler for all supported HTTP methods', (t) => {
@@ -98,26 +87,27 @@ test('has a custom 404 handler for all supported HTTP methods', (t) => {
 
   const app = medley()
 
-  app.all('/', (request, response) => {
-    response.send('Found')
+  app.all('/', (req, res) => {
+    res.send('Found')
   })
 
-  app.setNotFoundHandler((request, response) => {
-    response.status(404).send(`Custom Not Found: ${request.method} ${request.url}`)
+  app.setNotFoundHandler((req, res) => {
+    res.status(404).send(`Custom Not Found: ${req.method} ${req.url}`)
   })
 
-  Object.keys(methodHandlers).forEach((method) => {
-    app.inject({method, url: '/not-found'}, (err, res) => {
+  for (const method of Object.keys(methodHandlers)) {
+    request(app, {method, url: '/not-found'}, (err, res) => {
       t.error(err)
       t.equal(res.statusCode, 404)
       t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
+
       if (method === 'HEAD') {
-        t.equal(res.payload, '')
+        t.equal(res.body, '')
       } else {
-        t.equal(res.payload, `Custom Not Found: ${method} /not-found`)
+        t.equal(res.body, `Custom Not Found: ${method} /not-found`)
       }
     })
-  })
+  }
 })
 
 test('setting a custom 404 handler multiple times is an error', (t) => {
@@ -152,7 +142,7 @@ test('setting a custom 404 handler multiple times is an error', (t) => {
 })
 
 test('encapsulated 404', (t) => {
-  t.plan(8)
+  t.plan(7)
 
   const app = medley()
 
@@ -179,99 +169,81 @@ test('encapsulated 404', (t) => {
       res.status(404).send('this was not found 4')
     })
 
-  t.tearDown(app.close.bind(app))
-
-  app.listen(0, (err) => {
-    t.error(err)
-
-    t.test('root unsupported route', (t) => {
-      t.plan(3)
-      sget({
-        method: 'GET',
-        url: 'http://localhost:' + app.server.address().port + '/notSupported',
-      }, (err, response, body) => {
-        t.error(err)
-        t.strictEqual(response.statusCode, 404)
-        t.strictEqual(body.toString(), 'this was not found')
-      })
+  t.test('root unsupported route', (t) => {
+    t.plan(3)
+    request(app, '/notSupported', (err, res) => {
+      t.error(err)
+      t.equal(res.statusCode, 404)
+      t.equal(res.body, 'this was not found')
     })
+  })
 
-    t.test('unhandled method', (t) => {
-      t.plan(3)
-      sget({
-        method: 'DELETE',
-        url: 'http://localhost:' + app.server.address().port + '/test',
-      }, (err, response, body) => {
-        t.error(err)
-        t.strictEqual(response.statusCode, 404)
-        t.strictEqual(body.toString(), 'this was not found 2')
-      })
+  t.test('unhandled method', (t) => {
+    t.plan(3)
+    request(app, {
+      method: 'DELETE',
+      url: '/test',
+    }, (err, res) => {
+      t.error(err)
+      t.equal(res.statusCode, 404)
+      t.equal(res.body, 'this was not found 2')
     })
+  })
 
-    t.test('unsupported route', (t) => {
-      t.plan(3)
-      sget({
-        method: 'GET',
-        url: 'http://localhost:' + app.server.address().port + '/test/notSupported',
-      }, (err, response, body) => {
-        t.error(err)
-        t.strictEqual(response.statusCode, 404)
-        t.strictEqual(body.toString(), 'this was not found 2')
-      })
+  t.test('unsupported route', (t) => {
+    t.plan(3)
+    request(app, '/test/notSupported', (err, res) => {
+      t.error(err)
+      t.equal(res.statusCode, 404)
+      t.equal(res.body, 'this was not found 2')
     })
+  })
 
-    t.test('unhandled method 2', (t) => {
-      t.plan(3)
-      sget({
-        method: 'DELETE',
-        url: 'http://localhost:' + app.server.address().port + '/test2',
-      }, (err, response, body) => {
-        t.error(err)
-        t.strictEqual(response.statusCode, 404)
-        t.strictEqual(body.toString(), 'this was not found 3')
-      })
+  t.test('unhandled method 2', (t) => {
+    t.plan(3)
+    request(app, {
+      method: 'DELETE',
+      url: '/test2',
+    }, (err, res) => {
+      t.error(err)
+      t.equal(res.statusCode, 404)
+      t.equal(res.body, 'this was not found 3')
     })
+  })
 
-    t.test('unsupported route 2', (t) => {
-      t.plan(3)
-      sget({
-        method: 'GET',
-        url: 'http://localhost:' + app.server.address().port + '/test2/notSupported',
-      }, (err, response, body) => {
-        t.error(err)
-        t.strictEqual(response.statusCode, 404)
-        t.strictEqual(body.toString(), 'this was not found 3')
-      })
+  t.test('unsupported route 2', (t) => {
+    t.plan(3)
+    request(app, '/test2/notSupported', (err, res) => {
+      t.error(err)
+      t.equal(res.statusCode, 404)
+      t.equal(res.body, 'this was not found 3')
     })
+  })
 
-    t.test('unhandled method 3', (t) => {
-      t.plan(3)
-      sget({
-        method: 'DELETE',
-        url: 'http://localhost:' + app.server.address().port + '/test3/',
-      }, (err, response, body) => {
-        t.error(err)
-        t.strictEqual(response.statusCode, 404)
-        t.strictEqual(body.toString(), 'this was not found 4')
-      })
+  t.test('unhandled method 3', (t) => {
+    t.plan(3)
+    request(app, {
+      method: 'DELETE',
+      url: '/test3/',
+    }, (err, res) => {
+      t.error(err)
+      t.equal(res.statusCode, 404)
+      t.equal(res.body, 'this was not found 4')
     })
+  })
 
-    t.test('unsupported route 3', (t) => {
-      t.plan(3)
-      sget({
-        method: 'GET',
-        url: 'http://localhost:' + app.server.address().port + '/test3/notSupported',
-      }, (err, response, body) => {
-        t.error(err)
-        t.strictEqual(response.statusCode, 404)
-        t.strictEqual(body.toString(), 'this was not found 4')
-      })
+  t.test('unsupported route 3', (t) => {
+    t.plan(3)
+    request(app, '/test3/notSupported', (err, res) => {
+      t.error(err)
+      t.equal(res.statusCode, 404)
+      t.equal(res.body, 'this was not found 4')
     })
   })
 })
 
 test('run hooks on default 404', (t) => {
-  t.plan(7)
+  t.plan(6)
 
   const app = medley()
 
@@ -280,32 +252,23 @@ test('run hooks on default 404', (t) => {
     next()
   })
 
-  app.addHook('preHandler', function(request, response, next) {
+  app.addHook('preHandler', function(req, res, next) {
     t.pass('preHandler called')
     next()
   })
 
-  app.addHook('onSend', function(request, response, payload, next) {
+  app.addHook('onSend', function(req, res, payload, next) {
     t.pass('onSend called')
     next()
   })
 
-  app.addHook('onFinished', (request, response) => {
-    t.ok(response, 'onFinished called')
+  app.addHook('onFinished', (req, res) => {
+    t.ok(res, 'onFinished called')
   })
 
-  t.tearDown(app.close.bind(app))
-
-  app.listen(0, (err) => {
+  request(app, '/', (err, res) => {
     t.error(err)
-
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + app.server.address().port,
-    }, (err, response) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 404)
-    })
+    t.equal(res.statusCode, 404)
   })
 })
 
@@ -320,42 +283,42 @@ test('run hooks on custom 404', (t) => {
       next()
     })
 
-    appInstance.addHook('preHandler', function(request, response, next) {
+    appInstance.addHook('preHandler', function(req, res, next) {
       t.pass('preHandler called')
       next()
     })
 
-    appInstance.addHook('onSend', function(request, response, payload, next) {
+    appInstance.addHook('onSend', function(req, res, payload, next) {
       t.pass('onSend called')
       next()
     })
 
-    appInstance.addHook('onFinished', (request, response) => {
-      t.ok(response, 'onFinished called')
+    appInstance.addHook('onFinished', (req, res) => {
+      t.ok(res, 'onFinished called')
     })
   }
 
   app.register(plugin)
 
-  app.get('/', (request, response) => {
-    response.send({hello: 'world'})
+  app.get('/', (req, res) => {
+    res.send({hello: 'world'})
   })
 
-  app.setNotFoundHandler((request, response) => {
-    response.status(404).send('this was not found')
+  app.setNotFoundHandler((req, res) => {
+    res.status(404).send('this was not found')
   })
 
   app.register(plugin) // Registering plugin after handler also works
 
-  app.inject({url: '/not-found'}, (err, res) => {
+  request(app, '/not-found', (err, res) => {
     t.error(err)
-    t.strictEqual(res.statusCode, 404)
-    t.strictEqual(res.payload, 'this was not found')
+    t.equal(res.statusCode, 404)
+    t.equal(res.body, 'this was not found')
   })
 })
 
 test('run hooks with encapsulated 404', (t) => {
-  t.plan(11)
+  t.plan(10)
 
   const app = medley()
 
@@ -364,18 +327,18 @@ test('run hooks with encapsulated 404', (t) => {
     next()
   })
 
-  app.addHook('preHandler', function(request, response, next) {
+  app.addHook('preHandler', function(req, res, next) {
     t.pass('preHandler called')
     next()
   })
 
-  app.addHook('onSend', function(request, response, payload, next) {
+  app.addHook('onSend', function(req, res, payload, next) {
     t.pass('onSend called')
     next()
   })
 
-  app.addHook('onFinished', (request, response) => {
-    t.ok(response, 'onFinished called')
+  app.addHook('onFinished', (req, res) => {
+    t.ok(res, 'onFinished called')
   })
 
   app.createSubApp('/test')
@@ -398,56 +361,39 @@ test('run hooks with encapsulated 404', (t) => {
       t.ok(res, 'onFinished 2 called')
     })
 
-  t.tearDown(app.close.bind(app))
-
-  app.listen(0, (err) => {
+  request(app, '/test', (err, res) => {
     t.error(err)
-
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + app.server.address().port + '/test',
-    }, (err, response) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 404)
-    })
+    t.equal(res.statusCode, 404)
   })
 })
 
 test('hooks check 404', (t) => {
-  t.plan(7)
+  t.plan(6)
 
   const app = medley()
 
-  app.get('/', function(req, response) {
-    response.send({hello: 'world'})
+  app.get('/', function(req, res) {
+    res.send({hello: 'world'})
   })
 
-  app.addHook('onRequest', (request, response, next) => {
-    t.deepEqual(request.query, {foo: 'asd'})
+  app.addHook('onRequest', (req, res, next) => {
+    t.deepEqual(req.query, {foo: 'asd'})
     next()
   })
 
-  app.addHook('onSend', (request, response, payload, next) => {
-    t.deepEqual(request.query, {foo: 'asd'})
+  app.addHook('onSend', (req, res, payload, next) => {
+    t.deepEqual(req.query, {foo: 'asd'})
     next()
   })
 
-  app.addHook('onFinished', (request, response) => {
-    t.deepEqual(request.query, {foo: 'asd'})
-    t.ok(response, 'called onFinished')
+  app.addHook('onFinished', (req, res) => {
+    t.deepEqual(req.query, {foo: 'asd'})
+    t.ok(res, 'called onFinished')
   })
 
-  app.listen(0, (err) => {
+  request(app, '/notSupported?foo=asd', (err, res) => {
     t.error(err)
-    app.server.unref()
-
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + app.server.address().port + '/notSupported?foo=asd',
-    }, (err, response) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 404)
-    })
+    t.equal(res.statusCode, 404)
   })
 })
 
@@ -489,20 +435,20 @@ test('cannot set notFoundHandler after binding', (t) => {
   })
 })
 
-test('not-found requests with a body receive a 404 response', (t) => {
+test('not-found requests with a body receive a 404 res', (t) => {
   t.plan(3)
 
   const app = medley()
 
-  app.inject({
+  request(app, {
     method: 'POST',
     url: '/not-found',
     headers: {'Content-Type': 'application/json'},
-    payload: '{"hello":"world"}',
+    body: '{"hello":"world"}',
   }, (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 404)
-    t.equal(res.payload, 'Not Found: POST /not-found')
+    t.equal(res.body, 'Not Found: POST /not-found')
   })
 })
 
@@ -520,33 +466,34 @@ test('request bodies are not parsed for not-found routes', (t) => {
     res.status(404).send('not found')
   })
 
-  app.inject({
+  request(app, {
     method: 'POST',
     url: '/not-found',
     headers: {'Content-Type': 'application/json'},
-    payload: '{"hello":"world"}',
+    body: '{"hello":"world"}',
   }, (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 404)
-    t.equal(res.payload, 'not found')
+    t.equal(res.body, 'not found')
   })
 })
 
 test('not-found route lookups do not fail with the Accept-Version header', (t) => {
   t.plan(3)
 
-  medley()
-    .setNotFoundHandler((req, res) => {
-      res.status(404).send('not found')
-    })
-    .inject({
-      url: '/',
-      headers: {
-        'Accept-Version': '1.0.0',
-      },
-    }, (err, res) => {
-      t.error(err)
-      t.equal(res.statusCode, 404)
-      t.equal(res.payload, 'not found')
-    })
+  const app = medley()
+
+  app.setNotFoundHandler((req, res) => {
+    res.status(404).send('not found')
+  })
+
+  request(app, '/', {
+    headers: {
+      'Accept-Version': '1.0.0',
+    },
+  }, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 404)
+    t.equal(res.body, 'not found')
+  })
 })

@@ -1,13 +1,11 @@
 /* eslint-disable require-await */
 'use strict'
 
-const t = require('tap')
-const sget = require('simple-get').concat
+const {test} = require('tap')
+const request = require('./utils/request')
 const medley = require('..')
 const sleep = require('then-sleep')
 const statusCodes = require('http').STATUS_CODES
-
-const test = t.test
 
 const opts = {
   responseSchema: {
@@ -23,50 +21,31 @@ const opts = {
 }
 
 test('async await', (t) => {
-  t.plan(11)
+  t.plan(8)
+
   const app = medley()
-  try {
-    app.get('/', opts, async function awaitMyFunc() {
-      await sleep(200)
-      return {hello: 'world'}
-    })
-    t.pass()
-  } catch (e) {
-    t.fail()
-  }
 
-  try {
-    app.get('/no-await', opts, async function() {
-      return {hello: 'world'}
-    })
-    t.pass()
-  } catch (e) {
-    t.fail()
-  }
+  app.get('/', opts, async function awaitMyFunc() {
+    await sleep(200)
+    return {hello: 'world'}
+  })
 
-  app.listen(0, (err) => {
+  app.get('/no-await', opts, async function() {
+    return {hello: 'world'}
+  })
+
+  request(app, '/', (err, res) => {
     t.error(err)
-    app.server.unref()
+    t.strictEqual(res.statusCode, 200)
+    t.strictEqual(res.headers['content-length'], '' + res.body.length)
+    t.strictSame(JSON.parse(res.body), {hello: 'world'})
+  })
 
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + app.server.address().port,
-    }, (err, response, body) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 200)
-      t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), {hello: 'world'})
-    })
-
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + app.server.address().port + '/no-await',
-    }, (err, response, body) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 200)
-      t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), {hello: 'world'})
-    })
+  request(app, '/no-await', (err, res) => {
+    t.error(err)
+    t.strictEqual(res.statusCode, 200)
+    t.strictEqual(res.headers['content-length'], '' + res.body.length)
+    t.strictSame(JSON.parse(res.body), {hello: 'world'})
   })
 })
 
@@ -75,10 +54,10 @@ test('should throw if an async function returns a value and res.send() is also c
 
   const app = medley()
 
-  app.get('/', async (request, response) => {
+  app.get('/', async (req, res) => {
     setImmediate(() => {
       try {
-        response.send()
+        res.send()
       } catch (err) {
         t.equal(err.message, 'Cannot call .send() when a response has already been sent')
       }
@@ -86,9 +65,9 @@ test('should throw if an async function returns a value and res.send() is also c
     return 'value'
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
-    t.equal(res.payload, 'value')
+    t.equal(res.body, 'value')
   })
 })
 
@@ -97,10 +76,10 @@ test('should throw if an async function returns a value and res.error() is also 
 
   const app = medley()
 
-  app.get('/', async (request, response) => {
+  app.get('/', async (req, res) => {
     setImmediate(() => {
       try {
-        response.error()
+        res.error()
       } catch (err) {
         t.equal(err.message, 'Cannot call .error() when a response has already been sent')
       }
@@ -108,9 +87,9 @@ test('should throw if an async function returns a value and res.error() is also 
     return 'value'
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
-    t.equal(res.payload, 'value')
+    t.equal(res.body, 'value')
   })
 })
 
@@ -125,62 +104,15 @@ test('support response decorators with await', (t) => {
     })
   })
 
-  app.get('/', async (req, response) => {
+  app.get('/', async (req, res) => {
     await sleep(1)
-    response.wow()
+    res.wow()
   })
 
-  app.inject({
-    method: 'GET',
-    url: '/',
-  }, (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
-    const payload = JSON.parse(res.payload)
-    t.deepEqual(payload, {hello: 'world'})
+    t.strictSame(JSON.parse(res.body), {hello: 'world'})
   })
-})
-
-test('inject async await', async (t) => {
-  t.plan(1)
-
-  const app = medley()
-
-  app.get('/', (req, response) => {
-    response.send({hello: 'world'})
-  })
-
-  try {
-    const res = await app.inject({method: 'GET', url: '/'})
-    t.deepEqual({hello: 'world'}, JSON.parse(res.payload))
-  } catch (err) {
-    t.fail(err)
-  }
-})
-
-test('inject async await - when the server is up', async (t) => {
-  t.plan(2)
-
-  const app = medley()
-
-  app.get('/', (req, response) => {
-    response.send({hello: 'world'})
-  })
-
-  try {
-    const res = await app.inject({method: 'GET', url: '/'})
-    t.deepEqual({hello: 'world'}, JSON.parse(res.payload))
-  } catch (err) {
-    t.fail(err)
-  }
-
-  await sleep(200)
-
-  try {
-    const res2 = await app.inject({method: 'GET', url: '/'})
-    t.deepEqual({hello: 'world'}, JSON.parse(res2.payload))
-  } catch (err) {
-    t.fail(err)
-  }
 })
 
 test('thrown Error in handler sets HTTP status code', (t) => {
@@ -195,10 +127,7 @@ test('thrown Error in handler sets HTTP status code', (t) => {
     throw err
   })
 
-  app.inject({
-    method: 'GET',
-    url: '/',
-  }, (error, res) => {
+  request(app, '/', (error, res) => {
     t.error(error)
     t.strictEqual(res.statusCode, 418)
     t.strictDeepEqual(
@@ -207,7 +136,7 @@ test('thrown Error in handler sets HTTP status code', (t) => {
         message: err.message,
         statusCode: 418,
       },
-      JSON.parse(res.payload)
+      JSON.parse(res.body)
     )
   })
 })
@@ -230,19 +159,16 @@ test('customErrorHandler support', (t) => {
     throw error
   })
 
-  app.inject({
-    method: 'GET',
-    url: '/',
-  }, (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 401)
-    t.deepEqual(
+    t.strictSame(
       {
         error: statusCodes['401'],
         message: 'kaboom',
         statusCode: 401,
       },
-      JSON.parse(res.payload)
+      JSON.parse(res.body)
     )
   })
 })

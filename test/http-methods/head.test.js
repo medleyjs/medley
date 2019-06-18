@@ -2,11 +2,11 @@
 
 const t = require('tap')
 const fs = require('fs')
-const sget = require('simple-get').concat
+const request = require('../utils/request')
 const medley = require('../..')
 
 t.test('shorthand - head', (t) => {
-  t.plan(11)
+  t.plan(10)
 
   const app = medley()
 
@@ -26,29 +26,24 @@ t.test('shorthand - head', (t) => {
     res.send(true)
   })
 
-  app.listen(0, (err) => {
+  request(app, {
+    method: 'HEAD',
+    url: '/',
+  }, (err, res) => {
     t.error(err)
-    app.server.unref()
+    t.equal(res.statusCode, 200)
+    t.equal(res.headers['content-length'], '4')
+    t.equal(res.body, '')
+  })
 
-    sget({
-      method: 'HEAD',
-      url: `http://localhost:${app.server.address().port}`,
-    }, (err, response, body) => {
-      t.error(err)
-      t.equal(response.statusCode, 200)
-      t.equal(response.headers['content-length'], '4')
-      t.equal(body.toString(), '')
-    })
-
-    sget({
-      method: 'HEAD',
-      url: `http://localhost:${app.server.address().port}/missing-schema`,
-    }, (err, response, body) => {
-      t.error(err)
-      t.equal(response.statusCode, 200)
-      t.equal(response.headers['content-length'], '4')
-      t.equal(body.toString(), '')
-    })
+  request(app, {
+    method: 'HEAD',
+    url: '/missing-schema',
+  }, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.headers['content-length'], '4')
+    t.equal(res.body, '')
   })
 })
 
@@ -65,17 +60,17 @@ t.test('head request without sending a body', (t) => {
     res.set('content-length', '4').send()
   })
 
-  app.inject({
+  request(app, {
     method: 'HEAD',
     url: '/',
   }, (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 200)
     t.equal(res.headers.hasOwnProperty('content-length'), false)
-    t.equal(res.payload, '')
+    t.equal(res.body, '')
   })
 
-  app.inject({
+  request(app, {
     method: 'HEAD',
     url: '/length-set',
   }, (err, res) => {
@@ -83,7 +78,7 @@ t.test('head request without sending a body', (t) => {
     t.equal(res.statusCode, 200)
     t.equal(res.headers.hasOwnProperty('content-length'), true)
     t.equal(res.headers['content-length'], '4')
-    t.equal(res.payload, '')
+    t.equal(res.body, '')
   })
 })
 
@@ -107,33 +102,33 @@ t.test('GET method is called if a HEAD is not defined', (t) => {
     res.send(fs.createReadStream(__filename))
   })
 
-  app.inject({
+  request(app, {
     method: 'HEAD',
     url: '/string',
   }, (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 200)
     t.equal(res.headers['content-length'], '5')
-    t.equal(res.payload, '')
+    t.equal(res.body, '')
   })
 
-  app.inject({
+  request(app, {
     method: 'HEAD',
     url: '/buffer',
   }, (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 200)
     t.equal(res.headers['content-length'], '5')
-    t.equal(res.payload, '')
+    t.equal(res.body, '')
   })
 
-  app.inject({
+  request(app, {
     method: 'HEAD',
     url: '/stream',
   }, (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 200)
     t.equal(res.headers['content-length'], undefined)
-    t.equal(res.payload, '')
+    t.equal(res.body, '')
   })
 })

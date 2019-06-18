@@ -1,8 +1,7 @@
 'use strict'
 
 const t = require('tap')
-const test = t.test
-const sget = require('simple-get').concat
+const request = require('./utils/request')
 const medley = require('..')
 
 const routeOptions = {
@@ -12,12 +11,12 @@ const routeOptions = {
   },
 }
 
-function handler(request, response) {
-  response.send(response.route.config)
+function handler(req, res) {
+  res.send(res.route.config)
 }
 
-test('config', (t) => {
-  t.plan(10)
+t.test('config', (t) => {
+  t.plan(9)
   const app = medley()
 
   app.get('/get', {
@@ -37,38 +36,21 @@ test('config', (t) => {
     handler,
   })
 
-  app.listen(0, (err) => {
+  request(app, '/get', {json: true}, (err, res) => {
     t.error(err)
-    app.server.unref()
+    t.equal(res.statusCode, 200)
+    t.strictDeepEqual(res.body, routeOptions.config)
+  })
 
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + app.server.address().port + '/get',
-      json: true,
-    }, (err, response, body) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 200)
-      t.deepEquals(body, Object.assign(routeOptions.config))
-    })
+  request(app, '/route', {json: true}, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.strictDeepEqual(res.body, routeOptions.config)
+  })
 
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + app.server.address().port + '/route',
-      json: true,
-    }, (err, response, body) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 200)
-      t.deepEquals(body, Object.assign(routeOptions.config))
-    })
-
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + app.server.address().port + '/no-config',
-      json: true,
-    }, (err, response, body) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 200)
-      t.deepEquals(body, {})
-    })
+  request(app, '/no-config', {json: true}, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.strictDeepEqual(res.body, {})
   })
 })

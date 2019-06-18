@@ -2,6 +2,7 @@
 
 const t = require('tap')
 const medley = require('..')
+const request = require('./utils/request')
 
 class StatusError extends Error {
   constructor(status, message) {
@@ -15,18 +16,18 @@ t.test('onSend hook error sets the right status code - default', (t) => {
 
   const app = medley()
 
-  app.get('/', (request, response) => {
-    response.error(505, new Error('response error'))
+  app.get('/', (req, res) => {
+    res.error(505, new Error('response error'))
   })
 
-  app.addHook('onSend', (request, response, payload, next) => {
+  app.addHook('onSend', (req, res, payload, next) => {
     next(new Error('onSend error'))
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 500)
-    t.equal(JSON.parse(res.payload).message, 'onSend error')
+    t.equal(JSON.parse(res.body).message, 'onSend error')
   })
 })
 
@@ -35,18 +36,18 @@ t.test('onSend hook error sets the right status code - custom code', (t) => {
 
   const app = medley()
 
-  app.get('/', (request, response) => {
-    response.error(505, new Error('response error'))
+  app.get('/', (req, res) => {
+    res.error(505, new Error('response error'))
   })
 
-  app.addHook('onSend', (request, response, payload, next) => {
+  app.addHook('onSend', (req, res, payload, next) => {
     next(new StatusError(502, 'onSend error'))
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 502)
-    t.equal(JSON.parse(res.payload).message, 'onSend error')
+    t.equal(JSON.parse(res.body).message, 'onSend error')
   })
 })
 
@@ -74,171 +75,171 @@ t.test('onSend hooks error if they change the payload to an invalid type', (t) =
     next(null, {})
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 200)
-    t.equal(res.payload, '')
+    t.equal(res.body, '')
   })
 })
 
-t.test('onSend hooks do not run again if they errored before - response.send() starts', (t) => {
+t.test('onSend hooks do not run again if they errored before - res.send() starts', (t) => {
   t.plan(4)
 
   const app = medley()
 
-  app.get('/', (request, response) => {
-    response.send('text')
+  app.get('/', (req, res) => {
+    res.send('text')
   })
 
   var onSendCalled = false
-  app.addHook('onSend', (request, response, payload, next) => {
+  app.addHook('onSend', (req, res, payload, next) => {
     t.equal(onSendCalled, false, 'onSend called twice')
     onSendCalled = true
     next(new Error('onSend error'))
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 500)
-    t.equal(JSON.parse(res.payload).message, 'onSend error')
+    t.equal(JSON.parse(res.body).message, 'onSend error')
   })
 })
 
-t.test('onSend hooks do not run again if they errored before - response.error() starts', (t) => {
+t.test('onSend hooks do not run again if they errored before - res.error() starts', (t) => {
   t.plan(4)
 
   const app = medley()
 
-  app.get('/', (request, response) => {
-    response.error(new Error('response error'))
+  app.get('/', (req, res) => {
+    res.error(new Error('response error'))
   })
 
   var onSendCalled = false
-  app.addHook('onSend', (request, response, payload, next) => {
+  app.addHook('onSend', (req, res, payload, next) => {
     t.equal(onSendCalled, false, 'onSend called twice')
     onSendCalled = true
     next(new Error('onSend error'))
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 500)
-    t.equal(JSON.parse(res.payload).message, 'onSend error')
+    t.equal(JSON.parse(res.body).message, 'onSend error')
   })
 })
 
-t.test('onSend hooks do not run again if they errored before - response.send() starts + custom error handler response.send()', (t) => {
+t.test('onSend hooks do not run again if they errored before - res.send() starts + custom error handler res.send()', (t) => {
   t.plan(6)
 
   const app = medley()
 
-  app.get('/', (request, response) => {
-    response.send('text')
+  app.get('/', (req, res) => {
+    res.send('text')
   })
 
   var onSendCalled = false
-  app.addHook('onSend', (request, response, payload, next) => {
+  app.addHook('onSend', (req, res, payload, next) => {
     t.equal(onSendCalled, false, 'onSend called twice')
     onSendCalled = true
     next(new Error('onSend error'))
   })
 
-  app.setErrorHandler((err, request, response) => {
+  app.setErrorHandler((err, req, res) => {
     t.equal(err.message, 'onSend error')
-    response.send('Custom error handler message')
+    res.send('Custom error handler message')
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 500)
     t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
-    t.equal(res.payload, 'Custom error handler message')
+    t.equal(res.body, 'Custom error handler message')
   })
 })
 
-t.test('onSend hooks do not run again if they errored before - response.error() starts + custom error handler response.send()', (t) => {
+t.test('onSend hooks do not run again if they errored before - res.error() starts + custom error handler res.send()', (t) => {
   t.plan(6)
 
   const app = medley()
 
-  app.get('/', (request, response) => {
-    response.error(new Error('response error'))
+  app.get('/', (req, res) => {
+    res.error(new Error('response error'))
   })
 
   var onSendCalled = false
-  app.addHook('onSend', (request, response, payload, next) => {
+  app.addHook('onSend', (req, res, payload, next) => {
     t.equal(onSendCalled, false, 'onSend called twice')
     onSendCalled = true
     next(new Error('onSend error'))
   })
 
-  app.setErrorHandler((err, request, response) => {
+  app.setErrorHandler((err, req, res) => {
     t.equal(err.message, 'response error')
-    response.send('Custom error handler message')
+    res.send('Custom error handler message')
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 500)
     t.equal(res.headers['content-type'], 'application/json')
-    t.equal(JSON.parse(res.payload).message, 'onSend error')
+    t.equal(JSON.parse(res.body).message, 'onSend error')
   })
 })
 
-t.test('onSend hooks do not run again if they errored before - response.send() starts + custom error handler response.error()', (t) => {
+t.test('onSend hooks do not run again if they errored before - res.send() starts + custom error handler res.error()', (t) => {
   t.plan(6)
 
   const app = medley()
 
-  app.get('/', (request, response) => {
-    response.send('text')
+  app.get('/', (req, res) => {
+    res.send('text')
   })
 
   var onSendCalled = false
-  app.addHook('onSend', (request, response, payload, next) => {
+  app.addHook('onSend', (req, res, payload, next) => {
     t.equal(onSendCalled, false, 'onSend called twice')
     onSendCalled = true
     next(new Error('onSend error'))
   })
 
-  app.setErrorHandler((err, request, response) => {
+  app.setErrorHandler((err, req, res) => {
     t.equal(err.message, 'onSend error')
-    response.error(new Error('Custom error handler message'))
+    res.error(new Error('Custom error handler message'))
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 500)
     t.equal(res.headers['content-type'], 'application/json')
-    t.equal(JSON.parse(res.payload).message, 'Custom error handler message')
+    t.equal(JSON.parse(res.body).message, 'Custom error handler message')
   })
 })
 
-t.test('onSend hooks do not run again if they errored before - response.error() starts + custom error handler response.error()', (t) => {
+t.test('onSend hooks do not run again if they errored before - res.error() starts + custom error handler res.error()', (t) => {
   t.plan(6)
 
   const app = medley()
 
-  app.get('/', (request, response) => {
-    response.error(new Error('response error'))
+  app.get('/', (req, res) => {
+    res.error(new Error('response error'))
   })
 
   var onSendCalled = false
-  app.addHook('onSend', (request, response, payload, next) => {
+  app.addHook('onSend', (req, res, payload, next) => {
     t.equal(onSendCalled, false, 'onSend called twice')
     onSendCalled = true
     next(new Error('onSend error'))
   })
 
-  app.setErrorHandler((err, request, response) => {
+  app.setErrorHandler((err, req, res) => {
     t.equal(err.message, 'response error')
-    response.error(new Error('Custom error handler message'))
+    res.error(new Error('Custom error handler message'))
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 500)
     t.equal(res.headers['content-type'], 'application/json')
-    t.equal(JSON.parse(res.payload).message, 'onSend error')
+    t.equal(JSON.parse(res.body).message, 'onSend error')
   })
 })

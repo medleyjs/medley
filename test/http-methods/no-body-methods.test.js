@@ -3,6 +3,7 @@
 const t = require('tap')
 const runBodyTests = require('./body-tests')
 const medley = require('../..')
+const request = require('../utils/request')
 
 const methods = [
   'GET',
@@ -38,10 +39,13 @@ methods.forEach((method) => {
       },
     })
 
-    app.inject({
+    request(app, {
       method,
       url: '/',
-      payload: {json: 'body'},
+      body: JSON.stringify({json: 'body'}),
+      headers: {
+        'content-type': 'application/json',
+      },
     }, (err, res) => {
       t.error(err)
       t.equal(res.statusCode, 200)

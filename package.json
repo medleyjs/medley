@@ -32,8 +32,12 @@
     "browser": false,
     "coverage": false,
     "esm": false,
-    "files": ["test/*.test.js", "test/*/*.test.js"],
-    "reporter": "classic"
+    "files": [
+      "test/*.test.js",
+      "test/*/*.test.js"
+    ],
+    "reporter": "classic",
+    "timeout": 10
   },
   "dependencies": {
     "compile-json-stringify": "^0.1.2",
@@ -52,11 +56,11 @@
     "coveralls": "^3.0.4",
     "eslint": "~5.16.0",
     "fast-json-body": "^1.1.0",
+    "got": "^9.6.0",
     "h2url": "^0.1.2",
     "pre-commit": "^1.2.2",
     "pump": "^3.0.0",
     "send": "^0.17.1",
-    "simple-get": "^3.0.3",
     "streaming-json-stringify": "^3.1.0",
     "tap": "^14.2.3",
     "then-sleep": "^1.0.1"

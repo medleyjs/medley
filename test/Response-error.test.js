@@ -1,8 +1,7 @@
 'use strict'
 
-const t = require('tap')
-const test = t.test
-
+const {test} = require('tap')
+const request = require('./utils/request')
 const medley = require('..')
 const statusCodes = require('http').STATUS_CODES
 
@@ -18,25 +17,19 @@ function helper(code) {
     const app = medley()
     const err = new Error('winter is coming')
 
-    app.get('/', (req, response) => {
-      response.error(code, err)
+    app.get('/', (req, res) => {
+      res.error(code, err)
     })
 
-    app.inject({
-      method: 'GET',
-      url: '/',
-    }, (error, res) => {
+    request(app, '/', (error, res) => {
       t.error(error)
       t.equal(res.statusCode, code)
       t.equal(res.headers['content-type'], 'application/json')
-      t.strictDeepEqual(
-        {
-          error: statusCodes[code],
-          message: err.message,
-          statusCode: code,
-        },
-        JSON.parse(res.payload)
-      )
+      t.strictDeepEqual(JSON.parse(res.body), {
+        error: statusCodes[code],
+        message: err.message,
+        statusCode: code,
+      })
     })
   })
 }
@@ -46,27 +39,21 @@ test('preHandler hook error handling with external code', (t) => {
   const app = medley()
   const err = new Error('winter is coming')
 
-  app.addHook('preHandler', (req, response, done) => {
+  app.addHook('preHandler', (req, res, next) => {
     err.status = 400
-    done(err)
+    next(err)
   })
 
   app.get('/', () => {})
 
-  app.inject({
-    method: 'GET',
-    url: '/',
-  }, (error, res) => {
+  request(app, '/', (error, res) => {
     t.error(error)
     t.strictEqual(res.statusCode, 400)
-    t.deepEqual(
-      {
-        error: statusCodes['400'],
-        message: err.message,
-        statusCode: 400,
-      },
-      JSON.parse(res.payload)
-    )
+    t.strictDeepEqual(JSON.parse(res.body), {
+      error: statusCodes['400'],
+      message: err.message,
+      statusCode: 400,
+    })
   })
 })
 
@@ -75,27 +62,21 @@ test('onRequest hook error handling with external done', (t) => {
   const app = medley()
   const err = new Error('winter is coming')
 
-  app.addHook('onRequest', (request, response, done) => {
+  app.addHook('onRequest', (req, res, done) => {
     err.status = 400
     done(err)
   })
 
   app.get('/', () => {})
 
-  app.inject({
-    method: 'GET',
-    url: '/',
-  }, (error, res) => {
+  request(app, '/', (error, res) => {
     t.error(error)
     t.strictEqual(res.statusCode, 400)
-    t.deepEqual(
-      {
-        error: statusCodes['400'],
-        message: err.message,
-        statusCode: 400,
-      },
-      JSON.parse(res.payload)
-    )
+    t.strictDeepEqual(JSON.parse(res.body), {
+      error: statusCodes['400'],
+      message: err.message,
+      statusCode: 400,
+    })
   })
 })
 
@@ -109,20 +90,14 @@ test('Error subApp sets HTTP status code', (t) => {
     return Promise.reject(err)
   })
 
-  app.inject({
-    method: 'GET',
-    url: '/',
-  }, (error, res) => {
+  request(app, '/', (error, res) => {
     t.error(error)
     t.strictEqual(res.statusCode, 418)
-    t.deepEqual(
-      {
-        error: statusCodes['418'],
-        message: err.message,
-        statusCode: 418,
-      },
-      JSON.parse(res.payload)
-    )
+    t.strictDeepEqual(JSON.parse(res.body), {
+      error: statusCodes['418'],
+      message: err.message,
+      statusCode: 418,
+    })
   })
 })
 
@@ -136,20 +111,14 @@ test('Error.status property support', (t) => {
     return Promise.reject(err)
   })
 
-  app.inject({
-    method: 'GET',
-    url: '/',
-  }, (error, res) => {
+  request(app, '/', (error, res) => {
     t.error(error)
     t.strictEqual(res.statusCode, 418)
-    t.deepEqual(
-      {
-        error: statusCodes['418'],
-        message: err.message,
-        statusCode: 418,
-      },
-      JSON.parse(res.payload)
-    )
+    t.strictDeepEqual(JSON.parse(res.body), {
+      error: statusCodes['418'],
+      message: err.message,
+      statusCode: 418,
+    })
   })
 })
 
@@ -177,22 +146,19 @@ test('Support rejection with values that are not Error instances', (t) => {
         return Promise.reject(nonErr)
       })
 
-      app.setErrorHandler((err, request, response) => {
+      app.setErrorHandler((err, req, res) => {
         if (typeof err === 'object') {
           t.deepEqual(err, nonErr)
         } else {
           t.strictEqual(err, nonErr)
         }
-        response.send('error')
+        res.send('error')
       })
 
-      app.inject({
-        method: 'GET',
-        url: '/',
-      }, (error, res) => {
+      request(app, '/', (error, res) => {
         t.error(error)
         t.strictEqual(res.statusCode, 500)
-        t.strictEqual(res.payload, 'error')
+        t.strictEqual(res.body, 'error')
       })
     })
   }
@@ -202,38 +168,32 @@ test('should set the status code from the error object (from route handler)', (t
   t.plan(6)
   const app = medley()
 
-  app.get('/status', (req, response) => {
+  app.get('/status', (req, res) => {
     const error = new Error('kaboom')
     error.status = 400
-    response.error(error)
+    res.error(error)
   })
 
-  app.get('/statusCode', (req, response) => {
+  app.get('/statusCode', (req, res) => {
     const error = new Error('kaboom')
     error.statusCode = 400
-    response.error(error)
+    res.error(error)
   })
 
-  app.inject({
-    url: '/status',
-    method: 'GET',
-  }, (err, res) => {
+  request(app, '/status', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 400)
-    t.deepEqual(JSON.parse(res.payload), {
+    t.deepEqual(JSON.parse(res.body), {
       error: 'Bad Request',
       message: 'kaboom',
       statusCode: 400,
     })
   })
 
-  app.inject({
-    url: '/statusCode',
-    method: 'GET',
-  }, (err, res) => {
+  request(app, '/statusCode', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 400)
-    t.deepEqual(JSON.parse(res.payload), {
+    t.deepEqual(JSON.parse(res.body), {
       error: 'Bad Request',
       message: 'kaboom',
       statusCode: 400,
@@ -245,27 +205,24 @@ test('should set the status code from the error object (from custom error handle
   t.plan(5)
   const app = medley()
 
-  app.get('/', (req, response) => {
+  app.get('/', (req, res) => {
     const error = new Error('ouch')
     error.statusCode = 401
-    response.error(error)
+    res.error(error)
   })
 
-  app.setErrorHandler((err, request, response) => {
+  app.setErrorHandler((err, req, res) => {
     t.is(err.message, 'ouch')
-    t.is(response.statusCode, 401)
+    t.is(res.statusCode, 401)
     const error = new Error('kaboom')
     error.statusCode = 400
-    response.error(error)
+    res.error(error)
   })
 
-  app.inject({
-    url: '/',
-    method: 'GET',
-  }, (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 400)
-    t.deepEqual(JSON.parse(res.payload), {
+    t.deepEqual(JSON.parse(res.body), {
       error: 'Bad Request',
       message: 'kaboom',
       statusCode: 400,
@@ -287,9 +244,9 @@ test('res.error() throws if called after response is sent', (t) => {
     }
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
-    t.equal(res.payload, 'send')
+    t.equal(res.body, 'send')
   })
 })
 
@@ -298,52 +255,52 @@ test('res.error(err) should work with any err value', (t) => {
 
   const app = medley()
 
-  app.get('/string', (request, response) => {
-    response.error('string')
+  app.get('/string', (req, res) => {
+    res.error('string')
   })
 
-  app.get('/undefined', (request, response) => {
-    response.error()
+  app.get('/undefined', (req, res) => {
+    res.error()
   })
 
-  app.get('/array', (request, response) => {
-    response.error([1, 2])
+  app.get('/array', (req, res) => {
+    res.error([1, 2])
   })
 
-  app.get('/object', (request, response) => {
-    response.error({message: 'object message'})
+  app.get('/object', (req, res) => {
+    res.error({message: 'object message'})
   })
 
-  app.inject('/string', (err, res) => {
+  request(app, '/string', (err, res) => {
     t.error(err)
-    t.deepEqual(JSON.parse(res.payload), {
+    t.strictDeepEqual(JSON.parse(res.body), {
       error: 'Internal Server Error',
       message: '',
       statusCode: 500,
     })
   })
 
-  app.inject('/undefined', (err, res) => {
+  request(app, '/undefined', (err, res) => {
     t.error(err)
-    t.deepEqual(JSON.parse(res.payload), {
+    t.strictDeepEqual(JSON.parse(res.body), {
       error: 'Internal Server Error',
       message: '',
       statusCode: 500,
     })
   })
 
-  app.inject('/array', (err, res) => {
+  request(app, '/array', (err, res) => {
     t.error(err)
-    t.deepEqual(JSON.parse(res.payload), {
+    t.strictDeepEqual(JSON.parse(res.body), {
       error: 'Internal Server Error',
       message: '',
       statusCode: 500,
     })
   })
 
-  app.inject('/object', (err, res) => {
+  request(app, '/object', (err, res) => {
     t.error(err)
-    t.deepEqual(JSON.parse(res.payload), {
+    t.strictDeepEqual(JSON.parse(res.body), {
       error: 'Internal Server Error',
       message: 'object message',
       statusCode: 500,
@@ -351,31 +308,31 @@ test('res.error(err) should work with any err value', (t) => {
   })
 })
 
-test('response.error(err) should use err.status or err.statusCode', (t) => {
+test('res.error(err) should use err.status or err.statusCode', (t) => {
   t.plan(4)
 
   const app = medley()
 
-  app.get('/501', (request, response) => {
-    response.error({status: 501, message: '501'})
+  app.get('/501', (req, res) => {
+    res.error({status: 501, message: '501'})
   })
 
-  app.get('/502', (request, response) => {
-    response.error({status: 502, message: '502'})
+  app.get('/502', (req, res) => {
+    res.error({status: 502, message: '502'})
   })
 
-  app.inject('/501', (err, res) => {
+  request(app, '/501', (err, res) => {
     t.error(err)
-    t.deepEqual(JSON.parse(res.payload), {
+    t.strictDeepEqual(JSON.parse(res.body), {
       error: 'Not Implemented',
       message: '501',
       statusCode: 501,
     })
   })
 
-  app.inject('/502', (err, res) => {
+  request(app, '/502', (err, res) => {
     t.error(err)
-    t.deepEqual(JSON.parse(res.payload), {
+    t.strictDeepEqual(JSON.parse(res.body), {
       error: 'Bad Gateway',
       message: '502',
       statusCode: 502,
@@ -388,30 +345,30 @@ test('error with a Content-Type that is not application/json should work', (t) =
 
   const app = medley()
 
-  app.get('/text', (request, response) => {
-    response.type('text/plain').error(new Error('some application error'))
+  app.get('/text', (req, res) => {
+    res.type('text/plain').error(new Error('some application error'))
   })
 
-  app.get('/html', (request, response) => {
-    response.type('text/html').error(new Error('some application error'))
+  app.get('/html', (req, res) => {
+    res.type('text/html').error(new Error('some application error'))
   })
 
-  app.inject('/text', (err, res) => {
+  request(app, '/text', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 500)
     t.equal(res.headers['content-type'], 'application/json')
-    t.deepEqual(JSON.parse(res.payload), {
+    t.strictDeepEqual(JSON.parse(res.body), {
       error: 'Internal Server Error',
       message: 'some application error',
       statusCode: 500,
     })
   })
 
-  app.inject('/html', (err, res) => {
+  request(app, '/html', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 500)
     t.equal(res.headers['content-type'], 'application/json')
-    t.deepEqual(JSON.parse(res.payload), {
+    t.deepEqual(JSON.parse(res.body), {
       error: 'Internal Server Error',
       message: 'some application error',
       statusCode: 500,

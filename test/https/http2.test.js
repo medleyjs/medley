@@ -5,7 +5,7 @@ const fs = require('fs')
 const path = require('path')
 const medley = require('../..')
 const h2url = require('h2url')
-const sget = require('simple-get').concat
+const request = require('../utils/request')
 
 const msg = {hello: 'world'}
 
@@ -16,8 +16,8 @@ t.test('unencrypted - true', (t) => {
     http2: true,
   })
 
-  app.get('/', function(req, response) {
-    response.send(msg)
+  app.get('/', function(req, res) {
+    res.send(msg)
   })
 
   app.listen(0, async (err) => {
@@ -30,7 +30,7 @@ t.test('unencrypted - true', (t) => {
     t.strictEqual(res.headers[':status'], 200)
     t.strictEqual(res.headers['content-length'], '' + JSON.stringify(msg).length)
 
-    t.deepEqual(JSON.parse(res.body), msg)
+    t.strictDeepEqual(JSON.parse(res.body), msg)
   })
 })
 
@@ -41,8 +41,8 @@ t.test('unencrypted - object', (t) => {
     http2: {peerMaxConcurrentStreams: 20},
   })
 
-  app.get('/', function(req, response) {
-    response.send(msg)
+  app.get('/', function(req, res) {
+    res.send(msg)
   })
 
   app.listen(0, async (err) => {
@@ -55,7 +55,7 @@ t.test('unencrypted - object', (t) => {
     t.strictEqual(res.headers[':status'], 200)
     t.strictEqual(res.headers['content-length'], '' + JSON.stringify(msg).length)
 
-    t.deepEqual(JSON.parse(res.body), msg)
+    t.strictDeepEqual(JSON.parse(res.body), msg)
   })
 })
 
@@ -82,7 +82,7 @@ t.test('secure', (t) => {
 
     t.strictEqual(res.headers[':status'], 200)
     t.strictEqual(res.headers['content-length'], '' + JSON.stringify(msg).length)
-    t.deepEqual(JSON.parse(res.body), msg)
+    t.strictDeepEqual(JSON.parse(res.body), msg)
   })
 })
 
@@ -127,32 +127,26 @@ t.test('secure with fallback', (t) => {
 
       t.strictEqual(res.headers[':status'], 200)
       t.strictEqual(res.headers['content-length'], '' + JSON.stringify(msg).length)
-      t.deepEqual(JSON.parse(res.body), msg)
+      t.strictDeepEqual(JSON.parse(res.body), msg)
     })
 
     t.test('http1 get request', (t) => {
       t.plan(4)
-      sget({
-        method: 'GET',
-        url: 'https://localhost:' + app.server.address().port,
-        rejectUnauthorized: false,
-      }, (err, response, body) => {
+
+      request(app, '/', {rejectUnauthorized: false}, (err, res) => {
         t.error(err)
-        t.strictEqual(response.statusCode, 200)
-        t.strictEqual(response.headers['content-length'], '' + body.length)
-        t.deepEqual(JSON.parse(body), {hello: 'world'})
+        t.strictEqual(res.statusCode, 200)
+        t.strictEqual(res.headers['content-length'], '' + res.body.length)
+        t.strictDeepEqual(JSON.parse(res.body), {hello: 'world'})
       })
     })
 
     t.test('http1 get error', (t) => {
       t.plan(2)
-      sget({
-        method: 'GET',
-        url: 'https://localhost:' + app.server.address().port + '/error',
-        rejectUnauthorized: false,
-      }, (err, response) => {
+
+      request(app, '/error', {rejectUnauthorized: false}, (err, res) => {
         t.error(err)
-        t.strictEqual(response.statusCode, 500)
+        t.strictEqual(res.statusCode, 500)
       })
     })
   })

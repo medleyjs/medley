@@ -1,37 +1,41 @@
 /* eslint-disable require-await */
 'use strict'
 
-const t = require('tap')
-const sget = require('simple-get').concat
+const {test} = require('tap')
+const request = require('./utils/request')
 const sleep = require('then-sleep')
 const medley = require('..')
 
-const {test} = t
-
 test('async hooks', (t) => {
-  t.plan(19)
+  t.plan(18)
 
   const app = medley()
-  app.addHook('onRequest', async (request, response) => {
+
+  app.addHook('onRequest', async (req, res) => {
     await sleep(1)
-    request.onRequestVal = 'the request is coming'
-    response.onRequestVal = 'the response has come'
-    if (request.method === 'DELETE') {
+
+    req.onRequestVal = 'the request is coming'
+    res.onRequestVal = 'the response has come'
+
+    if (req.method === 'DELETE') {
       throw new Error('some error')
     }
   })
 
-  app.addHook('preHandler', async (request, response) => {
+  app.addHook('preHandler', async (req, res) => {
     await sleep(1)
-    request.preHandlerVal = 'the request is coming'
-    response.preHandlerVal = 'the response has come'
-    if (request.method === 'HEAD') {
+
+    req.preHandlerVal = 'the request is coming'
+    res.preHandlerVal = 'the response has come'
+
+    if (req.method === 'HEAD') {
       throw new Error('some error')
     }
   })
 
   app.addHook('onSend', async (req, res, payload) => {
     await sleep(1)
+
     if (req.method === 'DELETE' || req.method === 'HEAD') {
       t.match(payload, 'Internal Server Error')
     } else {
@@ -44,51 +48,37 @@ test('async hooks', (t) => {
     t.ok('onFinished called')
   })
 
-  app.get('/', function(request, response) {
-    t.is(request.onRequestVal, 'the request is coming')
-    t.is(response.onRequestVal, 'the response has come')
-    t.is(request.preHandlerVal, 'the request is coming')
-    t.is(response.preHandlerVal, 'the response has come')
-    response.send({hello: 'world'})
+  app.get('/', function(req, res) {
+    t.equal(req.onRequestVal, 'the request is coming')
+    t.equal(res.onRequestVal, 'the response has come')
+    t.equal(req.preHandlerVal, 'the request is coming')
+    t.equal(res.preHandlerVal, 'the response has come')
+    res.send({hello: 'world'})
   })
 
-  app.head('/', function(req, response) {
-    response.send({hello: 'world'})
+  app.head('/', function(req, res) {
+    res.send({hello: 'world'})
   })
 
-  app.delete('/', function(req, response) {
-    response.send({hello: 'world'})
+  app.delete('/', function(req, res) {
+    res.send({hello: 'world'})
   })
 
-  app.listen(0, (err) => {
+  request(app, '/', (err, res) => {
     t.error(err)
-    app.server.unref()
+    t.strictEqual(res.statusCode, 200)
+    t.strictEqual(res.headers['content-length'], '' + res.body.length)
+    t.strictDeepEqual(JSON.parse(res.body), {hello: 'world'})
+  })
 
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + app.server.address().port,
-    }, (err, response, body) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 200)
-      t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), {hello: 'world'})
-    })
+  request(app, '/', {method: 'HEAD'}, (err, res) => {
+    t.error(err)
+    t.strictEqual(res.statusCode, 500)
+  })
 
-    sget({
-      method: 'HEAD',
-      url: 'http://localhost:' + app.server.address().port,
-    }, (err, response) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 500)
-    })
-
-    sget({
-      method: 'DELETE',
-      url: 'http://localhost:' + app.server.address().port,
-    }, (err, response) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 500)
-    })
+  request(app, '/', {method: 'DELETE'}, (err, res) => {
+    t.error(err)
+    t.strictEqual(res.statusCode, 500)
   })
 })
 
@@ -116,16 +106,13 @@ test('onSend hooks can modify payload', (t) => {
     t.strictEqual(serializedPayload, anotherPayload)
   })
 
-  app.get('/', (req, response) => {
-    response.send(payload)
+  app.get('/', (req, res) => {
+    res.send(payload)
   })
 
-  app.inject({
-    method: 'GET',
-    url: '/',
-  }, (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
-    t.strictEqual(res.payload, anotherPayload)
+    t.strictEqual(res.body, anotherPayload)
     t.strictEqual(res.statusCode, 200)
     t.strictEqual(res.headers['content-length'], '18')
   })
@@ -135,8 +122,8 @@ test('onRequest hooks should be able to send a response', (t) => {
   t.plan(5)
   const app = medley()
 
-  app.addHook('onRequest', async (request, response) => {
-    response.send('hello')
+  app.addHook('onRequest', async (req, res) => {
+    res.send('hello')
   })
 
   app.addHook('onRequest', async () => {
@@ -159,10 +146,10 @@ test('onRequest hooks should be able to send a response', (t) => {
     t.fail('this should not be called')
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.is(res.statusCode, 200)
-    t.is(res.payload, 'hello')
+    t.is(res.body, 'hello')
   })
 })
 
@@ -170,8 +157,8 @@ test('preHandler hooks should be able to send a response', (t) => {
   t.plan(5)
   const app = medley()
 
-  app.addHook('preHandler', async (req, response) => {
-    response.send('hello')
+  app.addHook('preHandler', async (req, res) => {
+    res.send('hello')
   })
 
   app.addHook('preHandler', async () => {
@@ -190,9 +177,9 @@ test('preHandler hooks should be able to send a response', (t) => {
     t.fail('this should not be called')
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.is(res.statusCode, 200)
-    t.is(res.payload, 'hello')
+    t.is(res.body, 'hello')
   })
 })

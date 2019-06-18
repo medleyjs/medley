@@ -2,10 +2,9 @@
 
 const t = require('tap')
 const medley = require('../..')
+const request = require('../utils/request')
 
 t.plan(1)
-
-process.removeAllListeners('unhandledRejection')
 
 process.on('unhandledRejection', (err) => {
   t.equal(err.message, 'kaboom')
@@ -25,10 +24,11 @@ app.setErrorHandler(async (_, req, res) => { // eslint-disable-line require-awai
   res.send()
 })
 
-app.addHook('onSend', () => {
+app.addHook('onSend', (req) => {
+  req.stream.socket.destroy()
   throw new Error('kaboom')
 })
 
-app.inject('/', () => {
-  t.fail('should not be called')
+request(app, '/', () => {
+  // Ignore error
 })

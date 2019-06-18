@@ -1,8 +1,7 @@
 'use strict'
 
-const t = require('tap')
-const test = t.test
-const sget = require('simple-get').concat
+const {test} = require('tap')
+const request = require('./utils/request')
 const fs = require('fs')
 const stream = require('stream')
 const http = require('http')
@@ -12,41 +11,35 @@ const medley = require('..')
 const JSONStream = require('JSONStream')
 const send = require('send')
 const StreamingJSONStringify = require('streaming-json-stringify')
-const Readable = require('stream').Readable
+const {Readable} = require('stream')
+
+const FILE_TEXT = fs.readFileSync(__filename, 'utf8')
 
 test('should respond with a stream', (t) => {
-  t.plan(8)
+  t.plan(6)
+
   const app = medley()
 
-  app.get('/', function(req, response) {
+  app.get('/', function(req, res) {
     const fileStream = fs.createReadStream(__filename, 'utf8')
-    response.send(fileStream)
+    res.send(fileStream)
   })
 
-  app.get('/error', function(req, response) {
+  app.get('/error', function(req, res) {
     const fileStream = fs.createReadStream('not-existing-file', 'utf8')
-    response.send(fileStream)
+    res.send(fileStream)
   })
 
-  app.listen(0, (err) => {
+  request(app, '/', function(err, res) {
     t.error(err)
-    app.server.unref()
+    t.strictEqual(res.headers['content-type'], 'application/octet-stream')
+    t.strictEqual(res.statusCode, 200)
+    t.strictEqual(res.body, FILE_TEXT)
+  })
 
-    sget(`http://localhost:${app.server.address().port}`, function(err, response, data) {
-      t.error(err)
-      t.strictEqual(response.headers['content-type'], 'application/octet-stream')
-      t.strictEqual(response.statusCode, 200)
-
-      fs.readFile(__filename, (err, expected) => {
-        t.error(err)
-        t.equal(expected.toString(), data.toString())
-      })
-    })
-
-    sget(`http://localhost:${app.server.address().port}/error`, function(err, response) {
-      t.error(err)
-      t.strictEqual(response.statusCode, 500)
-    })
+  request(app, '/error', function(err, res) {
+    t.error(err)
+    t.strictEqual(res.statusCode, 500)
   })
 })
 
@@ -54,48 +47,40 @@ test('should trigger the onSend hook', (t) => {
   t.plan(4)
   const app = medley()
 
-  app.get('/', (req, response) => {
-    response.send(fs.createReadStream(__filename, 'utf8'))
+  app.get('/', (req, res) => {
+    res.send(fs.createReadStream(__filename, 'utf8'))
   })
 
-  app.addHook('onSend', (request, response, payload, next) => {
+  app.addHook('onSend', (req, res, payload, next) => {
     t.ok(payload._readableState)
-    response.set('content-type', 'application/javascript')
+    res.set('content-type', 'application/javascript')
     next()
   })
 
-  app.inject({
-    url: '/',
-  }, (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.strictEqual(res.headers['content-type'], 'application/javascript')
-    t.strictEqual(res.payload, fs.readFileSync(__filename, 'utf8'))
+    t.strictEqual(res.body, FILE_TEXT)
     app.close()
   })
 })
 
 test('should trigger the onSend hook only once if pumping the stream fails', (t) => {
-  t.plan(4)
+  t.plan(3)
   const app = medley()
 
-  app.get('/', (req, response) => {
-    response.send(fs.createReadStream('not-existing-file', 'utf8'))
+  app.get('/', (req, res) => {
+    res.send(fs.createReadStream('not-existing-file', 'utf8'))
   })
 
-  app.addHook('onSend', (request, response, payload, next) => {
+  app.addHook('onSend', (req, res, payload, next) => {
     t.ok(payload._readableState)
     next()
   })
 
-  app.listen(0, (err) => {
+  request(app, '/', function(err, res) {
     t.error(err)
-
-    app.server.unref()
-
-    sget(`http://localhost:${app.server.address().port}`, function(err, response) {
-      t.error(err)
-      t.strictEqual(response.statusCode, 500)
-    })
+    t.strictEqual(res.statusCode, 500)
   })
 })
 
@@ -103,14 +88,14 @@ test('onSend hook stream', (t) => {
   t.plan(4)
   const app = medley()
 
-  app.get('/', (request, response) => {
-    response.send({hello: 'world'})
+  app.get('/', (req, res) => {
+    res.send({hello: 'world'})
   })
 
-  app.addHook('onSend', (request, response, payload, next) => {
+  app.addHook('onSend', (req, res, payload, next) => {
     const gzStream = zlib.createGzip()
 
-    response.set('content-encoding', 'gzip')
+    res.set('content-encoding', 'gzip')
     pump(
       fs.createReadStream(__filename, 'utf8'),
       gzStream,
@@ -119,15 +104,10 @@ test('onSend hook stream', (t) => {
     next(null, gzStream)
   })
 
-  app.inject({
-    url: '/',
-    method: 'GET',
-  }, (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.strictEqual(res.headers['content-encoding'], 'gzip')
-    const file = fs.readFileSync(__filename, 'utf8')
-    const payload = zlib.gunzipSync(res.rawPayload)
-    t.strictEqual(payload.toString('utf-8'), file)
+    t.strictEqual(res.body, FILE_TEXT)
     app.close()
   })
 })
@@ -137,7 +117,7 @@ test('Destroying streams prematurely', (t) => {
 
   const app = medley()
 
-  app.get('/', function(request, response) {
+  app.get('/', function(req, res) {
     t.pass('Received request')
 
     var sent = false
@@ -150,7 +130,7 @@ test('Destroying streams prematurely', (t) => {
       },
     })
 
-    response.send(reallyLongStream)
+    res.send(reallyLongStream)
   })
 
   app.listen(0, (err) => {
@@ -172,101 +152,83 @@ test('Destroying streams prematurely', (t) => {
 })
 
 test('should support stream1 streams', (t) => {
-  t.plan(5)
+  t.plan(4)
   const app = medley()
 
-  app.get('/', function(request, response) {
+  app.get('/', function(req, res) {
     const jsonStream = JSONStream.stringify()
-    response.type('application/json').send(jsonStream)
+    res.type('application/json').send(jsonStream)
     jsonStream.write({hello: 'world'})
     jsonStream.end({a: 42})
   })
 
-  app.listen(0, (err) => {
+  request(app, '/', function(err, res) {
     t.error(err)
-    app.server.unref()
-
-    sget(`http://localhost:${app.server.address().port}`, function(err, response, body) {
-      t.error(err)
-      t.strictEqual(response.headers['content-type'], 'application/json')
-      t.strictEqual(response.statusCode, 200)
-      t.deepEqual(JSON.parse(body), [{hello: 'world'}, {a: 42}])
-    })
+    t.strictEqual(res.headers['content-type'], 'application/json')
+    t.strictEqual(res.statusCode, 200)
+    t.strictDeepEqual(JSON.parse(res.body), [{hello: 'world'}, {a: 42}])
   })
 })
 
 test('should support stream2 streams', (t) => {
-  t.plan(5)
+  t.plan(4)
   const app = medley()
 
-  app.get('/', function(request, response) {
+  app.get('/', function(req, res) {
     const jsonStream = new StreamingJSONStringify()
-    response.type('application/json').send(jsonStream)
+    res.type('application/json').send(jsonStream)
     jsonStream.write({hello: 'world'})
     jsonStream.end({a: 42})
   })
 
-  app.listen(0, (err) => {
+  request(app, '/', function(err, res) {
     t.error(err)
-    app.server.unref()
-
-    sget(`http://localhost:${app.server.address().port}`, function(err, response, body) {
-      t.error(err)
-      t.strictEqual(response.headers['content-type'], 'application/json')
-      t.strictEqual(response.statusCode, 200)
-      t.deepEqual(JSON.parse(body), [{hello: 'world'}, {a: 42}])
-    })
+    t.strictEqual(res.headers['content-type'], 'application/json')
+    t.strictEqual(res.statusCode, 200)
+    t.strictDeepEqual(JSON.parse(res.body), [{hello: 'world'}, {a: 42}])
   })
 })
 
 test('should support send module 200 and 404', (t) => {
-  t.plan(8)
+  t.plan(6)
+
   const app = medley()
 
-  app.get('/', function(req, response) {
+  app.get('/', function(req, res) {
     const sendStream = send(req.stream, __filename)
-    response.send(sendStream)
+    res.send(sendStream)
   })
 
-  app.get('/error', function(req, response) {
+  app.get('/error', function(req, res) {
     const sendStream = send(req.stream, 'non-existing-file')
-    response.send(sendStream)
+    res.send(sendStream)
   })
 
-  app.listen(0, (err) => {
+  request(app, '/', function(err, res) {
     t.error(err)
-    app.server.unref()
+    t.strictEqual(res.headers['content-type'], 'application/octet-stream')
+    t.strictEqual(res.statusCode, 200)
+    t.strictEqual(res.body, FILE_TEXT)
+  })
 
-    sget(`http://localhost:${app.server.address().port}`, function(err, response, data) {
-      t.error(err)
-      t.strictEqual(response.headers['content-type'], 'application/octet-stream')
-      t.strictEqual(response.statusCode, 200)
-
-      fs.readFile(__filename, (err, expected) => {
-        t.error(err)
-        t.equal(expected.toString(), data.toString())
-      })
-    })
-
-    sget(`http://localhost:${app.server.address().port}/error`, function(err, response) {
-      t.error(err)
-      t.strictEqual(response.statusCode, 404)
-    })
+  request(app, '/error', function(err, res) {
+    t.error(err)
+    t.strictEqual(res.statusCode, 404)
   })
 })
 
 test('should handle destroying a stream if headers are already sent', (t) => {
-  t.plan(5)
+  t.plan(4)
 
   const app = medley()
 
-  app.get('/', (request, response) => {
+  app.get('/', (req, res) => {
     t.pass('Received request')
 
     const chunk = Buffer.alloc(100, 'c')
     const streamUntilHeaders = new Readable({
       read() {
-        if (response.headersSent) {
+        if (res.headersSent) {
           this.emit('error', new Error('stream error'))
           t.pass('emitted error')
         } else {
@@ -275,17 +237,12 @@ test('should handle destroying a stream if headers are already sent', (t) => {
       },
     })
 
-    response.send(streamUntilHeaders)
+    res.send(streamUntilHeaders)
   })
 
-  app.listen(0, (err) => {
-    t.error(err)
-    app.server.unref()
-
-    sget(`http://localhost:${app.server.address().port}`, (err) => {
-      t.type(err, Error)
-      t.equal(err.code, 'ECONNRESET')
-    })
+  request(app, '/', (err) => {
+    t.type(err, Error)
+    t.equal(err.code, 'ECONNRESET')
   })
 })
 
@@ -333,7 +290,7 @@ test('should call the onStreamError function if the stream was destroyed prematu
 })
 
 test('should call the onStreamError function if a stream was destroyed with headers already sent', (t) => {
-  t.plan(6)
+  t.plan(5)
 
   const streamError = new Error('stream error')
 
@@ -361,13 +318,8 @@ test('should call the onStreamError function if a stream was destroyed with head
     res.send(streamUntilHeaders)
   })
 
-  app.listen(0, (err) => {
-    t.error(err)
-    app.server.unref()
-
-    sget(`http://localhost:${app.server.address().port}`, (err) => {
-      t.type(err, Error)
-      t.equal(err.code, 'ECONNRESET')
-    })
+  request(app, '/', (err) => {
+    t.type(err, Error)
+    t.equal(err.code, 'ECONNRESET')
   })
 })

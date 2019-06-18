@@ -1,8 +1,8 @@
 'use strict'
 
 const t = require('tap')
-
 const medley = require('..')
+const request = require('./utils/request')
 
 t.test('queryParser', (t) => {
   t.plan(6)
@@ -21,17 +21,17 @@ t.test('queryParser', (t) => {
     queryParser: qs => 'querystring: ' + qs,
   })
 
-  app.get('/', (request, reply) => {
-    reply.send(request.query)
+  app.get('/', (req, res) => {
+    res.send(req.query)
   })
 
-  app.inject('/?a', (err, res) => {
+  request(app, '/?a', (err, res) => {
     t.error(err)
-    t.equal(res.payload, 'querystring: a')
+    t.equal(res.body, 'querystring: a')
   })
 
-  app.inject('/?b=2', (err, res) => {
+  request(app, '/?b=2', (err, res) => {
     t.error(err)
-    t.equal(res.payload, 'querystring: b=2')
+    t.equal(res.body, 'querystring: b=2')
   })
 })

@@ -1,9 +1,8 @@
 'use strict'
 
-const t = require('tap')
-const test = t.test
+const {test} = require('tap')
 const medley = require('..')
-const sget = require('simple-get').concat
+const request = require('./utils/request')
 
 test('.decorate() should be chainable', (t) => {
   const app = medley()
@@ -165,7 +164,7 @@ test('cannot decorate sub-app if parent app already has the decorator', (t) => {
 })
 
 test('decorateRequest inside a sub-app', (t) => {
-  t.plan(9)
+  t.plan(8)
   const app = medley()
 
   app.createSubApp()
@@ -180,32 +179,21 @@ test('decorateRequest inside a sub-app', (t) => {
     res.send()
   })
 
-  app.listen(0, (err) => {
+  request(app, '/sub', (err, res) => {
     t.error(err)
-    app.server.unref()
+    t.equal(res.statusCode, 200)
+    t.equal(res.body.length, 0)
+  })
 
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + app.server.address().port + '/sub',
-    }, (err, response, body) => {
-      t.error(err)
-      t.equal(response.statusCode, 200)
-      t.equal(body.length, 0)
-    })
-
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + app.server.address().port + '/top',
-    }, (err, response, body) => {
-      t.error(err)
-      t.equal(response.statusCode, 200)
-      t.equal(body.length, 0)
-    })
+  request(app, '/top', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.body.length, 0)
   })
 })
 
 test('decorateResponse inside a sub-app', (t) => {
-  t.plan(9)
+  t.plan(8)
   const app = medley()
 
   app.createSubApp()
@@ -220,27 +208,16 @@ test('decorateResponse inside a sub-app', (t) => {
     res.send()
   })
 
-  app.listen(0, (err) => {
+  request(app, '/sub', (err, res) => {
     t.error(err)
-    app.server.unref()
+    t.equal(res.statusCode, 200)
+    t.equal(res.body.length, 0)
+  })
 
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + app.server.address().port + '/sub',
-    }, (err, response, body) => {
-      t.error(err)
-      t.equal(response.statusCode, 200)
-      t.equal(body.length, 0)
-    })
-
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + app.server.address().port + '/top',
-    }, (err, response, body) => {
-      t.error(err)
-      t.equal(response.statusCode, 200)
-      t.equal(body.length, 0)
-    })
+  request(app, '/top', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.body.length, 0)
   })
 })
 

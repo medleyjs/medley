@@ -1,7 +1,7 @@
 'use strict'
 
-const t = require('tap')
-const test = t.test
+const {test} = require('tap')
+const request = require('./utils/request')
 const medley = require('..')
 
 test('preHandler', (t) => {
@@ -17,9 +17,9 @@ test('preHandler', (t) => {
     res.send(req.sendVal)
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
-    t.equal(JSON.parse(res.payload), true)
+    t.equal(JSON.parse(res.body), true)
   })
 })
 
@@ -41,9 +41,9 @@ test('preHandler should be called after preHandler hook', (t) => {
     res.send(req.sendVal)
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
-    t.equal(res.payload, 'ab')
+    t.equal(res.body, 'ab')
   })
 })
 
@@ -64,14 +64,14 @@ test('preHandler should be unique per route', (t) => {
     res.send(req.sendVal)
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
-    t.equal(res.payload, 'hello')
+    t.equal(res.body, 'hello')
   })
 
-  app.inject('/no-before-handler', (err, res) => {
+  request(app, '/no-before-handler', (err, res) => {
     t.error(err)
-    t.equal(res.payload, '')
+    t.equal(res.body, '')
   })
 })
 
@@ -87,9 +87,9 @@ test('preHandler should handle errors', (t) => {
     res.send()
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
-    var payload = JSON.parse(res.payload)
+    var payload = JSON.parse(res.body)
     t.equal(res.statusCode, 500)
     t.strictDeepEqual(payload, {
       message: 'kaboom',
@@ -111,9 +111,9 @@ test('preHandler should handle errors with custom status code', (t) => {
     res.send()
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
-    var payload = JSON.parse(res.payload)
+    var payload = JSON.parse(res.body)
     t.equal(res.statusCode, 401)
     t.deepEqual(payload, {
       message: 'go away',
@@ -142,9 +142,9 @@ test('preHandler could accept an array of functions', (t) => {
     res.send(req.sendVal)
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
-    t.equal(res.payload, 'ab')
+    t.equal(res.body, 'ab')
   })
 })
 
@@ -170,14 +170,14 @@ test('preHandler does not interfere with preHandler', (t) => {
     res.send(req.sendVal)
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
-    t.equal(res.payload, 'ab')
+    t.equal(res.body, 'ab')
   })
 
-  app.inject('/no', (err, res) => {
+  request(app, '/no', (err, res) => {
     t.error(err)
-    t.equal(res.payload, 'a')
+    t.equal(res.body, 'a')
   })
 })
 
@@ -208,13 +208,13 @@ test('preHandlers can be passed as the second parameter to route shorthand metho
     res.send(req.sendVal)
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
-    t.equal(res.payload, 'first')
+    t.equal(res.body, 'first')
   })
 
-  app.inject('/multi', (err, res) => {
+  request(app, '/multi', (err, res) => {
     t.error(err)
-    t.equal(res.payload, 'ab')
+    t.equal(res.body, 'ab')
   })
 })

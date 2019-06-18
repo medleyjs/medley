@@ -2,6 +2,7 @@
 
 const t = require('tap')
 const medley = require('..')
+const request = require('./utils/request')
 
 t.test('auto 405 response for unset methods', (t) => {
   t.plan(10)
@@ -12,7 +13,7 @@ t.test('auto 405 response for unset methods', (t) => {
     res.send({hello: 'world'})
   })
 
-  app.inject({
+  request(app, {
     method: 'DELETE',
     url: '/',
   }, (err, res) => {
@@ -20,10 +21,10 @@ t.test('auto 405 response for unset methods', (t) => {
     t.equal(res.statusCode, 405)
     t.equal(res.headers.allow, 'GET,HEAD')
     t.equal(res.headers['content-length'], '28')
-    t.equal(res.payload, 'Method Not Allowed: DELETE /')
+    t.equal(res.body, 'Method Not Allowed: DELETE /')
   })
 
-  app.inject({
+  request(app, {
     method: 'POST',
     url: '/',
   }, (err, res) => {
@@ -31,7 +32,7 @@ t.test('auto 405 response for unset methods', (t) => {
     t.equal(res.statusCode, 405)
     t.equal(res.headers.allow, 'GET,HEAD')
     t.equal(res.headers['content-length'], '26')
-    t.equal(res.payload, 'Method Not Allowed: POST /')
+    t.equal(res.body, 'Method Not Allowed: POST /')
   })
 })
 
@@ -52,18 +53,15 @@ t.test('auto 405 response for non-GET/HEAD routes', (t) => {
     },
   })
 
-  app.inject({
-    method: 'GET',
-    url: '/',
-  }, (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 405)
     t.equal(res.headers.allow, 'DELETE')
     t.equal(res.headers['content-length'], '25')
-    t.equal(res.payload, 'Method Not Allowed: GET /')
+    t.equal(res.body, 'Method Not Allowed: GET /')
   })
 
-  app.inject({
+  request(app, {
     method: 'HEAD',
     url: '/',
   }, (err, res) => {
@@ -71,14 +69,14 @@ t.test('auto 405 response for non-GET/HEAD routes', (t) => {
     t.equal(res.statusCode, 405)
     t.equal(res.headers.allow, 'DELETE')
     t.equal(res.headers['content-length'], undefined)
-    t.equal(res.payload, '')
+    t.equal(res.body, '')
   })
 
-  app.inject('/user', (err, res) => {
+  request(app, '/user', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 405)
     t.equal(res.headers.allow, 'POST,PUT')
-    t.equal(res.payload, 'Method Not Allowed: GET /user')
+    t.equal(res.body, 'Method Not Allowed: GET /user')
   })
 })
 
@@ -111,23 +109,23 @@ t.test('hooks run on auto 405 response', (t) => {
     t.equal(res.headersSent, true)
   })
 
-  app.inject({
+  request(app, {
     method: 'DELETE',
     url: '/?foo=bar',
   }, (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 405)
     t.equal(res.headers.allow, 'GET,HEAD')
-    t.equal(res.payload, 'Method Not Allowed: DELETE /?foo=bar')
+    t.equal(res.body, 'Method Not Allowed: DELETE /?foo=bar')
   })
 
-  app.inject({
+  request(app, {
     method: 'POST',
     url: '/?foo=bar',
   }, (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 405)
     t.equal(res.headers.allow, 'GET,HEAD')
-    t.equal(res.payload, 'Method Not Allowed: POST /?foo=bar')
+    t.equal(res.body, 'Method Not Allowed: POST /?foo=bar')
   })
 })

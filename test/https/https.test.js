@@ -1,37 +1,29 @@
 'use strict'
 
 const t = require('tap')
-const sget = require('simple-get').concat
+const request = require('../utils/request')
 const fs = require('fs')
 const path = require('path')
 const medley = require('../..')
 
-var app = medley({
-  https: {
-    key: fs.readFileSync(path.join(__dirname, 'app.key')),
-    cert: fs.readFileSync(path.join(__dirname, 'app.crt')),
-  },
-})
+t.test('https get request', (t) => {
+  t.plan(4)
 
-app.get('/', function(request, response) {
-  response.send({hello: 'world'})
-})
+  const app = medley({
+    https: {
+      key: fs.readFileSync(path.join(__dirname, 'app.key')),
+      cert: fs.readFileSync(path.join(__dirname, 'app.crt')),
+    },
+  })
 
-app.listen(0, (err) => {
-  t.error(err)
-  app.server.unref()
+  app.get('/', function(req, res) {
+    res.send({hello: 'world'})
+  })
 
-  t.test('https get request', (t) => {
-    t.plan(4)
-    sget({
-      method: 'GET',
-      url: 'https://localhost:' + app.server.address().port,
-      rejectUnauthorized: false,
-    }, (err, response, body) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 200)
-      t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.deepEqual(JSON.parse(body), {hello: 'world'})
-    })
+  request(app, '/', {rejectUnauthorized: false}, (err, res) => {
+    t.error(err)
+    t.strictEqual(res.statusCode, 200)
+    t.strictEqual(res.headers['content-length'], '' + res.body.length)
+    t.strictDeepEqual(JSON.parse(res.body), {hello: 'world'})
   })
 })

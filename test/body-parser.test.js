@@ -1,13 +1,12 @@
 'use strict'
 
-const t = require('tap')
-const test = t.test
-const sget = require('simple-get').concat
+const {test} = require('tap')
+const request = require('./utils/request')
 const medley = require('..')
 const jsonParser = require('fast-json-body')
 
 test('addBodyParser should add a custom parser', (t) => {
-  t.plan(3)
+  t.plan(2)
   const app = medley()
 
   app.post('/', (req, response) => {
@@ -22,49 +21,41 @@ test('addBodyParser should add a custom parser', (t) => {
     jsonParser(req.stream, done)
   })
 
-  app.listen(0, (err) => {
-    t.error(err)
+  t.test('in POST', (t) => {
+    t.plan(3)
 
-    t.tearDown(() => app.close())
-
-    t.test('in POST', (t) => {
-      t.plan(3)
-
-      sget({
-        method: 'POST',
-        url: 'http://localhost:' + app.server.address().port,
-        body: '{"hello":"world"}',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }, (err, response, body) => {
-        t.error(err)
-        t.equal(response.statusCode, 200)
-        t.equal(body.toString(), '{"hello":"world"}')
-      })
+    request(app, '/', {
+      method: 'POST',
+      body: '{"hello":"world"}',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }, (err, res) => {
+      t.error(err)
+      t.equal(res.statusCode, 200)
+      t.equal(res.body, '{"hello":"world"}')
     })
+  })
 
-    t.test('in OPTIONS', (t) => {
-      t.plan(3)
+  t.test('in OPTIONS', (t) => {
+    t.plan(3)
 
-      sget({
-        method: 'OPTIONS',
-        url: 'http://localhost:' + app.server.address().port,
-        body: '{"hello":"world"}',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }, (err, response, body) => {
-        t.error(err)
-        t.equal(response.statusCode, 200)
-        t.equal(body.toString(), '{"hello":"world"}')
-      })
+    request(app, '/', {
+      method: 'OPTIONS',
+      body: '{"hello":"world"}',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }, (err, res) => {
+      t.error(err)
+      t.equal(res.statusCode, 200)
+      t.equal(res.body, '{"hello":"world"}')
     })
   })
 })
 
 test('bodyParser should handle multiple custom parsers', (t) => {
-  t.plan(7)
+  t.plan(6)
 
   const app = medley()
 
@@ -88,45 +79,38 @@ test('bodyParser should handle multiple custom parsers', (t) => {
     })
   })
 
-  app.listen(0, (err) => {
+  request(app, '/', {
+    method: 'POST',
+    body: '{"hello":"world"}',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  }, (err, res) => {
     t.error(err)
-    app.server.unref()
+    t.equal(res.statusCode, 200)
+    t.equal(res.body, '{"hello":"world"}')
+  })
 
-    sget({
-      method: 'POST',
-      url: 'http://localhost:' + app.server.address().port,
-      body: '{"hello":"world"}',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }, (err, response, body) => {
-      t.error(err)
-      t.equal(response.statusCode, 200)
-      t.equal(body.toString(), '{"hello":"world"}')
-    })
-
-    sget({
-      method: 'POST',
-      url: 'http://localhost:' + app.server.address().port,
-      body: '{"hello":"world"}',
-      headers: {
-        'Content-Type': 'application/jsoff',
-      },
-    }, (err, response, body) => {
-      t.error(err)
-      t.equal(response.statusCode, 200)
-      t.equal(body.toString(), '{"hello":"world"}')
-    })
+  request(app, '/', {
+    method: 'POST',
+    body: '{"hello":"world"}',
+    headers: {
+      'Content-Type': 'application/jsoff',
+    },
+  }, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.body, '{"hello":"world"}')
   })
 })
 
 test('bodyParser should handle errors', (t) => {
-  t.plan(7)
+  t.plan(6)
 
   const app = medley()
 
   app.post('/', (req, res) => {
-    res.send(req.body)
+    res.send({fail: 'Handler was reached (it should not have been)'})
   })
 
   app.addBodyParser('application/json', function(req, done) {
@@ -137,40 +121,40 @@ test('bodyParser should handle errors', (t) => {
     return Promise.reject(new Error('kaboom!'))
   })
 
-  app.listen(0, (err) => {
+  request(app, '/', {
+    method: 'POST',
+    body: {hello: 'world'},
+    json: true,
+  }, (err, res) => {
     t.error(err)
-    app.server.unref()
-
-    sget({
-      method: 'POST',
-      url: 'http://localhost:' + app.server.address().port,
-      body: '{"hello":"world"}',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }, (err, response, body) => {
-      t.error(err)
-      t.equal(response.statusCode, 500)
-      t.equal(JSON.parse(body.toString()).message, 'kaboom!')
+    t.equal(res.statusCode, 500)
+    t.strictDeepEqual(res.body, {
+      statusCode: 500,
+      error: 'Internal Server Error',
+      message: 'kaboom!',
     })
+  })
 
-    sget({
-      method: 'POST',
-      url: 'http://localhost:' + app.server.address().port,
-      body: '{"hello":"world"}',
-      headers: {
-        'Content-Type': 'application/jsoff',
-      },
-    }, (err, response, body) => {
-      t.error(err)
-      t.equal(response.statusCode, 500)
-      t.equal(JSON.parse(body.toString()).message, 'kaboom!')
+  request(app, '/', {
+    method: 'POST',
+    body: {hello: 'world'},
+    json: true,
+    headers: {
+      'Content-Type': 'application/jsoff',
+    },
+  }, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 500)
+    t.strictDeepEqual(res.body, {
+      statusCode: 500,
+      error: 'Internal Server Error',
+      message: 'kaboom!',
     })
   })
 })
 
 test('bodyParser should support encapsulation', (t) => {
-  t.plan(13)
+  t.plan(12)
   const app = medley()
 
   app.addBodyParser('application/json', function(req, done) {
@@ -189,70 +173,65 @@ test('bodyParser should support encapsulation', (t) => {
       jsonParser(req.stream, done)
     })
 
-  app.listen(0, (err) => {
+  request(app, {
+    method: 'POST',
+    url: '/',
+    body: '{"hello":"world"}',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  }, (err, res) => {
     t.error(err)
-    app.server.unref()
+    t.equal(res.statusCode, 200)
+    t.equal(res.body, '{"hello":"world"}')
+  })
 
-    sget({
-      method: 'POST',
-      url: 'http://localhost:' + app.server.address().port,
-      body: '{"hello":"world"}',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }, (err, response, body) => {
-      t.error(err)
-      t.equal(response.statusCode, 200)
-      t.equal(body.toString(), '{"hello":"world"}')
+  request(app, {
+    method: 'POST',
+    url: '/',
+    body: '{"hello":"world"}',
+    headers: {
+      'Content-Type': 'application/jsoff',
+    },
+  }, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 415)
+    t.strictDeepEqual(JSON.parse(res.body), {
+      statusCode: 415,
+      error: 'Unsupported Media Type',
+      message: 'Unsupported Media Type: "application/jsoff"',
     })
+  })
 
-    sget({
-      method: 'POST',
-      url: 'http://localhost:' + app.server.address().port,
-      body: '{"hello":"world"}',
-      headers: {
-        'Content-Type': 'application/jsoff',
-      },
-    }, (err, response, body) => {
-      t.error(err)
-      t.equal(response.statusCode, 415)
-      t.strictDeepEqual(JSON.parse(body.toString()), {
-        statusCode: 415,
-        error: 'Unsupported Media Type',
-        message: 'Unsupported Media Type: "application/jsoff"',
-      })
-    })
+  request(app, {
+    method: 'POST',
+    url: '/sub',
+    body: '{"hello":"world"}',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  }, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.body, '{"hello":"world"}')
+  })
 
-    sget({
-      method: 'POST',
-      url: 'http://localhost:' + app.server.address().port + '/sub',
-      body: '{"hello":"world"}',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }, (err, response, body) => {
-      t.error(err)
-      t.equal(response.statusCode, 200)
-      t.equal(body.toString(), '{"hello":"world"}')
-    })
-
-    sget({
-      method: 'POST',
-      url: 'http://localhost:' + app.server.address().port + '/sub',
-      body: '{"hello":"world"}',
-      headers: {
-        'Content-Type': 'application/jsoff',
-      },
-    }, (err, response, body) => {
-      t.error(err)
-      t.equal(response.statusCode, 200)
-      t.equal(body.toString(), '{"hello":"world"}')
-    })
+  request(app, {
+    method: 'POST',
+    url: '/sub',
+    body: '{"hello":"world"}',
+    headers: {
+      'Content-Type': 'application/jsoff',
+    },
+  }, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.body, '{"hello":"world"}')
   })
 })
 
 test('bodyParser should not by default support requests with an unknown Content-Type', (t) => {
-  t.plan(7)
+  t.plan(6)
 
   const app = medley()
 
@@ -265,48 +244,41 @@ test('bodyParser should not by default support requests with an unknown Content-
     res.send(req.body)
   })
 
-  app.listen(0, (err) => {
+  request(app, '/', {
+    method: 'POST',
+    body: 'unknown content type',
+    headers: {
+      'Content-Type': 'unknown',
+    },
+  }, (err, res) => {
     t.error(err)
-    app.server.unref()
-
-    sget({
-      method: 'POST',
-      url: 'http://localhost:' + app.server.address().port,
-      body: 'unknown content type',
-      headers: {
-        'Content-Type': 'unknown',
-      },
-    }, (err, response, body) => {
-      t.error(err)
-      t.equal(response.statusCode, 415)
-      t.strictDeepEqual(JSON.parse(body.toString()), {
-        statusCode: 415,
-        error: 'Unsupported Media Type',
-        message: 'Unsupported Media Type: "unknown"',
-      })
+    t.equal(res.statusCode, 415)
+    t.strictDeepEqual(JSON.parse(res.body), {
+      statusCode: 415,
+      error: 'Unsupported Media Type',
+      message: 'Unsupported Media Type: "unknown"',
     })
+  })
 
-    sget({
-      method: 'POST',
-      url: 'http://localhost:' + app.server.address().port,
-      body: 'undefined content type',
-      headers: {
-        // 'Content-Type': undefined
-      },
-    }, (err, response, body) => {
-      t.error(err)
-      t.equal(response.statusCode, 415)
-      t.strictDeepEqual(JSON.parse(body.toString()), {
-        statusCode: 415,
-        error: 'Unsupported Media Type',
-        message: 'Unsupported Media Type: ""',
-      })
+  request(app, '/', {
+    method: 'POST',
+    body: 'undefined content type',
+    headers: {
+      // 'Content-Type': undefined
+    },
+  }, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 415)
+    t.strictDeepEqual(JSON.parse(res.body), {
+      statusCode: 415,
+      error: 'Unsupported Media Type',
+      message: 'Unsupported Media Type: ""',
     })
   })
 })
 
 test('bodyParser should allow unknown Content-Types when the allowUnsupportedMediaTypes option is `true`', (t) => {
-  t.plan(13)
+  t.plan(12)
 
   const app = medley({allowUnsupportedMediaTypes: true})
 
@@ -325,48 +297,43 @@ test('bodyParser should allow unknown Content-Types when the allowUnsupportedMed
       res.send()
     })
 
-  app.listen(0, (err) => {
+  request(app, {
+    method: 'POST',
+    url: '/',
+    headers: {
+      'Content-Type': 'unknown',
+    },
+    body: 'unknown content type',
+  }, (err, res) => {
     t.error(err)
-    app.server.unref()
+    t.equal(res.statusCode, 200)
+    t.equal(res.body.length, 0)
+  })
 
-    sget({
-      method: 'POST',
-      url: `http://localhost:${app.server.address().port}/`,
-      headers: {
-        'Content-Type': 'unknown',
-      },
-      body: 'unknown content type',
-    }, (err, response, body) => {
-      t.error(err)
-      t.equal(response.statusCode, 200)
-      t.equal(body.length, 0)
-    })
+  request(app, {
+    method: 'POST',
+    url: '/',
+    headers: {
+      // 'Content-Type': undefined
+    },
+    body: 'undefined content type',
+  }, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.body.length, 0)
+  })
 
-    sget({
-      method: 'POST',
-      url: `http://localhost:${app.server.address().port}/`,
-      headers: {
-        // 'Content-Type': undefined
-      },
-      body: 'undefined content type',
-    }, (err, response, body) => {
-      t.error(err)
-      t.equal(response.statusCode, 200)
-      t.equal(body.length, 0)
-    })
-
-    sget({
-      method: 'POST',
-      url: `http://localhost:${app.server.address().port}/sub-app`,
-      headers: {
-        'Content-Type': 'unknown',
-      },
-      body: 'unknown content type',
-    }, (err, response, body) => {
-      t.error(err)
-      t.equal(response.statusCode, 200)
-      t.equal(body.length, 0)
-    })
+  request(app, {
+    method: 'POST',
+    url: '/sub-app',
+    headers: {
+      'Content-Type': 'unknown',
+    },
+    body: 'unknown content type',
+  }, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.body.length, 0)
   })
 })
 
@@ -385,7 +352,7 @@ test('contentType must be MIME pattern string, an array of such strings, or a fu
 })
 
 test('bodyParser should run only if it exactly matches the given content-type', (t) => {
-  t.plan(7)
+  t.plan(6)
 
   const app = medley()
 
@@ -404,39 +371,33 @@ test('bodyParser should run only if it exactly matches the given content-type', 
     jsonParser(req.stream, done)
   })
 
-  app.listen(0, (err) => {
+  request(app, '/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/jsons',
+    },
+    body: '{"hello":"world"}',
+  }, (err, res) => {
     t.error(err)
+    t.equal(res.statusCode, 415)
+  })
 
-    sget({
-      method: 'POST',
-      url: 'http://localhost:' + app.server.address().port,
-      headers: {
-        'Content-Type': 'application/jsons',
-      },
-      body: '{"hello":"world"}',
-    }, (err, response) => {
-      t.error(err)
-      t.equal(response.statusCode, 415)
-    })
-
-    sget({
-      method: 'POST',
-      url: 'http://localhost:' + app.server.address().port,
-      headers: {
-        'Content-Type': 'text/json',
-      },
-      body: '{"hello":"world"}',
-    }, (err, response, body) => {
-      t.error(err)
-      t.equal(response.statusCode, 200)
-      t.equal(response.headers['content-type'], 'application/json')
-      t.equal(body.toString(), '{"hello":"world"}')
-    })
+  request(app, '/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'text/json',
+    },
+    body: '{"hello":"world"}',
+  }, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.headers['content-type'], 'application/json')
+    t.equal(res.body, '{"hello":"world"}')
   })
 })
 
 test('parsers are matched in the order in which they are added', (t) => {
-  t.plan(8)
+  t.plan(7)
 
   const app = medley()
 
@@ -467,22 +428,17 @@ test('parsers are matched in the order in which they are added', (t) => {
     res.send(req.body)
   })
 
-  app.listen(0, (err) => {
+  request(app, '/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: 'true',
+  }, (err, res) => {
     t.error(err)
-
-    sget({
-      method: 'POST',
-      url: `http://localhost:${app.server.address().port}`,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: 'true',
-    }, (err, response, body) => {
-      t.error(err)
-      t.equal(response.statusCode, 200)
-      t.match(response.headers['content-type'], 'text/plain')
-      t.equal(body.toString(), 'first')
-    })
+    t.equal(res.statusCode, 200)
+    t.match(res.headers['content-type'], 'text/plain')
+    t.equal(res.body, 'first')
   })
 })
 
@@ -498,7 +454,7 @@ test('the parser must be a function', (t) => {
 })
 
 test('"catch all" body parser', (t) => {
-  t.plan(7)
+  t.plan(6)
 
   const app = medley()
 
@@ -516,35 +472,28 @@ test('"catch all" body parser', (t) => {
     })
   })
 
-  app.listen(0, (err) => {
+  request(app, '/', {
+    method: 'POST',
+    body: 'hello',
+    headers: {
+      'Content-Type': 'very-weird-content-type',
+    },
+  }, (err, res) => {
     t.error(err)
-    app.server.unref()
+    t.equal(res.statusCode, 200)
+    t.equal(res.body, 'hello')
+  })
 
-    sget({
-      method: 'POST',
-      url: 'http://localhost:' + app.server.address().port,
-      body: 'hello',
-      headers: {
-        'Content-Type': 'very-weird-content-type',
-      },
-    }, (err, response, body) => {
-      t.error(err)
-      t.equal(response.statusCode, 200)
-      t.equal(body.toString(), 'hello')
-    })
-
-    sget({
-      method: 'POST',
-      url: 'http://localhost:' + app.server.address().port,
-      body: 'hello',
-      headers: {
-        'Content-Type': '', // Empty string
-      },
-    }, (err, response, body) => {
-      t.error(err)
-      t.equal(response.statusCode, 200)
-      t.equal(body.toString(), 'hello')
-    })
+  request(app, '/', {
+    method: 'POST',
+    body: 'hello',
+    headers: {
+      'Content-Type': '', // Empty string
+    },
+  }, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.body, 'hello')
   })
 })
 
@@ -572,7 +521,7 @@ test('cannot add body parser after binding', (t) => {
 })
 
 test('The charset should not interfere with the content type handling', (t) => {
-  t.plan(5)
+  t.plan(4)
   const app = medley()
 
   app.post('/', (req, response) => {
@@ -586,27 +535,22 @@ test('The charset should not interfere with the content type handling', (t) => {
     })
   })
 
-  app.listen(0, (err) => {
+  request(app, '/', {
+    method: 'POST',
+    body: '{"hello":"world"}',
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+    },
+  }, (err, res) => {
     t.error(err)
-
-    sget({
-      method: 'POST',
-      url: 'http://localhost:' + app.server.address().port,
-      body: '{"hello":"world"}',
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-      },
-    }, (err, response, body) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 200)
-      t.strictEqual(body.toString(), '{"hello":"world"}')
-      app.close()
-    })
+    t.equal(res.statusCode, 200)
+    t.equal(res.body, '{"hello":"world"}')
+    app.close()
   })
 })
 
 test('bodyParser should handle async parsers', (t) => {
-  t.plan(3)
+  t.plan(2)
   const app = medley()
 
   app.post('/', (req, response) => {
@@ -622,43 +566,35 @@ test('bodyParser should handle async parsers', (t) => {
     return ret
   })
 
-  app.listen(0, (err) => {
-    t.error(err)
+  t.test('in POST', (t) => {
+    t.plan(3)
 
-    t.tearDown(() => app.close())
-
-    t.test('in POST', (t) => {
-      t.plan(3)
-
-      sget({
-        method: 'POST',
-        url: 'http://localhost:' + app.server.address().port,
-        body: '{"hello":"world"}',
-        headers: {
-          'Content-Type': 'application/jsoff',
-        },
-      }, (err, response, body) => {
-        t.error(err)
-        t.strictEqual(response.statusCode, 200)
-        t.deepEqual(body.toString(), JSON.stringify({hello: 'world'}))
-      })
+    request(app, '/', {
+      method: 'POST',
+      body: '{"hello":"world"}',
+      headers: {
+        'Content-Type': 'application/jsoff',
+      },
+    }, (err, res) => {
+      t.error(err)
+      t.equal(res.statusCode, 200)
+      t.strictDeepEqual(JSON.parse(res.body), {hello: 'world'})
     })
+  })
 
-    t.test('in OPTIONS', (t) => {
-      t.plan(3)
+  t.test('in OPTIONS', (t) => {
+    t.plan(3)
 
-      sget({
-        method: 'OPTIONS',
-        url: 'http://localhost:' + app.server.address().port,
-        body: '{"hello":"world"}',
-        headers: {
-          'Content-Type': 'application/jsoff',
-        },
-      }, (err, response, body) => {
-        t.error(err)
-        t.strictEqual(response.statusCode, 200)
-        t.deepEqual(body.toString(), JSON.stringify({hello: 'world'}))
-      })
+    request(app, '/', {
+      method: 'OPTIONS',
+      body: '{"hello":"world"}',
+      headers: {
+        'Content-Type': 'application/jsoff',
+      },
+    }, (err, res) => {
+      t.error(err)
+      t.equal(res.statusCode, 200)
+      t.strictDeepEqual(JSON.parse(res.body), {hello: 'world'})
     })
   })
 })

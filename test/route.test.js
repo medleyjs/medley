@@ -1,7 +1,7 @@
 'use strict'
 
-const t = require('tap')
-const test = t.test
+const {test} = require('tap')
+const request = require('./utils/request')
 const medley = require('..')
 
 test('.route() should throw on missing method', (t) => {
@@ -106,15 +106,15 @@ test('route - get', (t) => {
         },
       },
     },
-    handler(request, response) {
-      response.send({hello: 'world'})
+    handler(req, res) {
+      res.send({hello: 'world'})
     },
   })
 
-  app.inject('/', (err, response) => {
+  request(app, '/', (err, res) => {
     t.error(err)
-    t.equal(response.statusCode, 200)
-    t.deepEqual(JSON.parse(response.payload), {hello: 'world'})
+    t.equal(res.statusCode, 200)
+    t.strictDeepEqual(JSON.parse(res.body), {hello: 'world'})
   })
 })
 
@@ -126,15 +126,15 @@ test('missing schema - route', (t) => {
   app.route({
     method: 'GET',
     path: '/missing',
-    handler(request, response) {
-      response.send({hello: 'world'})
+    handler(req, res) {
+      res.send({hello: 'world'})
     },
   })
 
-  app.inject('/missing', (err, response) => {
+  request(app, '/missing', (err, res) => {
     t.error(err)
-    t.equal(response.statusCode, 200)
-    t.deepEqual(JSON.parse(response.payload), {hello: 'world'})
+    t.equal(res.statusCode, 200)
+    t.strictDeepEqual(JSON.parse(res.body), {hello: 'world'})
   })
 })
 
@@ -146,24 +146,24 @@ test('Multiple methods', (t) => {
   app.route({
     method: ['GET', 'DELETE'],
     path: '/multiple',
-    handler(request, response) {
-      response.send({hello: 'world'})
+    handler(req, res) {
+      res.send({hello: 'world'})
     },
   })
 
-  app.inject('/multiple', (err, response) => {
+  request(app, '/multiple', (err, res) => {
     t.error(err)
-    t.equal(response.statusCode, 200)
-    t.deepEqual(JSON.parse(response.payload), {hello: 'world'})
+    t.equal(res.statusCode, 200)
+    t.strictDeepEqual(JSON.parse(res.body), {hello: 'world'})
   })
 
-  app.inject({
+  request(app, {
     method: 'DELETE',
     url: '/multiple',
-  }, (err, response) => {
+  }, (err, res) => {
     t.error(err)
-    t.equal(response.statusCode, 200)
-    t.deepEqual(JSON.parse(response.payload), {hello: 'world'})
+    t.equal(res.statusCode, 200)
+    t.strictDeepEqual(JSON.parse(res.body), {hello: 'world'})
   })
 })
 
@@ -172,40 +172,40 @@ test('Add multiple methods', (t) => {
 
   const app = medley()
 
-  app.get('/add-multiple', (request, response) => {
-    response.send({hello: 'Bob!'})
+  app.get('/add-multiple', (req, res) => {
+    res.send({hello: 'Bob!'})
   })
 
   app.route({
     method: ['PUT', 'DELETE'],
     path: '/add-multiple',
-    handler(request, response) {
-      response.send({hello: 'world'})
+    handler(req, res) {
+      res.send({hello: 'world'})
     },
   })
 
-  app.inject('/add-multiple', (err, response) => {
+  request(app, '/add-multiple', (err, res) => {
     t.error(err)
-    t.equal(response.statusCode, 200)
-    t.deepEqual(JSON.parse(response.payload), {hello: 'Bob!'})
+    t.equal(res.statusCode, 200)
+    t.strictDeepEqual(JSON.parse(res.body), {hello: 'Bob!'})
   })
 
-  app.inject({
+  request(app, {
     method: 'PUT',
     url: '/add-multiple',
-  }, (err, response) => {
+  }, (err, res) => {
     t.error(err)
-    t.equal(response.statusCode, 200)
-    t.deepEqual(JSON.parse(response.payload), {hello: 'world'})
+    t.equal(res.statusCode, 200)
+    t.strictDeepEqual(JSON.parse(res.body), {hello: 'world'})
   })
 
-  app.inject({
+  request(app, {
     method: 'DELETE',
     url: '/add-multiple',
-  }, (err, response) => {
+  }, (err, res) => {
     t.error(err)
-    t.equal(response.statusCode, 200)
-    t.deepEqual(JSON.parse(response.payload), {hello: 'world'})
+    t.equal(res.statusCode, 200)
+    t.strictDeepEqual(JSON.parse(res.body), {hello: 'world'})
   })
 })
 
@@ -219,8 +219,8 @@ test('cannot add another route after server is listening', (t) => {
   app.route({
     method: 'GET',
     path: '/1',
-    handler(request, response) {
-      response.send(1)
+    handler(req, res) {
+      res.send(1)
     },
   })
 
@@ -246,15 +246,15 @@ test('the handler can be specified in the options object of a shorthand method',
   const app = medley()
 
   app.get('/', {
-    handler(request, response) {
-      response.send({hello: 'world'})
+    handler(req, res) {
+      res.send({hello: 'world'})
     },
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 200)
-    t.deepEqual(JSON.parse(res.payload), {hello: 'world'})
+    t.strictDeepEqual(JSON.parse(res.body), {hello: 'world'})
   })
 })
 
@@ -264,35 +264,37 @@ test('handler as the third parameter of a shorthand method takes precedence over
   const app = medley()
 
   app.get('/', {
-    handler(request, response) {
-      response.send({hello: 'options'})
+    handler(req, res) {
+      res.send({hello: 'options'})
     },
-  }, function(request, response) {
-    response.send({hello: 'parameter'})
+  }, function(req, res) {
+    res.send({hello: 'parameter'})
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 200)
-    t.deepEqual(JSON.parse(res.payload), {hello: 'parameter'})
+    t.strictDeepEqual(JSON.parse(res.body), {hello: 'parameter'})
   })
 })
 
 test('route lookups do not fail with the Accept-Version header', (t) => {
   t.plan(3)
 
-  medley()
-    .get('/', (req, res) => {
-      res.send('hello')
-    })
-    .inject({
-      url: '/',
-      headers: {
-        'Accept-Version': '1.0.0',
-      },
-    }, (err, res) => {
-      t.error(err)
-      t.equal(res.statusCode, 200)
-      t.equal(res.payload, 'hello')
-    })
+  const app = medley()
+
+  app.get('/', (req, res) => {
+    res.send('hello')
+  })
+
+  request(app, {
+    url: '/',
+    headers: {
+      'Accept-Version': '1.0.0',
+    },
+  }, (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.body, 'hello')
+  })
 })

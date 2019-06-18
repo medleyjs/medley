@@ -1,7 +1,7 @@
 'use strict'
 
-const t = require('tap')
-const test = t.test
+const {test} = require('tap')
+const request = require('./utils/request')
 const medley = require('..')
 
 test('route without a prefix', (t) => {
@@ -11,18 +11,18 @@ test('route without a prefix', (t) => {
   app1.get('', (req, res) => {
     res.send('empty string')
   })
-  app1.inject('/', (err, res) => {
+  request(app1, '/', (err, res) => {
     t.error(err)
-    t.equal(res.payload, 'empty string')
+    t.equal(res.body, 'empty string')
   })
 
   const app2 = medley()
   app2.get('/', (req, res) => {
     res.send('slash path')
   })
-  app2.inject('/', (err, res) => {
+  request(app2, '/', (err, res) => {
     t.error(err)
-    t.equal(res.payload, 'slash path')
+    t.equal(res.body, 'slash path')
   })
 })
 
@@ -36,14 +36,14 @@ test('prefix joined with "/" route path when strictRouting=false', (t) => {
       res.send('payload')
     })
 
-  app.inject('/v1', (err, res) => {
+  request(app, '/v1', (err, res) => {
     t.error(err)
-    t.equal(res.payload, 'payload')
+    t.equal(res.body, 'payload')
   })
 
-  app.inject('/v1/', (err, res) => {
+  request(app, '/v1/', (err, res) => {
     t.error(err)
-    t.equal(res.payload, 'payload')
+    t.equal(res.body, 'payload')
   })
 })
 
@@ -60,14 +60,14 @@ test('prefix joined with "" and "/" route path when strictRouting=true', (t) => 
       res.send('with slash')
     })
 
-  app.inject('/v1', (err, res) => {
+  request(app, '/v1', (err, res) => {
     t.error(err)
-    t.equal(res.payload, 'no slash')
+    t.equal(res.body, 'no slash')
   })
 
-  app.inject('/v1/', (err, res) => {
+  request(app, '/v1/', (err, res) => {
     t.error(err)
-    t.equal(res.payload, 'with slash')
+    t.equal(res.body, 'with slash')
   })
 })
 
@@ -92,24 +92,24 @@ test('prefix is "" or "/"', (t) => {
       res.send('4')
     })
 
-  app.inject('/first', (err, res) => {
+  request(app, '/first', (err, res) => {
     t.error(err)
-    t.equal(res.payload, '1')
+    t.equal(res.body, '1')
   })
 
-  app.inject('/second', (err, res) => {
+  request(app, '/second', (err, res) => {
     t.error(err)
-    t.equal(res.payload, '2')
+    t.equal(res.body, '2')
   })
 
-  app.inject('/third', (err, res) => {
+  request(app, '/third', (err, res) => {
     t.error(err)
-    t.equal(res.payload, '3')
+    t.equal(res.body, '3')
   })
 
-  app.inject('/fourth', (err, res) => {
+  request(app, '/fourth', (err, res) => {
     t.error(err)
-    t.equal(res.payload, '4')
+    t.equal(res.body, '4')
   })
 })
 
@@ -136,24 +136,24 @@ test('prefix is prepended to all the routes inside a sub-app', (t) => {
       res.send('4')
     })
 
-  app.inject('/first', (err, res) => {
+  request(app, '/first', (err, res) => {
     t.error(err)
-    t.equal(res.payload, '1')
+    t.equal(res.body, '1')
   })
 
-  app.inject('/v1/first', (err, res) => {
+  request(app, '/v1/first', (err, res) => {
     t.error(err)
-    t.equal(res.payload, '2')
+    t.equal(res.body, '2')
   })
 
-  app.inject('/v1/second', (err, res) => {
+  request(app, '/v1/second', (err, res) => {
     t.error(err)
-    t.equal(res.payload, '3')
+    t.equal(res.body, '3')
   })
 
-  app.inject('/v1/user/first', (err, res) => {
+  request(app, '/v1/user/first', (err, res) => {
     t.error(err)
-    t.equal(res.payload, '4')
+    t.equal(res.body, '4')
   })
 })
 
@@ -181,24 +181,24 @@ test('Prefix with trailing /', (t) => {
       res.send('4')
     })
 
-  app.inject('/v1/route1', (err, res) => {
+  request(app, '/v1/route1', (err, res) => {
     t.error(err)
-    t.equal(res.payload, '1')
+    t.equal(res.body, '1')
   })
 
-  app.inject('/v1/route2', (err, res) => {
+  request(app, '/v1/route2', (err, res) => {
     t.error(err)
-    t.equal(res.payload, '2')
+    t.equal(res.body, '2')
   })
 
-  app.inject('/v1/empty/', (err, res) => {
+  request(app, '/v1/empty/', (err, res) => {
     t.error(err)
-    t.equal(res.payload, '3')
+    t.equal(res.body, '3')
   })
 
-  app.inject('/v1/slash/', (err, res) => {
+  request(app, '/v1/slash/', (err, res) => {
     t.error(err)
-    t.equal(res.payload, '4')
+    t.equal(res.body, '4')
   })
 })
 
@@ -215,9 +215,9 @@ test('prefix works many levels deep', (t) => {
       res.send('payload')
     })
 
-  app.inject('/v1/v2/v3', (err, res) => {
+  request(app, '/v1/v2/v3', (err, res) => {
     t.error(err)
-    t.equal(res.payload, 'payload')
+    t.equal(res.body, 'payload')
   })
 })
 
@@ -230,9 +230,9 @@ test('prefix should support parameters', (t) => {
       res.send(req.params.id)
     })
 
-  app.inject('/v1/param/hello', (err, res) => {
+  request(app, '/v1/param/hello', (err, res) => {
     t.error(err)
-    t.equal(res.payload, 'param')
+    t.equal(res.body, 'param')
   })
 })
 

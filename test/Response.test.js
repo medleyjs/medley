@@ -1,21 +1,21 @@
 'use strict'
 
-const t = require('tap')
-const test = t.test
+const {test} = require('tap')
+const request = require('./utils/request')
 const medley = require('..')
 
 const Response = require('../lib/Response').buildResponse()
 
 test('Response properties', (t) => {
   const res = {headersSent: false, statusCode: 200}
-  const request = {}
+  const req = {}
   const config = {}
   const routeContext = {config}
 
-  const response = new Response(res, request, routeContext)
+  const response = new Response(res, req, routeContext)
   t.type(response, Response)
   t.equal(response.stream, res)
-  t.equal(response.request, request)
+  t.equal(response.request, req)
   t.equal(response.route, routeContext)
   t.equal(response.route.config, config)
   t.equal(response.sent, false)
@@ -59,17 +59,17 @@ test('res.statusCode emulates res.statusCode', (t) => {
 
   const app = medley()
 
-  app.get('/', (request, response) => {
-    t.equal(response.statusCode, 200)
+  app.get('/', (req, res) => {
+    t.equal(res.statusCode, 200)
 
-    response.statusCode = 300
-    t.equal(response.statusCode, 300)
+    res.statusCode = 300
+    t.equal(res.statusCode, 300)
 
-    response.statusCode = 204
-    response.send()
+    res.statusCode = 204
+    res.send()
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 204)
   })
@@ -80,16 +80,16 @@ test('res.status() should set the status code', (t) => {
 
   const app = medley()
 
-  app.get('/', (request, response) => {
-    t.equal(response.statusCode, 200)
+  app.get('/', (req, res) => {
+    t.equal(res.statusCode, 200)
 
-    response.status(300)
-    t.equal(response.statusCode, 300)
+    res.status(300)
+    t.equal(res.statusCode, 300)
 
-    response.status(204).send()
+    res.status(204).send()
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 204)
   })
@@ -100,27 +100,27 @@ test('res.append() sets headers and adds to existing headers', (t) => {
 
   const app = medley()
 
-  app.get('/', (request, response) => {
-    response.append('x-custom-header', 'first')
-    t.equal(response.get('x-custom-header'), 'first')
+  app.get('/', (req, res) => {
+    res.append('x-custom-header', 'first')
+    t.equal(res.get('x-custom-header'), 'first')
 
-    t.equal(response.append('x-custom-header', 'second'), response)
-    t.deepEqual(response.get('x-custom-header'), ['first', 'second'])
+    t.equal(res.append('x-custom-header', 'second'), res)
+    t.deepEqual(res.get('x-custom-header'), ['first', 'second'])
 
-    t.equal(response.append('x-custom-header', ['3', '4']), response)
-    t.deepEqual(response.get('x-custom-header'), ['first', 'second', '3', '4'])
+    t.equal(res.append('x-custom-header', ['3', '4']), res)
+    t.deepEqual(res.get('x-custom-header'), ['first', 'second', '3', '4'])
 
-    response.send()
+    res.send()
   })
 
-  app.get('/append-multiple-to-string', (request, response) => {
-    response.append('x-custom-header', 'first')
-    t.equal(response.get('x-custom-header'), 'first')
+  app.get('/append-multiple-to-string', (req, res) => {
+    res.append('x-custom-header', 'first')
+    t.equal(res.get('x-custom-header'), 'first')
 
-    response.append('x-custom-header', ['second', 'third'])
-    t.deepEqual(response.get('x-custom-header'), ['first', 'second', 'third'])
+    res.append('x-custom-header', ['second', 'third'])
+    t.deepEqual(res.get('x-custom-header'), ['first', 'second', 'third'])
 
-    response.send()
+    res.send()
   })
 
   app.get('/append-case-insensitive', (req, res) => {
@@ -133,22 +133,22 @@ test('res.append() sets headers and adds to existing headers', (t) => {
     res.send()
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 200)
-    t.deepEqual(res.headers['x-custom-header'], ['first', 'second', '3', '4'])
+    t.equal(res.headers['x-custom-header'], 'first, second, 3, 4')
   })
 
-  app.inject('/append-multiple-to-string', (err, res) => {
+  request(app, '/append-multiple-to-string', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 200)
-    t.deepEqual(res.headers['x-custom-header'], ['first', 'second', 'third'])
+    t.equal(res.headers['x-custom-header'], 'first, second, third')
   })
 
-  app.inject('/append-case-insensitive', (err, res) => {
+  request(app, '/append-case-insensitive', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 200)
-    t.deepEqual(res.headers['x-custom-header'], ['first', 'second', 'third'])
+    t.equal(res.headers['x-custom-header'], 'first, second, third')
   })
 })
 
@@ -178,11 +178,11 @@ test('res.append() does not allow setting a header value to `undefined`', (t) =>
     res.send()
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 200)
     t.equal(res.headers.hasOwnProperty('set-cookie'), false)
-    t.deepEqual(res.headers['x-custom-header'], ['a value'])
+    t.equal(res.headers['x-custom-header'], 'a value')
   })
 })
 
@@ -191,14 +191,14 @@ test('res.get/set() get and set the response headers', (t) => {
 
   const app = medley()
 
-  app.get('/', (request, response) => {
-    t.equal(response.get('x-custom-header'), undefined)
+  app.get('/', (req, res) => {
+    t.equal(res.get('x-custom-header'), undefined)
 
-    t.equal(response.set('x-custom-header', 'custom header'), response)
-    t.equal(response.get('x-custom-header'), 'custom header')
+    t.equal(res.set('x-custom-header', 'custom header'), res)
+    t.equal(res.get('x-custom-header'), 'custom header')
 
-    response.set('content-type', 'custom/type')
-    response.send('text')
+    res.set('content-type', 'custom/type')
+    res.send('text')
   })
 
   app.get('/case-insensitive', (req, res) => {
@@ -212,20 +212,20 @@ test('res.get/set() get and set the response headers', (t) => {
     res.send('text')
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 200)
     t.equal(res.headers['x-custom-header'], 'custom header')
     t.equal(res.headers['content-type'], 'custom/type')
-    t.equal(res.payload, 'text')
+    t.equal(res.body, 'text')
   })
 
-  app.inject('/case-insensitive', (err, res) => {
+  request(app, '/case-insensitive', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 200)
     t.equal(res.headers['x-custom-header'], 'custom header')
     t.equal(res.headers['content-type'], 'custom/type')
-    t.equal(res.payload, 'text')
+    t.equal(res.body, 'text')
   })
 })
 
@@ -246,7 +246,7 @@ test('res.has() checks if a response header has been set', (t) => {
     res.send()
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 200)
   })
@@ -257,20 +257,20 @@ test('res.set() accepts an object of headers', (t) => {
 
   const app = medley()
 
-  app.get('/', (request, response) => {
-    response.set({
+  app.get('/', (req, res) => {
+    res.set({
       'X-Custom-Header1': 'custom header1',
       'x-custom-header2': 'custom header2',
     })
-    t.equal(response.get('x-custom-header1'), 'custom header1')
-    t.equal(response.get('x-custom-header2'), 'custom header2')
+    t.equal(res.get('x-custom-header1'), 'custom header1')
+    t.equal(res.get('x-custom-header2'), 'custom header2')
 
-    t.equal(response.set({}), response)
+    t.equal(res.set({}), res)
 
-    response.set({'content-type': 'custom/type'}).send()
+    res.set({'content-type': 'custom/type'}).send()
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 200)
     t.equal(res.headers['x-custom-header1'], 'custom header1')
@@ -307,7 +307,7 @@ test('res.set() does not allow setting a header value to `undefined`', (t) => {
     res.send()
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 200)
     t.equal(res.headers.hasOwnProperty('content-type'), false)
@@ -321,27 +321,27 @@ test('res.remove() removes response headers', (t) => {
 
   const app = medley()
 
-  app.get('/', (request, response) => {
-    response.set('x-custom-header', 'custom header')
-    t.equal(response.get('x-custom-header'), 'custom header')
+  app.get('/', (req, res) => {
+    res.set('x-custom-header', 'custom header')
+    t.equal(res.get('x-custom-header'), 'custom header')
 
-    t.equal(response.remove('x-custom-header'), response)
-    t.equal(response.get('x-custom-header'), undefined)
+    t.equal(res.remove('x-custom-header'), res)
+    t.equal(res.get('x-custom-header'), undefined)
 
-    response
+    res
       .set('x-custom-header-2', ['a', 'b'])
       .remove('x-custom-header-2')
-    t.equal(response.get('x-custom-header-2'), undefined)
+    t.equal(res.get('x-custom-header-2'), undefined)
 
-    response
+    res
       .set('X-Custom-Header-3', 'custom header 3')
       .remove('X-Custom-Header-3')
-    t.equal(response.get('X-Custom-Header-3'), undefined)
+    t.equal(res.get('X-Custom-Header-3'), undefined)
 
-    response.send()
+    res.send()
   })
 
-  app.inject('/', (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 200)
     t.notOk('x-custom-header' in res.headers)
@@ -350,7 +350,7 @@ test('res.remove() removes response headers', (t) => {
   })
 })
 
-t.test('res.state should be different for each res instance', (t) => {
+test('res.state should be different for each res instance', (t) => {
   t.plan(1)
   t.notEqual(new Response().state, new Response().state)
 })

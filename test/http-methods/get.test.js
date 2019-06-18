@@ -1,8 +1,7 @@
 'use strict'
 
-const t = require('tap')
-const test = t.test
-const sget = require('simple-get').concat
+const {test} = require('tap')
+const request = require('../utils/request')
 const app = require('../..')()
 
 const stringSchema = {
@@ -46,70 +45,55 @@ app.get('/boolean', (req, res) => {
   res.send(false)
 })
 
-app.listen(0, (err) => {
-  t.error(err)
-  app.server.unref()
+test('shorthand - request get', (t) => {
+  t.plan(4)
 
-  test('shorthand - request get', (t) => {
-    t.plan(4)
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + app.server.address().port,
-    }, (err, response, body) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 200)
-      t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.strictDeepEqual(JSON.parse(body), {hello: 'world'})
-    })
+  request(app, '/', (err, res) => {
+    t.error(err)
+    t.strictEqual(res.statusCode, 200)
+    t.strictEqual(res.headers['content-length'], '' + res.body.length)
+    t.strictDeepEqual(JSON.parse(res.body), {hello: 'world'})
   })
+})
 
-  test('shorthand - request get missing schema', (t) => {
-    t.plan(4)
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + app.server.address().port + '/missing',
-    }, (err, response, body) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 200)
-      t.strictEqual(response.headers['content-length'], '' + body.length)
-      t.strictDeepEqual(JSON.parse(body), {hello: 'world'})
-    })
+test('shorthand - request get missing schema', (t) => {
+  t.plan(4)
+
+  request(app, '/missing', (err, res) => {
+    t.error(err)
+    t.strictEqual(res.statusCode, 200)
+    t.strictEqual(res.headers['content-length'], '' + res.body.length)
+    t.strictDeepEqual(JSON.parse(res.body), {hello: 'world'})
   })
+})
 
-  test('shorthand - empty response', (t) => {
-    t.plan(4)
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + app.server.address().port + '/empty',
-    }, (err, response, body) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 200)
-      t.strictEqual(response.headers['content-length'], '0')
-      t.strictEqual(body.toString(), '')
-    })
+test('shorthand - empty response', (t) => {
+  t.plan(4)
+
+  request(app, '/empty', (err, res) => {
+    t.error(err)
+    t.strictEqual(res.statusCode, 200)
+    t.strictEqual(res.headers['content-length'], '0')
+    t.strictEqual(res.body, '')
   })
+})
 
-  test('shorthand - send a falsy boolean', (t) => {
-    t.plan(3)
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + app.server.address().port + '/boolean',
-    }, (err, response, body) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 200)
-      t.strictEqual(body.toString(), 'false')
-    })
+test('shorthand - send a falsy boolean', (t) => {
+  t.plan(3)
+
+  request(app, '/boolean', (err, res) => {
+    t.error(err)
+    t.strictEqual(res.statusCode, 200)
+    t.strictEqual(res.body, 'false')
   })
+})
 
-  test('shorthand - send number value', (t) => {
-    t.plan(3)
-    sget({
-      method: 'GET',
-      url: 'http://localhost:' + app.server.address().port + '/number',
-    }, (err, response, body) => {
-      t.error(err)
-      t.strictEqual(response.statusCode, 200)
-      t.strictEqual(body.toString(), '1234')
-    })
+test('shorthand - send number value', (t) => {
+  t.plan(3)
+
+  request(app, '/number', (err, res) => {
+    t.error(err)
+    t.strictEqual(res.statusCode, 200)
+    t.strictEqual(res.body, '1234')
   })
 })
