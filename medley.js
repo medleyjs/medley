@@ -1,7 +1,6 @@
 'use strict'
 
 const findMyWay = require('find-my-way')
-const http = require('http')
 
 const BodyParser = require('./lib/BodyParser')
 const Hooks = require('./lib/Hooks')
@@ -63,17 +62,17 @@ function medley(options) {
   if (options.http2) {
     if (typeof options.http2 === 'object') {
       if (options.http2.key || options.http2.cert) {
-        server = http2().createSecureServer(options.http2, httpHandler)
+        server = require('http2').createSecureServer(options.http2, httpHandler)
       } else {
-        server = http2().createServer(options.http2, httpHandler)
+        server = require('http2').createServer(options.http2, httpHandler)
       }
     } else {
-      server = http2().createServer(httpHandler)
+      server = require('http2').createServer(httpHandler)
     }
   } else if (options.https) {
     server = require('https').createServer(options.https, httpHandler)
   } else {
-    server = http.createServer(httpHandler)
+    server = require('http').createServer(httpHandler)
   }
 
   const app = {
@@ -559,14 +558,6 @@ function medley(options) {
     for (const [routePath, {methodRoutes}] of routes) {
       yield [routePath, methodRoutes]
     }
-  }
-}
-
-function http2() {
-  try {
-    return require('http2')
-  } catch (err) /* istanbul ignore next */ {
-    throw new Error('http2 is available only from Node >= 8.8.0')
   }
 }
 

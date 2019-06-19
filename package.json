@@ -8,7 +8,7 @@
     "lib"
   ],
   "engines": {
-    "node": ">=8"
+    "node": ">=8.8.0"
   },
   "author": "Nathan Woltman <nwoltman@outlook.com>",
   "license": "MIT",
