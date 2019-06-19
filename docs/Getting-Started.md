@@ -195,7 +195,3 @@ to use HTTP/2.
 ### Plugins
 
 See the [**Plugins** documentation](Plugins.md).
-
-### Testing
-
-See the [**Testing** documentation](Testing.md).

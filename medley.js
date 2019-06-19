@@ -129,7 +129,6 @@ function medley(options) {
     close,
 
     listen, // Starts the HTTP server
-    inject, // Fake HTTP injection
 
     // Plugins
     register,
@@ -553,34 +552,6 @@ function medley(options) {
       server.on('error', handleListeningOrError)
 
       server.listen(port, host, backlog)
-    })
-  }
-
-  function inject(opts, cb) {
-    const lightMyRequest = require('light-my-request')
-
-    if (loaded) {
-      return lightMyRequest(httpHandler, opts, cb)
-    }
-
-    if (!cb) {
-      return new Promise((resolve, reject) => {
-        inject(opts, (err, response) => {
-          if (err) {
-            reject(err)
-          } else {
-            resolve(response)
-          }
-        })
-      })
-    }
-
-    return load((err) => {
-      if (err) {
-        cb(err)
-      } else {
-        lightMyRequest(httpHandler, opts, cb)
-      }
     })
   }
 

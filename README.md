@@ -49,7 +49,6 @@ app.listen(3000)
 + [Body Parsing](https://github.com/medleyjs/medley/blob/master/docs/BodyParser.md)
 + [HTTP/2](https://github.com/medleyjs/medley/blob/master/docs/HTTP2.md)
 + [Plugins](https://github.com/medleyjs/medley/blob/master/docs/Plugins.md)
-+ [Testing](https://github.com/medleyjs/medley/blob/master/docs/Testing.md)
 
 
 ## Features
@@ -80,6 +79,7 @@ so that you can start writing code now that won't require massive rewrites in th
 #### Body Parsing
 
 + [`@medley/body-parser`](https://www.npmjs.com/package/@medley/body-parser) - Essential body parsers for Medley.
++ [`@medley/multipart`](https://www.npmjs.com/package/@medley/multipart) - Plugin for parsing `multipart/form-data` bodies.
 
 #### Validation
 
@@ -87,9 +87,10 @@ so that you can start writing code now that won't require massive rewrites in th
 
 #### Plugins
 
-+ [`@medley/cookie`](https://www.npmjs.com/package/@medley/cookie) - Medley plugin for parsing and setting cookies.
-+ [`@medley/serve-favicon`](https://www.npmjs.com/package/@medley/serve-favicon) - Medley plugin for serving the default favicon.
-+ [`@medley/serve-static`](https://www.npmjs.com/package/@medley/serve-static) - Medley plugin for serving static files.
++ [`@medley/cookie`](https://www.npmjs.com/package/@medley/cookie) - Plugin for parsing and setting cookies.
++ [`@medley/self-request`](https://www.npmjs.com/package/@medley/self-request) - Plugin that augments an app to be able to make HTTP requests to itself for testing.
++ [`@medley/serve-favicon`](https://www.npmjs.com/package/@medley/serve-favicon) - Plugin for serving the default favicon.
++ [`@medley/serve-static`](https://www.npmjs.com/package/@medley/serve-static) - Plugin for serving static files.
 
 
 ## Acknowledgements

@@ -24,7 +24,6 @@ const app = medley();
 + [`.decorate(name, value)`](#decorate)
 + [`.decorateRequest(name, value)`](#decorate-request)
 + [`.decorateResponse(name, value)`](#decorate-response)
-+ [`.inject(options [, callback])`](#inject)
 + [`.listen(port [, host][, backlog][, callback])`](#listen)
 + [`.load([callback])`](#load)
 + [`.onClose(callback)`](#on-close)
@@ -189,11 +188,6 @@ Safely adds a new property to the [`Request`](Request.md) object for the current
 
 Safely adds a new property to the [`Response`](Response.md) object for the current
 `app` instance. See the [Decorators](Decorators.md) documentation.
-
-<a id="inject"></a>
-### `app.inject(options [, callback])`
-
-Performs a fake HTTP request on the `app` (for testing purposes). See the [Testing](Testing.md#inject) documentation.
 
 <a id="listen"></a>
 ### `app.listen(port [, host][, backlog][, callback])`
