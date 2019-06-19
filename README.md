@@ -65,13 +65,12 @@ app.listen(3000)
 
 HTTP/2 is the future of the web. It is faster than HTTP/1.x and comes with new, speed-boosting
 features such as [server push](https://www.smashingmagazine.com/2017/04/guide-http2-server-push/).
-Currently, Node.js has an `http2` module that is still in the experimental stage. The `http2`
-module has a very different API from the `http`/`https` modules, but it also provides a
+The Node.js `http2` module has a very different API from the `http`/`https` modules, but it also provides a
 [compatibility API](https://nodejs.org/api/http2.html#http2_compatibility_api). Medley currently
 uses the compatibility API (to support both HTTP/1.x and HTTP/2), but Medley's API is designed such
 that when Medley upgrades to the full `http2` API, application code built on Medley should not need
 to change. Medley's goal is to insulate application code from this transition (as much as possible)
-so that you can start writing code now that won't require massive rewrites in the future.
+so that code written now that won't require massive rewrites in the future.
 
 
 ## Ecosystem

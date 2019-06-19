@@ -57,8 +57,9 @@ method (when the `key` or `cert` options are present) or the
 method (when the `key` and `cert` options are not present -- this is not supported by browsers).
 
 If `true`, the HTTP server will be created to use unencrypted HTTP/2 without
-any options. Note that unencrypted HTTP/2 is not supported by browsers. See
-the [HTTP/2 docs](HTTP2.md) for more information.
+any options. Note that unencrypted HTTP/2 is not supported by browsers.
+
+See the [HTTP/2 docs](HTTP2.md) for more information and examples.
 
 The `https` option is ignored if this option is present.
 
