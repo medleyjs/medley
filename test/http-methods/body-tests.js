@@ -254,22 +254,4 @@ module.exports = function bodyTests(method, config) {
       })
     })
   })
-
-  test(`${method} returns 400 - Bad Request with invalid Content-Length header`, (t) => {
-    t.plan(3)
-
-    app.inject({
-      method,
-      url: '/',
-      body: '{}',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': 'not a number',
-      },
-    }, (err, res) => {
-      t.error(err)
-      t.equal(res.statusCode, 400)
-      t.equal(JSON.parse(res.payload).message, 'Invalid Content-Length: "not a number"')
-    })
-  })
 }
