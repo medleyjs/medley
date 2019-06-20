@@ -1,7 +1,7 @@
 MIT License
 
 Copyright (c) 2016-2018 The Fastify Team (https://github.com/fastify/fastify#team)
-Copyright (c) 2018 Nathan Woltman
+Copyright (c) 2018-present The Medley Team (https://github.com/orgs/medleyjs/people)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
