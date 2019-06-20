@@ -68,6 +68,8 @@ Adds a new body parser. See the [Body Parser](BodyParser.md) documentation.
 <a id="add-hook"></a>
 ### `app.addHook(hookName, hookHandler)`
 
++ Chainable
+
 Adds a hook that will be run during the request [lifecycle](Lifecycle.md).
 See the [Hooks](Hooks.md) documentation.
 
@@ -175,16 +177,22 @@ app.createSubApp('/api').register(require('./routes'));
 <a id="decorate"></a>
 ### `app.decorate(name, value)`
 
++ Chainable
+
 Safely adds a new property to the `app`. See the [Decorators](Decorators.md) documentation.
 
 <a id="decorate-request"></a>
 ### `app.decorateRequest(name, value)`
+
++ Chainable
 
 Safely adds a new property to the [`Request`](Request.md) object for the current
 `app` instance. See the [Decorators](Decorators.md) documentation.
 
 <a id="decorate-response"></a>
 ### `app.decorateResponse(name, value)`
+
++ Chainable
 
 Safely adds a new property to the [`Response`](Response.md) object for the current
 `app` instance. See the [Decorators](Decorators.md) documentation.
@@ -198,7 +206,7 @@ Safely adds a new property to the [`Response`](Response.md) object for the curre
 + `callback` *(function)* - A function that is called once the server has started listening for incoming connections.
 + Returns: *(?Promise)* - A Promise is returned if the `callback` parameter is not used.
 
-Starts the server on the given port after all plugins and sub-apps have loaded.
+Starts the server on the given port after the app has finished [loading](#load).
 
 By default, the server will only listen for requests from the `localhost`
 address (`127.0.0.1` or `::1` depending on the OS).
@@ -260,6 +268,7 @@ app.load()
 
 + `handler([done])` *(function)* - Called when the `app` is shutting down. Receives the following parameter:
   + `done([err])` *(function)* - A function to call when the `handler` is finished. A Promise can be returned instead of calling this function.
++ Chainable
 
 Registers a function that will be called when the `app` is shutting down (triggered
 by [`app.close()`](#close)). Useful for things like releasing database connections.
@@ -289,6 +298,7 @@ app.onClose(async function() {
 
 + `handler([done])` *(function)* - Called when the `app` is starting up. Receives the following parameter:
   + `done([err])` *(function)* - A function to call when the `handler` is finished. A Promise can be returned instead of calling this function.
++ Chainable
 
 Registers a function that will be called when the `app` is starting up
 (triggered by [`app.load()`](#load), [`app.listen()`](#listen), or
@@ -320,10 +330,39 @@ app.onLoad(async function() {
 <a id="register"></a>
 ### `app.register(plugin [, options])`
 
++ Chainable
+
 Registers a plugin with the `app`. See the [Plugins](Plugins.md) documentation.
+
+```js
+app.register(require('@medley/cookie'), {
+  secret: 'supersecret'
+});
+```
+
+Also useful for registering groups of routes.
+
+**routes.js**
+```js
+module.exports = function routes(app) {
+  app.get('/user', ...);
+  app.post('/user', ...);
+  // etc
+}
+```
+
+**app.js**
+```js
+const medley = require('@medley/medley');
+const app = medley();
+
+app.register(require('./routes'));
+```
 
 <a id="route"></a>
 ### `app.route(options)`
+
++ Chainable
 
 Registers a new route handler. There are also shorthand methods (like `app.get()`)
 that aren't included here. See the [Routes](Routes.md) documentation.
@@ -335,6 +374,7 @@ that aren't included here. See the [Routes](Routes.md) documentation.
   + `err` - The [`Error`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error) that occurred during the request.
   + `req` - The Medley [`request`](Request.md) object.
   + `res` - The Medley [`response`](Response.md) object.
++ Chainable
 
 Sets a handler that will be called whenever an error occurs. The handler is fully
 encapsulated, so different sub-apps can set different error handlers. `async-await`
@@ -355,6 +395,7 @@ for more information on where this status code may come from.
 
 + `options` *object* - Accepts the `responseSchema`, `preHandler`, and `config` options defined in [Routes#options](Routes.md#options).
 + `handler(req, res)` *(function)* - A request handler function that receives the [`request`](Request.md) and [`response`](Response.md) objects.
++ Chainable
 
 Sets the handler that will be called when no registered route matches the
 incoming request. The handler is treated like a regular route handler so

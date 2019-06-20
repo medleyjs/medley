@@ -12,7 +12,6 @@ const runOnCloseHandlers = require('./lib/utils/runOnCloseHandlers')
 const runOnLoadHandlers = require('./lib/utils/runOnLoadHandlers')
 
 const {buildSerializers} = require('./lib/Serializer')
-const {kRegisteredPlugins, register} = require('./lib/PluginUtils')
 const {
   createRequestHandler,
   methodHandlers: originalMethodHandlers,
@@ -129,12 +128,14 @@ function medley(options) {
 
     listen, // Starts the HTTP server
 
-    // Plugins
-    register,
-    [kRegisteredPlugins]: [],
-
     _Request: Request.buildRequest(!!options.trustProxy, options.queryParser),
     _Response: Response.buildResponse(),
+
+    // Helper for registering plugins
+    register(plugin, opts) {
+      plugin(this, opts)
+      return this
+    },
   }
 
   const routes = new Map()
@@ -172,7 +173,6 @@ function medley(options) {
 
     subApp._bodyParser = this._bodyParser.clone()
     subApp._hooks = this._hooks.clone()
-    subApp[kRegisteredPlugins] = this[kRegisteredPlugins].slice()
 
     if (prefix.length > 0) {
       if (prefix[0] !== '/') {
