@@ -5,87 +5,81 @@ const request = require('./utils/request')
 const medley = require('..')
 
 test('.route() should throw on missing method', (t) => {
-  t.plan(1)
-
   const app = medley()
 
   t.throws(
-    () => app.route({}),
+    () => app.route({path: '/', handler: _ => _}),
     new TypeError('Route `method` is required')
   )
+  t.end()
 })
 
 test('.route() should throw on unsupported method', (t) => {
-  t.plan(1)
-
   const app = medley()
 
   t.throws(
-    () => app.route({method: 'TROLL'}),
+    () => app.route({method: 'TROLL', path: '/', handler: _ => _}),
     new RangeError('"TROLL" method is not supported')
   )
+  t.end()
 })
 
 test('.route() should throw if one method in an array is unsupported', (t) => {
-  t.plan(1)
-
   const app = medley()
 
   t.throws(
-    () => app.route({method: ['GET', 'TROLL']}),
+    () => app.route({method: ['GET', 'TROLL'], path: '/', handler: _ => _}),
     new RangeError('"TROLL" method is not supported')
   )
+  t.end()
 })
 
 test('Should throw on missing handler', (t) => {
-  t.plan(2)
-
   const app = medley()
 
   t.throws(
-    () => app.route({method: 'GET', path: ''}),
+    () => app.route({method: 'GET', path: '/'}),
     new TypeError("Route 'handler' must be a function. Got a value of type 'undefined': undefined")
   )
   t.throws(
     () => app.route({method: 'GET', path: '/', handler: false}),
     new TypeError("Route 'handler' must be a function. Got a value of type 'boolean': false")
   )
+  t.end()
 })
 
 test('.route() throws if path is not a string', (t) => {
-  t.plan(4)
-
   const app = medley()
 
   t.throws(
-    () => app.route({method: 'GET', handler: () => {}}),
+    () => app.route({method: 'GET', handler: _ => _}),
     new TypeError("Route 'path' must be a string. Got a value of type 'undefined': undefined")
   )
   t.throws(
-    () => app.route({method: 'GET', handler: () => {}, path: true}),
+    () => app.route({method: 'GET', path: true, handler: _ => _}),
     new TypeError("Route 'path' must be a string. Got a value of type 'boolean': true")
   )
   t.throws(
-    () => app.get(true),
+    () => app.get(true, _ => _),
     new TypeError("Route 'path' must be a string. Got a value of type 'boolean': true")
   )
   t.throws(
-    () => app.get(null),
+    () => app.get(null, _ => _),
     new TypeError("Route 'path' must be a string. Got a value of type 'object': null")
   )
+  t.end()
 })
 
 test('.route() should throw on multiple assignment to the same route', (t) => {
-  t.plan(1)
-
   const app = medley()
 
-  app.get('/', () => {})
+  app.get('/', _ => _)
 
   t.throws(
-    () => app.get('/', () => {}),
+    () => app.get('/', _ => _),
     new Error("Method 'GET' already declared for route '/'")
   )
+  t.end()
 })
 
 test('route - get', (t) => {
