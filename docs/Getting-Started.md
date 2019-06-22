@@ -139,7 +139,7 @@ See the [`Serialization` documentation](Serialization.md) for more information.
 
 ### Encapsulating Functionality
 
-Hooks, [body parsers](BodyParser.md), and app decorators can be encapsulated within sub-apps to
+Hooks and app decorators can be encapsulated within sub-apps to
 isolate different functionality to specific parts of an application. Sub-apps are created with
 the [`app.createSubApp()`](App.md#createsubapp) method.
 
@@ -180,11 +180,6 @@ See [`app.listen()`](App.md#listen).
 
 
 ## Other Details
-
-### Body Parsing
-
-Medley has built-in support for body-parsing, although it does not come with any body parsers.
-See the [**Body Parser** documentation](BodyParser.md) for details.
 
 ### HTTP/2
 

@@ -4,8 +4,6 @@ The Medley module exports a factory function that is used to create a new
 [**`app`**](App.md) instance. This factory function accepts an options
 object which is used to customize the resulting instance. The options are:
 
-+ [`allowUnsupportedMediaTypes`](#allowunsupportedmediatypes)
-+ [`extraBodyParsingMethods`](#extrabodyparsingmethods)
 + [`http2`](#http2)
 + [`https`](#https)
 + [`maxParamLength`](#maxparamlength)
@@ -15,34 +13,6 @@ object which is used to customize the resulting instance. The options are:
 + [`trustProxy`](#trustproxy)
 
 ## Options
-
-### `allowUnsupportedMediaTypes`
-
-Default: `false`
-
-Be default, if no [body parser](BodyParser.md) matches the `Content-Type` of a request with a body,
-Medley will respond with a `415 Unsupported Media Type` error. When this option is set to `true`,
-requests that don't match a body parser will be allowed to continue without parsing the body.
-
-```js
-const app = medley({allowUnsupportedMediaTypes: true});
-```
-
-### `extraBodyParsingMethods`
-
-*string[]*<br>
-Default: `[]`
-
-An array of HTTP methods (like `GET` or `DELETE`) to allow request bodies to be parsed. By default,
-[body parsers](BodyParser.md) are only run for `POST`, `PUT`, `PATCH`, and `OPTIONS` requests
-(request bodies are ignored for all other request methods). This option can be used to specify
-other methods that will have their request body parsed.
-
-```js
-const app = medley({
-  extraBodyParsingMethods: ['DELETE']
-});
-```
 
 ### `http2`
 

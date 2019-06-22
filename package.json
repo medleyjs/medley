@@ -41,11 +41,9 @@
   },
   "dependencies": {
     "compile-json-stringify": "^0.1.2",
-    "compile-mime-match": "^0.1.0",
     "destroy": "^1.0.4",
     "end-of-stream": "^1.4.1",
-    "find-my-way": "2.0.1",
-    "hashlru": "^2.3.0"
+    "find-my-way": "2.0.1"
   },
   "devDependencies": {
     "JSONStream": "^1.3.5",
@@ -54,7 +52,6 @@
     "concurrently": "^4.1.0",
     "coveralls": "^3.0.4",
     "eslint": "~5.16.0",
-    "fast-json-body": "^1.1.0",
     "got": "^9.6.0",
     "h2url": "^0.1.2",
     "pre-commit": "^1.2.2",

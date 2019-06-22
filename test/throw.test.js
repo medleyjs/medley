@@ -11,12 +11,3 @@ test('medley should throw on wrong options', (t) => {
     new TypeError('Options must be an object')
   )
 })
-
-test('should throw on unsupported method in `extraBodyParsingMethods` option', (t) => {
-  t.plan(1)
-
-  t.throws(
-    () => medley({extraBodyParsingMethods: ['TROLL']}),
-    /is not a supported method/
-  )
-})

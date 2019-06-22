@@ -17,7 +17,6 @@ const app = medley();
 
 **Methods:**
 
-+ [`.addBodyParser(contentType, parser)`](#add-body-parser)
 + [`.addHook(hookName, hookHandler)`](#add-hook)
 + [`.close([callback])`](#close)
 + [`.createSubApp([prefix])`](#createsubapp)
@@ -60,11 +59,6 @@ automatically created for the `app`.
 
 ## Methods
 
-<a id="add-body-parser"></a>
-### `app.addBodyParser(contentType, parser)`
-
-Adds a new body parser. See the [Body Parser](BodyParser.md) documentation.
-
 <a id="add-hook"></a>
 ### `app.addHook(hookName, hookHandler)`
 
@@ -102,10 +96,9 @@ app.close((err) => {
 Returns a new sub-app.
 
 A sub-app is created as as snapshot of its parent and inherits its parent's
-[hooks](Hooks.md), [body parsers](BodyParser.md), and
-[app decorators](Decorators.md#decorate). New hooks, body parsers, and app
-decorators added to the sub-app are scoped only to that sub-app and its own
-sub-apps.
+[hooks](Hooks.md) and [app decorators](Decorators.md#decorate). New hooks
+and app decorators that are added to the sub-app are scoped only to that
+sub-app and its own sub-apps.
 
 A `prefix` string can be specified which will be the prefix for all routes
 defined on the sub-app. Prefixes are compounded for nested sub-apps. See the

@@ -41,17 +41,22 @@ HTTP/2-style alias for [`req.host`](#reqhost).
 
 ### `req.body`
 
-The parsed body of the request. Is `undefined` if there was no request body or if parsing the body failed.
+Defaults to `undefined`. Is set to the parsed request body if a
+[body-parser](https://github.com/medleyjs/medley#body-parsing) was run.
 
 ```js
-app.post('/user', (req, res) => {
+const bodyParser = require('@medley/body-parser');
+
+app.get('/users', (req, res) => {
+  req.body // undefined
+});
+
+app.post('/users', [bodyParser.json()], (req, res) => {
   req.body // { name: 'medley', email: 'medley@example.com' }
 });
 ```
 
-See the [`Body Parser`](BodyParser.md) documentation for information on how to implement custom body parsers.
-
-Note that `req.body` is set back to `undefined` when the response is sent
+**Note:** `req.body` is set back to `undefined` when the response is sent
 (after `onSend` hooks) to save memory.
 
 ### `req.headers`
@@ -213,11 +218,10 @@ Example of writing the request body directly to a file:
 
 ```js
 const fs = require('fs');
-const pump = require('pump'); // https://www.npmjs.com/package/pump
+const {pipeline} = require('stream');
 
-// Using GET because POST request bodies should already be handled by a body parser
-app.get('/', (req, res) => {
-  pump(req.stream, fs.createWriteStream('./reqBody.txt'), (err) => {
+app.post('/', (req, res) => {
+  pipeline(req.stream, fs.createWriteStream('./reqBody.txt'), (err) => {
     if (err) {
       res.error(err);
     } else {

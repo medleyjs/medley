@@ -1,10 +1,11 @@
 'use strict'
 
 const {test} = require('tap')
+const http = require('http')
 const request = require('./utils/request')
 const medley = require('..')
 
-const {methodHandlers} = require('../lib/RequestHandlers')
+const supportedMethods = http.METHODS.filter(method => method !== 'CONNECT')
 
 test('default 404', (t) => {
   t.plan(4)
@@ -58,8 +59,8 @@ test('custom 404 handler accepts options', (t) => {
   })
 })
 
-test('has a 404 handler for all supported HTTP methods', (t) => {
-  t.plan(4 * Object.keys(methodHandlers).length)
+test('has a default 404 handler for all supported HTTP methods', (t) => {
+  t.plan(4 * supportedMethods.length)
 
   const app = medley()
 
@@ -67,7 +68,7 @@ test('has a 404 handler for all supported HTTP methods', (t) => {
     res.send('Found')
   })
 
-  for (const method of Object.keys(methodHandlers)) {
+  for (const method of supportedMethods) {
     request(app, {method, url: '/not-found'}, (err, res) => {
       t.error(err)
       t.equal(res.statusCode, 404)
@@ -83,7 +84,7 @@ test('has a 404 handler for all supported HTTP methods', (t) => {
 })
 
 test('has a custom 404 handler for all supported HTTP methods', (t) => {
-  t.plan(4 * Object.keys(methodHandlers).length)
+  t.plan(4 * supportedMethods.length)
 
   const app = medley()
 
@@ -95,7 +96,7 @@ test('has a custom 404 handler for all supported HTTP methods', (t) => {
     res.status(404).send(`Custom Not Found: ${req.method} ${req.url}`)
   })
 
-  for (const method of Object.keys(methodHandlers)) {
+  for (const method of supportedMethods) {
     request(app, {method, url: '/not-found'}, (err, res) => {
       t.error(err)
       t.equal(res.statusCode, 404)
@@ -449,32 +450,6 @@ test('not-found requests with a body receive a 404 res', (t) => {
     t.error(err)
     t.equal(res.statusCode, 404)
     t.equal(res.body, 'Not Found: POST /not-found')
-  })
-})
-
-test('request bodies are not parsed for not-found routes', (t) => {
-  t.plan(4)
-
-  const app = medley()
-
-  app.addBodyParser('application/json', () => {
-    t.fail('body parser should not be called')
-  })
-
-  app.setNotFoundHandler((req, res) => {
-    t.equal(req.body, undefined)
-    res.status(404).send('not found')
-  })
-
-  request(app, {
-    method: 'POST',
-    url: '/not-found',
-    headers: {'Content-Type': 'application/json'},
-    body: '{"hello":"world"}',
-  }, (err, res) => {
-    t.error(err)
-    t.equal(res.statusCode, 404)
-    t.equal(res.body, 'not found')
   })
 })
 

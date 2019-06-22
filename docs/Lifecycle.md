@@ -7,26 +7,23 @@ Incoming Request
         │
         └─▶ onRequest Hook
               │
-              ├─▶ Body Parsing
+              ├─▶ preHandler Hook
               |     │
-              |     ├─▶ preHandler Hook
+        Error ├ ─ ─ ┼─▶ Route Handler || Not-Found Handler || Error Handler
               |     |     │
-        Error ├ ─ ─ ┴ ─ ─ ┼─▶ Route Handler || Not-Found Handler || Error Handler
-              |           |     │
-   res.send() └ ─ ─ ─ ─ ─ ┴ ─ ─ ┴─▶ Serialize Payload
+   res.send() └ ─ ─ ┴ ─ ─ ┴─▶ Serialize Payload
+                                │
+                                └─▶ onSend Hook
                                       │
-                                      └─▶ onSend Hook
+                                      └─▶ Send Response
                                             │
-                                            └─▶ Send Response
-                                                  │
-                                                  └─▶ onFinished Hook
+                                            └─▶ onFinished Hook
 ```
 
 **Table of Contents:**
 
 1. [Routing](#routing)
 1. [onRequest Hook](#onrequest-hook)
-1. [Body Parsing](#body-parsing)
 1. [preHandler Hook](#prehandler-hook)
 1. [Route Handler](#route-handler)
 1. [Serialize Payload](#serialize-payload)
@@ -54,18 +51,6 @@ app.addHook('onRequest', (req, res, next) => {
 ```
 
 These hooks may send an early response with `res.send()`. If a hook does this, the rest of the hooks will be skipped and the lifecycle will go straight to the [*Serialize Payload*](#serialize-payload) step.
-
-## Body Parsing
-
-In this step, a [`BodyParser`](BodyParser.md) is used to parse the body of the request and set `req.body`.
-
-```js
-const bodyParser = require('@medley/body-parser');
-
-app.addBodyParser('application/json', bodyParser.json());
-```
-
-A `415 Unsupported Media Type` error is thrown if the request has a body but there is no parser that matches the `Content-Type` header of the request.
 
 ## `preHandler` Hook
 

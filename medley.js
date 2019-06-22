@@ -1,8 +1,8 @@
 'use strict'
 
 const findMyWay = require('find-my-way')
+const http = require('http')
 
-const BodyParser = require('./lib/BodyParser')
 const Hooks = require('./lib/Hooks')
 const Response = require('./lib/Response')
 const Request = require('./lib/Request')
@@ -14,7 +14,6 @@ const runOnLoadHandlers = require('./lib/utils/runOnLoadHandlers')
 const {buildSerializers} = require('./lib/Serializer')
 const {
   createRequestHandler,
-  methodHandlers: originalMethodHandlers,
   createOptionsHandler,
   create405Handler,
   defaultNotFoundHandler,
@@ -22,7 +21,7 @@ const {
 
 const kIsNotFoundHandlerSet = Symbol('isNotFoundHandlerSet')
 
-const supportedMethods = Object.keys(originalMethodHandlers)
+const supportedMethods = http.METHODS.filter(method => method !== 'CONNECT')
 const noop = () => {}
 
 function medley(options) {
@@ -33,21 +32,6 @@ function medley(options) {
 
   if (options.queryParser !== undefined && typeof options.queryParser !== 'function') {
     throw new TypeError(`'queryParser' option must be an function. Got a '${typeof options.queryParser}'`)
-  }
-
-  const methodHandlers = Object.assign({}, originalMethodHandlers)
-
-  if (options.extraBodyParsingMethods) {
-    for (const method of options.extraBodyParsingMethods) {
-      if (supportedMethods.indexOf(method) === -1) {
-        throw new RangeError(`"${method}" in the 'extraBodyParsingMethods' option is not a supported method (make sure it is UPPERCASE)`)
-      }
-      if (method === 'POST' || method === 'PUT' || method === 'PATCH' || method === 'OPTIONS') {
-        throw new RangeError(`Bodies are already parsed for "${method}" requests`)
-      }
-      // Parse the method's bodies using the semantics of an OPTIONS request
-      methodHandlers[method] = originalMethodHandlers.OPTIONS
-    }
   }
 
   const router = findMyWay({
@@ -71,7 +55,7 @@ function medley(options) {
   } else if (options.https) {
     server = require('https').createServer(options.https, httpHandler)
   } else {
-    server = require('http').createServer(httpHandler)
+    server = http.createServer(httpHandler)
   }
 
   const app = {
@@ -84,10 +68,6 @@ function medley(options) {
     decorate: decorateApp,
     decorateRequest,
     decorateResponse,
-
-    // Body parsing
-    addBodyParser,
-    _bodyParser: new BodyParser(!!options.allowUnsupportedMediaTypes),
 
     // Hooks
     addHook,
@@ -171,7 +151,6 @@ function medley(options) {
 
     const subApp = Object.create(this)
 
-    subApp._bodyParser = this._bodyParser.clone()
     subApp._hooks = this._hooks.clone()
 
     if (prefix.length > 0) {
@@ -210,14 +189,6 @@ function medley(options) {
     }
 
     this._Response.prototype[name] = value
-    return this
-  }
-
-  function addBodyParser(contentType, parser) {
-    throwIfAppIsLoaded('Cannot call "addBodyParser()" when app is already loaded')
-
-    this._bodyParser.add(contentType, parser)
-
     return this
   }
 
@@ -261,25 +232,14 @@ function medley(options) {
     }
 
     const methods = Array.isArray(opts.method) ? opts.method : [opts.method]
-    const methodGroups = new Map()
 
-    // Group up methods with the same methodHandler
-    for (var i = 0; i < methods.length; i++) {
-      const method = methods[i]
-      const methodHandler = methodHandlers[method]
-
-      if (methodHandler === undefined) {
+    for (const method of methods) {
+      if (supportedMethods.indexOf(method) === -1) {
         throw new RangeError(`"${method}" method is not supported`)
-      }
-
-      if (methodGroups.has(methodHandler)) {
-        methodGroups.get(methodHandler).push(method)
-      } else {
-        methodGroups.set(methodHandler, [method])
       }
     }
 
-    var {path} = opts
+    let {path} = opts
 
     if (typeof path !== 'string') {
       throw new TypeError(`Route 'path' must be a string. Got a value of type '${typeof path}': ${path}`)
@@ -298,22 +258,11 @@ function medley(options) {
     }
 
     const serializers = buildSerializers(opts.responseSchema)
-    opts.config = opts.config || {}
-
-    for (const [methodHandler, methodNames] of methodGroups) {
-      _route.call(this, methodNames, methodHandler, path, opts, serializers)
-    }
-
-    return this // Chainable
-  }
-
-  function _route(methods, methodHandler, path, opts, serializers) {
     const routeContext = RouteContext.create(
       this,
       serializers,
-      methodHandler,
       opts.handler,
-      opts.config
+      opts.config || {}
     )
 
     router.on(methods, path, noop, routeContext)
@@ -328,6 +277,8 @@ function medley(options) {
       RouteContext.setHooks(routeContext, this._hooks, opts.preHandler)
       routeContext.errorHandler = this._errorHandler
     })
+
+    return this // Chainable
   }
 
   function setNotFoundHandler(opts, handler) {
@@ -354,7 +305,6 @@ function medley(options) {
     const routeContext = RouteContext.create(
       this,
       serializers,
-      originalMethodHandlers.GET, // Use the GET handler to avoid running the body parser
       handler,
       opts.config || {}
     )
