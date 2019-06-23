@@ -36,7 +36,7 @@ test('custom error handler', (t) => {
 
   app.setErrorHandler(function(err, req, res) {
     t.type(req, 'object')
-    t.type(req, app._Request)
+    t.type(req.stream, 'object')
     res.send('an error happened: ' + err.message)
   })
 

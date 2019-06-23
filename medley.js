@@ -4,13 +4,13 @@ const findMyWay = require('find-my-way')
 const http = require('http')
 
 const Hooks = require('./lib/Hooks')
-const Response = require('./lib/Response')
-const Request = require('./lib/Request')
 const RouteContext = require('./lib/RouteContext')
 
 const runOnCloseHandlers = require('./lib/utils/runOnCloseHandlers')
 const runOnLoadHandlers = require('./lib/utils/runOnLoadHandlers')
 
+const {buildRequest} = require('./lib/Request')
+const {buildResponse} = require('./lib/Response')
 const {buildSerializers} = require('./lib/Serializer')
 const {
   createRequestHandler,
@@ -39,23 +39,25 @@ function medley(options) {
     maxParamLength: options.maxParamLength,
   })
   const notFoundRouter = findMyWay()
-  const httpHandler = createRequestHandler(router, notFoundRouter)
+  const Request = buildRequest(!!options.trustProxy, options.queryParser)
+  const Response = buildResponse()
+  const requestHandler = createRequestHandler(router, notFoundRouter, Request, Response)
 
   var server
   if (options.http2) {
     if (typeof options.http2 === 'object') {
       if (options.http2.key || options.http2.cert) {
-        server = require('http2').createSecureServer(options.http2, httpHandler)
+        server = require('http2').createSecureServer(options.http2, requestHandler)
       } else {
-        server = require('http2').createServer(options.http2, httpHandler)
+        server = require('http2').createServer(options.http2, requestHandler)
       }
     } else {
-      server = require('http2').createServer(httpHandler)
+      server = require('http2').createServer(requestHandler)
     }
   } else if (options.https) {
-    server = require('https').createServer(options.https, httpHandler)
+    server = require('https').createServer(options.https, requestHandler)
   } else {
-    server = http.createServer(httpHandler)
+    server = http.createServer(requestHandler)
   }
 
   const app = {
@@ -107,9 +109,6 @@ function medley(options) {
     close,
 
     listen, // Starts the HTTP server
-
-    _Request: Request.buildRequest(!!options.trustProxy, options.queryParser),
-    _Response: Response.buildResponse(),
 
     // Helper for registering plugins
     register(plugin, opts) {
@@ -175,20 +174,20 @@ function medley(options) {
   }
 
   function decorateRequest(name, value) {
-    if (name in this._Request.prototype) {
+    if (name in Request.prototype) {
       throw new Error(`A decorator called '${name}' has already been added to Request`)
     }
 
-    this._Request.prototype[name] = value
+    Request.prototype[name] = value
     return this
   }
 
   function decorateResponse(name, value) {
-    if (name in this._Response.prototype) {
+    if (name in Response.prototype) {
       throw new Error(`A decorator called '${name}' has already been added to Response`)
     }
 
-    this._Response.prototype[name] = value
+    Response.prototype[name] = value
     return this
   }
 
