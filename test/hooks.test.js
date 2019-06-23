@@ -19,7 +19,7 @@ test('adding a hook should throw if given invalid parameters', (t) => {
 
   t.throws(
     () => app.addHook('notHook', noop),
-    new Error("'notHook' is not a valid hook name. Valid hooks are: 'onRequest', 'preHandler', 'onSend', 'onFinished'")
+    new Error("'notHook' is not a valid hook name. Valid hooks are: 'onRequest', 'onSend', 'onFinished'")
   )
 
   t.throws(
@@ -29,7 +29,7 @@ test('adding a hook should throw if given invalid parameters', (t) => {
 })
 
 test('hooks', (t) => {
-  t.plan(21)
+  t.plan(14)
 
   const payload = {hello: 'world'}
   const app = medley()
@@ -38,16 +38,6 @@ test('hooks', (t) => {
     req.onRequestVal = 'the request is coming'
     res.onRequestVal = 'the response has come'
     if (req.method === 'DELETE') {
-      next(new Error('some error'))
-    } else {
-      next()
-    }
-  })
-
-  app.addHook('preHandler', function(req, res, next) {
-    req.preHandlerVal = 'the request is coming'
-    res.preHandlerVal = 'the response has come'
-    if (req.method === 'HEAD') {
       next(new Error('some error'))
     } else {
       next()
@@ -67,12 +57,6 @@ test('hooks', (t) => {
   app.get('/', function(req, res) {
     t.is(req.onRequestVal, 'the request is coming')
     t.is(res.onRequestVal, 'the response has come')
-    t.is(req.preHandlerVal, 'the request is coming')
-    t.is(res.preHandlerVal, 'the response has come')
-    res.send(payload)
-  })
-
-  app.head('/', function(req, res) {
     res.send(payload)
   })
 
@@ -87,11 +71,6 @@ test('hooks', (t) => {
     t.strictDeepEqual(JSON.parse(res.body), {hello: 'world'})
   })
 
-  request(app, '/', {method: 'HEAD'}, (err, res) => {
-    t.error(err)
-    t.strictEqual(res.statusCode, 500)
-  })
-
   request(app, '/', {method: 'DELETE'}, (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 500)
@@ -99,17 +78,12 @@ test('hooks', (t) => {
 })
 
 test('hooks can return a promise to continue', (t) => {
-  t.plan(5)
+  t.plan(4)
 
   const app = medley()
 
   app.addHook('onRequest', () => {
     t.pass('onRequest hook called')
-    return Promise.resolve()
-  })
-
-  app.addHook('preHandler', () => {
-    t.pass('preHandler hook called')
     return Promise.resolve()
   })
 
@@ -182,76 +156,6 @@ test('onRequest hooks in sub-app should run after parent’s hooks', (t) => {
     .get('/second', (req, res) => {
       t.equal(req.first, true)
       t.equal(req.second, true)
-      res.send({hello: 'world'})
-    })
-
-  request(app, '/first', (err, res) => {
-    t.error(err)
-    t.strictEqual(res.statusCode, 200)
-    t.strictEqual(res.headers['content-length'], '' + res.body.length)
-    t.strictDeepEqual(JSON.parse(res.body), {hello: 'world'})
-  })
-
-  request(app, '/second', (err, res) => {
-    t.error(err)
-    t.strictEqual(res.statusCode, 200)
-    t.strictEqual(res.headers['content-length'], '' + res.body.length)
-    t.strictDeepEqual(JSON.parse(res.body), {hello: 'world'})
-  })
-})
-
-test('preHandler hook should support encapsulation', (t) => {
-  t.plan(6)
-  const app = medley()
-
-  app.createSubApp()
-    .addHook('preHandler', (req, res, next) => {
-      t.equal(req.url, '/plugin')
-      t.equal(res.sent, false)
-      next()
-    })
-    .get('/plugin', (req, res) => {
-      res.send()
-    })
-
-  app.get('/root', (req, res) => {
-    res.send()
-  })
-
-  request(app, '/root', (err, res) => {
-    t.error(err)
-    t.strictEqual(res.statusCode, 200)
-  })
-
-  request(app, '/plugin', (err, res) => {
-    t.error(err)
-    t.strictEqual(res.statusCode, 200)
-  })
-})
-
-test('preHandler hooks in sub-app should run after parent’s hooks', (t) => {
-  t.plan(12)
-  const app = medley()
-
-  app.addHook('preHandler', function(req, res, next) {
-    req.first = true
-    next()
-  })
-
-  app.get('/first', (req, res) => {
-    t.ok(req.first)
-    t.notOk(req.second)
-    res.send({hello: 'world'})
-  })
-
-  app.createSubApp()
-    .addHook('preHandler', function(req, res, next) {
-      req.second = true
-      next()
-    })
-    .get('/second', (req, res) => {
-      t.ok(req.first)
-      t.ok(req.second)
       res.send({hello: 'world'})
     })
 
@@ -647,15 +551,12 @@ test('cannot add hook after listening', (t) => {
   })
 
   app.listen(0, (err) => {
+    app.server.unref()
     t.error(err)
-    t.tearDown(app.server.close.bind(app.server))
-
-    try {
-      app.addHook('onRequest', () => {})
-      t.fail()
-    } catch (e) {
-      t.pass()
-    }
+    t.throws(
+      () => app.addHook('onRequest', _ => _),
+      new Error('Cannot call "addHook()" when app is already loaded')
+    )
   })
 })
 
@@ -668,10 +569,6 @@ test('onRequest hooks should be able to send a response', (t) => {
   })
 
   app.addHook('onRequest', () => {
-    t.fail('this should not be called')
-  })
-
-  app.addHook('preHandler', () => {
     t.fail('this should not be called')
   })
 
@@ -707,70 +604,7 @@ test('async onRequest hooks should be able to send a response', (t) => {
     return Promise.resolve()
   })
 
-  app.addHook('preHandler', () => {
-    t.fail('this should not be called')
-  })
-
   app.get('/', () => {
-    t.fail('this should not be called')
-  })
-
-  request(app, '/', (err, res) => {
-    t.error(err)
-    t.equal(res.statusCode, 200)
-    t.equal(res.body, 'hello')
-  })
-})
-
-test('preHandler hooks should be able to send a response', (t) => {
-  t.plan(5)
-  const app = medley()
-
-  app.addHook('preHandler', (req, res) => {
-    res.send('hello')
-  })
-
-  app.addHook('preHandler', () => {
-    t.fail('this should not be called')
-  })
-
-  app.addHook('onSend', (req, res, payload, next) => {
-    t.equal(payload, 'hello')
-    next()
-  })
-
-  app.addHook('onFinished', () => {
-    t.ok('called')
-  })
-
-  app.get('/', function() {
-    t.fail('this should not be called')
-  })
-
-  request(app, {
-    url: '/',
-    method: 'GET',
-  }, (err, res) => {
-    t.error(err)
-    t.is(res.statusCode, 200)
-    t.is(res.body, 'hello')
-  })
-})
-
-test('async preHandler hooks should be able to send a response', (t) => {
-  t.plan(3)
-  const app = medley()
-
-  app.addHook('preHandler', (req, res) => {
-    res.send('hello')
-    return Promise.resolve()
-  })
-
-  app.get('/', {
-    preHandler() {
-      t.fail('this should not be called')
-    },
-  }, () => {
     t.fail('this should not be called')
   })
 
@@ -819,62 +653,6 @@ test('onRequest hooks can be added after the route is defined', (t) => {
   })
 
   app.addHook('onRequest', (req, res, next) => {
-    t.strictEqual(req.previous, 2)
-    req.previous = 3
-    next()
-  })
-
-  request(app, '/encapsulated', (err, res) => {
-    t.error(err)
-    t.strictEqual(res.statusCode, 200)
-    t.strictEqual(res.body, 'hello world')
-  })
-
-  request(app, '/', (err, res) => {
-    t.error(err)
-    t.strictEqual(res.statusCode, 200)
-    t.strictEqual(res.body, 'hello world')
-  })
-})
-
-test('preHandler hooks can be added after the route is defined', (t) => {
-  t.plan(13)
-  const app = medley()
-
-  app.createSubApp()
-    .addHook('preHandler', (req, res, next) => {
-      t.strictEqual(req.previous, undefined)
-      req.previous = 1
-      next()
-    })
-    .get('/encapsulated', (req, res) => {
-      t.strictEqual(req.previous, 2)
-      res.send('hello world')
-    })
-    .addHook('preHandler', (req, res, next) => {
-      t.strictEqual(req.previous, 1)
-      req.previous = 2
-      next()
-    })
-
-  app.get('/', (req, res) => {
-    t.strictEqual(req.previous, 3)
-    res.send('hello world')
-  })
-
-  app.addHook('preHandler', (req, res, next) => {
-    t.strictEqual(req.previous, undefined)
-    req.previous = 1
-    next()
-  })
-
-  app.addHook('preHandler', (req, res, next) => {
-    t.strictEqual(req.previous, 1)
-    req.previous = 2
-    next()
-  })
-
-  app.addHook('preHandler', (req, res, next) => {
     t.strictEqual(req.previous, 2)
     req.previous = 3
     next()
@@ -1004,10 +782,6 @@ test('async onRequest hooks should handle errors', (t) => {
     t.fail('this should not be called')
   })
 
-  app.addHook('preHandler', () => {
-    t.fail('this should not be called')
-  })
-
   app.get('/', () => {
     t.fail('this should not be called')
   })
@@ -1016,28 +790,5 @@ test('async onRequest hooks should handle errors', (t) => {
     t.error(err)
     t.equal(res.statusCode, 500)
     t.equal(JSON.parse(res.body).message, 'onRequest error')
-  })
-})
-
-test('async preHandler hooks should handle errors', (t) => {
-  t.plan(3)
-  const app = medley()
-
-  app.addHook('preHandler', () => {
-    return Promise.reject(new Error('preHandler error'))
-  })
-
-  app.addHook('preHandler', () => {
-    t.fail('this should not be called')
-  })
-
-  app.get('/', () => {
-    t.fail('this should not be called')
-  })
-
-  request(app, '/', (err, res) => {
-    t.error(err)
-    t.equal(res.statusCode, 500)
-    t.equal(JSON.parse(res.body).message, 'preHandler error')
   })
 })

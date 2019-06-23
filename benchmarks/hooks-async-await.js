@@ -13,9 +13,7 @@ async function asyncHook() {
 app
   .addHook('onRequest', asyncHook)
   .addHook('onRequest', asyncHook)
-  .addHook('preHandler', asyncHook)
-  .addHook('preHandler', asyncHook)
-  .addHook('preHandler', asyncHook)
+  .addHook('onRequest', asyncHook)
   .addHook('onSend', asyncHook)
 
 app.get('/', (req, res) => {

@@ -5,26 +5,23 @@ Incoming Request
   │
   └─▶ Routing
         │
-        └─▶ onRequest Hook
+        └─▶ onRequest Hooks
               │
-              ├─▶ preHandler Hook
-              |     │
-        Error ├ ─ ─ ┼─▶ Route Handler || Not-Found Handler || Error Handler
-              |     |     │
-   res.send() └ ─ ─ ┴ ─ ─ ┴─▶ Serialize Payload
+              └─▶ Route Handler || Not-Found Handler || Error Handler
+                    |
+                    └─▶ Serialize Payload
+                          │
+                          └─▶ onSend Hooks
                                 │
-                                └─▶ onSend Hook
+                                └─▶ Send Response
                                       │
-                                      └─▶ Send Response
-                                            │
-                                            └─▶ onFinished Hook
+                                      └─▶ onFinished Hooks
 ```
 
 **Table of Contents:**
 
 1. [Routing](#routing)
 1. [onRequest Hook](#onrequest-hook)
-1. [preHandler Hook](#prehandler-hook)
 1. [Route Handler](#route-handler)
 1. [Serialize Payload](#serialize-payload)
 1. [onSend Hook](#onsend-hook)
@@ -39,9 +36,9 @@ If no route matches the request, a not-found handler that matches the URL is sel
 
 If the request method is not one of the [supported HTTP methods](https://nodejs.org/api/http.html#http_http_methods), a `501 Not Implemented` error response is sent immediately and the entire lifecycle is skipped.
 
-## `onRequest` Hook
+## `onRequest` Hooks
 
-[`onRequest` hooks](Hooks.md#onRequest-preHandler-hooks) are the first hooks that are run once a request is matched with a route.
+[`onRequest` hooks](Hooks.md#onRequest-hook) are the first hooks that are run once a request is matched with a route.
 
 ```js
 app.addHook('onRequest', (req, res, next) => {
@@ -52,22 +49,10 @@ app.addHook('onRequest', (req, res, next) => {
 
 These hooks may send an early response with `res.send()`. If a hook does this, the rest of the hooks will be skipped and the lifecycle will go straight to the [*Serialize Payload*](#serialize-payload) step.
 
-## `preHandler` Hook
-
-[`preHandler` hooks](Hooks.md#onRequest-preHandler-hooks) are run just before the main [route handler](#route-handler).
-
-```js
-app.addHook('preHandler', (req, res, next) => {
-  // Do something, like check if the user is to allowed access the resource
-  next();
-});
-```
-
-These hooks may send an early response with `res.send()`. If a hook does this, the rest of the hooks will be skipped and the lifecycle will go straight to the [*Serialize Payload*](#serialize-payload) step.
-
 #### Route-level `preHandler`
 
-`preHandler` hooks may also be defined at the route level. They are run after the global `preHandler` hooks.
+Routes can define `preHandler` hooks, which are essentially route-level `onRequest` hooks.
+They run after the global `onRequest` hooks, and just before the route handler.
 
 ```js
 app.get('/', {
@@ -106,7 +91,7 @@ In this step, the payload that was passed to `res.send()` is serialized (if it n
 
 See the [`res.send()`](Response.md#send) and [Serialization](Serialization.md) documentation for more information.
 
-## `onSend` Hook
+## `onSend` Hooks
 
 [`onSend` hooks](Hooks.md#onSend-hook) are run after the payload has been serialized and before the payload is sent to the client.
 
@@ -123,7 +108,7 @@ If an error occurs during a hook, the rest of the hooks are skipped and the erro
 
 The serialized payload is sent to the client. Medley handles this step automatically.
 
-## `onFinished` Hook
+## `onFinished` Hooks
 
 [`onFinished` hooks](Hooks.md#onFinished-hook) are run once the response has finished sending
 (or if the underlying connection was terminated before the response could finish sending).

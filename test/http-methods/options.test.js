@@ -57,16 +57,11 @@ t.test('auto OPTIONS response', (t) => {
 })
 
 t.test('hooks run on auto OPTIONS response', (t) => {
-  t.plan(9)
+  t.plan(8)
 
   const app = medley()
 
   app.addHook('onRequest', (req, res, next) => {
-    t.deepEqual(req.query, {foo: 'asd'})
-    next()
-  })
-
-  app.addHook('preHandler', (req, res, next) => {
     t.deepEqual(req.query, {foo: 'asd'})
     next()
   })

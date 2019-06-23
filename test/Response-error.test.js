@@ -34,29 +34,6 @@ function helper(code) {
   })
 }
 
-test('preHandler hook error handling with external code', (t) => {
-  t.plan(3)
-  const app = medley()
-  const err = new Error('winter is coming')
-
-  app.addHook('preHandler', (req, res, next) => {
-    err.status = 400
-    next(err)
-  })
-
-  app.get('/', () => {})
-
-  request(app, '/', (error, res) => {
-    t.error(error)
-    t.strictEqual(res.statusCode, 400)
-    t.strictDeepEqual(JSON.parse(res.body), {
-      error: statusCodes['400'],
-      message: err.message,
-      statusCode: 400,
-    })
-  })
-})
-
 test('onRequest hook error handling with external done', (t) => {
   t.plan(3)
   const app = medley()

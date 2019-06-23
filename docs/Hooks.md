@@ -11,8 +11,7 @@ app.addHook(hookName, hookHandler)
 
 The possible `hookName` values are:
 
-+ [`'onRequest'`](#onRequest-preHandler-hooks)
-+ [`'preHandler'`](#onRequest-preHandler-hooks)
++ [`'onRequest'`](#onRequest-hook)
 + [`'onSend'`](#onSend-hook)
 + [`'onFinished'`](#onFinished-hook)
 
@@ -22,8 +21,8 @@ in the request lifecycle.
 Hooks follow Medley's encapsulation model, and can thus be scoped to specific routes.
 See the [Encapsulation](#encapsulation) section for more information.
 
-<a id="onRequest-preHandler-hooks"></a>
-## The `onRequest` and `preHandler` Hooks
+<a id="onRequest-hook"></a>
+## The `onRequest` Hook
 
 ```js
 // Callback version
@@ -32,18 +31,9 @@ app.addHook('onRequest', (req, res, next) => {
   next();
 });
 
-app.addHook('preHandler', (req, res, next) => {
-  // Handle preHandler
-  next();
-});
-
 // Async version
 app.addHook('onRequest', async (req, res) => {
   // Handle onRequest
-});
-
-app.addHook('preHandler', async (req, res) => {
-  // Handle preHandler
 });
 ```
 
@@ -51,10 +41,9 @@ app.addHook('preHandler', async (req, res) => {
 + `res` - Medley [Response](Response.md) object.
 + `next([error])` - Function to continue to the next hook.
 
-`onRequest` hooks are executed at the very beginning of each request and `preHandler` hooks are
-executed before the route handler is invoked (see the [Lifecycle docs](Lifecycle.md) for details).
-
-These hooks are similar to Express middleware.
+`onRequest` hooks are executed at the very beginning of each request
+(see the [Lifecycle docs](Lifecycle.md) for details). They are similar
+to Express middleware.
 
 If the hook is an `async` function (or it returns a promise), the `next`
 callback should **not** be used. The request will continue to the next hook
@@ -62,19 +51,18 @@ when the async hook ends or throws (or the promise resolves or rejects).
 
 ### Route-level `preHandler`
 
-Route-level `preHandler` hooks can be specified by passing a `preHandler`
-option to [`app.route()`](Routes.md#route-method) (or a shorthand method).
+[Routes](Routes.md) can define `preHandler` hooks, which are essentially route-level `onRequest` hooks.
 This is similar to route-level middleware in Express.
 
 ```js
 app.route({
   method: 'GET',
   path: '/',
-  preHandler(req, res, next) {
+  preHandler: (req, res, next) => {
     // Do something, like authorization
     next();
   },
-  handler(req, res) {
+  handler: (req, res) => {
     res.send({ hello: 'user' });
   }
 });
@@ -87,20 +75,19 @@ app.get('/', [preHandler], function handler(req, res) {
 
 ### Sending a Response
 
-It is possible to respond to a request within the `onRequest` and `preHandler`
-hooks. This will skip the rest of the `onRequest` and `preHandler` hooks and
-the route handler.
+It is possible to send a response within an `onRequest` hook. This will skip
+the rest of the hooks as well as the route handler.
 
 ```js
-app.addHook('preHandler', (req, res, next) => {
+app.addHook('onRequest', (req, res, next) => {
   res.send({ early: 'response' });
 });
 ```
 
 If sending a response from inside a hook, **`next()` must not be called**.
 
-If sending a response from inside an `async` hook, `res.send()` must be used.
-If it is not, Medley will not know that a response has been sent so the hooks
+If sending a response from inside an `async` hook, **`res.send()` must be used**.
+If it is not, Medley will not know that a response has been sent, so the hooks
 will continue running.
 
 ### Handling Errors
@@ -118,7 +105,6 @@ app.addHook('onRequest', (req, res, next) => {
       next(err);
       return;
     }
-    // Do something with the buffer
   });
 });
 ```
@@ -132,7 +118,6 @@ const readFile = util.promisify(fs.readFile);
 
 app.addHook('onRequest', async (req, res) => {
   const buffer = await fs.readFile('./someFile.txt');
-  // Do something with the buffer
 });
 ```
 
@@ -255,7 +240,7 @@ app.addHook('onRequest', (req, res, next) => {
 }
 
 app.addHook('onRequest', (req, res, next) => {
-  req.top2 = true; // Runs for all routes defined after this hook
+  req.top2 = true; // Runs for all routes in `subApp2`
   next();
 });
 

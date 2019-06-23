@@ -81,16 +81,11 @@ t.test('auto 405 response for non-GET/HEAD routes', (t) => {
 })
 
 t.test('hooks run on auto 405 response', (t) => {
-  t.plan(18)
+  t.plan(16)
 
   const app = medley()
 
   app.addHook('onRequest', (req, res, next) => {
-    t.deepEqual(req.query, {foo: 'bar'})
-    next()
-  })
-
-  app.addHook('preHandler', (req, res, next) => {
     t.deepEqual(req.query, {foo: 'bar'})
     next()
   })

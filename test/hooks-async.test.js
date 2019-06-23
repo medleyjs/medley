@@ -7,7 +7,7 @@ const sleep = require('then-sleep')
 const medley = require('..')
 
 test('async hooks', (t) => {
-  t.plan(18)
+  t.plan(12)
 
   const app = medley()
 
@@ -22,21 +22,10 @@ test('async hooks', (t) => {
     }
   })
 
-  app.addHook('preHandler', async (req, res) => {
-    await sleep(1)
-
-    req.preHandlerVal = 'the request is coming'
-    res.preHandlerVal = 'the response has come'
-
-    if (req.method === 'HEAD') {
-      throw new Error('some error')
-    }
-  })
-
   app.addHook('onSend', async (req, res, payload) => {
     await sleep(1)
 
-    if (req.method === 'DELETE' || req.method === 'HEAD') {
+    if (req.method === 'DELETE') {
       t.match(payload, 'Internal Server Error')
     } else {
       t.equal(payload, '{"hello":"world"}')
@@ -51,12 +40,6 @@ test('async hooks', (t) => {
   app.get('/', function(req, res) {
     t.equal(req.onRequestVal, 'the request is coming')
     t.equal(res.onRequestVal, 'the response has come')
-    t.equal(req.preHandlerVal, 'the request is coming')
-    t.equal(res.preHandlerVal, 'the response has come')
-    res.send({hello: 'world'})
-  })
-
-  app.head('/', function(req, res) {
     res.send({hello: 'world'})
   })
 
@@ -69,11 +52,6 @@ test('async hooks', (t) => {
     t.strictEqual(res.statusCode, 200)
     t.strictEqual(res.headers['content-length'], '' + res.body.length)
     t.strictDeepEqual(JSON.parse(res.body), {hello: 'world'})
-  })
-
-  request(app, '/', {method: 'HEAD'}, (err, res) => {
-    t.error(err)
-    t.strictEqual(res.statusCode, 500)
   })
 
   request(app, '/', {method: 'DELETE'}, (err, res) => {
@@ -130,10 +108,6 @@ test('onRequest hooks should be able to send a response', (t) => {
     t.fail('this should not be called')
   })
 
-  app.addHook('preHandler', async () => {
-    t.fail('this should not be called')
-  })
-
   app.addHook('onSend', async (req, res, payload) => {
     t.equal(payload, 'hello')
   })
@@ -143,37 +117,6 @@ test('onRequest hooks should be able to send a response', (t) => {
   })
 
   app.get('/', () => {
-    t.fail('this should not be called')
-  })
-
-  request(app, '/', (err, res) => {
-    t.error(err)
-    t.is(res.statusCode, 200)
-    t.is(res.body, 'hello')
-  })
-})
-
-test('preHandler hooks should be able to send a response', (t) => {
-  t.plan(5)
-  const app = medley()
-
-  app.addHook('preHandler', async (req, res) => {
-    res.send('hello')
-  })
-
-  app.addHook('preHandler', async () => {
-    t.fail('this should not be called')
-  })
-
-  app.addHook('onSend', async (req, res, payload) => {
-    t.equal(payload, 'hello')
-  })
-
-  app.addHook('onFinished', async () => {
-    t.ok('called')
-  })
-
-  app.get('/', function() {
     t.fail('this should not be called')
   })
 

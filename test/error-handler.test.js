@@ -113,7 +113,7 @@ test('encapsulated error handler', (t) => {
 })
 
 test('custom error handler with hooks', (t) => {
-  t.plan(8)
+  t.plan(7)
 
   const app = medley()
 
@@ -127,10 +127,6 @@ test('custom error handler with hooks', (t) => {
 
   app.addHook('onRequest', (req, res, next) => {
     t.ok('called', 'onRequest')
-    next()
-  })
-  app.addHook('preHandler', (req, res, next) => {
-    t.ok('called', 'preHandler')
     next()
   })
   app.addHook('onSend', (req, res, body, next) => {

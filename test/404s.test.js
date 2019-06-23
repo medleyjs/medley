@@ -244,17 +244,12 @@ test('encapsulated 404', (t) => {
 })
 
 test('run hooks on default 404', (t) => {
-  t.plan(6)
+  t.plan(5)
 
   const app = medley()
 
   app.addHook('onRequest', function(req, res, next) {
     t.pass('onRequest called')
-    next()
-  })
-
-  app.addHook('preHandler', function(req, res, next) {
-    t.pass('preHandler called')
     next()
   })
 
@@ -274,18 +269,13 @@ test('run hooks on default 404', (t) => {
 })
 
 test('run hooks on custom 404', (t) => {
-  t.plan(11)
+  t.plan(9)
 
   const app = medley()
 
   function plugin(appInstance) {
     appInstance.addHook('onRequest', function(req, res, next) {
       t.pass('onRequest called')
-      next()
-    })
-
-    appInstance.addHook('preHandler', function(req, res, next) {
-      t.pass('preHandler called')
       next()
     })
 
@@ -319,17 +309,12 @@ test('run hooks on custom 404', (t) => {
 })
 
 test('run hooks with encapsulated 404', (t) => {
-  t.plan(10)
+  t.plan(8)
 
   const app = medley()
 
   app.addHook('onRequest', function(req, res, next) {
     t.pass('onRequest called')
-    next()
-  })
-
-  app.addHook('preHandler', function(req, res, next) {
-    t.pass('preHandler called')
     next()
   })
 
@@ -348,10 +333,6 @@ test('run hooks with encapsulated 404', (t) => {
     })
     .addHook('onRequest', function(req, res, next) {
       t.pass('onRequest 2 called')
-      next()
-    })
-    .addHook('preHandler', function(req, res, next) {
-      t.pass('preHandler 2 called')
       next()
     })
     .addHook('onSend', function(req, res, payload, next) {

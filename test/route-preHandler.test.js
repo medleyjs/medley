@@ -23,11 +23,11 @@ test('preHandler', (t) => {
   })
 })
 
-test('preHandler should be called after preHandler hook', (t) => {
+test('preHandler should be called after global onRequest hook', (t) => {
   t.plan(2)
   const app = medley()
 
-  app.addHook('preHandler', (req, res, next) => {
+  app.addHook('onRequest', (req, res, next) => {
     req.sendVal = 'a'
     next()
   })
@@ -148,11 +148,11 @@ test('preHandler could accept an array of functions', (t) => {
   })
 })
 
-test('preHandler does not interfere with preHandler', (t) => {
+test('preHandler does not interfere with onRequest hooks', (t) => {
   t.plan(4)
   const app = medley()
 
-  app.addHook('preHandler', (req, res, next) => {
+  app.addHook('onRequest', (req, res, next) => {
     req.sendVal = 'a'
     next()
   })

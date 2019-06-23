@@ -23,11 +23,11 @@ t.test('not-found route preHandler', (t) => {
   })
 })
 
-t.test('not-found route preHandler should be called after global preHandler hook', (t) => {
+t.test('not-found route preHandler should be called after global onRequest hook', (t) => {
   t.plan(2)
   const app = medley()
 
-  app.addHook('preHandler', (req, res, next) => {
+  app.addHook('onRequest', (req, res, next) => {
     req.sendVal = 'a'
     next()
   })

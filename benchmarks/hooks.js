@@ -7,17 +7,9 @@ app
     next()
   })
   .addHook('onRequest', (req, res, next) => {
-    next()
-  })
-
-app
-  .addHook('preHandler', (req, res, next) => {
-    next()
-  })
-  .addHook('preHandler', (req, res, next) => {
     setImmediate(next)
   })
-  .addHook('preHandler', (req, res, next) => {
+  .addHook('onRequest', (req, res, next) => {
     next()
   })
 
