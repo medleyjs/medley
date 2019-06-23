@@ -5,16 +5,21 @@ const medley = require('..')
 const request = require('./utils/request')
 
 t.test('queryParser', (t) => {
-  t.plan(6)
+  t.plan(7)
 
   t.throws(
     () => medley({queryParser: true}),
-    new TypeError("'queryParser' option must be an function. Got a 'boolean'")
+    new TypeError("'queryParser' option must be a function. Got value of type 'boolean'")
   )
 
   t.throws(
     () => medley({queryParser: 'simple'}),
-    new TypeError("'queryParser' option must be an function. Got a 'string'")
+    new TypeError("'queryParser' option must be a function. Got value of type 'string'")
+  )
+
+  t.throws(
+    () => medley({queryParser: []}),
+    new TypeError("'queryParser' option must be a function. Got value of type 'object'")
   )
 
   const app = medley({

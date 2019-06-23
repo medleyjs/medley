@@ -28,7 +28,7 @@ function medley(options) {
   options = options || {}
 
   if (options.queryParser !== undefined && typeof options.queryParser !== 'function') {
-    throw new TypeError(`'queryParser' option must be an function. Got a '${typeof options.queryParser}'`)
+    throw new TypeError(`'queryParser' option must be a function. Got value of type '${typeof options.queryParser}'`)
   }
 
   const router = findMyWay({
