@@ -26,9 +26,6 @@ const noop = () => {}
 
 function medley(options) {
   options = options || {}
-  if (typeof options !== 'object') {
-    throw new TypeError('Options must be an object')
-  }
 
   if (options.queryParser !== undefined && typeof options.queryParser !== 'function') {
     throw new TypeError(`'queryParser' option must be an function. Got a '${typeof options.queryParser}'`)
