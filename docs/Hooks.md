@@ -86,9 +86,15 @@ app.addHook('onRequest', (req, res, next) => {
 
 If sending a response from inside a hook, **`next()` must not be called**.
 
-If sending a response from inside an `async` hook, **`res.send()` must be used**.
-If it is not, Medley will not know that a response has been sent, so the hooks
-will continue running.
+If sending a response from inside an `async` hook, **the hook must return
+`false`** to prevent Medley from continuing on to run the next hooks.
+
+```js
+app.addHook('onRequest', async (req, res) => {
+  res.send({ early: 'response' });
+  return false;
+});
+```
 
 ### Handling Errors
 
@@ -105,6 +111,7 @@ app.addHook('onRequest', (req, res, next) => {
       next(err);
       return;
     }
+    // ...
   });
 });
 ```
@@ -112,12 +119,11 @@ app.addHook('onRequest', (req, res, next) => {
 Async-await/promise errors are automatically caught and handled by Medley.
 
 ```js
-const fs = require('fs');
-const util = require('util');
-const readFile = util.promisify(fs.readFile);
+const fs = require('fs').promises;
 
 app.addHook('onRequest', async (req, res) => {
   const buffer = await fs.readFile('./someFile.txt');
+  // ...
 });
 ```
 
@@ -164,7 +170,7 @@ app.addHook('onSend', (req, res, payload, next) => {
 });
 ```
 
-To modify the payload using an `async` hook, return the new payload:
+To modify the payload using an `async` hook, return the new payload.
 
 ```js
 app.addHook('onSend', async (req, res, payload) => {

@@ -102,6 +102,7 @@ test('onRequest hooks should be able to send a response', (t) => {
 
   app.addHook('onRequest', async (req, res) => {
     res.send('hello')
+    return false
   })
 
   app.addHook('onRequest', async () => {
