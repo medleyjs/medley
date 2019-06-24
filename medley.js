@@ -31,6 +31,11 @@ function medley(options) {
     throw new TypeError(`'queryParser' option must be a function. Got value of type '${typeof options.queryParser}'`)
   }
 
+  if (options.onStreamError !== undefined && typeof options.onStreamError !== 'function') {
+    throw new TypeError(`'onStreamError' option must be a function. Got value of type '${typeof options.onStreamError}'`)
+  }
+
+  const onStreamError = options.onStreamError || noop
   const router = findMyWay({
     ignoreTrailingSlash: !options.strictRouting,
     maxParamLength: options.maxParamLength,
@@ -59,7 +64,6 @@ function medley(options) {
 
   const app = {
     server,
-    _onStreamError: options.onStreamError || noop,
 
     createSubApp,
 
@@ -255,10 +259,10 @@ function medley(options) {
 
     const serializers = buildSerializers(opts.responseSchema)
     const routeContext = RouteContext.create(
-      this,
       serializers,
       opts.handler,
-      opts.config || {}
+      opts.config || {},
+      onStreamError
     )
 
     router.on(methods, path, noop, routeContext)
@@ -299,10 +303,10 @@ function medley(options) {
 
     const serializers = buildSerializers(opts.responseSchema)
     const routeContext = RouteContext.create(
-      this,
       serializers,
       handler,
-      opts.config || {}
+      opts.config || {},
+      onStreamError
     )
 
     if (prefix.endsWith('/')) {

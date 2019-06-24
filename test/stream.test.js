@@ -323,3 +323,15 @@ test('should call the onStreamError function if a stream was destroyed with head
     t.equal(err.code, 'ECONNRESET')
   })
 })
+
+test('should throw if onStreamError is not a function', (t) => {
+  t.throws(
+    () => medley({onStreamError: true}),
+    new TypeError("'onStreamError' option must be a function. Got value of type 'boolean'")
+  )
+  t.throws(
+    () => medley({onStreamError: ''}),
+    new TypeError("'onStreamError' option must be a function. Got value of type 'string'")
+  )
+  t.end()
+})
