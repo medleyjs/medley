@@ -454,22 +454,28 @@ function medley(options) {
   }
 
   function listen(port, host, backlog, cb) {
-    // Handle listen (port, cb)
-    if (typeof host === 'function') {
+    if (server.listening) {
+      throw new Error('.listen() called while server is already listening')
+    }
+
+    if (port === undefined) { // listen()
+      port = 0
+    } else if (typeof port === 'function') { // listen(cb)
+      cb = port
+      port = 0
+    } else if (typeof host === 'function') { // listen(port, cb)
       cb = host
       host = undefined
-    }
-    host = host || 'localhost'
-
-    // Handle listen (port, host, cb)
-    if (typeof backlog === 'function') {
+    } else if (typeof backlog === 'function') { // listen(port, host, cb)
       cb = backlog
       backlog = undefined
     }
 
+    host = host || 'localhost'
+
     if (cb === undefined) {
       return new Promise((resolve, reject) => {
-        this.listen(port, host, (err) => {
+        this.listen(port, host, backlog, (err) => {
           if (err) {
             reject(err)
           } else {
@@ -482,11 +488,6 @@ function medley(options) {
     return load((err) => {
       if (err) {
         cb(err)
-        return
-      }
-
-      if (this.server.listening) {
-        cb(new Error('app is already listening'))
         return
       }
 

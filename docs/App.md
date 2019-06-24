@@ -191,9 +191,9 @@ Safely adds a new property to the [`Response`](Response.md) object for the curre
 `app` instance. See the [Decorators](Decorators.md) documentation.
 
 <a id="listen"></a>
-### `app.listen(port [, host][, backlog][, callback])`
+### `app.listen([port[, host[, backlog]]][, callback])`
 
-+ `port` *(number)* - The port to listen on.
++ `port` *(number)* - The port to listen on. Default: `0`.
 + `host` *(string)* - The host (or IP address) from which incoming connections will be accepted. Default: `localhost`.
 + `backlog` *(number)* - The maximum length of the queue of pending connections. Default: `511`.
 + `callback` *(function)* - A function that is called once the server has started listening for incoming connections.

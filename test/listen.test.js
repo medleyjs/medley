@@ -1,167 +1,156 @@
 'use strict'
 
-const os = require('os')
-const path = require('path')
-const fs = require('fs')
 const test = require('tap').test
 const medley = require('..')
 
-test('listen accepts a port and a callback', (t) => {
-  t.plan(3)
+test('.listen(cb)', (t) => {
+  t.plan(1)
+
   const app = medley()
-  app.listen(0, (err) => {
-    app.server.unref()
-    t.is(app.server.address().address, '127.0.0.1')
+
+  app.listen((err) => {
     t.error(err)
-    t.pass()
     app.close()
   })
 })
 
-test('listen accepts a port, address, and callback', (t) => {
-  t.plan(2)
+test('.listen()', async () => {
   const app = medley()
+
+  await app.listen()
+
+  app.close()
+})
+
+test('.listen(port, cb)', (t) => {
+  t.plan(1)
+
+  const app = medley()
+
+  app.listen(0, (err) => {
+    t.error(err)
+    app.close()
+  })
+})
+
+test('.listen(port)', async () => {
+  const app = medley()
+
+  await app.listen(0)
+
+  app.close()
+})
+
+test('.listen(port, host, cb)', (t) => {
+  t.plan(2)
+
+  const app = medley()
+
   app.listen(0, '127.0.0.1', (err) => {
     app.server.unref()
     t.error(err)
-    t.pass()
-    app.close()
+    t.equal(app.server.address().address, '127.0.0.1')
   })
 })
 
-test('listen accepts a port, address, backlog and callback', (t) => {
-  t.plan(2)
+test('.listen(port, host)', async (t) => {
   const app = medley()
+
+  await app.listen(0, '127.0.0.1')
+  app.server.unref()
+
+  t.equal(app.server.address().address, '127.0.0.1')
+})
+
+test('.listen(port, host, backlog, cb)', (t) => {
+  t.plan(2)
+
+  const app = medley()
+
   app.listen(0, '127.0.0.1', 511, (err) => {
     app.server.unref()
     t.error(err)
-    t.pass()
-    app.close()
+    t.equal(app.server.address().address, '127.0.0.1')
   })
 })
 
-test('listen after Promise.resolve()', (t) => {
-  t.plan(2)
-  const f = medley()
-  Promise.resolve()
-    .then(() => {
-      f.listen(0, (err) => {
-        f.server.unref()
-        t.error(err)
-        t.pass()
-        f.close()
-      })
-    })
+test('.listen(port, host, backlog)', async (t) => {
+  const app = medley()
+
+  await app.listen(0, '127.0.0.1', 511)
+  app.server.unref()
+
+  t.equal(app.server.address().address, '127.0.0.1')
 })
 
-test('double listen errors', (t) => {
+test('.listen() throws if called while already listening', (t) => {
   t.plan(2)
+
   const app = medley()
+
   app.listen(0, (err) => {
+    app.server.unref()
     t.error(err)
-    app.listen(app.server.address().port, (err) => {
-      t.ok(err)
-      app.close()
-    })
+    t.throws(
+      () => app.listen(0),
+      new Error('.listen() called while server is already listening')
+    )
   })
 })
 
-test('listen twice on the same port', (t) => {
-  t.plan(2)
-  const app = medley()
-  app.listen(0, (err) => {
-    t.error(err)
-    const s2 = medley()
-    s2.listen(app.server.address().port, (err) => {
-      app.close()
-      t.ok(err)
-    })
-  })
-})
-
-// https://nodejs.org/api/net.html#net_ipc_support
-test('listen on socket', (t) => {
+test('.listen() can be called multiple times before the server is listening', (t) => {
   t.plan(2)
 
   const app = medley()
-  const sockFile = os.platform() === 'win32'
-    ? path.join('\\\\?\\pipe', process.cwd(), 'medley-pipe')
-    : path.join(os.tmpdir(), 'server.sock')
 
-  try {
-    fs.unlinkSync(sockFile)
-  } catch (err) {
-    if (err.code !== 'ENOENT') {
-      t.fail(err)
-    }
-  }
-
-  app.listen(sockFile, (err) => {
+  app.listen((err) => {
+    app.server.unref()
     t.error(err)
-    t.equal(sockFile, app.server.address())
-    app.close()
+  })
+
+  app.listen((err) => {
+    t.error(err)
   })
 })
 
-test('listen without callback', (t) => {
-  t.plan(1)
+test('passes listen errors to the callback', (t) => {
+  t.plan(2)
+
   const app = medley()
-  app.listen(0)
-    .then(() => {
-      t.is(app.server.address().address, '127.0.0.1')
-      app.close()
-      t.end()
+
+  app.listen((err) => {
+    app.server.unref()
+    t.error(err)
+
+    const app2 = medley()
+
+    app2.listen(app.server.address().port, (err) => {
+      t.match(err, {name: 'Error', code: 'EADDRINUSE'})
     })
+  })
 })
 
-test('double listen without callback rejects', (t) => {
-  t.plan(1)
-  const app = medley()
-  app.listen(0)
-    .then(() => {
-      app.listen(0)
-        .then(() => {
-          t.error(new Error('second call to app.listen resolved'))
-          app.close()
-        })
-        .catch((err) => {
-          t.ok(err)
-          app.close()
-        })
-    })
-    .catch(err => t.error(err))
-})
-
-test('listen twice on the same port without callback rejects', (t) => {
-  t.plan(1)
+test('rejects with listen errors', async (t) => {
   const app = medley()
 
-  app.listen(0)
-    .then(() => {
-      const s2 = medley()
-      s2.listen(app.server.address().port)
-        .then(() => {
-          t.error(new Error('listen on port already in use resolved'))
-          app.close()
-          s2.close()
-        })
-        .catch((err) => {
-          t.ok(err)
-          app.close()
-          s2.close()
-        })
-    })
-    .catch(err => t.error(err))
+  await app.listen()
+  app.server.unref()
+
+  const app2 = medley()
+
+  await t.rejects(
+    app2.listen(app.server.address().port),
+    {name: 'Error', code: 'EADDRINUSE'}
+  )
 })
 
 test('load error is passed to listen callback', (t) => {
-  t.plan(2)
+  t.plan(1)
 
   const app = medley()
   const error = new Error('onLoad error')
 
   app.onLoad((done) => {
-    t.pass('first called')
     done(error)
   })
 
@@ -171,6 +160,22 @@ test('load error is passed to listen callback', (t) => {
 
   app.listen(0, (err) => {
     t.equal(err, error)
-    app.close()
   })
+})
+
+test('rejects with load error', (t) => {
+  t.plan(1)
+
+  const app = medley()
+  const error = new Error('onLoad error')
+
+  app.onLoad((done) => {
+    done(error)
+  })
+
+  app.onLoad(() => {
+    t.fail('second onLoad should not be called')
+  })
+
+  t.rejects(app.listen(), error)
 })
