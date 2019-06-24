@@ -90,6 +90,63 @@ t.test('should pass error to the load callback and skip other onLoad handlers (P
   )
 })
 
+t.test('should pass error to all load callbacks (sync)', (t) => {
+  t.plan(2)
+
+  const app = medley()
+  const error = new Error('onLoad error')
+
+  app.onLoad((done) => {
+    done(error)
+  })
+
+  app.load((err) => {
+    t.equal(err, error)
+  })
+
+  app.load((err) => {
+    t.equal(err, error)
+  })
+})
+
+t.test('should pass error to all load callbacks (async)', (t) => {
+  t.plan(2)
+
+  const app = medley()
+  const error = new Error('onLoad error')
+
+  app.onLoad((done) => {
+    process.nextTick(done, error)
+  })
+
+  app.load((err) => {
+    t.equal(err, error)
+  })
+
+  app.load((err) => {
+    t.equal(err, error)
+  })
+})
+
+t.test('should pass error to all load callbacks (promise)', (t) => {
+  t.plan(2)
+
+  const app = medley()
+  const error = new Error('onLoad error')
+
+  app.onLoad(() => Promise.reject(error))
+
+  app.load().then(
+    () => t.fail('load should not success'),
+    err => t.equal(err, error)
+  )
+
+  app.load().then(
+    () => t.fail('load should not success'),
+    err => t.equal(err, error)
+  )
+})
+
 t.test('should create an error for promises that reject with a falsy value', (t) => {
   t.plan(3)
 
@@ -155,25 +212,6 @@ t.test('.load() can return a promise', (t) => {
     () => t.pass(),
     err => t.fail(err)
   )
-})
-
-t.test('calling .load() again does not run onLoad handlers a second time', (t) => {
-  t.plan(3)
-
-  const app = medley()
-
-  app.onLoad(function(done) {
-    t.equal(this, app)
-    done()
-  })
-
-  app.load((err) => {
-    t.error(err)
-
-    app.load((err) => {
-      t.error(err)
-    })
-  })
 })
 
 t.test('.load() should only run onLoad handlers once even if called multiple times', (t) => {

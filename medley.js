@@ -124,8 +124,7 @@ function medley(options) {
 
   var registeringAutoHandlers = false
 
-  var loadCallbackQueue = []
-  var loading = false
+  var loadCallbackQueue = null
   var loaded = false
 
   function throwIfAppIsLoaded(msg) {
@@ -369,16 +368,17 @@ function medley(options) {
       })
     }
 
-    if (loading) {
+    if (loadCallbackQueue !== null) {
       loadCallbackQueue.push(cb)
       return
     }
 
-    loading = true
+    loadCallbackQueue = [cb]
 
     runOnLoadHandlers(onLoadHandlers, (err) => {
       if (err) {
-        cb(err)
+        loadCallbackQueue.forEach(callback => callback(err))
+        loadCallbackQueue = null
         return
       }
 
@@ -392,9 +392,8 @@ function medley(options) {
       loaded = true
       preLoadedHandlers.forEach(handler => handler())
 
-      cb()
-
       loadCallbackQueue.forEach(callback => callback())
+      loadCallbackQueue = null
     })
   }
   /* eslint-enable consistent-return */
