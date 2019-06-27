@@ -69,8 +69,15 @@ function medley(options) {
     server = http.createServer(requestHandler)
   }
 
+  var loadCallbackQueue = null
+  var loaded = false
+
   const app = {
     server,
+
+    get handler() {
+      return loaded ? requestHandler : null
+    },
 
     createSubApp,
 
@@ -127,9 +134,6 @@ function medley(options) {
   const preLoadedHandlers = [] // Internal, synchronous handlers
 
   var registeringAutoHandlers = false
-
-  var loadCallbackQueue = null
-  var loaded = false
 
   function throwIfAppIsLoaded(msg) {
     if (loaded) {

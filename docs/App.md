@@ -13,6 +13,7 @@ const app = medley();
 **Properties:**
 
 + [`.basePath`](#base-path)
++ [`.handler`](#handler)
 + [`.server`](#server)
 
 **Methods:**
@@ -46,6 +47,32 @@ console.log(subApp.basePath); // '/v1'
 
 const subSubApp = subApp.createSubApp('/user');
 console.log(subSubApp.basePath); // '/v1/user'
+```
+
+<a id="handler"></a>
+### `app.handler`
+
+The function passed to `http.createServer()` that handles requests.
+
+This property is `null` until the app has finished [loading](#load).
+
+Helpful when testing with tools like [`supertest`](https://github.com/visionmedia/supertest).
+
+```js
+const request = require('supertest');
+
+describe('GET /', function() {
+  it('responds successfully', async function() {
+    const app = buildAppSomehow();
+
+    await app.load();
+
+    return request(app.handler)
+      .get('/')
+      .expect('content-type', /html/)
+      .expect(200);
+  });
+});
 ```
 
 <a id="server"></a>
