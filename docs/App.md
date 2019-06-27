@@ -29,7 +29,6 @@ const app = medley();
 + [`.onLoad(callback)`](#on-load)
 + [`.register(plugin [, options])`](#register)
 + [`.route(options)`](#route)
-+ [`.setErrorHandler(handler)`](#set-error-handler)
 + [`.setNotFoundHandler([options,] handler)`](#set-not-found-handler)
 + [`[@@iterator]()`](#iterator)
 
@@ -359,29 +358,6 @@ app.register(require('./routes'));
 
 Registers a new route handler. There are also shorthand methods (like `app.get()`)
 that aren't included here. See the [Routes](Routes.md) documentation.
-
-<a id="set-error-handler"></a>
-### `app.setErrorHandler(handler)`
-
-+ `handler(err, req, res)` *(function)* - A request handler function that receives the following parameters:
-  + `err` - The [`Error`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error) that occurred during the request.
-  + `req` - The Medley [`request`](Request.md) object.
-  + `res` - The Medley [`response`](Response.md) object.
-+ Chainable
-
-Sets a handler that will be called whenever an error occurs. The handler is fully
-encapsulated, so different sub-apps can set different error handlers. `async-await`
-is supported just like with [regular route handlers](Routes.md#async-await).
-
-```js
-app.setErrorHandler((err, req, res) => {
-  // Send error response
-});
-```
-
-Before the error handler is invoked, the response status code associated with the error
-is automatically set. See the [`Response#error`](Response.md#error-status-code) docs
-for more information on where this status code may come from.
 
 <a id="set-not-found-handler"></a>
 ### `app.setNotFoundHandler([options,] handler)`

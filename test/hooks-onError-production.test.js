@@ -6,7 +6,7 @@ const medley = require('..')
 
 process.env.NODE_ENV = 'production'
 
-t.test('default error handler with 5xx status code - production', (t) => {
+t.test('default onError hook with 5xx status code - production', (t) => {
   t.plan(8)
 
   const app = medley()
@@ -42,7 +42,7 @@ t.test('default error handler with 5xx status code - production', (t) => {
   })
 })
 
-t.test('default error handler with 4xx status code - production', (t) => {
+t.test('default onError hook with 4xx status code - production', (t) => {
   t.plan(4)
 
   const app = medley()

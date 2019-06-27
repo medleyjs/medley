@@ -7,7 +7,7 @@ Incoming Request
         │
         └─▶ onRequest Hooks
               │
-              └─▶ Route Handler || Not-Found Handler || Error Handler
+              └─▶ Route Handler
                     |
                     └─▶ Serialize Payload
                           │
@@ -18,15 +18,16 @@ Incoming Request
                                       └─▶ onFinished Hooks
 ```
 
-**Table of Contents:**
+**Lifecycle Stages:**
 
 1. [Routing](#routing)
-1. [onRequest Hook](#onrequest-hook)
+1. [onRequest Hooks](#onrequest-hooks)
 1. [Route Handler](#route-handler)
 1. [Serialize Payload](#serialize-payload)
-1. [onSend Hook](#onsend-hook)
+1. [onSend Hooks](#onsend-hooks)
 1. [Send Response](#send-response)
-1. [onFinished Hook](#onfinished-hook)
+1. [onFinished Hooks](#onfinished-hooks)
+1. [onError Hooks](#onerror-hooks)
 
 ## Routing
 
@@ -81,10 +82,6 @@ See the [`Routes` documentation](Routes.md) for more information on route handle
 
 If the request URL does not match any routes, a *not-found handler* (set with [`app.setNotFoundHandler()`](App.md#set-not-found-handler)) is invoked. Global hooks **are** run before the not-found handler.
 
-#### Error handler
-
-If an error occurs at any point in the request lifecycle, the request skips straight to the *error handler*, which sends an error response. A custom error handler can be set with [`app.setErrorHandler()`](App.md#set-error-handler).
-
 ## Serialize Payload
 
 In this step, the payload that was passed to `res.send()` is serialized (if it needs to be) and an appropriate `Content-Type` for the payload is set (if one was not already set).
@@ -102,8 +99,6 @@ app.addHook('onSend', (req, res, payload, next) => {
 });
 ```
 
-If an error occurs during a hook, the rest of the hooks are skipped and the error handler is invoked. The `onSend` hooks will **not** be run again when the error response is sent.
-
 ## Send Response
 
 The serialized payload is sent to the client. Medley handles this step automatically.
@@ -117,4 +112,30 @@ The serialized payload is sent to the client. Medley handles this step automatic
 app.addHook('onFinished', (req, res) => {
   // Do something, like log the response time
 });
+```
+
+## `onError` Hooks
+
+If an error occurs during the request lifecycle, it will be sent to the [`onError` hooks](Hooks.md#onError-hook).
+
+```js
+app.addHook('onError', (err, req, res, next) => {
+  // Send an error response
+});
+```
+
+Here’s how the `onError` hooks fit into the lifecycle:
+
+```
+Routing
+  │
+  └─▶ onRequest Hooks  ╌╌╌╌╌╌╌╌╌ (error) ╌╌╌╌╌╌╌╌╌╌╌┐
+        │                                           ⯆
+        └─▶ Route Handler  ╌╌╌╌ (error) ╌╌╌▶ onError Hooks
+              |                                     ┆
+              └─▶ Serialize Payload ◀╌╌╌╌╌╌╌╌╌╌╌╌╌╌┘
+                    │
+                    └─▶ onSend Hooks
+                          │
+                          └─▶ Send Response
 ```

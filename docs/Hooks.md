@@ -14,6 +14,7 @@ The possible `hookName` values are:
 + [`'onRequest'`](#onRequest-hook)
 + [`'onSend'`](#onSend-hook)
 + [`'onFinished'`](#onFinished-hook)
++ [`'onError'`](#onError-hook)
 
 Check out the [lifecycle docs](Lifecycle.md) to see where each hook is executed
 in the request lifecycle.
@@ -184,9 +185,10 @@ Changing the payload is mainly intended to be used for encoding the payload
 
 ### `onSend` Hooks and Errors
 
-`onSend` hooks are only run once per request. If an `onSend` hook forwards an error
-(with `next(error)` or by throwing in an `async` function), the hooks will not be
-executed again when the error response is sent. Because of this, it is best to
+Unlike `onRequest` hooks, errors do not stop `onSend` hooks. If an `onSend`
+hook forwards an error (with `next(error)` or by throwing in an `async`
+function), the error will be passed to the [`onErrorSending`](Medley.md#onerrorsending)
+function and hook execution will continue. Because of this, it is best to
 handle errors in the hook when possible rather than forwarding the error.
 
 <a id="onFinished-hook"></a>
@@ -217,6 +219,80 @@ app.addHook('onFinished', async (req, res) => {
   }
 });
 ```
+
+<a id="onError-hook"></a>
+## The `onError` Hook
+
+```js
+// Callback version
+app.addHook('onError', (err, req, res, next) => {
+  // Send error response
+});
+
+// Async version
+app.addHook('onError', async (err, req, res) => {
+  // Send error response
+});
+```
+
++ `err` - The [`Error`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error) that occurred during the request.
++ `req` - Medley [Request](Request.md) object.
++ `res` - Medley [Response](Response.md) object.
++ `next([error])` - Function to continue to the next hook.
+
+`onError` hooks are executed if an error occurs during the request lifecycle.
+(see the [Lifecycle docs](Lifecycle.md#onerror-hooks) for a diagram). They
+should be used to log the error and send an error response to the client.
+Generally, only a single `onError` hook is needed.
+
+```js
+const logger = require('some-logger'); // Just an example
+
+app.addHook('onError', (err, req, res) => {
+  logger.error(err);
+  res.status(500).send('Internal Server Error');
+});
+```
+
+If the hook is an `async` function:
+
++ Returning a value will send a response
++ Not returning a value will cause the next `onError` hook to be invoked
++ Using the `next` callback or `res.send()` will cause an error
+
+```js
+const logger = require('async-logger'); // Just an example
+
+// Logs the error and defers to the next onError hook
+app.addHook('onError', async (err, req, res) => {
+  await logger.error(err);
+});
+
+// Sends a response
+app.addHook('onError', async (err, req, res) => {
+  res.statusCode = 500;
+  return 'Internal Server Error';
+});
+```
+
+If no `onError` hooks are added, or if the last added `onError` hook defers the
+error (by calling `next()` or not returning anything from an `async` function),
+Medley’s default error handler will handle the error and send a response.
+
+The default error handler sends a JSON response that looks like this:
+
+```js
+{
+  "error": "Internal Server Error", // The HTTP error for the status code
+  "message": "An error occurred",   // The error message (on the error object)
+  "statusCode": 500                 // The error status code
+}
+```
+
+**Warning:**
+While it is possible to call `next(err)` or throw in an `async` function, this
+is not recommended since the next `onError` hook will receive a different error
+than the one that originally caused the hooks to run.
 
 <a id="encapsulation"></a>
 ## Hooks Encapsulation

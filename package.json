@@ -41,6 +41,7 @@
   },
   "dependencies": {
     "compile-json-stringify": "^0.1.2",
+    "debug": "^4.1.1",
     "destroy": "^1.0.4",
     "end-of-stream": "^1.4.1",
     "find-my-way": "2.0.1"

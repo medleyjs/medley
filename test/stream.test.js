@@ -246,15 +246,15 @@ test('should handle destroying a stream if headers are already sent', (t) => {
   })
 })
 
-test('should call the onStreamError function if the stream was destroyed prematurely', (t) => {
+test('should call the onErrorSending function if the stream was destroyed prematurely', (t) => {
   t.plan(5)
 
-  function onStreamError(err) {
+  function onErrorSending(err) {
     t.type(err, Error)
     t.equal(err.message, 'premature close')
   }
 
-  const app = medley({onStreamError})
+  const app = medley({onErrorSending})
 
   app.get('/', (req, res) => {
     t.pass('Received request')
@@ -289,16 +289,16 @@ test('should call the onStreamError function if the stream was destroyed prematu
   })
 })
 
-test('should call the onStreamError function if a stream was destroyed with headers already sent', (t) => {
+test('should call the onErrorSending function if a stream was destroyed with headers already sent', (t) => {
   t.plan(5)
 
   const streamError = new Error('stream error')
 
-  function onStreamError(err) {
+  function onErrorSending(err) {
     t.equal(err, streamError)
   }
 
-  const app = medley({onStreamError})
+  const app = medley({onErrorSending})
 
   app.get('/', (req, res) => {
     t.pass('Received request')
@@ -324,14 +324,39 @@ test('should call the onStreamError function if a stream was destroyed with head
   })
 })
 
-test('should throw if onStreamError is not a function', (t) => {
+test('should call the onErrorSending function if a stream errors before headers are sent', (t) => {
+  t.plan(3)
+
+  const streamError = new Error('stream error')
+  const app = medley({
+    onErrorSending(err) {
+      t.equal(err, streamError)
+    },
+  })
+
+  app.get('/', (req, res) => {
+    const errorStream = new Readable({
+      read() {
+        this.emit('error', streamError)
+      },
+    })
+    res.send(errorStream)
+  })
+
+  request(app, '/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 500)
+  })
+})
+
+test('should throw if onErrorSending is not a function', (t) => {
   t.throws(
-    () => medley({onStreamError: true}),
-    new TypeError("'onStreamError' option must be a function. Got value of type 'boolean'")
+    () => medley({onErrorSending: true}),
+    new TypeError("'onErrorSending' option must be a function. Got value of type 'boolean'")
   )
   t.throws(
-    () => medley({onStreamError: ''}),
-    new TypeError("'onStreamError' option must be a function. Got value of type 'string'")
+    () => medley({onErrorSending: ''}),
+    new TypeError("'onErrorSending' option must be a function. Got value of type 'string'")
   )
   t.end()
 })

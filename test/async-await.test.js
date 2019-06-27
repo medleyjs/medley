@@ -1,4 +1,3 @@
-/* eslint-disable require-await */
 'use strict'
 
 const {test} = require('tap')
@@ -135,38 +134,6 @@ test('thrown Error in handler sets HTTP status code', (t) => {
         error: statusCodes['418'],
         message: err.message,
         statusCode: 418,
-      },
-      JSON.parse(res.body)
-    )
-  })
-})
-
-test('customErrorHandler support', (t) => {
-  t.plan(4)
-
-  const app = medley()
-
-  app.get('/', async () => {
-    const error = new Error('ouch')
-    error.statusCode = 400
-    throw error
-  })
-
-  app.setErrorHandler(async (err) => {
-    t.is(err.message, 'ouch')
-    const error = new Error('kaboom')
-    error.statusCode = 401
-    throw error
-  })
-
-  request(app, '/', (err, res) => {
-    t.error(err)
-    t.strictEqual(res.statusCode, 401)
-    t.strictSame(
-      {
-        error: statusCodes['401'],
-        message: 'kaboom',
-        statusCode: 401,
       },
       JSON.parse(res.body)
     )

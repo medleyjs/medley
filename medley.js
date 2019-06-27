@@ -1,6 +1,7 @@
 'use strict'
 
 const findMyWay = require('find-my-way')
+const debug = require('debug')('medley')
 const http = require('http')
 
 const Hooks = require('./lib/Hooks')
@@ -22,7 +23,13 @@ const {
 const kIsNotFoundHandlerSet = Symbol('isNotFoundHandlerSet')
 
 const supportedMethods = http.METHODS.filter(method => method !== 'CONNECT')
+
+/* istanbul ignore next - This is never used. It's just needed to appease find-my-way. */
 const noop = () => {}
+
+function defaultOnErrorSending(err) {
+  debug('Error occurred while sending:\n%O', err)
+}
 
 function medley(options) {
   options = options || {}
@@ -31,11 +38,11 @@ function medley(options) {
     throw new TypeError(`'queryParser' option must be a function. Got value of type '${typeof options.queryParser}'`)
   }
 
-  if (options.onStreamError !== undefined && typeof options.onStreamError !== 'function') {
-    throw new TypeError(`'onStreamError' option must be a function. Got value of type '${typeof options.onStreamError}'`)
+  if (options.onErrorSending !== undefined && typeof options.onErrorSending !== 'function') {
+    throw new TypeError(`'onErrorSending' option must be a function. Got value of type '${typeof options.onErrorSending}'`)
   }
 
-  const onStreamError = options.onStreamError || noop
+  const onErrorSending = options.onErrorSending || defaultOnErrorSending
   const router = findMyWay({
     ignoreTrailingSlash: !options.strictRouting,
     maxParamLength: options.maxParamLength,
@@ -96,9 +103,6 @@ function medley(options) {
 
     setNotFoundHandler,
     [kIsNotFoundHandlerSet]: false,
-
-    setErrorHandler,
-    _errorHandler: null,
 
     // App setup
     onLoad,
@@ -261,7 +265,7 @@ function medley(options) {
       serializers,
       opts.handler,
       opts.config || {},
-      onStreamError
+      onErrorSending
     )
 
     router.on(methods, path, noop, routeContext)
@@ -270,11 +274,10 @@ function medley(options) {
       recordRoute(path, methods, routeContext, this)
     }
 
-    // Users can add hooks and error handlers after the route is registered,
-    // so add these to the routeContext just before the app is loaded.
+    // Users can add hooks after the route is registered, so only add the
+    // hooks to the routeContext just before the app is loaded
     preLoadedHandlers.push(() => {
       RouteContext.setHooks(routeContext, this._hooks, opts.preHandler)
-      routeContext.errorHandler = this._errorHandler
     })
 
     return this // Chainable
@@ -305,7 +308,7 @@ function medley(options) {
       serializers,
       handler,
       opts.config || {},
-      onStreamError
+      onErrorSending
     )
 
     if (prefix.endsWith('/')) {
@@ -317,22 +320,8 @@ function medley(options) {
 
     preLoadedHandlers.push(() => {
       RouteContext.setHooks(routeContext, this._hooks, opts.preHandler)
-      routeContext.errorHandler = this._errorHandler
     })
 
-    return this
-  }
-
-  function setErrorHandler(handler) {
-    throwIfAppIsLoaded('Cannot call "setErrorHandler()" when app is already loaded')
-
-    if (typeof handler !== 'function') {
-      throw new TypeError(
-        `Error handler must be a function. Got value with type '${typeof handler}': ${handler}`
-      )
-    }
-
-    this._errorHandler = handler
     return this
   }
 

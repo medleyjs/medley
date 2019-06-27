@@ -15,13 +15,13 @@ const app = medley()
 app.route({
   method: 'GET',
   path: '/',
-  async handler(req, res) { // eslint-disable-line require-await
+  async handler(req, res) {
     res.send()
   },
 })
 
 app.addHook('onSend', (req) => {
-  req.stream.socket.destroy()
+  req.stream.socket.destroy() // Close the socket to allow the test to finish
   throw new Error('kaboom')
 })
 

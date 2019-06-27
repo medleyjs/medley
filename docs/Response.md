@@ -136,9 +136,9 @@ Note that calling `res.set()` after `res.append()` will reset the previously set
 ### `res.error([statusCode,] error)`
 
 + `error` *([Error](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error))*
-+ `statusCode` *(number)* - The status code for the response. See [below](#error-status-code) for the default value.
++ `statusCode` *(number)* - The status code for the error.
 
-Sends an error response.
+Invokes the [`onError` hooks](Hooks.md#onError-hook) to send an error response.
 
 ```js
 app.get('/', function(req, res) {
@@ -152,34 +152,15 @@ app.get('/', function(req, res) {
 });
 ```
 
-With a specific status code:
+If the status code parameter is used, it will be attached to the error.
 
 ```js
-res.error(400, error)
+res.error(400, err)
+
+// Which is really just a convenience for:
+err.status = 400
+res.error(err)
 ```
-
-If a custom error handler (set with [`app.setErrorHandler()`](App.md#set-error-handler)) is
-associated with the route, it is invoked. Otherwise the following default JSON response will be sent:
-
-```js
-{
-  error: String      // The HTTP error message for the status code
-  message: String    // The error message (on the error object)
-  statusCode: Number // The error status code
-}
-```
-
-#### Error Status Code
-
-The status code for the response is chosen in the following order:
-
-1. The `statusCode` parameter passed to the method.
-1. The `status` property on the error object.
-1. The `statusCode` property on the error object.
-1. If none of the above, `500` is used.
-
-**Note:** The status code must be between `200` and `599` (inclusive) to be
-compatible with HTTP/2.
 
 <a id="get"></a>
 ### `res.get(field)`

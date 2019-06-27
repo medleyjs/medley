@@ -20,12 +20,12 @@ app.route({
   },
 })
 
-app.setErrorHandler(async (_, req, res) => { // eslint-disable-line require-await
+app.addHook('onError', async (_, req, res) => {
   res.send()
 })
 
 app.addHook('onSend', (req) => {
-  req.stream.socket.destroy()
+  req.stream.socket.destroy() // Close the socket to allow the test to finish
   throw new Error('kaboom')
 })
 

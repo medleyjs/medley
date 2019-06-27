@@ -14,12 +14,12 @@ test('adding a hook should throw if given invalid parameters', (t) => {
 
   t.throws(
     () => app.addHook(null, noop),
-    new TypeError('The hook name must be a string')
+    new Error("'null' is not a valid hook name. Valid hooks are: 'onRequest', 'onSend', 'onFinished', 'onError'")
   )
 
   t.throws(
     () => app.addHook('notHook', noop),
-    new Error("'notHook' is not a valid hook name. Valid hooks are: 'onRequest', 'onSend', 'onFinished'")
+    new Error("'notHook' is not a valid hook name. Valid hooks are: 'onRequest', 'onSend', 'onFinished', 'onError'")
   )
 
   t.throws(
@@ -44,16 +44,6 @@ test('hooks', (t) => {
     }
   })
 
-  app.addHook('onSend', function(req, res, _payload, next) {
-    t.ok('onSend called')
-    next()
-  })
-
-  app.addHook('onFinished', function(req, res) {
-    t.equal(req.onRequestVal, 'the request is coming')
-    t.equal(res.stream.finished, true)
-  })
-
   app.get('/', function(req, res) {
     t.is(req.onRequestVal, 'the request is coming')
     t.is(res.onRequestVal, 'the response has come')
@@ -62,6 +52,16 @@ test('hooks', (t) => {
 
   app.delete('/', function(req, res) {
     res.send(payload)
+  })
+
+  app.addHook('onSend', function(req, res, _payload, next) {
+    t.ok('onSend called')
+    next()
+  })
+
+  app.addHook('onFinished', function(req, res) {
+    t.equal(req.onRequestVal, 'the request is coming')
+    t.equal(res.stream.finished, true)
   })
 
   request(app, '/', (err, res) => {
@@ -77,22 +77,30 @@ test('hooks', (t) => {
   })
 })
 
-test('hooks can return a promise to continue', (t) => {
-  t.plan(4)
+test('async hooks continue automatically', (t) => {
+  t.plan(6)
 
   const app = medley()
 
   app.addHook('onRequest', () => {
-    t.pass('onRequest hook called')
+    t.pass('onRequest 1 hook called')
     return Promise.resolve()
+  })
+
+  app.addHook('onRequest', async () => {
+    t.pass('onRequest hook 2 called')
   })
 
   app.addHook('onSend', () => {
-    t.pass('onSend hook called')
+    t.pass('onSend 1 hook called')
     return Promise.resolve()
   })
 
-  // onFinished hooks are synchronous so this doesn't apply to them
+  app.addHook('onSend', async () => {
+    t.pass('onSend 2 hook called')
+  })
+
+  // onFinished hooks are synchronous, so this doesn't apply to them
 
   app.get('/', (req, res) => {
     res.send()
@@ -484,12 +492,48 @@ test('onSend hooks can modify payload', (t) => {
   })
 })
 
-test('onSend hooks can clear payload', (t) => {
-  t.plan(6)
+test('async onSend hooks can modify payload', (t) => {
+  t.plan(10)
+  const app = medley()
+  const payload = {hello: 'world'}
+  const modifiedPayload = {hello: 'modified'}
+  const anotherPayload = '"winter is coming"'
+
+  app.addHook('onSend', async (req, res, serializedPayload) => {
+    t.ok('onSend called')
+    t.deepEqual(JSON.parse(serializedPayload), payload)
+    return serializedPayload.replace('world', 'modified')
+  })
+
+  app.addHook('onSend', async (req, res, serializedPayload) => {
+    t.ok('onSend called')
+    t.deepEqual(JSON.parse(serializedPayload), modifiedPayload)
+    return anotherPayload
+  })
+
+  app.addHook('onSend', async (req, res, serializedPayload) => {
+    t.ok('onSend called')
+    t.strictEqual(serializedPayload, anotherPayload)
+  })
+
+  app.get('/', (req, res) => {
+    res.send(payload)
+  })
+
+  request(app, '/', (err, res) => {
+    t.error(err)
+    t.strictEqual(res.body, anotherPayload)
+    t.strictEqual(res.statusCode, 200)
+    t.strictEqual(res.headers['content-length'], '18')
+  })
+})
+
+test('onSend hooks can clear the payload', (t) => {
+  t.plan(5)
+
   const app = medley()
 
   app.addHook('onSend', (req, res, payload, next) => {
-    t.ok('onSend called')
     res.status(304)
     next(null, null)
   })
@@ -498,45 +542,111 @@ test('onSend hooks can clear payload', (t) => {
     res.send({hello: 'world'})
   })
 
-  request(app, {
-    method: 'GET',
-    url: '/',
-  }, (err, res) => {
+  request(app, '/', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 304)
-    t.strictEqual(res.body, '')
     t.strictEqual(res.headers['content-length'], undefined)
     t.strictEqual(res.headers['content-type'], 'application/json')
+    t.strictEqual(res.body, '')
   })
 })
 
-test('onSend hook throws', (t) => {
-  t.plan(6)
+test('async onSend hooks can clear the payload', (t) => {
+  t.plan(5)
+
   const app = medley()
-  app.addHook('onSend', (req, res, payload, next) => {
-    if (req.method === 'DELETE') {
-      next(new Error('some error'))
-      return
-    }
-    next()
-  })
 
   app.get('/', (req, res) => {
     res.send({hello: 'world'})
   })
 
-  app.delete('/', (req, res) => {
-    res.send({hello: 'world'})
+  app.addHook('onSend', async (req, res) => {
+    res.statusCode = 304
+    return null
   })
 
   request(app, '/', (err, res) => {
     t.error(err)
-    t.strictEqual(res.statusCode, 200)
-    t.strictEqual(res.headers['content-length'], '' + res.body.length)
-    t.strictDeepEqual(JSON.parse(res.body), {hello: 'world'})
+    t.equal(res.statusCode, 304)
+    t.equal(res.headers['content-length'], undefined)
+    t.equal(res.headers['content-type'], 'application/json')
+    t.equal(res.body, '')
+  })
+})
+
+test('onError hook should support encapsulation', (t) => {
+  t.plan(9)
+
+  const app = medley()
+
+  app.createSubApp()
+    .addHook('onError', (err, req, res) => {
+      t.equal(err.message, 'plugin error')
+      t.equal(req.url, '/plugin')
+      t.equal(res.sent, false)
+      res.status(400).send('plugin error')
+    })
+    .get('/plugin', (req, res) => {
+      res.error(new Error('plugin error'))
+    })
+
+  app.get('/root', (req, res) => {
+    res.error(new Error('root error'))
   })
 
-  request(app, '/', {method: 'DELETE'}, (err, res) => {
+  request(app, '/root', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 500)
+    t.strictDeepEqual(JSON.parse(res.body), {
+      error: 'Internal Server Error',
+      message: 'root error',
+      statusCode: 500,
+    })
+  })
+
+  request(app, '/plugin', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 400)
+    t.equal(res.body, 'plugin error')
+  })
+})
+
+test('onError hooks in sub-app should run after parent’s hooks', (t) => {
+  t.plan(8)
+
+  const app = medley()
+
+  app.get('/first', (req, res) => {
+    res.error(new Error('first error'))
+  })
+
+  app.addHook('onError', (err, req, res, next) => {
+    if (req.url === '/first') {
+      t.equal(err.message, 'first error')
+    } else if (req.url === '/second') {
+      t.equal(err.message, 'second error')
+    }
+    req.first = true
+    next()
+  })
+
+  app.createSubApp()
+    .get('/second', (req, res) => {
+      res.error(new Error('second error'))
+    })
+    .addHook('onError', (err, req, res, next) => {
+      t.equal(err.message, 'second error')
+      t.equal(req.first, true)
+      req.second = true
+      next()
+    })
+
+  request(app, '/first', (err, res) => {
+    t.error(err)
+    t.strictEqual(res.statusCode, 500)
+  })
+
+  request(app, '/second', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 500)
   })
@@ -596,16 +706,25 @@ test('onRequest hooks should be able to send a response', (t) => {
 })
 
 test('async onRequest hooks should be able to send a response', (t) => {
-  t.plan(3)
+  t.plan(4)
+
   const app = medley()
 
-  app.addHook('onRequest', (req, res) => {
+  app.addHook('onRequest', async (req, res) => {
     res.send('hello')
-    return Promise.resolve(false)
+    return false
+  })
+
+  app.addHook('onRequest', async () => {
+    t.fail('next onRequest hook should not be called')
+  })
+
+  app.addHook('onSend', async (req, res, payload) => {
+    t.equal(payload, 'hello')
   })
 
   app.get('/', () => {
-    t.fail('this should not be called')
+    t.fail('handler should not be called')
   })
 
   request(app, '/', (err, res) => {
@@ -770,12 +889,93 @@ test('onFinished hooks can be added after the route is defined', (t) => {
   })
 })
 
-test('async onRequest hooks should handle errors', (t) => {
-  t.plan(3)
+test('onError hooks can be added after the route is defined', (t) => {
+  t.plan(16)
+
   const app = medley()
 
+  app.createSubApp()
+    .addHook('onError', (err, req, res, next) => {
+      t.equal(err.message, 'err')
+      t.equal(req.previous, undefined)
+      req.previous = 1
+      next()
+    })
+    .get('/encapsulated', (req, res) => {
+      res.error(new Error('err'))
+    })
+    .addHook('onError', (err, req, res) => {
+      t.equal(err.message, 'err')
+      t.equal(req.previous, 1)
+      res.status(500).send('encapsulated error')
+    })
+
+  app
+    .get('/', (req, res) => {
+      res.error(new Error('err'))
+    })
+    .addHook('onError', (err, req, res, next) => {
+      t.equal(err.message, 'err')
+      t.equal(req.previous, undefined)
+      req.previous = 1
+      next()
+    })
+    .addHook('onError', (err, req, res, next) => {
+      t.equal(err.message, 'err')
+      t.strictEqual(req.previous, 1)
+      req.previous = 2
+      next()
+    })
+    .addHook('onError', (err, req, res) => {
+      t.equal(err.message, 'err')
+      t.strictEqual(req.previous, 2)
+      res.status(500).send('root error')
+    })
+
+  request(app, '/encapsulated', (err, res) => {
+    t.error(err)
+    t.strictEqual(res.statusCode, 500)
+    t.strictEqual(res.body, 'encapsulated error')
+  })
+
+  request(app, '/', (err, res) => {
+    t.error(err)
+    t.strictEqual(res.statusCode, 500)
+    t.strictEqual(res.body, 'root error')
+  })
+})
+
+test('onRequest hooks can trigger onError hooks', (t) => {
+  t.plan(3)
+
+  const app = medley()
+
+  app.addHook('onRequest', (req, res, next) => {
+    next(new Error('onRequest error'))
+  })
+
   app.addHook('onRequest', () => {
-    return Promise.reject(new Error('onRequest error'))
+    t.fail('this should not be called')
+  })
+
+  app.get('/', () => {
+    t.fail('this should not be called')
+  })
+
+  request(app, '/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 500)
+    t.equal(JSON.parse(res.body).message, 'onRequest error')
+  })
+})
+
+test('async onRequest hooks can trigger onError hooks', (t) => {
+  t.plan(3)
+
+  const app = medley()
+
+  app.addHook('onRequest', async () => {
+    throw new Error('onRequest error')
   })
 
   app.addHook('onRequest', () => {

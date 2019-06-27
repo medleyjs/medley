@@ -7,7 +7,7 @@ object which is used to customize the resulting instance. The options are:
 + [`http2`](#http2)
 + [`https`](#https)
 + [`maxParamLength`](#maxparamlength)
-+ [`onStreamError`](#onstreamerror)
++ [`onErrorSending`](#onerrorsending)
 + [`queryParser`](#queryparser)
 + [`strictRouting`](#strictrouting)
 + [`trustProxy`](#trustproxy)
@@ -62,25 +62,30 @@ for routes with regex parameters.
 
 *If the maximum length limit is reached, the request will not match the route.*
 
-### `onStreamError`
+### `onErrorSending`
 
-Default: `undefined`
+Type: `function(err)`
 
 A function that will be called with an error as the first parameter if an error occurs
-while sending a stream after headers have already been sent. Normally if an error occurs,
-it will be passed to the [error handler](App.md#set-error-handler), but when sending a
-stream it is possible for an error to occur after headers have already been sent. In that
-case, it is no longer possible to send a custom error response. This callback provides an
-opportunity to do something with the error (such as log it).
+while trying to send a response. Errors that occur while sending a response can’t be
+sent to the [`onError` hooks](Hooks.md#onError-hook) (since these errors can occur
+after the `onError` hooks have already run), so the best that can be done is to
+log the error.
 
 ```js
+const logger = require('some-logger'); // Just an example
 const app = medley({
-  onStreamError: function(err) {
-    console.error(err);
-    // NOTE: Always use a real logger instead of console.error()
+  onErrorSending: (err) => {
+    logger.error(err);
+    // Always use a real logger rather than console.error()
   }
 });
 ```
+
+Specifically, this function will be called when:
+
++ Sending a stream errors
++ An [`onSend` hook](Hooks.md#onSend-hook) errors
 
 ### `queryParser`
 
