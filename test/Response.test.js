@@ -28,11 +28,11 @@ test('Response properties', (t) => {
 
 test('Response aliases', (t) => {
   const response = new Response()
-  t.equal(response.appendHeader, response.append)
-  t.equal(response.getHeader, response.get)
-  t.equal(response.hasHeader, response.has)
-  t.equal(response.removeHeader, response.remove)
-  t.equal(response.setHeader, response.set)
+  t.equal(response.append, response.appendHeader)
+  t.equal(response.get, response.getHeader)
+  t.equal(response.has, response.hasHeader)
+  t.equal(response.remove, response.removeHeader)
+  t.equal(response.set, response.setHeader)
   t.end()
 })
 
@@ -95,40 +95,40 @@ test('res.status() should set the status code', (t) => {
   })
 })
 
-test('res.append() sets headers and adds to existing headers', (t) => {
+test('res.appendHeader() sets headers and adds to existing headers', (t) => {
   t.plan(18)
 
   const app = medley()
 
   app.get('/', (req, res) => {
-    res.append('x-custom-header', 'first')
-    t.equal(res.get('x-custom-header'), 'first')
+    res.appendHeader('x-custom-header', 'first')
+    t.equal(res.getHeader('x-custom-header'), 'first')
 
-    t.equal(res.append('x-custom-header', 'second'), res)
-    t.deepEqual(res.get('x-custom-header'), ['first', 'second'])
+    t.equal(res.appendHeader('x-custom-header', 'second'), res)
+    t.deepEqual(res.getHeader('x-custom-header'), ['first', 'second'])
 
-    t.equal(res.append('x-custom-header', ['3', '4']), res)
-    t.deepEqual(res.get('x-custom-header'), ['first', 'second', '3', '4'])
+    t.equal(res.appendHeader('x-custom-header', ['3', '4']), res)
+    t.deepEqual(res.getHeader('x-custom-header'), ['first', 'second', '3', '4'])
 
     res.send()
   })
 
   app.get('/append-multiple-to-string', (req, res) => {
-    res.append('x-custom-header', 'first')
-    t.equal(res.get('x-custom-header'), 'first')
+    res.appendHeader('x-custom-header', 'first')
+    t.equal(res.getHeader('x-custom-header'), 'first')
 
-    res.append('x-custom-header', ['second', 'third'])
-    t.deepEqual(res.get('x-custom-header'), ['first', 'second', 'third'])
+    res.appendHeader('x-custom-header', ['second', 'third'])
+    t.deepEqual(res.getHeader('x-custom-header'), ['first', 'second', 'third'])
 
     res.send()
   })
 
   app.get('/append-case-insensitive', (req, res) => {
-    res.append('X-Custom-Header', 'first')
-    t.equal(res.get('x-custom-header'), 'first')
+    res.appendHeader('X-Custom-Header', 'first')
+    t.equal(res.getHeader('x-custom-header'), 'first')
 
-    res.append('X-Custom-Header', ['second', 'third'])
-    t.deepEqual(res.get('x-custom-header'), ['first', 'second', 'third'])
+    res.appendHeader('X-Custom-Header', ['second', 'third'])
+    t.deepEqual(res.getHeader('x-custom-header'), ['first', 'second', 'third'])
 
     res.send()
   })
@@ -152,23 +152,23 @@ test('res.append() sets headers and adds to existing headers', (t) => {
   })
 })
 
-test('res.append() does not allow setting a header value to `undefined`', (t) => {
+test('res.appendHeader() does not allow setting a header value to `undefined`', (t) => {
   t.plan(8)
 
   const app = medley()
 
   app.get('/', (req, res) => {
     try {
-      res.append('set-cookie', undefined)
+      res.appendHeader('set-cookie', undefined)
       t.fail('should not allow setting a header to `undefined`')
     } catch (err) {
       t.type(err, TypeError)
       t.equal(err.message, "Cannot set header value to 'undefined'")
     }
 
-    res.append('x-custom-header', ['a value'])
+    res.appendHeader('x-custom-header', ['a value'])
     try {
-      res.append('x-custom-header', undefined)
+      res.appendHeader('x-custom-header', undefined)
       t.fail('should not allow setting a header to `undefined`')
     } catch (err) {
       t.type(err, TypeError)
@@ -186,29 +186,29 @@ test('res.append() does not allow setting a header value to `undefined`', (t) =>
   })
 })
 
-test('res.get/set() get and set the response headers', (t) => {
+test('res.getHeader/setHeader() get and set the response headers', (t) => {
   t.plan(16)
 
   const app = medley()
 
   app.get('/', (req, res) => {
-    t.equal(res.get('x-custom-header'), undefined)
+    t.equal(res.getHeader('x-custom-header'), undefined)
 
-    t.equal(res.set('x-custom-header', 'custom header'), res)
-    t.equal(res.get('x-custom-header'), 'custom header')
+    t.equal(res.setHeader('x-custom-header', 'custom header'), res)
+    t.equal(res.getHeader('x-custom-header'), 'custom header')
 
-    res.set('content-type', 'custom/type')
+    res.setHeader('content-type', 'custom/type')
     res.send('text')
   })
 
   app.get('/case-insensitive', (req, res) => {
-    t.equal(res.get('X-Custom-Header'), undefined)
+    t.equal(res.getHeader('X-Custom-Header'), undefined)
 
-    res.set('X-Custom-Header', 'custom header')
-    t.equal(res.get('X-Custom-Header'), 'custom header')
-    t.equal(res.get('x-custom-header'), 'custom header')
+    res.setHeader('X-Custom-Header', 'custom header')
+    t.equal(res.getHeader('X-Custom-Header'), 'custom header')
+    t.equal(res.getHeader('x-custom-header'), 'custom header')
 
-    res.set('Content-Type', 'custom/type')
+    res.setHeader('Content-Type', 'custom/type')
     res.send('text')
   })
 
@@ -229,19 +229,19 @@ test('res.get/set() get and set the response headers', (t) => {
   })
 })
 
-test('res.has() checks if a response header has been set', (t) => {
+test('res.hasHeader() checks if a response header has been set', (t) => {
   t.plan(6)
 
   const app = medley()
 
   app.get('/', (req, res) => {
-    t.equal(res.has('x-custom-header'), false)
+    t.equal(res.hasHeader('x-custom-header'), false)
 
-    res.set('x-custom-header', 'custom header')
-    t.equal(res.has('x-custom-header'), true)
-    t.equal(res.has('X-Custom-Header'), true, 'is case-insensitive')
+    res.setHeader('x-custom-header', 'custom header')
+    t.equal(res.hasHeader('x-custom-header'), true)
+    t.equal(res.hasHeader('X-Custom-Header'), true, 'is case-insensitive')
 
-    t.equal(res.has('__proto__'), false, 'does not report unset properties that are on Object.prototype')
+    t.equal(res.hasHeader('__proto__'), false, 'does not report unset properties that are on Object.prototype')
 
     res.send()
   })
@@ -252,22 +252,22 @@ test('res.has() checks if a response header has been set', (t) => {
   })
 })
 
-test('res.set() accepts an object of headers', (t) => {
+test('res.setHeader() accepts an object of headers', (t) => {
   t.plan(8)
 
   const app = medley()
 
   app.get('/', (req, res) => {
-    res.set({
+    res.setHeader({
       'X-Custom-Header1': 'custom header1',
       'x-custom-header2': 'custom header2',
     })
-    t.equal(res.get('x-custom-header1'), 'custom header1')
-    t.equal(res.get('x-custom-header2'), 'custom header2')
+    t.equal(res.getHeader('x-custom-header1'), 'custom header1')
+    t.equal(res.getHeader('x-custom-header2'), 'custom header2')
 
-    t.equal(res.set({}), res)
+    t.equal(res.setHeader({}), res)
 
-    res.set({'content-type': 'custom/type'}).send()
+    res.setHeader({'content-type': 'custom/type'}).send()
   })
 
   request(app, '/', (err, res) => {
@@ -279,14 +279,14 @@ test('res.set() accepts an object of headers', (t) => {
   })
 })
 
-test('res.set() does not allow setting a header value to `undefined`', (t) => {
+test('res.setHeader() does not allow setting a header value to `undefined`', (t) => {
   t.plan(9)
 
   const app = medley()
 
   app.get('/', (req, res) => {
     try {
-      res.set('content-type', undefined)
+      res.setHeader('content-type', undefined)
       t.fail('should not allow setting a header to `undefined`')
     } catch (err) {
       t.type(err, TypeError)
@@ -294,7 +294,7 @@ test('res.set() does not allow setting a header value to `undefined`', (t) => {
     }
 
     try {
-      res.set({
+      res.setHeader({
         'x-custom-header1': 'string',
         'x-custom-header2': undefined,
       })
@@ -316,27 +316,27 @@ test('res.set() does not allow setting a header value to `undefined`', (t) => {
   })
 })
 
-test('res.remove() removes response headers', (t) => {
+test('res.removeHeader() removes response headers', (t) => {
   t.plan(10)
 
   const app = medley()
 
   app.get('/', (req, res) => {
-    res.set('x-custom-header', 'custom header')
-    t.equal(res.get('x-custom-header'), 'custom header')
+    res.setHeader('x-custom-header', 'custom header')
+    t.equal(res.getHeader('x-custom-header'), 'custom header')
 
-    t.equal(res.remove('x-custom-header'), res)
-    t.equal(res.get('x-custom-header'), undefined)
-
-    res
-      .set('x-custom-header-2', ['a', 'b'])
-      .remove('x-custom-header-2')
-    t.equal(res.get('x-custom-header-2'), undefined)
+    t.equal(res.removeHeader('x-custom-header'), res)
+    t.equal(res.getHeader('x-custom-header'), undefined)
 
     res
-      .set('X-Custom-Header-3', 'custom header 3')
-      .remove('X-Custom-Header-3')
-    t.equal(res.get('X-Custom-Header-3'), undefined)
+      .setHeader('x-custom-header-2', ['a', 'b'])
+      .removeHeader('x-custom-header-2')
+    t.equal(res.getHeader('x-custom-header-2'), undefined)
+
+    res
+      .setHeader('X-Custom-Header-3', 'custom header 3')
+      .removeHeader('X-Custom-Header-3')
+    t.equal(res.getHeader('X-Custom-Header-3'), undefined)
 
     res.send()
   })

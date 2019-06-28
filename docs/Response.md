@@ -25,14 +25,14 @@ app.get('/user/:id', function(req, res) {
 
 **Methods:**
 
-+ [`.append(field, value)`](#append)
++ [`.appendHeader(field, value)`](#appendHeader)
 + [`.error([statusCode,] error)`](#error)
-+ [`.get(field)`](#get)
-+ [`.has(field)`](#has)
++ [`.getHeader(field)`](#getHeader)
++ [`.hasHeader(field)`](#hasHeader)
 + [`.redirect([statusCode,] url)`](#redirect)
-+ [`.remove(field)`](#remove)
++ [`.removeHeader(field)`](#removeHeader)
 + [`.send([payload])`](#send)
-+ [`.set(field [, value])`](#set)
++ [`.setHeader(field [, value])`](#setHeader)
 + [`.status(statusCode)`](#status)
 + [`.type(contentType)`](#type)
 
@@ -112,25 +112,25 @@ is not supported by Medley and may cause undefined behavior.
 
 ## Methods
 
-<a id="append"></a>
-### `res.append(field, value)`
+<a id="appendHeader"></a>
+### `res.appendHeader(name, value)`
 
-+ `field` *(string)*
++ `name` *(string)*
 + `value` *(string|string[])*
 + Chainable
-+ Alias: `res.appendHeader()`
++ Alias: `res.append()`
 
-Appends the `value` to the HTTP response header `field`. If the header is not
-already set, it creates the header with the specified `value`.
+Appends the `value` to the HTTP response header. If the header is not
+already set, this is the same as calling [`res.setHeader()`](#setHeader).
 
 ```js
-res.append('set-cookie', 'foo=bar')
-res.get('set-cookie') // 'foo=bar'
-res.append('set-cookie', 'bar=baz; Path=/; HttpOnly')
-res.get('set-cookie') // ['foo=bar', 'bar=baz; Path=/; HttpOnly']
+res.appendHeader('set-cookie', 'foo=bar')
+res.getHeader('set-cookie') // 'foo=bar'
+res.appendHeader('set-cookie', 'bar=baz; Path=/; HttpOnly')
+res.getHeader('set-cookie') // ['foo=bar', 'bar=baz; Path=/; HttpOnly']
 ```
 
-Note that calling `res.set()` after `res.append()` will reset the previously set header value.
+Note that calling `res.setHeader()` after `res.appendHeader()` will overwrite the header value.
 
 <a id="error"></a>
 ### `res.error([statusCode,] error)`
@@ -162,35 +162,35 @@ err.status = 400
 res.error(err)
 ```
 
-<a id="get"></a>
-### `res.get(field)`
+<a id="getHeader"></a>
+### `res.getHeader(name)`
 
-+ `field` *(string)*
++ `name` *(string)*
 + Returns: *(string|string[])*
-+ Alias: `res.getHeader()`
++ Alias: `res.get()`
 
 Gets a previously set response header.
 
 ```js
-res.get('content-type') // 'application/json'
+res.getHeader('content-type') // 'application/json'
 ```
 
-**Tip:** While not required, it is best to use lowercase header field names for the best performance
+**Tip:** While not required, using lowercase header names is better for performance
 and for consistency with HTTP/2 (which always sends header names in lowercase).
 
-<a id="has"></a>
-### `res.has(field)`
+<a id="hasHeader"></a>
+### `res.hasHeader(name)`
 
-+ `field` *(string)*
++ `name` *(string)*
 + Returns: *(boolean)*
-+ Alias: `res.hasHeader()`
++ Alias: `res.has()`
 
 Returns `true` if the specified response header was previously set, otherwise returns `false`.
 
 ```js
-res.has('content-type') // false
-res.set('content-type', 'application/json')
-res.has('content-type') // true
+res.hasHeader('content-type') // false
+res.setHeader('content-type', 'application/json')
+res.hasHeader('content-type') // true
 ```
 
 <a id="redirect"></a>
@@ -209,17 +209,17 @@ res.redirect('/home');
 res.redirect(301, '/moved-permanently');
 ```
 
-<a id="remove"></a>
-### `res.remove(field)`
+<a id="removeHeader"></a>
+### `res.removeHeader(name)`
 
-+ `field` *(string)*
++ `name` *(string)*
 + Chainable
-+ Alias: `res.removeHeader()`
++ Alias: `res.remove()`
 
 Removes a response header.
 
 ```js
-res.remove('content-type')
+res.removeHeader('content-type')
 ```
 
 <a id="send"></a>
@@ -331,32 +331,32 @@ app.get('/', (req, res) => {
 
 See [Routes#async-await](Routes.md#async-await) for more examples.
 
-<a id="set"></a>
-### `res.set(field [, value])`
+<a id="setHeader"></a>
+### `res.setHeader(name [, value])`
 
-+ `field` *(string|object)*
++ `name` *(string|object)*
 + `value` *(string|string[])*
 + Chainable
-+ Alias: `res.setHeader()`
++ Alias: `res.set()`
 
 Sets a response HTTP header. If the header already exists, its value will be replaced.
-Use an array of strings to set multiple headers for the same field.
+Supports using an array of strings to set multiple headers with the same same.
 
 ```js
-res.set('content-encoding', 'gzip')
-res.set('set-cookie', ['user=medley', 'session=123456'])
+res.setHeader('content-encoding', 'gzip')
+res.setHeader('set-cookie', ['user=medley', 'session=123456'])
 ```
 
-Multiple headers can be set at once by passing an object as the `field` parameter:
+Multiple headers can be set at once by passing an object as the `name` parameter:
 
 ```js
-res.set({
+res.setHeader({
   'content-type': 'text/plain',
   'etag': '123456'
 });
 ```
 
-**Tip:** While not required, it is best to use lowercase header field names for the best performance
+**Tip:** While not required, using lowercase header names is better for performance
 and for consistency with HTTP/2 (which always sends header names in lowercase).
 
 <a id="status"></a>
@@ -387,6 +387,6 @@ Sets the `Content-Type` header for the response.
 res.type('text/html')
 ```
 
-This is a shortcut for: `res.set('content-type', contentType)`.
+This is a shortcut for: `res.setHeader('content-type', contentType)`.
 
 [http.ServerResponse]: https://nodejs.org/dist/latest/docs/api/http.html#http_class_http_serverresponse

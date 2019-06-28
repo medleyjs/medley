@@ -359,7 +359,7 @@ test('onSend hook is called after payload is serialized and headers are set', (t
     app.createSubApp()
       .addHook('onSend', (req, res, serializedPayload, next) => {
         t.strictDeepEqual(JSON.parse(serializedPayload), payload)
-        t.equal(res.get('content-type'), 'application/json')
+        t.equal(res.getHeader('content-type'), 'application/json')
         next()
       })
       .get('/json', (req, res) => {
@@ -370,7 +370,7 @@ test('onSend hook is called after payload is serialized and headers are set', (t
   app.createSubApp()
     .addHook('onSend', (req, res, serializedPayload, next) => {
       t.strictEqual(serializedPayload, 'some text')
-      t.strictEqual(res.get('content-type'), 'text/plain; charset=utf-8')
+      t.strictEqual(res.getHeader('content-type'), 'text/plain; charset=utf-8')
       next()
     })
     .get('/text', (req, res) => {
@@ -383,7 +383,7 @@ test('onSend hook is called after payload is serialized and headers are set', (t
     app.createSubApp()
       .addHook('onSend', (req, res, serializedPayload, next) => {
         t.strictEqual(serializedPayload, payload)
-        t.strictEqual(res.get('content-type'), 'application/octet-stream')
+        t.strictEqual(res.getHeader('content-type'), 'application/octet-stream')
         next()
       })
       .get('/buffer', (req, res) => {
@@ -403,7 +403,7 @@ test('onSend hook is called after payload is serialized and headers are set', (t
     app.createSubApp()
       .addHook('onSend', (req, res, serializedPayload, next) => {
         t.strictEqual(serializedPayload, payload)
-        t.strictEqual(res.get('content-type'), 'application/octet-stream')
+        t.strictEqual(res.getHeader('content-type'), 'application/octet-stream')
         next()
       })
       .get('/stream', (req, res) => {

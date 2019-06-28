@@ -57,7 +57,7 @@ t.test('head request without sending a body', (t) => {
   })
 
   app.head('/length-set', (req, res) => {
-    res.set('content-length', '4').send()
+    res.setHeader('content-length', '4').send()
   })
 
   request(app, {

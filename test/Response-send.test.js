@@ -41,7 +41,7 @@ test('within a sub-app', (t) => {
 
   app.get('/', function(req, res) {
     res.status(201)
-    res.set('content-type', 'text/plain')
+    res.setHeader('content-type', 'text/plain')
     res.send('hello world!')
   })
 
@@ -59,7 +59,7 @@ test('within a sub-app', (t) => {
 
   app.createSubApp()
     .addHook('onSend', function(req, res, payload, next) {
-      res.set('x-onsend', 'yes')
+      res.setHeader('x-onsend', 'yes')
       next()
     })
     .get('/redirect-onsend', function(req, res) {
@@ -164,7 +164,7 @@ test('buffer with Content-Type should not change the Content-Type', (t) => {
   const app = medley()
 
   app.get('/', function(req, res) {
-    res.set('content-type', 'text/plain')
+    res.setHeader('content-type', 'text/plain')
     res.send(Buffer.alloc(1024))
   })
 
