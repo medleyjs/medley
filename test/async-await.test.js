@@ -55,11 +55,10 @@ test('should throw if an async function returns a value and res.send() is also c
 
   app.get('/', async (req, res) => {
     setImmediate(() => {
-      try {
-        res.send()
-      } catch (err) {
-        t.equal(err.message, 'Cannot call .send() when a response has already been sent')
-      }
+      t.throws(
+        () => res.send(),
+        new Error('Cannot call .send() when a response has already been sent')
+      )
     })
     return 'value'
   })
@@ -77,11 +76,10 @@ test('should throw if an async function returns a value and res.error() is also 
 
   app.get('/', async (req, res) => {
     setImmediate(() => {
-      try {
-        res.error()
-      } catch (err) {
-        t.equal(err.message, 'Cannot call .error() when a response has already been sent')
-      }
+      t.throws(
+        () => res.error(),
+        new Error('Cannot call .error() when a response has already been sent')
+      )
     })
     return 'value'
   })

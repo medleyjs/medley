@@ -23,11 +23,11 @@ test('res.send() throws if called after response is sent', (t) => {
 
   app.get('/', (req, res) => {
     res.send('first')
-    try {
-      res.send('second')
-    } catch (err) {
-      t.equal(err.message, 'Cannot call .send() when a response has already been sent')
-    }
+
+    t.throws(
+      () => res.send('second'),
+      new Error('Cannot call .send() when a response has already been sent')
+    )
   })
 
   request(app, '/', (err, res) => {

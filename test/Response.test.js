@@ -43,13 +43,13 @@ test('res.headersSent is a getter for res.stream.headersSent', (t) => {
   res.stream.headersSent = true
   t.equal(res.headersSent, true)
 
-  try {
-    res.headersSent = false
-    t.fail('should not be able to change res.headersSent')
-  } catch (err) {
-    t.type(err, Error)
-    t.match(err.message, 'Cannot set property headersSent')
-  }
+  t.throws(
+    () => {
+      res.headersSent = false
+    },
+    new Error('Cannot set property headersSent'),
+    'Should not be able to change res.headersSent'
+  )
 
   t.end()
 })
@@ -153,27 +153,22 @@ test('res.appendHeader() sets headers and adds to existing headers', (t) => {
 })
 
 test('res.appendHeader() does not allow setting a header value to `undefined`', (t) => {
-  t.plan(8)
+  t.plan(6)
 
   const app = medley()
 
   app.get('/', (req, res) => {
-    try {
-      res.appendHeader('set-cookie', undefined)
-      t.fail('should not allow setting a header to `undefined`')
-    } catch (err) {
-      t.type(err, TypeError)
-      t.equal(err.message, "Cannot set header value to 'undefined'")
-    }
+    t.throws(
+      () => res.appendHeader('set-cookie', undefined),
+      new TypeError("Cannot set header value to 'undefined'")
+    )
 
     res.appendHeader('x-custom-header', ['a value'])
-    try {
-      res.appendHeader('x-custom-header', undefined)
-      t.fail('should not allow setting a header to `undefined`')
-    } catch (err) {
-      t.type(err, TypeError)
-      t.equal(err.message, "Cannot set header value to 'undefined'")
-    }
+
+    t.throws(
+      () => res.appendHeader('x-custom-header', undefined),
+      new TypeError("Cannot set header value to 'undefined'")
+    )
 
     res.send()
   })
@@ -280,30 +275,22 @@ test('res.setHeader() accepts an object of headers', (t) => {
 })
 
 test('res.setHeader() does not allow setting a header value to `undefined`', (t) => {
-  t.plan(9)
+  t.plan(7)
 
   const app = medley()
 
   app.get('/', (req, res) => {
-    try {
-      res.setHeader('content-type', undefined)
-      t.fail('should not allow setting a header to `undefined`')
-    } catch (err) {
-      t.type(err, TypeError)
-      t.equal(err.message, "Cannot set header value to 'undefined'")
-    }
-
-    try {
-      res.setHeader({
+    t.throws(
+      () => res.setHeader('content-type', undefined),
+      new TypeError("Cannot set header value to 'undefined'")
+    )
+    t.throws(
+      () => res.setHeader({
         'x-custom-header1': 'string',
         'x-custom-header2': undefined,
-      })
-      t.fail('should not allow setting a header to `undefined`')
-    } catch (err) {
-      t.type(err, TypeError)
-      t.equal(err.message, "Cannot set header value to 'undefined'")
-    }
-
+      }),
+      new TypeError("Cannot set header value to 'undefined'")
+    )
     res.send()
   })
 

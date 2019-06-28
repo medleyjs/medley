@@ -220,17 +220,14 @@ test('cannot add another route after server is listening', (t) => {
 
   app.listen(0, (err) => {
     t.error(err)
-
-    try {
-      app.route({
+    t.throws(
+      () => app.route({
         method: 'GET',
         path: '/another-route',
         handler() { },
-      })
-      t.fail()
-    } catch (err) {
-      t.equal(err.message, 'Cannot add route when app is already loaded')
-    }
+      }),
+      new Error('Cannot add route when app is already loaded')
+    )
   })
 })
 
