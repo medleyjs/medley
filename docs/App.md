@@ -78,9 +78,11 @@ describe('GET /', function() {
 <a id="server"></a>
 ### `app.server`
 
-The [HTTP server](https://nodejs.org/api/http.html#http_class_http_server) (or
-[HTTP/2 server](https://nodejs.org/api/http2.html#http2_class_http2secureserver))
-automatically created for the `app`.
+The `app`’s [HTTP](https://nodejs.org/api/http.html#http_class_http_server),
+[HTTPS](https://nodejs.org/api/https.html#https_class_https_server), or
+[HTTP/2](https://nodejs.org/api/http2.html#http2_class_http2secureserver)
+server. This will be the custom server set with [Medley’s `server` option](Medley.md#server),
+or if option was not used, the server automatically created for the `app`.
 
 
 ## Methods

@@ -31,6 +31,24 @@ function defaultOnErrorSending(err) {
   debug('Error occurred while sending:\n%O', err)
 }
 
+function createServer(options) {
+  if (options.http2) {
+    if (typeof options.http2 === 'object') {
+      return options.http2.key || options.http2.cert
+        ? require('http2').createSecureServer(options.http2)
+        : require('http2').createServer(options.http2)
+    }
+
+    return require('http2').createServer()
+  }
+
+  if (options.https) {
+    return require('https').createServer(options.https)
+  }
+
+  return http.createServer()
+}
+
 function medley(options) {
   options = options || {}
 
@@ -51,23 +69,9 @@ function medley(options) {
   const Request = buildRequest(!!options.trustProxy, options.queryParser)
   const Response = buildResponse()
   const requestHandler = createRequestHandler(router, notFoundRouter, Request, Response)
+  const server = options.server || createServer(options)
 
-  var server
-  if (options.http2) {
-    if (typeof options.http2 === 'object') {
-      if (options.http2.key || options.http2.cert) {
-        server = require('http2').createSecureServer(options.http2, requestHandler)
-      } else {
-        server = require('http2').createServer(options.http2, requestHandler)
-      }
-    } else {
-      server = require('http2').createServer(requestHandler)
-    }
-  } else if (options.https) {
-    server = require('https').createServer(options.https, requestHandler)
-  } else {
-    server = http.createServer(requestHandler)
-  }
+  server.on('request', requestHandler)
 
   var loadCallbackQueue = null
   var loaded = false

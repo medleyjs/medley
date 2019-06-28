@@ -9,6 +9,7 @@ object which is used to customize the resulting instance. The options are:
 + [`maxParamLength`](#maxparamlength)
 + [`onErrorSending`](#onerrorsending)
 + [`queryParser`](#queryparser)
++ [`server`](#server)
 + [`strictRouting`](#strictrouting)
 + [`trustProxy`](#trustproxy)
 
@@ -100,6 +101,22 @@ const medley = require('@medley/medley');
 const qs = require('qs'); // https://github.com/ljharb/qs
 
 const app = medley({ queryParser: qs.parse });
+```
+
+### `server`
+
+A custom [HTTP](https://nodejs.org/api/http.html#http_class_http_server),
+[HTTPS](https://nodejs.org/api/https.html#https_class_https_server), or
+[HTTP/2](https://nodejs.org/api/http2.html#http2_class_http2secureserver)
+server instance.
+
+```js
+const medley = require('@medley/medley');
+const http = require('http');
+
+const server = http.createServer()
+
+const app = medley({ server });
 ```
 
 ### `strictRouting`
