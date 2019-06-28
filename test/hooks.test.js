@@ -652,7 +652,7 @@ test('onError hooks in sub-app should run after parent’s hooks', (t) => {
   })
 })
 
-test('cannot add hook after listening', (t) => {
+test('Cannot add hook after listening', (t) => {
   t.plan(2)
   const app = medley()
 
@@ -787,6 +787,47 @@ test('onRequest hooks can be added after the route is defined', (t) => {
     t.error(err)
     t.strictEqual(res.statusCode, 200)
     t.strictEqual(res.body, 'hello world')
+  })
+})
+
+test('onRequest hooks added after a route with preHandler hooks run before the preHandler hooks', (t) => {
+  t.plan(8)
+
+  const app = medley()
+
+  app.addHook('onRequest', (req, res, next) => {
+    t.equal(req.previous, undefined)
+    req.previous = 1
+    next()
+  })
+
+  app.get('/', {
+    preHandler: (req, res, next) => {
+      t.equal(req.previous, 3)
+      req.previous = 4
+      next()
+    },
+  }, (req, res) => {
+    t.equal(req.previous, 4)
+    res.send('success')
+  })
+
+  app.addHook('onRequest', (req, res, next) => {
+    t.equal(req.previous, 1)
+    req.previous = 2
+    next()
+  })
+
+  app.addHook('onRequest', (req, res, next) => {
+    t.equal(req.previous, 2)
+    req.previous = 3
+    next()
+  })
+
+  request(app, '/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.body, 'success')
   })
 })
 

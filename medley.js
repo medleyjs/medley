@@ -118,7 +118,6 @@ function medley(options) {
     load,
 
     // App teardown
-    _onCloseHandlers: [],
     onClose,
     close,
 
@@ -132,8 +131,10 @@ function medley(options) {
   }
 
   const routes = new Map()
+  const routeContexts = new Map()
+
   const onLoadHandlers = []
-  const preLoadedHandlers = [] // Internal, synchronous handlers
+  const onCloseHandlers = []
 
   var registeringAutoHandlers = false
 
@@ -272,6 +273,8 @@ function medley(options) {
       serializers,
       opts.handler,
       opts.config || {},
+      opts.preHandler,
+      this._hooks,
       onErrorSending
     )
 
@@ -279,13 +282,14 @@ function medley(options) {
 
     if (!registeringAutoHandlers) {
       recordRoute(path, methods, routeContext, this)
-    }
 
-    // Users can add hooks after the route is registered, so only add the
-    // hooks to the routeContext just before the app is loaded
-    preLoadedHandlers.push(() => {
-      RouteContext.setHooks(routeContext, this._hooks, opts.preHandler)
-    })
+      const appRouteContexts = routeContexts.get(this)
+      if (appRouteContexts === undefined) {
+        routeContexts.set(this, [routeContext])
+      } else {
+        appRouteContexts.push(routeContext)
+      }
+    }
 
     return this // Chainable
   }
@@ -315,6 +319,8 @@ function medley(options) {
       serializers,
       handler,
       opts.config || {},
+      opts.preHandler,
+      this._hooks,
       onErrorSending
     )
 
@@ -325,20 +331,23 @@ function medley(options) {
       notFoundRouter.on(supportedMethods, prefix + '/*', noop, routeContext)
     }
 
-    preLoadedHandlers.push(() => {
-      RouteContext.setHooks(routeContext, this._hooks, opts.preHandler)
-    })
+    const appRouteContexts = routeContexts.get(this)
+    if (appRouteContexts === undefined) {
+      routeContexts.set(this, [routeContext])
+    } else {
+      appRouteContexts.push(routeContext)
+    }
 
     return this
   }
 
   function onClose(handler) {
-    this._onCloseHandlers.push(handler.bind(this))
+    onCloseHandlers.push(handler.bind(this))
     return this
   }
 
   function close(cb = () => {}) {
-    runOnCloseHandlers(this._onCloseHandlers, cb)
+    runOnCloseHandlers(onCloseHandlers, cb)
   }
 
   function onLoad(handler) {
@@ -386,7 +395,16 @@ function medley(options) {
       registerAutoHandlers()
 
       loaded = true
-      preLoadedHandlers.forEach(handler => handler())
+
+      // Hooks can be added after a route context is created, so update
+      // the route contexts with any new hooks
+      for (const [appInstance, appRouteContexts] of routeContexts) {
+        for (const routeContext of appRouteContexts) {
+          RouteContext.updateHooks(routeContext, appInstance._hooks)
+        }
+        appInstance._hooks = null // No longer needed, so save memory
+      }
+      routeContexts.clear()
 
       loadCallbackQueue.forEach(callback => callback())
       loadCallbackQueue = null
