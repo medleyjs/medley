@@ -20,8 +20,6 @@ const {
   defaultNotFoundHandler,
 } = require('./lib/RequestHandlers')
 
-const kIsNotFoundHandlerSet = Symbol('isNotFoundHandlerSet')
-
 const supportedMethods = http.METHODS.filter(method => method !== 'CONNECT')
 
 /* istanbul ignore next - This is never used. It's just needed to appease find-my-way. */
@@ -83,15 +81,32 @@ function medley(options) {
     throw new TypeError(`'onErrorSending' option must be a function. Got value of type '${typeof options.onErrorSending}'`)
   }
 
-  const onErrorSending = options.onErrorSending || defaultOnErrorSending
+  if (options.notFoundHandler !== undefined && typeof options.notFoundHandler !== 'function') {
+    throw new TypeError(`'notFoundHandler' option must be a function. Got value of type '${typeof options.notFoundHandler}'`)
+  }
+
   const router = findMyWay({
     ignoreTrailingSlash: !options.strictRouting,
     maxParamLength: options.maxParamLength,
   })
-  const notFoundRouter = findMyWay()
+  const rootAppHooks = new Hooks()
+  const onErrorSending = options.onErrorSending || defaultOnErrorSending
+  const notFoundRouteContext = RouteContext.create(
+    null, // Serializers
+    options.notFoundHandler || defaultNotFoundHandler,
+    {}, // config
+    null, // preHandler
+    rootAppHooks,
+    onErrorSending
+  )
+  const notFoundRoute = {
+    handler: noop, // To match shape of find-my-way routes
+    params: {},
+    store: notFoundRouteContext,
+  }
   const Request = buildRequest(!!options.trustProxy, options.queryParser)
   const Response = buildResponse()
-  const requestHandler = createRequestHandler(router, notFoundRouter, Request, Response)
+  const requestHandler = createRequestHandler(router, notFoundRoute, Request, Response)
 
   var loadCallbackQueue = null
   var loaded = false
@@ -113,7 +128,7 @@ function medley(options) {
 
     // Hooks
     addHook,
-    _hooks: new Hooks(),
+    _hooks: rootAppHooks,
 
     // Routing
     route,
@@ -133,9 +148,6 @@ function medley(options) {
     },
     _routePrefix: '/',
 
-    setNotFoundHandler,
-    [kIsNotFoundHandlerSet]: false,
-
     // App setup
     onLoad,
     load,
@@ -154,7 +166,9 @@ function medley(options) {
   }
 
   const routes = new Map()
-  const routeContexts = new Map()
+  const routeContexts = new Map([
+    [app, [notFoundRouteContext]],
+  ])
 
   const onLoadHandlers = []
   const onCloseHandlers = []
@@ -193,7 +207,6 @@ function medley(options) {
       }
 
       subApp._routePrefix += subApp._routePrefix.endsWith('/') ? prefix.slice(1) : prefix
-      subApp[kIsNotFoundHandlerSet] = false
     }
 
     return subApp
@@ -293,53 +306,6 @@ function medley(options) {
     return this // Chainable
   }
 
-  function setNotFoundHandler(opts, handler) {
-    throwIfAppIsLoaded('Cannot call "setNotFoundHandler()" when app is already loaded')
-
-    if (!this.hasOwnProperty('_routePrefix')) {
-      throw new Error('Cannot call "setNotFoundHandler()" on a sub-app created without a prefix')
-    }
-
-    const prefix = this._routePrefix
-
-    if (this[kIsNotFoundHandlerSet]) {
-      throw new Error(`Not found handler already set for app instance with prefix: '${prefix}'`)
-    }
-
-    this[kIsNotFoundHandlerSet] = true
-
-    if (handler === undefined) {
-      handler = opts
-      opts = {}
-    }
-
-    const serializers = buildSerializers(opts.responseSchema)
-    const routeContext = RouteContext.create(
-      serializers,
-      handler,
-      opts.config || {},
-      opts.preHandler,
-      this._hooks,
-      onErrorSending
-    )
-
-    if (prefix.endsWith('/')) {
-      notFoundRouter.on(supportedMethods, prefix + '*', noop, routeContext)
-    } else {
-      notFoundRouter.on(supportedMethods, prefix, noop, routeContext)
-      notFoundRouter.on(supportedMethods, prefix + '/*', noop, routeContext)
-    }
-
-    const appRouteContexts = routeContexts.get(this)
-    if (appRouteContexts === undefined) {
-      routeContexts.set(this, [routeContext])
-    } else {
-      appRouteContexts.push(routeContext)
-    }
-
-    return this
-  }
-
   function recordRoute(routePath, methods, routeContext, appInstance) {
     const methodRoutes = {}
     for (var i = 0; i < methods.length; i++) {
@@ -430,10 +396,6 @@ function medley(options) {
         loadCallbackQueue.forEach(callback => callback(err))
         loadCallbackQueue = null
         return
-      }
-
-      if (!app[kIsNotFoundHandlerSet]) {
-        app.setNotFoundHandler(defaultNotFoundHandler)
       }
 
       registeringAutoHandlers = true

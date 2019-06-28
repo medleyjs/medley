@@ -2,12 +2,13 @@
 
 const {test} = require('tap')
 const http = require('http')
+const h2url = require('h2url')
 const request = require('./utils/request')
 const medley = require('..')
 
 const supportedMethods = http.METHODS.filter(method => method !== 'CONNECT')
 
-test('default 404', (t) => {
+test('Default 404 handler', (t) => {
   t.plan(4)
 
   const app = medley()
@@ -24,17 +25,17 @@ test('default 404', (t) => {
   })
 })
 
-test('customized 404', (t) => {
+test('Custom 404 handler', (t) => {
   t.plan(3)
 
-  const app = medley()
-
-  app.get('/', function(req, res) {
-    res.send({hello: 'world'})
+  const app = medley({
+    notFoundHandler: (req, res) => {
+      res.status(404).send('this was not found')
+    },
   })
 
-  app.setNotFoundHandler(function(req, res) {
-    res.status(404).send('this was not found')
+  app.get('/', () => {
+    t.fail('the handler should not be called')
   })
 
   request(app, '/notSupported', (err, res) => {
@@ -44,28 +45,29 @@ test('customized 404', (t) => {
   })
 })
 
-test('custom 404 handler accepts options', (t) => {
-  t.plan(2)
-
-  const app = medley()
-
-  app.setNotFoundHandler({config: {a: 1}}, (req, res) => {
-    res.send(res.route.config)
-  })
-
-  request(app, '/', (err, res) => {
-    t.error(err)
-    t.strictDeepEqual(JSON.parse(res.body), {a: 1})
-  })
+test('Custom 404 handler - invalid type', (t) => {
+  t.throws(
+    () => medley({notFoundHandler: null}),
+    new TypeError("'notFoundHandler' option must be a function. Got value of type 'object'")
+  )
+  t.throws(
+    () => medley({notFoundHandler: true}),
+    new TypeError("'notFoundHandler' option must be a function. Got value of type 'boolean'")
+  )
+  t.throws(
+    () => medley({notFoundHandler: 'str'}),
+    new TypeError("'notFoundHandler' option must be a function. Got value of type 'string'")
+  )
+  t.end()
 })
 
-test('has a default 404 handler for all supported HTTP methods', (t) => {
+test('The default 404 handler runs for all supported HTTP methods', (t) => {
   t.plan(4 * supportedMethods.length)
 
   const app = medley()
 
-  app.all('/', (req, res) => {
-    res.send('Found')
+  app.all('/', () => {
+    t.fail('Handler should not be called')
   })
 
   for (const method of supportedMethods) {
@@ -83,17 +85,17 @@ test('has a default 404 handler for all supported HTTP methods', (t) => {
   }
 })
 
-test('has a custom 404 handler for all supported HTTP methods', (t) => {
+test('Custom 404 handlers run for all supported HTTP methods', (t) => {
   t.plan(4 * supportedMethods.length)
 
-  const app = medley()
-
-  app.all('/', (req, res) => {
-    res.send('Found')
+  const app = medley({
+    notFoundHandler: (req, res) => {
+      res.status(404).send(`Custom Not Found: ${req.method} ${req.url}`)
+    },
   })
 
-  app.setNotFoundHandler((req, res) => {
-    res.status(404).send(`Custom Not Found: ${req.method} ${req.url}`)
+  app.all('/', () => {
+    t.fail('Handler should not be called')
   })
 
   for (const method of supportedMethods) {
@@ -111,139 +113,7 @@ test('has a custom 404 handler for all supported HTTP methods', (t) => {
   }
 })
 
-test('setting a custom 404 handler multiple times is an error', (t) => {
-  t.plan(2)
-
-  t.test('at the root level', (t) => {
-    t.plan(1)
-
-    const app = medley()
-
-    app.setNotFoundHandler(() => {})
-
-    t.throws(
-      () => app.setNotFoundHandler(() => {}),
-      new Error("Not found handler already set for app instance with prefix: '/'")
-    )
-  })
-
-  t.test('at the sub-app level', (t) => {
-    t.plan(1)
-
-    const app = medley()
-    const subApp = app.createSubApp('/prefix')
-
-    subApp.setNotFoundHandler(() => {})
-
-    t.throws(
-      () => subApp.setNotFoundHandler(() => {}),
-      new Error("Not found handler already set for app instance with prefix: '/prefix'")
-    )
-  })
-})
-
-test('encapsulated 404', (t) => {
-  t.plan(7)
-
-  const app = medley()
-
-  app.get('/', function(req, res) {
-    res.send({hello: 'world'})
-  })
-
-  app.setNotFoundHandler(function(req, res) {
-    res.status(404).send('this was not found')
-  })
-
-  app.createSubApp('/test')
-    .setNotFoundHandler(function(req, res) {
-      res.status(404).send('this was not found 2')
-    })
-
-  app.createSubApp('/test2')
-    .setNotFoundHandler(function(req, res) {
-      res.status(404).send('this was not found 3')
-    })
-
-  app.createSubApp('/test3/')
-    .setNotFoundHandler(function(req, res) {
-      res.status(404).send('this was not found 4')
-    })
-
-  t.test('root unsupported route', (t) => {
-    t.plan(3)
-    request(app, '/notSupported', (err, res) => {
-      t.error(err)
-      t.equal(res.statusCode, 404)
-      t.equal(res.body, 'this was not found')
-    })
-  })
-
-  t.test('unhandled method', (t) => {
-    t.plan(3)
-    request(app, {
-      method: 'DELETE',
-      url: '/test',
-    }, (err, res) => {
-      t.error(err)
-      t.equal(res.statusCode, 404)
-      t.equal(res.body, 'this was not found 2')
-    })
-  })
-
-  t.test('unsupported route', (t) => {
-    t.plan(3)
-    request(app, '/test/notSupported', (err, res) => {
-      t.error(err)
-      t.equal(res.statusCode, 404)
-      t.equal(res.body, 'this was not found 2')
-    })
-  })
-
-  t.test('unhandled method 2', (t) => {
-    t.plan(3)
-    request(app, {
-      method: 'DELETE',
-      url: '/test2',
-    }, (err, res) => {
-      t.error(err)
-      t.equal(res.statusCode, 404)
-      t.equal(res.body, 'this was not found 3')
-    })
-  })
-
-  t.test('unsupported route 2', (t) => {
-    t.plan(3)
-    request(app, '/test2/notSupported', (err, res) => {
-      t.error(err)
-      t.equal(res.statusCode, 404)
-      t.equal(res.body, 'this was not found 3')
-    })
-  })
-
-  t.test('unhandled method 3', (t) => {
-    t.plan(3)
-    request(app, {
-      method: 'DELETE',
-      url: '/test3/',
-    }, (err, res) => {
-      t.error(err)
-      t.equal(res.statusCode, 404)
-      t.equal(res.body, 'this was not found 4')
-    })
-  })
-
-  t.test('unsupported route 3', (t) => {
-    t.plan(3)
-    request(app, '/test3/notSupported', (err, res) => {
-      t.error(err)
-      t.equal(res.statusCode, 404)
-      t.equal(res.body, 'this was not found 4')
-    })
-  })
-})
-
-test('run hooks on default 404', (t) => {
+test('Hooks on the root app run for the default 404 handler', (t) => {
   t.plan(5)
 
   const app = medley()
@@ -268,50 +138,14 @@ test('run hooks on default 404', (t) => {
   })
 })
 
-test('run hooks on custom 404', (t) => {
-  t.plan(9)
+test('Hooks on the root app run for custom 404 handlers', (t) => {
+  t.plan(6)
 
-  const app = medley()
-
-  function plugin(appInstance) {
-    appInstance.addHook('onRequest', function(req, res, next) {
-      t.pass('onRequest called')
-      next()
-    })
-
-    appInstance.addHook('onSend', function(req, res, payload, next) {
-      t.pass('onSend called')
-      next()
-    })
-
-    appInstance.addHook('onFinished', (req, res) => {
-      t.ok(res, 'onFinished called')
-    })
-  }
-
-  app.register(plugin)
-
-  app.get('/', (req, res) => {
-    res.send({hello: 'world'})
+  const app = medley({
+    notFoundHandler: (req, res) => {
+      res.status(404).send('this was not found')
+    },
   })
-
-  app.setNotFoundHandler((req, res) => {
-    res.status(404).send('this was not found')
-  })
-
-  app.register(plugin) // Registering plugin after handler also works
-
-  request(app, '/not-found', (err, res) => {
-    t.error(err)
-    t.equal(res.statusCode, 404)
-    t.equal(res.body, 'this was not found')
-  })
-})
-
-test('run hooks with encapsulated 404', (t) => {
-  t.plan(8)
-
-  const app = medley()
 
   app.addHook('onRequest', function(req, res, next) {
     t.pass('onRequest called')
@@ -327,97 +161,46 @@ test('run hooks with encapsulated 404', (t) => {
     t.ok(res, 'onFinished called')
   })
 
-  app.createSubApp('/test')
-    .setNotFoundHandler((req, res) => {
-      res.status(404).send('this was not found 2')
-    })
-    .addHook('onRequest', function(req, res, next) {
-      t.pass('onRequest 2 called')
-      next()
-    })
-    .addHook('onSend', function(req, res, payload, next) {
-      t.pass('onSend 2 called')
-      next()
-    })
-    .addHook('onFinished', (req, res) => {
-      t.ok(res, 'onFinished 2 called')
-    })
-
-  request(app, '/test', (err, res) => {
+  request(app, '/not-found', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 404)
+    t.equal(res.body, 'this was not found')
   })
 })
 
-test('hooks check 404', (t) => {
-  t.plan(6)
+test('Hooks on the root app run for 404 handlers (testing onError hooks)', (t) => {
+  t.plan(7)
 
   const app = medley()
-
-  app.get('/', function(req, res) {
-    res.send({hello: 'world'})
-  })
+  const onRequestError = new Error('onRequest error')
 
   app.addHook('onRequest', (req, res, next) => {
-    t.deepEqual(req.query, {foo: 'asd'})
-    next()
+    t.pass('onRequest called')
+    next(onRequestError) // Because of this, the 404 handler doesn't get run
   })
 
-  app.addHook('onSend', (req, res, payload, next) => {
-    t.deepEqual(req.query, {foo: 'asd'})
+  app.addHook('onError', (err, req, res) => {
+    t.equal(err, onRequestError)
+    res.status(500).send('onError response')
+  })
+
+  app.addHook('onSend', (req, res, body, next) => {
+    t.equal(body, 'onError response')
     next()
   })
 
   app.addHook('onFinished', (req, res) => {
-    t.deepEqual(req.query, {foo: 'asd'})
-    t.ok(res, 'called onFinished')
+    t.ok(res, 'onFinished called')
   })
 
-  request(app, '/notSupported?foo=asd', (err, res) => {
+  request(app, '/not-found', (err, res) => {
     t.error(err)
-    t.equal(res.statusCode, 404)
+    t.equal(res.statusCode, 500)
+    t.equal(res.body, 'onError response')
   })
 })
 
-test('calling setNotFoundHandler() on a sub-app without a prefix is an error', (t) => {
-  t.plan(2)
-
-  const app = medley()
-  const subApp = app.createSubApp()
-
-  t.throws(
-    () => subApp.setNotFoundHandler(() => {}),
-    new Error('Cannot call "setNotFoundHandler()" on a sub-app created without a prefix')
-  )
-
-  const prefixedSubApp = app.createSubApp('/prefixed')
-  const unprefixedSubApp = prefixedSubApp.createSubApp()
-
-  t.throws(
-    () => unprefixedSubApp.setNotFoundHandler(() => {}),
-    new Error('Cannot call "setNotFoundHandler()" on a sub-app created without a prefix')
-  )
-})
-
-test('cannot set notFoundHandler after binding', (t) => {
-  t.plan(2)
-
-  const app = medley()
-  t.tearDown(app.close.bind(app))
-
-  app.listen(0, (err) => {
-    t.error(err)
-
-    try {
-      app.setNotFoundHandler(() => { })
-      t.fail()
-    } catch (e) {
-      t.pass()
-    }
-  })
-})
-
-test('not-found requests with a body receive a 404 res', (t) => {
+test('not-found requests with a body receive a 404 response', (t) => {
   t.plan(3)
 
   const app = medley()
@@ -437,10 +220,10 @@ test('not-found requests with a body receive a 404 res', (t) => {
 test('not-found route lookups do not fail with the Accept-Version header', (t) => {
   t.plan(3)
 
-  const app = medley()
-
-  app.setNotFoundHandler((req, res) => {
-    res.status(404).send('not found')
+  const app = medley({
+    notFoundHandler: (req, res) => {
+      res.status(404).send('not found')
+    },
   })
 
   request(app, '/', {
@@ -451,5 +234,58 @@ test('not-found route lookups do not fail with the Accept-Version header', (t) =
     t.error(err)
     t.equal(res.statusCode, 404)
     t.equal(res.body, 'not found')
+  })
+})
+
+test('Sends a 404 for methods not supported by find-my-way', (t) => {
+  t.plan(5)
+
+  const app = medley({http2: true})
+
+  app.all('/', () => {
+    t.fail('The handler should not be called')
+  })
+
+  app.listen(0, 'localhost', async (err) => {
+    app.server.unref()
+    t.error(err)
+
+    const res = await h2url.concat({
+      method: 'TROLL',
+      url: `http://localhost:${app.server.address().port}/`,
+    })
+    t.equal(res.headers[':status'], 404)
+    t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
+    t.equal(res.headers['content-length'], '18')
+    t.equal(res.body, 'Not Found: TROLL /')
+  })
+})
+
+test('Calls the custom 404 handler for methods not supported by find-my-way', (t) => {
+  t.plan(5)
+
+  const app = medley({
+    http2: true,
+    notFoundHandler: (req, res) => {
+      res.status(404).send(req.method + ' not found')
+    },
+  })
+
+  app.all('/', () => {
+    t.fail('The handler should not be called')
+  })
+
+  app.listen(0, 'localhost', async (err) => {
+    app.server.unref()
+    t.error(err)
+
+    const res = await h2url.concat({
+      method: 'TROLL',
+      url: `http://localhost:${app.server.address().port}/`,
+    })
+    t.equal(res.headers[':status'], 404)
+    t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
+    t.equal(res.headers['content-length'], '15')
+    t.equal(res.body, 'TROLL not found')
   })
 })

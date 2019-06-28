@@ -31,11 +31,9 @@ Incoming Request
 
 ## Routing
 
-The first step Medley takes after receiving a request is to look up a route that matches the URL of the request.
+The first step Medley takes after receiving a request is to find the route that matches the URL of the request.
 
-If no route matches the request, a not-found handler that matches the URL is selected (or the default not-found handler is used if no handlers set with [`app.setNotFoundHandler()`](App.md#set-not-found-handler) were a match).
-
-If the request method is not one of the [supported HTTP methods](https://nodejs.org/api/http.html#http_http_methods), a `501 Not Implemented` error response is sent immediately and the entire lifecycle is skipped.
+Medley uses the [`find-my-way`](https://www.npmjs.com/package/find-my-way) router to make this step fast and efficient.
 
 ## `onRequest` Hooks
 
@@ -80,7 +78,7 @@ See the [`Routes` documentation](Routes.md) for more information on route handle
 
 #### Not-Found Handler
 
-If the request URL does not match any routes, a *not-found handler* (set with [`app.setNotFoundHandler()`](App.md#set-not-found-handler)) is invoked. Global hooks **are** run before the not-found handler.
+If the request URL does not match any routes, the [`notFoundHandler`](Medley.md#notfoundhandler) is invoked. Global hooks **are** run before/after this handler.
 
 ## Serialize Payload
 

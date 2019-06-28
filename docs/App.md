@@ -30,7 +30,6 @@ const app = medley();
 + [`.onLoad(callback)`](#on-load)
 + [`.register(plugin [, options])`](#register)
 + [`.route(options)`](#route)
-+ [`.setNotFoundHandler([options,] handler)`](#set-not-found-handler)
 + [`[@@iterator]()`](#iterator)
 
 
@@ -402,38 +401,6 @@ app.register(require('./routes'));
 
 Registers a new route handler. There are also shorthand methods (like `app.get()`)
 that aren't included here. See the [Routes](Routes.md) documentation.
-
-<a id="set-not-found-handler"></a>
-### `app.setNotFoundHandler([options,] handler)`
-
-+ `options` *object* - Accepts the `responseSchema`, `preHandler`, and `config` options defined in [Routes#options](Routes.md#options).
-+ `handler(req, res)` *(function)* - A request handler function that receives the [`request`](Request.md) and [`response`](Response.md) objects.
-+ Chainable
-
-Sets the handler that will be called when no registered route matches the
-incoming request. The handler is treated like a regular route handler so
-requests will go through the full [request lifecycle](Lifecycle.md).
-
-```js
-app.setNotFoundHandler((req, res) => {
-  // Send "404 Not Found" response
-});
-```
-
-Sub-apps that are registered with a [`prefix`](#createsubapp) can have
-their own not-found handler.
-
-```js
-app.setNotFoundHandler((req, res) => {
-  // Default not-found handler
-});
-
-const subApp = app.createSubApp('/v1');
-
-subApp.setNotFoundHandler((req, res) => {
-  // Handle unmatched requests to URLs that begin with '/v1'
-});
-```
 
 <a id="iterator"></a>
 ### `app[@@iterator]()`

@@ -7,6 +7,7 @@ object which is used to customize the resulting instance. The options are:
 + [`http2`](#http2)
 + [`https`](#https)
 + [`maxParamLength`](#maxparamlength)
++ [`notFoundHandler`](#notfoundhandler)
 + [`onErrorSending`](#onerrorsending)
 + [`queryParser`](#queryparser)
 + [`server`](#server)
@@ -17,7 +18,7 @@ object which is used to customize the resulting instance. The options are:
 
 ### `http2`
 
-*object | boolean*<br>
+Type: `object` | `boolean`<br>
 Default: `false`
 
 An object used to configure the HTTP server to use HTTP/2. The options are the
@@ -36,7 +37,7 @@ The `https` option is ignored if this option is present.
 
 ### `https`
 
-Default: `undefined`
+Type: `object`
 
 An object used to configure the server's listening socket for TLS. The options
 are the same as the Node.js core
@@ -53,6 +54,7 @@ const app = medley({
 
 ### `maxParamLength`
 
+Type: `number`<br>
 Default: `100`
 
 This option sets a limit on the number of characters in the parameters of
@@ -62,6 +64,23 @@ This can be useful to protect against [DoS attacks](https://www.owasp.org/index.
 for routes with regex parameters.
 
 *If the maximum length limit is reached, the request will not match the route.*
+
+### `notFoundHandler`
+
+Type: `function(req, res)` (`req` - [Request](Request.md), `res` - [Response](Response.md))
+
+A handler function that is called when no routes match the request URL.
+
+```js
+const medley = require('@medley/medley');
+const app = medley({
+  notFoundHandler: (req, res) => {
+    res.status(404).send('Route Not Found');
+  }
+});
+```
+
+[Hooks](Hooks.md) that are added to the root `app` will run before/after the `notFoundHandler`.
 
 ### `onErrorSending`
 
@@ -90,7 +109,7 @@ Specifically, this function will be called when:
 
 ### `queryParser`
 
-+ Default: [`querystring.parse`](https://nodejs.org/dist/latest/docs/api/querystring.html#querystring_querystring_parse_str_sep_eq_options)
+Default: [`querystring.parse`](https://nodejs.org/dist/latest/docs/api/querystring.html#querystring_querystring_parse_str_sep_eq_options)
 
 A custom function to parse the URL's query string into the value for
 [`req.query`](Request.md#reqquery). It will receive the complete query
