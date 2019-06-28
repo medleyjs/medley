@@ -49,6 +49,29 @@ function createServer(options) {
   return http.createServer()
 }
 
+function createShorthandRouteMethod(method) {
+  return function(path, opts, handler) {
+    if (handler === undefined) {
+      if (typeof opts === 'function') {
+        handler = opts
+        opts = {}
+      } else {
+        handler = opts && opts.handler
+      }
+    } else if (Array.isArray(opts)) {
+      opts = {preHandler: opts}
+    }
+
+    opts = Object.assign({}, opts, {
+      method,
+      path,
+      handler,
+    })
+
+    return this.route(opts)
+  }
+}
+
 function medley(options) {
   options = options || {}
 
@@ -211,30 +234,6 @@ function medley(options) {
     return this
   }
 
-  // Routing methods
-  function createShorthandRouteMethod(method) {
-    return function(path, opts, handler) {
-      if (handler === undefined) {
-        if (typeof opts === 'function') {
-          handler = opts
-          opts = {}
-        } else {
-          handler = opts && opts.handler
-        }
-      } else if (Array.isArray(opts)) {
-        opts = {preHandler: opts}
-      }
-
-      opts = Object.assign({}, opts, {
-        method,
-        path,
-        handler,
-      })
-
-      return this.route(opts)
-    }
-  }
-
   function route(opts) {
     throwIfAppIsLoaded('Cannot add route when app is already loaded')
 
@@ -341,13 +340,59 @@ function medley(options) {
     return this
   }
 
-  function onClose(handler) {
-    onCloseHandlers.push(handler.bind(this))
-    return this
+  function recordRoute(routePath, methods, routeContext, appInstance) {
+    const methodRoutes = {}
+    for (var i = 0; i < methods.length; i++) {
+      methodRoutes[methods[i]] = routeContext
+    }
+
+    if (!routes.has(routePath)) {
+      routes.set(routePath, {appInstance, methodRoutes})
+      return
+    }
+
+    const routeData = routes.get(routePath)
+    Object.assign(routeData.methodRoutes, methodRoutes)
   }
 
-  function close(cb = () => {}) {
-    runOnCloseHandlers(onCloseHandlers, cb)
+  function registerAutoHandlers() {
+    for (const [routePath, routeData] of routes) {
+      const {methodRoutes} = routeData
+      const methods = Object.keys(methodRoutes)
+
+      // Create a HEAD handler if a GET handler was set and a HEAD handler wasn't
+      if (methodRoutes.GET !== undefined && methodRoutes.HEAD === undefined) {
+        router.on('HEAD', routePath, noop, methodRoutes.GET)
+        methods.push('HEAD')
+      }
+
+      methods.sort() // For consistent Allow headers
+
+      // Create an OPTIONS handler if one wasn't set
+      const optionsIndex = methods.indexOf('OPTIONS')
+      if (optionsIndex === -1) {
+        const optionsHandler = createOptionsHandler(methods.join(','))
+        routeData.appInstance.options(routePath, optionsHandler)
+      } else {
+        // Remove OPTIONS for the next part
+        methods.splice(optionsIndex, 1)
+      }
+
+      // Create a 405 handler for all unset, supported methods
+      const unsetMethods = supportedMethods.filter(
+        method => method !== 'OPTIONS' && methods.indexOf(method) === -1
+      )
+      if (unsetMethods.length > 0) {
+        routeData.appInstance.route({
+          method: unsetMethods,
+          path: routePath,
+          handler: create405Handler(methods.join(',')),
+        })
+      }
+
+      // Try to save memory since this is no longer needed
+      routeData.appInstance = null
+    }
   }
 
   function onLoad(handler) {
@@ -410,64 +455,7 @@ function medley(options) {
       loadCallbackQueue = null
     })
   }
-  /* eslint-enable consistent-return */
 
-  function recordRoute(routePath, methods, routeContext, appInstance) {
-    const methodRoutes = {}
-    for (var i = 0; i < methods.length; i++) {
-      methodRoutes[methods[i]] = routeContext
-    }
-
-    if (!routes.has(routePath)) {
-      routes.set(routePath, {appInstance, methodRoutes})
-      return
-    }
-
-    const routeData = routes.get(routePath)
-    Object.assign(routeData.methodRoutes, methodRoutes)
-  }
-
-  function registerAutoHandlers() {
-    for (const [routePath, routeData] of routes) {
-      const {methodRoutes} = routeData
-      const methods = Object.keys(methodRoutes)
-
-      // Create a HEAD handler if a GET handler was set and a HEAD handler wasn't
-      if (methodRoutes.GET !== undefined && methodRoutes.HEAD === undefined) {
-        router.on('HEAD', routePath, noop, methodRoutes.GET)
-        methods.push('HEAD')
-      }
-
-      methods.sort() // For consistent Allow headers
-
-      // Create an OPTIONS handler if one wasn't set
-      const optionsIndex = methods.indexOf('OPTIONS')
-      if (optionsIndex === -1) {
-        const optionsHandler = createOptionsHandler(methods.join(','))
-        routeData.appInstance.options(routePath, optionsHandler)
-      } else {
-        // Remove OPTIONS for the next part
-        methods.splice(optionsIndex, 1)
-      }
-
-      // Create a 405 handler for all unset, supported methods
-      const unsetMethods = supportedMethods.filter(
-        method => method !== 'OPTIONS' && methods.indexOf(method) === -1
-      )
-      if (unsetMethods.length > 0) {
-        routeData.appInstance.route({
-          method: unsetMethods,
-          path: routePath,
-          handler: create405Handler(methods.join(',')),
-        })
-      }
-
-      // Try to save memory since this is no longer needed
-      routeData.appInstance = null
-    }
-  }
-
-  /* eslint-disable consistent-return */
   function listen(port, host, backlog, cb) {
     if (app.server === null) {
       app.server = createServer(options)
@@ -538,6 +526,15 @@ function medley(options) {
     })
   }
   /* eslint-enable consistent-return */
+
+  function onClose(handler) {
+    onCloseHandlers.push(handler.bind(this))
+    return this
+  }
+
+  function close(cb = () => {}) {
+    runOnCloseHandlers(onCloseHandlers, cb)
+  }
 
   function *routesIterator() {
     for (const [routePath, {methodRoutes}] of routes) {
