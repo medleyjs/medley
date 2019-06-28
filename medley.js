@@ -69,15 +69,13 @@ function medley(options) {
   const Request = buildRequest(!!options.trustProxy, options.queryParser)
   const Response = buildResponse()
   const requestHandler = createRequestHandler(router, notFoundRouter, Request, Response)
-  const server = options.server || createServer(options)
-
-  server.on('request', requestHandler)
 
   var loadCallbackQueue = null
   var loaded = false
+  var listenCallbackQueue = null
 
   const app = {
-    server,
+    server: options.server || null,
 
     get handler() {
       return loaded ? requestHandler : null
@@ -146,8 +144,9 @@ function medley(options) {
   }
 
   app.onClose((done) => {
-    if (app.server.listening) {
-      app.server.close(done)
+    const {server} = app
+    if (server !== null && server.listening) {
+      server.close(done)
     } else {
       done(null)
     }
@@ -450,7 +449,14 @@ function medley(options) {
     }
   }
 
+  /* eslint-disable consistent-return */
   function listen(port, host, backlog, cb) {
+    if (app.server === null) {
+      app.server = createServer(options)
+    }
+
+    const {server} = app
+
     if (server.listening) {
       throw new Error('.listen() called while server is already listening')
     }
@@ -482,7 +488,15 @@ function medley(options) {
       })
     }
 
-    return load((err) => {
+    if (listenCallbackQueue !== null) {
+      listenCallbackQueue.push(cb)
+      return
+    }
+
+    listenCallbackQueue = [cb]
+    server.on('request', requestHandler)
+
+    load((err) => {
       if (err) {
         cb(err)
         return
@@ -491,7 +505,12 @@ function medley(options) {
       function handleListeningOrError(err) {
         server.removeListener('listening', handleListeningOrError)
         server.removeListener('error', handleListeningOrError)
-        cb(err)
+
+        for (const callback of listenCallbackQueue) {
+          callback(err)
+        }
+
+        listenCallbackQueue = null
       }
 
       server.on('listening', handleListeningOrError)
@@ -500,6 +519,7 @@ function medley(options) {
       server.listen(port, host, backlog)
     })
   }
+  /* eslint-enable consistent-return */
 
   function *routesIterator() {
     for (const [routePath, {methodRoutes}] of routes) {

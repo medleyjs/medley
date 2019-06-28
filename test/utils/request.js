@@ -1,48 +1,17 @@
 'use strict'
 
-/* eslint-disable consistent-return */
-
 const got = require('got').extend({
   retry: 0,
   followRedirect: false,
   throwHttpErrors: false,
 })
 
-const kListenWaiters = Symbol('request-listen-waiters')
-
-async function waitForListen(app) {
-  if (app[kListenWaiters] === undefined) {
-    app[kListenWaiters] = []
-
-    app.server.unref()
-
-    try {
-      await app.listen(0, 'localhost')
-
-      process.nextTick(() => {
-        for (const waiter of app[kListenWaiters]) {
-          waiter.resolve()
-        }
-      })
-    } catch (err) {
-      process.nextTick(() => {
-        for (const waiter of app[kListenWaiters]) {
-          waiter.reject(err)
-        }
-      })
-
-      throw err
-    }
-  } else {
-    return new Promise((resolve, reject) => {
-      app[kListenWaiters].push({resolve, reject})
-    })
-  }
-}
+/* eslint-disable consistent-return */
 
 async function request(app, url, options, cb) {
-  if (!app.server.listening) {
-    await waitForListen(app)
+  if (app.server === null || !app.server.listening) {
+    await app.listen()
+    app.server.unref()
   }
 
   if (typeof url === 'object') {

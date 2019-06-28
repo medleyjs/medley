@@ -84,6 +84,21 @@ The `app`’s [HTTP](https://nodejs.org/api/http.html#http_class_http_server),
 server. This will be the custom server set with [Medley’s `server` option](Medley.md#server),
 or if option was not used, the server automatically created for the `app`.
 
+If the `server` option was not used, this will be `null` until
+[`app.listen()`](#listen) is called.
+
+```js
+const medley = require('@medley/medley');
+const app = medley();
+
+console.log(app.server); // null
+
+app.listen(3000, (err) => {
+  if (err) throw err;
+  console.log(app.server); // Server { ... }
+})
+```
+
 
 ## Methods
 
