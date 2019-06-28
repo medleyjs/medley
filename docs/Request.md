@@ -15,17 +15,16 @@ app.get('/user/:id', function(req, res) {
 
 **Properties:**
 
-+ [`.authority`](#reqauthority)
 + [`.body`](#reqbody)
 + [`.headers`](#reqheaders)
-+ [`.host`](#reqhost)
++ [`.host`](#reqhost) (_alias:_ `.authority`)
 + [`.hostname`](#reqhostname)
 + [`.href`](#reqhref)
 + [`.method`](#reqmethod)
 + [`.origin`](#reqorigin)
 + [`.params`](#reqparams)
 + [`.path`](#reqpath)
-+ [`.protocol`](#reqprotocol)
++ [`.protocol`](#reqprotocol) (_alias:_ `.scheme`)
 + [`.query`](#reqquery)
 + [`.querystring`](#reqquerystring)
 + [`.scheme`](#reqscheme)
@@ -34,10 +33,6 @@ app.get('/user/:id', function(req, res) {
 + [`.url`](#requrl)
 
 ## Properties
-
-### `req.authority`
-
-HTTP/2-style alias for [`req.host`](#reqhost).
 
 ### `req.body`
 
@@ -73,7 +68,8 @@ req.headers
 
 ### `req.host`
 
-*Read-only*
+*Read-only*<br>
+Alias: `req.authority` (from the HTTP/2 `:authority` header)
 
 The request host (`hostname:port`) if available. When the [`trustProxy`](Medley.md#trustproxy)
 setting is enabled, uses the `X-Forwarded-Host` header first, then the `Host` header.
@@ -153,7 +149,8 @@ req.path // '/status/user'
 
 ### `req.protocol`
 
-*Read-only*
+*Read-only*<br>
+Alias: `req.scheme` (from the HTTP/2 `:scheme` header)
 
 The request protocol (e.g. "http" or "https"). Supports reading the `X-Forwarded-Proto`
 header when the [`trustProxy`](Medley.md#trustproxy) setting is enabled.
@@ -187,10 +184,6 @@ req.querystring // 'a=1&b=value'
 // URL: /path/no-query
 req.querystring // ''
 ```
-
-### `req.scheme`
-
-HTTP/2-style alias for [`req.protocol`](#reqprotocol).
 
 ### `req.search`
 
