@@ -4,11 +4,16 @@ const t = require('tap')
 const http = require('http')
 const medley = require('..')
 
-t.plan(4)
+t.plan(5)
 
 const app = medley()
 
 t.equal(app.server, null, 'app.server starts out as null')
+
+app.onLoad((done) => {
+  t.ok(app.server, 'app.server exists in onLoad callbacks')
+  done()
+})
 
 app.listen((err) => {
   app.close()
