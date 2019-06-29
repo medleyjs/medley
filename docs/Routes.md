@@ -18,7 +18,7 @@ app.route(options)
 + `handler(req, res)`: The main function that will handle the request.
   + `req` is defined in [Request](Request.md).
   + `res` is defined in [Response](Response.md).
-+ `config`: Object used to store custom configuration. Defaults to an empty object (`{}`).
++ `config`: Object used to store custom configuration.
 
 Examples:
 

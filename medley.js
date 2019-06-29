@@ -94,7 +94,7 @@ function medley(options) {
   const notFoundRouteContext = RouteContext.create(
     null, // Serializers
     options.notFoundHandler || defaultNotFoundHandler,
-    {}, // config
+    undefined, // config
     null, // preHandler
     rootAppHooks,
     onErrorSending
@@ -284,7 +284,7 @@ function medley(options) {
     const routeContext = RouteContext.create(
       serializers,
       opts.handler,
-      opts.config || {},
+      opts.config,
       opts.preHandler,
       this._hooks,
       onErrorSending
