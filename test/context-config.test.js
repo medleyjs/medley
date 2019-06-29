@@ -12,7 +12,7 @@ const routeOptions = {
 }
 
 function handler(req, res) {
-  res.send(res.route.config)
+  res.send(res.config)
 }
 
 t.test('config', (t) => {

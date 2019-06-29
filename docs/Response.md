@@ -15,9 +15,9 @@ app.get('/user/:id', function(req, res) {
 
 **Properties:**
 
++ [`.config`](#resconfig)
 + [`.headersSent`](#resheaderssent)
 + [`.request`](#resrequest)
-+ [`.route`](#resroute)
 + [`.sent`](#ressent)
 + [`.state`](#resstate)
 + [`.statusCode`](#resstatuscode)
@@ -39,19 +39,10 @@ app.get('/user/:id', function(req, res) {
 
 ## Properties
 
-### `res.headersSent`
+### `res.config`
 
-Boolean (read-only). `true` if headers have already been sent, `false` otherwise.
-
-### `res.request`
-
-A reference to the [`request`](Request.md) object for the current request.
-
-### `res.route`
-
-The Medley data associated with the current route. Exposed to provide access to
-the `config` object passed to the [`app.route()`](Response.md#options) method
-(or one of it's shorthands). Could also be useful for debugging.
+The `config` object passed to the [`app.route()`](Response.md#options) method
+(or one of it's shorthands).
 
 ```js
 app.route({
@@ -59,10 +50,18 @@ app.route({
   path: '/user',
   config: { confValue: 22 },
   handler: function(req, res) {
-    res.route.config // { confValue: 22 }
+    res.config // { confValue: 22 }
   }
 });
 ```
+
+### `res.headersSent`
+
+Boolean (read-only). `true` if headers have already been sent, `false` otherwise.
+
+### `res.request`
+
+A reference to the [`request`](Request.md) object for the current request.
 
 ### `res.sent`
 

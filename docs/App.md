@@ -432,8 +432,7 @@ for (const [routePath, methods] of app) {
 /v1/user - { GET: {...}, POST: {...} }
 ```
 
-The route `methods` value is an object that maps method names to the route context
-(the same value that will be available as [`res.route`](Response.md#resroute)).
+The route `methods` value is an object that maps method names to the route context.
 
-Note that some values in the route context are not set until the `app` has
+Note that some values in the route context are not fully set until the `app` has
 finished [loading](#load).

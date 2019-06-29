@@ -115,11 +115,6 @@ test('.decorateResponse() should not allow decorating Medley values', (t) => {
   )
 
   t.throws(
-    () => app.decorateResponse('route', null),
-    new Error("A decorator called 'route' has already been added to Response")
-  )
-
-  t.throws(
     () => app.decorateResponse('sent', null),
     new Error("A decorator called 'sent' has already been added to Response")
   )
@@ -127,6 +122,11 @@ test('.decorateResponse() should not allow decorating Medley values', (t) => {
   t.throws(
     () => app.decorateResponse('state', null),
     new Error("A decorator called 'state' has already been added to Response")
+  )
+
+  t.throws(
+    () => app.decorateResponse('_route', null),
+    new Error("A decorator called '_route' has already been added to Response")
   )
 
   t.throws(
