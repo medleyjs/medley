@@ -1,7 +1,7 @@
 # Defining Routes
 
 To define routes, Medley supports both a *Hapi*-like [`.route()` method](#route-method) and
-also *Express/Restify*-like [shorthand methods](#shorthand-methods) such as `.get()`.
+also *Express*-like [shorthand methods](#shorthand-methods) (such as `app.get()`).
 
 ## Route Method
 
@@ -11,16 +11,117 @@ app.route(options)
 
 ### Options
 
-+ `method`: The name of an HTTP method or an array of methods. Can be any method found in the [`http.METHODS`](https://nodejs.org/api/http.html#http_http_methods) array (except for `CONNECT`).
-+ `path`: The path to match the URL of the request.
-+ `responseSchema`: The schema for a JSON response. See the [`Serialization` documentation](Serialization.md).
-+ `preHandler(req, res, next)`: Route-level hooks with the same signature as [`onRequest` hooks](Hooks.md#onRequest-hook). Can be a function or an array of functions. Similar to route-level middleware in Express.
-+ `handler(req, res)`: The main function that will handle the request.
-  + `req` is defined in [Request](Request.md).
-  + `res` is defined in [Response](Response.md).
-+ `config`: Object used to store custom configuration.
++ [`method`](#method-required)
++ [`path`](#path-required)
++ [`handler`](#handler-required)
++ [`preHandler`](#prehandler)
++ [`responseSchema`](#responseschema)
++ [`config`](#config)
 
-Examples:
+#### `method` (required)
+
+Type: `string` | `Array<string>`
+
+The HTTP method(s) the route will run for. Can be any method found in the
+[`http.METHODS`](https://nodejs.org/api/http.html#http_http_methods) array
+(except for `CONNECT`).
+
+```js
+app.route({
+  method: 'GET',
+  path: '/',
+  handler: function(req, res) {
+    res.send('hello world');
+  }
+});
+
+app.route({
+  method: ['POST', 'PUT'],
+  path: '/user',
+  handler: function(req, res) {
+    // ...
+  }
+});
+```
+
+#### `path` (required)
+
+Type: `string`
+
+The path to match the URL of the request.
+
+```js
+app.route({
+  method: 'GET',
+  path: '/user/:id',
+  handler: function(req, res) {
+    console.log(req.params.id); // '1003' (for example)
+  }
+});
+````
+
+See the [URL-Building](#url-building) section for details on the formats
+the `path` option can take.
+
+#### `handler` (required)
+
+Type: `function(req, res)`
++ `req` - [Request](Request.md)
++ `res` - [Response](Response.md)
+
+The main function that will handle the request.
+
+```js
+app.route({
+  method: 'GET',
+  path: '/',
+  handler: function(req, res) {
+    res.send('hello world');
+  }
+});
+```
+
+The `handler` can be an `async` function that returns a value to be sent.
+
+```js
+app.route({
+  method: 'GET',
+  path: '/user/:id',
+  handler: async function(req, res) {
+    const data = await getUserData(req.params.id);
+    return data;
+  }
+});
+```
+
+For more details on `async` handlers, see the [Async-Await](#async-await) section.
+
+#### `preHandler`
+
+Type: `function(req, res, next)` | `Array<function>`
+
+Route-level hooks with the same signature as [`onRequest` hooks](Hooks.md#onRequest-hook).
+Similar to route-level middleware in Express.
+
+```js
+app.route({
+  method: 'POST',
+  path: '/comment',
+  preHandler: function(req, res, next) {
+    // Authorize the user
+    next();
+  },
+  handler: function(req, res) { /*...*/ }
+});
+```
+
+#### `responseSchema`
+
+Type: `object`
+
+A schema for serializing JSON responses. See the
+[`Serialization` documentation](Serialization.md)
+for details.
 
 ```js
 app.route({
@@ -35,16 +136,41 @@ app.route({
     res.send({ hello: 'world' });
   }
 });
+```
 
+#### `config`
+
+Type: `any`
+
+Custom configuration data that can be accessed as `res.config` during the request.
+
+```js
 app.route({
-  method: ['POST', 'PUT'],
-  path: '/user',
-  preHandler: function(req, res, next) {
-    // Validate the request
-    next();
+  method: 'GET',
+  path: '/',
+  config: { confValue: 22 },
+  handler: function(req, res) {
+    res.config // { confValue: 22 }
+  }
+});
+```
+
+A more useful example:
+
+```js
+app.route({
+  method: 'GET',
+  path: '/',
+  config: {
+    greetings: {
+      en: 'Hello world',
+      es: 'Hola mundo'
+    }
   },
   handler: function(req, res) {
-    // Create a user
+    const lang = getLang(req); // (Example helper function)
+    const greeting = res.config.greetings[lang];
+    res.send(greeting);
   }
 });
 ```
@@ -64,28 +190,32 @@ app.options(path, [options,] handler)
 app.all(path, [options,] handler)
 ```
 
-Example:
+`options` is the same as the [route options](#options), but without the
+`method`, `path`, and `handler` options (since those are specified by the
+function name and the `path`/`handler` parameters).
 
 ```js
-const preHandler = [
-  function authenticate(req, res, next) { },
-  function validate(req, res, next) { },
-];
-const responseSchema = {
-  200: {
-    hello: { type: 'string' }
-  }
-};
-app.get('/', { preHandler, responseSchema }, (req, res) => {
-  res.send({ hello: 'world' });
+app.get('/', (req, res) => {
+  res.send('hello world');
 });
 
-app.get('/no-options', (req, res) => {
-  res.send('hello world');
+app.post('/hello', {
+  preHandler: [
+    function authenticate(req, res, next) { },
+    function validate(req, res, next) { },
+  ],
+  responseSchema: {
+    200: {
+      hello: { type: 'string' }
+    }
+  }
+}, (req, res) => {
+  res.send({ hello: 'world' });
 });
 ```
 
-If the `options` parameter is an array, it will be treated as an array of *preHandlers*:
+If the `options` parameter is an array, it will be treated as an array
+of [preHandlers](#prehandler).
 
 ```js
 function authenticate(req, res, next) {
@@ -100,8 +230,7 @@ app.get('/', [authenticate, validate], (req, res) => {
 });
 ```
 
-Alternatively, the `handler` may be specified in the `options` object if the
-third parameter is omitted:
+The `handler` may be specified in the `options` object if the third parameter is omitted:
 
 ```js
 app.get('/path', {
@@ -118,50 +247,52 @@ third parameter, the third parameter will take precedence.*
 
 ## URL-Building
 
-Medley supports both static and dynamic urls.<br>
-To register a **parametric** path, use a *colon* (`:`) before the parameter
-name. For a **wildcard** path, use an *asterisk* (`*`).
+Medley supports any route paths supported by
+[`find-my-way`](https://github.com/delvedor/find-my-way).
 
-*Note that static routes are always checked before parametric and wildcard routes.*
+URL parameters are specified with a colon (`:`) before the parameter
+name, and wildcard paths use an asterisk (`*`).
+
+_Note that static routes are always checked before parametric and wildcard routes._
 
 ```js
 // Static
-app.get('/api/user', (req, res) => {}));
+app.get('/api/user', (req, res) => {});
 
 // Parametric
-app.get('/api/:userId', (req, res) => {}));
-app.get('/api/:userId/:secretToken', (req, res) => {}));
+app.get('/api/:userId', (req, res) => {});
+app.get('/api/:userId/:secretToken', (req, res) => {});
 
 // Wildcard
-app.get('/api/*', (req, res) => {}));
+app.get('/api/*', (req, res) => {});
 ```
 
-Regular expression routes are also supported, but be aware that they are very
+Regular expression routes are also supported, but be aware that they are
 expensive in terms of performance.
 
 ```js
-// Parametric with regexp
-app.get('/api/:file(^\\d+).png', (req, res) => {}));
+// Parametric with regex
+app.get('/api/:file(^\\d+).png', (req, res) => {});
 ```
 
 To define a path with more than one parameter within the same path part,
-use a hyphen (`-`) to separate the parameters:
+a hyphen (`-`) can be used to separate the parameters:
 
 ```js
 // Multi-parametric
 app.get('/api/near/:lat-:lng/radius/:r', (req, res) => {
   // Matches: '/api/near/10.856-32.284/radius/50'
   req.params // { lat: '10.856', lng: '32.284', r: '50' }
-}));
+});
 ```
 
-Multiple parameters also work with RegExp:
+Multiple parameters also work with regular expressions:
 
 ```js
 app.get('/api/at/:hour(^\\d{2})h:minute(^\\d{2})m', (req, res) => {
   // Matches: '/api/at/02h:50m'
   req.params // { hour: '02', minute: '50' }
-}));
+});
 ```
 
 In this case, the parameter separator can be any character that is not
@@ -206,16 +337,17 @@ or `res.statusCode` to set the status code before returning:
 
 ```js
 app.post('/user', (req, res) => {
-  res.statusCode = 201; // "201 Created"
+  res.statusCode = 201; // For a "201 Created" response
   return createUserAsync();
 });
 ```
 
-Note that `res.send()` will not be called automatically if the value returned from an `async`
-function is `undefined`. This is because returning `undefined` is the same as not returning
-anything all (see the [MDN `return` documentation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/return#wikiArticle)).
+Note that no response will be sent if the value returned from an `async`
+function is `undefined`. This is because returning `undefined` is the same
+as not returning anything all (see the
+[MDN `return` documentation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/return#wikiArticle)).
 
-**Warning:** An error will be thrown if `return someValue` and `res.send()`
+**Warning:** An error will be thrown if `return value` and `res.send()`
 are used at the same time because a response cannot be sent twice.
 
 ## Route Prefixing

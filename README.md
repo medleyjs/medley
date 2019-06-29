@@ -79,16 +79,16 @@ so that code written now that won't require massive rewrites in the future.
 + [`@medley/body-parser`](https://www.npmjs.com/package/@medley/body-parser) - Essential body parsers for Medley.
 + [`@medley/multipart`](https://www.npmjs.com/package/@medley/multipart) - Plugin for parsing `multipart/form-data` bodies.
 
-#### Validation
-
-+ [`ajv-request-validator`](https://www.npmjs.com/package/ajv-request-validator) - Tool for validating the `request` object of popular frameworks with Ajv.
-
 #### Plugins
 
 + [`@medley/cookie`](https://www.npmjs.com/package/@medley/cookie) - Plugin for parsing and setting cookies.
 + [`@medley/self-request`](https://www.npmjs.com/package/@medley/self-request) - Plugin that augments an app to be able to make HTTP requests to itself for testing.
 + [`@medley/serve-favicon`](https://www.npmjs.com/package/@medley/serve-favicon) - Plugin for serving the default favicon.
 + [`@medley/serve-static`](https://www.npmjs.com/package/@medley/serve-static) - Plugin for serving static files.
+
+#### Validation
+
++ [`ajv-request-validator`](https://www.npmjs.com/package/ajv-request-validator) - Tool for validating the `request` object of popular frameworks with Ajv.
 
 
 ## Acknowledgements

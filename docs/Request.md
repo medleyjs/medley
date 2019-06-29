@@ -129,9 +129,14 @@ req.origin // 'http://www.example.com'
 An object of the parameters matched in the URL.
 
 ```js
-app.get('/path/:user/:foo', (req, res) => {
-  // URL: /path/100/bar
-  req.params // { user: '100', foo: 'bar' }
+app.get('/user/:id/:name', (req, res) => {
+  // URL: /user/100/Monika
+  req.params // { id: '100', name: 'Monika' }
+});
+
+app.get('/assets/*', (req, res) => {
+  // URL: /assets/js/main.js
+  req.params // { '*': 'js/main.js' }
 });
 ```
 
