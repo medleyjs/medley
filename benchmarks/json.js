@@ -3,8 +3,14 @@
 const medley = require('..')
 const app = medley()
 
-app.get('/', (req, res) => {
-  res.send('Hello World')
+const responseSchema = {
+  200: {
+    hello: {type: 'string'},
+  },
+}
+
+app.get('/', {responseSchema}, (req, res) => {
+  res.send({hello: 'world'})
 })
 
 app.listen(3000, (err) => {

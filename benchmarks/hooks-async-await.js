@@ -17,13 +17,12 @@ app
   .addHook('onSend', asyncHook)
 
 app.get('/', (req, res) => {
-  res.send('hello world')
+  res.send('Hello World')
 })
 
 app.listen(3000, (err) => {
   if (err) {
     throw err
   }
-
   console.log('Server listening on port 3000') // eslint-disable-line no-console
 })
