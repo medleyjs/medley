@@ -36,7 +36,7 @@ t.test('req.body should be available in onSend hooks and undefined in onFinished
     res.send()
   })
 
-  app.addHook('onSend', (req, res, payload, next) => {
+  app.addHook('onSend', (req, res, body, next) => {
     t.equal(req.body, 'body')
     next()
   })

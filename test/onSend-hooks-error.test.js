@@ -19,7 +19,7 @@ t.test('onSend hook error invokes the onErrorSending function and does not affec
     res.send('body')
   })
 
-  app.addHook('onSend', (req, res, payload, next) => {
+  app.addHook('onSend', (req, res, body, next) => {
     next(onSendError)
   })
 
@@ -34,14 +34,14 @@ t.test('onSend hook error invokes the onErrorSending function and does not affec
   })
 })
 
-t.test('onSend hooks invoke the onErrorSending function and finalErrorHandler if they change the payload to an invalid type', (t) => {
+t.test('onSend hooks invoke the onErrorSending function and finalErrorHandler if they change the body to an invalid type', (t) => {
   t.plan(4)
 
   const app = medley({
     onErrorSending(err) {
       t.match(
         err,
-        new TypeError("Attempted to send payload of invalid type 'object'. Expected a string, Buffer, or stream.")
+        new TypeError("Attempted to send body of invalid type 'object'. Expected a string, Buffer, or stream.")
       )
     },
   })
@@ -50,7 +50,7 @@ t.test('onSend hooks invoke the onErrorSending function and finalErrorHandler if
     res.send('plain text')
   })
 
-  app.addHook('onSend', (req, res, payload, next) => {
+  app.addHook('onSend', (req, res, body, next) => {
     next(null, {})
   })
 
@@ -59,7 +59,7 @@ t.test('onSend hooks invoke the onErrorSending function and finalErrorHandler if
     t.equal(res.statusCode, 500)
     t.strictDeepEqual(JSON.parse(res.body), {
       error: 'Internal Server Error',
-      message: "Attempted to send payload of invalid type 'object'. Expected a string, Buffer, or stream.",
+      message: "Attempted to send body of invalid type 'object'. Expected a string, Buffer, or stream.",
       statusCode: 500,
     })
   })

@@ -31,7 +31,7 @@ app.get('/user/:id', function(req, res) {
 + [`.hasHeader(field)`](#hasHeader)
 + [`.redirect([statusCode,] url)`](#redirect)
 + [`.removeHeader(field)`](#removeHeader)
-+ [`.send([payload])`](#send)
++ [`.send([body])`](#send)
 + [`.setHeader(field [, value])`](#setHeader)
 + [`.status(statusCode)`](#status)
 + [`.type(contentType)`](#type)
@@ -222,16 +222,16 @@ res.removeHeader('content-type')
 ```
 
 <a id="send"></a>
-### `res.send([payload])`
+### `res.send([body])`
 
-Sends the payload to respond to the request.
+Sends the HTTP response.
 
-`.send()` handles payloads differently based on their type. The behavior for each type
+`.send()` handles the `body` differently based on its type. The behavior for each type
 is described below.
 
-#### No Value / `null` / `undefined`
+#### `null` / `undefined`
 
-Sends a response with an empty body.
+Sends a response without a body.
 
 ```js
 res.send()
@@ -270,10 +270,10 @@ app.get('/stream', (req, res) => {
 
 #### JSON
 
-If the payload is not one of the previous types, it will be JSON-serialized.
+If the `body` is not one of the previous types, it will be JSON-serialized.
 If not already set, the `Content-Type` header will be set to `'application/json'`.
 
-JSON payloads are serialized with [`compile-json-stringify`](https://www.npmjs.com/package/compile-json-stringify)
+The `body` will be serialized with [`compile-json-stringify`](https://www.npmjs.com/package/compile-json-stringify)
 if a response schema was set, otherwise `JSON.stringify()` is used.
 
 ```js

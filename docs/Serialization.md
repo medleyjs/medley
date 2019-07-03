@@ -1,15 +1,8 @@
 # Serialization
 
-When sending a JSON response, it is serialized with `JSON.stringify()` by
-default. However, a response schema can be set to enable the payload to be
-serialized with [`compile-json-stringify`](https://www.npmjs.com/package/compile-json-stringify)
-instead. `compile-json-stringify` will stringify the payload 2-8x faster than
-`JSON.stringify()` and it will exclude any properties that are not included in
-the schema (which can prevent accidental disclosure of sensitive information,
-although it is not recommended to use this as the primary method of preventing
-data leaks).
-
-**Example:**
+Routes can define a `responseSchema` to optimize serialization JSON responses.
+The `responseSchema` is compiled by [`compile-json-stringify`](https://www.npmjs.com/package/compile-json-stringify)
+which will stringify the response body 2-8x faster than `JSON.stringify()`.
 
 ```js
 const responseSchema = {
@@ -55,6 +48,29 @@ app.post('/info', { responseSchema }, (req, res) => {
   } else {
     res.send({ value: 'medley', fast: true });
   }
+});
+```
+
+The compiled `stringify` function will also exclude any properties that are not
+included in the schema (which can prevent accidental disclosure of sensitive
+information, although it is not recommended to use this as the primary method
+of preventing data leaks).
+
+```js
+const responseSchema = {
+  200: {
+    type: 'object',
+    properties: {
+      hello: { type: 'string' }
+    }
+  }
+};
+
+app.get('/', { responseSchema }, (req, res) => {
+  res.send({
+    hello: 'world',
+    greetings: 'universe', // This property will be excluded from the response
+  });
 });
 ```
 

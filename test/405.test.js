@@ -94,7 +94,7 @@ t.test('hooks run on auto 405 response', (t) => {
     res.send({hello: 'world'})
   })
 
-  app.addHook('onSend', (req, res, payload, next) => {
+  app.addHook('onSend', (req, res, body, next) => {
     t.deepEqual(req.query, {foo: 'bar'})
     next()
   })

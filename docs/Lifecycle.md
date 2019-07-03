@@ -9,7 +9,7 @@ Incoming Request
               │
               └─▶ Route Handler
                     |
-                    └─▶ Serialize Payload
+                    └─▶ Serialize Body
                           │
                           └─▶ onSend Hooks
                                 │
@@ -23,7 +23,7 @@ Incoming Request
 1. [Routing](#routing)
 1. [onRequest Hooks](#onrequest-hooks)
 1. [Route Handler](#route-handler)
-1. [Serialize Payload](#serialize-payload)
+1. [Serialize Body](#serialize-body)
 1. [onSend Hooks](#onsend-hooks)
 1. [Send Response](#send-response)
 1. [onFinished Hooks](#onfinished-hooks)
@@ -46,7 +46,7 @@ app.addHook('onRequest', (req, res, next) => {
 });
 ```
 
-These hooks may send an early response with `res.send()`. If a hook does this, the rest of the hooks will be skipped and the lifecycle will go straight to the [*Serialize Payload*](#serialize-payload) step.
+These hooks may send an early response with `res.send()`. If a hook does this, the rest of the hooks will be skipped and the lifecycle will go straight to the [*Serialize Body*](#serialize-body) step.
 
 #### Route-level `preHandler`
 
@@ -66,11 +66,11 @@ app.get('/', {
 
 ## Route Handler
 
-This is the main handler for the route. The route handler sends the response payload.
+This is the main function that sends the response.
 
 ```js
 app.get('/', (req, res) => {
-  res.send('payload');
+  res.send('body');
 });
 ```
 
@@ -80,18 +80,18 @@ See the [`Routes` documentation](Routes.md) for more information on route handle
 
 If the request URL does not match any routes, the [`notFoundHandler`](Medley.md#notfoundhandler) is invoked. Global hooks **are** run before/after this handler.
 
-## Serialize Payload
+## Serialize Body
 
-In this step, the payload that was passed to `res.send()` is serialized (if it needs to be) and an appropriate `Content-Type` for the payload is set (if one was not already set).
+In this step, the body that was passed to `res.send()` is serialized (if it needs to be) and an appropriate `Content-Type` is set (if one was not already set).
 
 See the [`res.send()`](Response.md#send) and [Serialization](Serialization.md) documentation for more information.
 
 ## `onSend` Hooks
 
-[`onSend` hooks](Hooks.md#onSend-hook) are run after the payload has been serialized and before the payload is sent to the client.
+[`onSend` hooks](Hooks.md#onSend-hook) are run after the body has been serialized and before the response is sent to the client.
 
 ```js
-app.addHook('onSend', (req, res, payload, next) => {
+app.addHook('onSend', (req, res, body, next) => {
   // Do something, like save the session state
   next();
 });
@@ -99,7 +99,7 @@ app.addHook('onSend', (req, res, payload, next) => {
 
 ## Send Response
 
-The serialized payload is sent to the client. Medley handles this step automatically.
+The response is sent to the client. Medley handles this step automatically.
 
 ## `onFinished` Hooks
 
@@ -131,7 +131,7 @@ Routing
         │                                           ⯆
         └─▶ Route Handler  ╌╌╌╌ (error) ╌╌╌▶ onError Hooks
               |                                     ┆
-              └─▶ Serialize Payload ◀╌╌╌╌╌╌╌╌╌╌╌╌╌╌┘
+              └─▶ Serialize Body ◀╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┘
                     │
                     └─▶ onSend Hooks
                           │

@@ -14,7 +14,7 @@ app
   })
 
 app
-  .addHook('onSend', (req, res, payload, next) => {
+  .addHook('onSend', (req, res, body, next) => {
     next()
   })
 

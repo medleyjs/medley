@@ -89,9 +89,8 @@ test('preHandler should handle errors', (t) => {
 
   request(app, '/', (err, res) => {
     t.error(err)
-    var payload = JSON.parse(res.body)
     t.equal(res.statusCode, 500)
-    t.strictDeepEqual(payload, {
+    t.strictDeepEqual(JSON.parse(res.body), {
       message: 'kaboom',
       error: 'Internal Server Error',
       statusCode: 500,
@@ -113,9 +112,8 @@ test('preHandler should handle errors with custom status code', (t) => {
 
   request(app, '/', (err, res) => {
     t.error(err)
-    var payload = JSON.parse(res.body)
     t.equal(res.statusCode, 401)
-    t.deepEqual(payload, {
+    t.deepEqual(JSON.parse(res.body), {
       message: 'go away',
       error: 'Unauthorized',
       statusCode: 401,

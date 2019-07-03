@@ -133,30 +133,30 @@ app.addHook('onRequest', async (req, res) => {
 
 ```js
 // Callback version
-app.addHook('onSend', (req, res, payload, next) => {
+app.addHook('onSend', (req, res, body, next) => {
   // Handle onSend
   next();
 });
 
 // Async version
-app.addHook('onSend', async (req, res, payload) => {
+app.addHook('onSend', async (req, res, body) => {
   // Handle onSend
 });
 ```
 
 + `req` - Medley [Request](Request.md) object.
 + `res` - Medley [Response](Response.md) object.
-+ `payload` - The serialized payload.
-+ `next([error [, payload]])` - Function to continue to the next hook and optionally update the payload.
++ `body` - The serialized response body.
++ `next([error [, body]])` - Function to continue to the next hook and optionally update the body.
 
-The `onSend` hooks are run right after `res.send()` is called and the payload
+The `onSend` hooks are run right after `res.send()` is called and the body
 has been serialized. They provide an opportunity to save application state
 (e.g. sessions) and set extra headers before the response is sent.
 
-### Modifying the Payload
+### Modifying the Response Body
 
-It is possible to modify the payload before it is sent by passing the modified
-payload as the second argument to `next()`. The payload may only be changed
+It is possible to modify the response body before it is sent by passing the modified
+body as the second argument to `next()`. The body may only be changed
 to a `string`, a `Buffer`, a `stream`, or `null`.
 
 ```js
@@ -164,23 +164,23 @@ app.get('/', (req, res) => {
   res.send({ hello: 'world' });
 });
 
-app.addHook('onSend', (req, res, payload, next) => {
-  console.log(payload); // '{"hello":"world"}'
-  const newPayload = Buffer.from(payload);
-  next(null, newPayload);
+app.addHook('onSend', (req, res, body, next) => {
+  console.log(body); // '{"hello":"world"}'
+  const newBody = Buffer.from(body);
+  next(null, newBody);
 });
 ```
 
-To modify the payload using an `async` hook, return the new payload.
+To modify the body using an `async` hook, return the new body.
 
 ```js
-app.addHook('onSend', async (req, res, payload) => {
-  return Buffer.from(payload);
+app.addHook('onSend', async (req, res, body) => {
+  return Buffer.from(body);
 });
 ```
 
-Changing the payload is mainly intended to be used for encoding the payload
-(e.g. compressing it) or clearing the payload by setting it to `null` for a
+Changing the response body is mainly intended to be used for encoding the
+body (e.g. compressing it) or setting the body to `null` for a
 `304 Not Modified` response.
 
 ### `onSend` Hooks and Errors

@@ -54,7 +54,7 @@ test('hooks', (t) => {
     res.send(payload)
   })
 
-  app.addHook('onSend', function(req, res, _payload, next) {
+  app.addHook('onSend', function(req, res, body, next) {
     t.ok('onSend called')
     next()
   })
@@ -282,7 +282,7 @@ test('onSend hook should support encapsulation', (t) => {
   const app = medley()
 
   app.createSubApp()
-    .addHook('onSend', (req, res, payload, next) => {
+    .addHook('onSend', (req, res, body, next) => {
       t.equal(req.url, '/plugin')
       next()
     })
@@ -309,7 +309,7 @@ test('onSend hooks in sub-app should run after parent’s hooks', (t) => {
   t.plan(11)
   const app = medley()
 
-  app.addHook('onSend', (req, res, payload, next) => {
+  app.addHook('onSend', (req, res, body, next) => {
     t.pass('first onSend hook called')
     req.first = true
     next()
@@ -320,7 +320,7 @@ test('onSend hooks in sub-app should run after parent’s hooks', (t) => {
   })
 
   app.createSubApp()
-    .addHook('onSend', (req, res, payload, next) => {
+    .addHook('onSend', (req, res, body, next) => {
       t.equal(req.first, true)
       req.second = true
       next()
@@ -533,7 +533,7 @@ test('onSend hooks can clear the payload', (t) => {
 
   const app = medley()
 
-  app.addHook('onSend', (req, res, payload, next) => {
+  app.addHook('onSend', (req, res, body, next) => {
     res.status(304)
     next(null, null)
   })
@@ -682,8 +682,8 @@ test('onRequest hooks should be able to send a response', (t) => {
     t.fail('this should not be called')
   })
 
-  app.addHook('onSend', (req, res, payload, next) => {
-    t.equal(payload, 'hello')
+  app.addHook('onSend', (req, res, body, next) => {
+    t.equal(body, 'hello')
     next()
   })
 
@@ -719,8 +719,8 @@ test('async onRequest hooks should be able to send a response', (t) => {
     t.fail('next onRequest hook should not be called')
   })
 
-  app.addHook('onSend', async (req, res, payload) => {
-    t.equal(payload, 'hello')
+  app.addHook('onSend', async (req, res, body) => {
+    t.equal(body, 'hello')
   })
 
   app.get('/', () => {
@@ -836,7 +836,7 @@ test('onSend hooks can be added after the route is defined', (t) => {
   const app = medley()
 
   app.createSubApp()
-    .addHook('onSend', function(req, res, payload, next) {
+    .addHook('onSend', function(req, res, body, next) {
       t.strictEqual(req.previous, undefined)
       req.previous = 1
       next()
@@ -844,7 +844,7 @@ test('onSend hooks can be added after the route is defined', (t) => {
     .get('/encapsulated', function(req, res) {
       res.send({})
     })
-    .addHook('onSend', function(req, res, payload, next) {
+    .addHook('onSend', function(req, res, body, next) {
       t.strictEqual(req.previous, 1)
       next(null, '2')
     })
@@ -853,19 +853,19 @@ test('onSend hooks can be added after the route is defined', (t) => {
     res.send({})
   })
 
-  app.addHook('onSend', function(req, res, payload, next) {
+  app.addHook('onSend', function(req, res, body, next) {
     t.strictEqual(req.previous, undefined)
     req.previous = 1
     next()
   })
 
-  app.addHook('onSend', function(req, res, payload, next) {
+  app.addHook('onSend', function(req, res, body, next) {
     t.strictEqual(req.previous, 1)
     req.previous = 2
     next()
   })
 
-  app.addHook('onSend', function(req, res, payload, next) {
+  app.addHook('onSend', function(req, res, body, next) {
     t.strictEqual(req.previous, 2)
     next(null, '3')
   })

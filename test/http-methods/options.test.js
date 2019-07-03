@@ -66,7 +66,7 @@ t.test('hooks run on auto OPTIONS response', (t) => {
     next()
   })
 
-  app.addHook('onSend', (req, res, payload, next) => {
+  app.addHook('onSend', (req, res, body, next) => {
     t.deepEqual(req.query, {foo: 'asd'})
     next()
   })

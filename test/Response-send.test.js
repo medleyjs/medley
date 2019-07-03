@@ -58,7 +58,7 @@ test('within a sub-app', (t) => {
   })
 
   app.createSubApp()
-    .addHook('onSend', function(req, res, payload, next) {
+    .addHook('onSend', function(req, res, body, next) {
       res.setHeader('x-onsend', 'yes')
       next()
     })
@@ -207,13 +207,13 @@ test('plain string with Content-Type should be sent unmodified', (t) => {
   })
 })
 
-test('undefined payload should be sent as-is', (t) => {
+test('undefined body should be sent as-is', (t) => {
   t.plan(5)
 
   const app = medley()
 
-  app.addHook('onSend', function(req, res, payload, next) {
-    t.equal(payload, undefined)
+  app.addHook('onSend', function(req, res, body, next) {
+    t.equal(body, undefined)
     next()
   })
 
@@ -229,13 +229,13 @@ test('undefined payload should be sent as-is', (t) => {
   })
 })
 
-test('null payload should be sent as-is', (t) => {
+test('null body should be sent as-is', (t) => {
   t.plan(5)
 
   const app = medley()
 
-  app.addHook('onSend', function(req, res, payload, next) {
-    t.equal(payload, null)
+  app.addHook('onSend', function(req, res, body, next) {
+    t.equal(body, null)
     next()
   })
 
@@ -251,7 +251,7 @@ test('null payload should be sent as-is', (t) => {
   })
 })
 
-test('res.send() can still serialize payload even if a Content-Type header is set', (t) => {
+test('res.send() can still serialize body even if a Content-Type header is set', (t) => {
   t.plan(3)
 
   const app = medley()

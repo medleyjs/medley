@@ -123,7 +123,7 @@ test('Hooks on the root app run for the default 404 handler', (t) => {
     next()
   })
 
-  app.addHook('onSend', function(req, res, payload, next) {
+  app.addHook('onSend', function(req, res, body, next) {
     t.pass('onSend called')
     next()
   })
@@ -152,7 +152,7 @@ test('Hooks on the root app run for custom 404 handlers', (t) => {
     next()
   })
 
-  app.addHook('onSend', function(req, res, payload, next) {
+  app.addHook('onSend', function(req, res, body, next) {
     t.pass('onSend called')
     next()
   })

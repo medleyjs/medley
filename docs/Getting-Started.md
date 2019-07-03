@@ -74,7 +74,7 @@ app.addHook('onRequest', (req, res, next) => {
   next();
 });
 
-app.addHook('onSend', (req, res, payload, next) => {
+app.addHook('onSend', (req, res, body, next) => {
   res.sendStartTime = Date.now();
   next();
 });
