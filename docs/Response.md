@@ -16,6 +16,7 @@ app.get('/user/:id', function(req, res) {
 **Properties:**
 
 + [`.config`](#resconfig)
++ [`.headers`](#resheaders)
 + [`.headersSent`](#resheaderssent)
 + [`.request`](#resrequest)
 + [`.sent`](#ressent)
@@ -54,6 +55,50 @@ app.route({
   }
 });
 ```
+
+### `res.headers`
+
+The HTTP response headers. It is an `object` with a `null` prototype.
+
+```js
+console.log(res.headers); // [Object: null prototype] {}
+
+res.headers['content-type'] = 'application/json';
+console.log(res.headers);
+// =>  [Object: null prototype] { 'content-type': 'application/json' }
+```
+
+Rather than using methods like [`res.getHeader()`](#getHeader) and
+[`res.setHeader()`](#setHeader), this object exposes the response
+headers for direct access/manipulation.
+
+```js
+const currentType = res.headers['content-type'];
+
+res.headers.etag = '"c561c68d0ba92bbeb8b"';
+```
+
+However, unlike with the `res.*Header()` methods, there are a few caveats
+when using the `headers` object:
+
+1. Header names MUST be lowercase
+1. Header values SHOULD be strings or an `Array` of strings (in order to send more than one value per header field)
+1. Header values MUST NOT be `null` or `undefined`
+
+```js
+// ✗ Not OK
+res.headers['X-Response-Time'] = 1200;
+// ✓ OK
+res.headers['x-response-time'] = '1200';
+
+// ✗ Not OK
+res.headers['content-encoding'] = undefined;
+// ✓ OK
+delete res.headers['content-encoding'];
+```
+
+Failing to follow these caveats could result in bugs and/or an error thrown
+when the response is sent.
 
 ### `res.headersSent`
 

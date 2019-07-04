@@ -18,9 +18,10 @@ test('Response properties', (t) => {
   t.equal(response.request, req)
   t.equal(response.config, config)
   t.equal(response.sent, false)
-  t.type(response.state, 'object')
   t.equal(response.headersSent, false)
   t.equal(response.statusCode, 200)
+  t.strictDeepEqual(response.headers, Object.create(null))
+  t.strictDeepEqual(response.state, {})
 
   t.end()
 })
@@ -33,6 +34,35 @@ test('Response aliases', (t) => {
   t.equal(response.remove, response.removeHeader)
   t.equal(response.set, response.setHeader)
   t.end()
+})
+
+test('res.headers holds the response headers', (t) => {
+  t.plan(8)
+
+  const app = medley()
+
+  app.get('/', (req, res) => {
+    t.strictDeepEqual(res.headers, Object.create(null))
+
+    res.headers['content-type'] = 'application/octet-stream'
+    t.strictDeepEqual(
+      res.headers,
+      Object.assign(Object.create(null), {'content-type': 'application/octet-stream'})
+    )
+    t.equal(res.getHeader('content-type'), 'application/octet-stream')
+
+    res.setHeader('x-response-time', '1200')
+    t.equal(res.headers['x-response-time'], '1200')
+
+    res.send('success')
+  })
+
+  request(app, '/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.headers['content-type'], 'application/octet-stream')
+    t.equal(res.body, 'success')
+  })
 })
 
 test('res.headersSent is a getter for res.stream.headersSent', (t) => {
