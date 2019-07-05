@@ -82,6 +82,7 @@ so that code written now that won't require massive rewrites in the future.
 #### Plugins
 
 + [`@medley/cookie`](https://www.npmjs.com/package/@medley/cookie) - Plugin for parsing and setting cookies.
++ [`@medley/etag`](https://www.npmjs.com/package/@medley/etag) - Plugin for automatic ETag generation & conditional GET responses.
 + [`@medley/self-request`](https://www.npmjs.com/package/@medley/self-request) - Plugin that augments an app to be able to make HTTP requests to itself for testing.
 + [`@medley/serve-favicon`](https://www.npmjs.com/package/@medley/serve-favicon) - Plugin for serving the default favicon.
 + [`@medley/serve-static`](https://www.npmjs.com/package/@medley/serve-static) - Plugin for serving static files.
