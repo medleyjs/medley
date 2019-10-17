@@ -72,7 +72,34 @@ t.test('.createSubApp() creates different sub-apps that can both define routes',
   })
 })
 
-t.test('.createSubApp() nested calls with prefix', (t) => {
+t.test('.createSubApp() nested calls with prefix (route does not use slash)', (t) => {
+  t.plan(4)
+
+  const app = medley()
+  const subApp = app.createSubApp('/parent')
+
+  subApp.createSubApp('/child1')
+    .get('', (req, res) => {
+      res.send('child 1')
+    })
+
+  subApp.createSubApp('/child2')
+    .get('', (req, res) => {
+      res.send('child 2')
+    })
+
+  request(app, '/parent/child1', (err, res) => {
+    t.error(err)
+    t.equal(res.body, 'child 1')
+  })
+
+  request(app, '/parent/child2', (err, res) => {
+    t.error(err)
+    t.equal(res.body, 'child 2')
+  })
+})
+
+t.test('.createSubApp() nested calls with prefix (route uses slash)', (t) => {
   t.plan(4)
 
   const app = medley()
@@ -88,12 +115,12 @@ t.test('.createSubApp() nested calls with prefix', (t) => {
       res.send('child 2')
     })
 
-  request(app, '/parent/child1', (err, res) => {
+  request(app, '/parent/child1/', (err, res) => {
     t.error(err)
     t.equal(res.body, 'child 1')
   })
 
-  request(app, '/parent/child2', (err, res) => {
+  request(app, '/parent/child2/', (err, res) => {
     t.error(err)
     t.equal(res.body, 'child 2')
   })

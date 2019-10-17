@@ -1,11 +1,11 @@
 'use strict'
 
-const findMyWay = require('find-my-way')
 const debug = require('debug')('medley')
 const http = require('http')
 
 const Hooks = require('./lib/Hooks')
 const RouteContext = require('./lib/RouteContext')
+const Router = require('@medley/router')
 
 const runOnCloseHandlers = require('./lib/utils/runOnCloseHandlers')
 const runOnLoadHandlers = require('./lib/utils/runOnLoadHandlers')
@@ -15,15 +15,10 @@ const {buildResponse} = require('./lib/Response')
 const {buildSerializers} = require('./lib/Serializer')
 const {
   createRequestHandler,
-  createOptionsHandler,
-  create405Handler,
+  defaultOptionsHandler,
+  defaultMethodNotAllowedHandler,
   defaultNotFoundHandler,
 } = require('./lib/RequestHandlers')
-
-const supportedMethods = http.METHODS.filter(method => method !== 'CONNECT')
-
-/* istanbul ignore next - This is never used. It's just needed to appease find-my-way. */
-const noop = () => {}
 
 function defaultOnErrorSending(err) {
   debug('Error occurred while sending:\n%O', err)
@@ -85,9 +80,18 @@ function medley(options) {
     throw new TypeError(`'notFoundHandler' option must be a function. Got value of type '${typeof options.notFoundHandler}'`)
   }
 
-  const router = findMyWay({
-    ignoreTrailingSlash: !options.strictRouting,
-    maxParamLength: options.maxParamLength,
+  if (
+    options.methodNotAllowedHandler !== undefined &&
+    typeof options.methodNotAllowedHandler !== 'function'
+  ) {
+    throw new TypeError(`'methodNotAllowedHandler' option must be a function. Got value of type '${typeof options.methodNotAllowedHandler}'`)
+  }
+
+  const router = new Router({
+    storeFactory: () => ({
+      methodContexts: Object.create(null),
+      fallbackContext: null, // For 405 Method Not Allowed responses
+    }),
   })
   const rootAppHooks = new Hooks()
   const onErrorSending = options.onErrorSending || defaultOnErrorSending
@@ -95,18 +99,14 @@ function medley(options) {
     null, // Serializers
     options.notFoundHandler || defaultNotFoundHandler,
     undefined, // config
-    null, // preHandler
+    undefined, // preHandler
     rootAppHooks,
     onErrorSending
   )
-  const notFoundRoute = {
-    handler: noop, // To match shape of find-my-way routes
-    params: {},
-    store: notFoundRouteContext,
-  }
   const Request = buildRequest(!!options.trustProxy, options.queryParser)
   const Response = buildResponse()
-  const requestHandler = createRequestHandler(router, notFoundRoute, Request, Response)
+  const requestHandler = createRequestHandler(router, notFoundRouteContext, Request, Response)
+  const methodNotAllowedHandler = options.methodNotAllowedHandler || defaultMethodNotAllowedHandler
 
   var loadCallbackQueue = null
   var loaded = false
@@ -139,7 +139,9 @@ function medley(options) {
     put: createShorthandRouteMethod('PUT'),
     patch: createShorthandRouteMethod('PATCH'),
     options: createShorthandRouteMethod('OPTIONS'),
-    all: createShorthandRouteMethod(supportedMethods),
+    all: createShorthandRouteMethod(
+      http.METHODS.filter(method => method !== 'CONNECT')
+    ),
 
     [Symbol.iterator]: routesIterator,
 
@@ -172,8 +174,6 @@ function medley(options) {
 
   const onLoadHandlers = []
   const onCloseHandlers = []
-
-  var registeringAutoHandlers = false
 
   function throwIfAppIsLoaded(msg) {
     if (loaded) {
@@ -254,12 +254,10 @@ function medley(options) {
       throw new TypeError('Route `method` is required')
     }
 
-    const methods = Array.isArray(opts.method) ? opts.method : [opts.method]
-
-    for (const method of methods) {
-      if (supportedMethods.indexOf(method) === -1) {
-        throw new RangeError(`"${method}" method is not supported`)
-      }
+    if (typeof opts.handler !== 'function') {
+      throw new TypeError(
+        `Route 'handler' must be a function. Got a value of type '${typeof opts.handler}': ${opts.handler}`
+      )
     }
 
     let {path} = opts
@@ -274,91 +272,77 @@ function medley(options) {
       path = this._routePrefix + path
     }
 
-    if (typeof opts.handler !== 'function') {
-      throw new TypeError(
-        `Route 'handler' must be a function. Got a value of type '${typeof opts.handler}': ${opts.handler}`
+    const routeStore = router.register(path)
+    const appRouteContexts = routeContexts.get(this) || routeContexts.set(this, []).get(this)
+
+    if (routeStore.fallbackContext === null) { // Initial setup for new route store
+      const config = {allowedMethods: []}
+
+      // 405 Method Not Allowed context
+      const fallbackContext = RouteContext.create(
+        null, // serializers
+        methodNotAllowedHandler,
+        config,
+        undefined, // preHandler
+        rootAppHooks,
+        onErrorSending
       )
+      routeStore.fallbackContext = fallbackContext
+      routeContexts.get(app).push(fallbackContext) // This is a root app context
+
+      // Default OPTIONS context
+      const optionsContext = RouteContext.create(
+        null, // serializers
+        defaultOptionsHandler,
+        config,
+        undefined, // preHandler
+        this._hooks,
+        onErrorSending
+      )
+      routeStore.methodContexts.OPTIONS = optionsContext
+      appRouteContexts.push(optionsContext)
     }
 
-    const serializers = buildSerializers(opts.responseSchema)
     const routeContext = RouteContext.create(
-      serializers,
+      buildSerializers(opts.responseSchema),
       opts.handler,
       opts.config,
       opts.preHandler,
       this._hooks,
       onErrorSending
     )
+    appRouteContexts.push(routeContext)
 
-    router.on(methods, path, noop, routeContext)
+    const methods = Array.isArray(opts.method) ? opts.method : [opts.method]
+    const userMethodContexts = routes.get(path) || routes.set(path, {}).get(path)
+    const {allowedMethods} = routeStore.fallbackContext.config
 
-    if (!registeringAutoHandlers) {
-      recordRoute(path, methods, routeContext, this)
+    for (const method of methods) {
+      // Throw if a context for the route + method already exists, unless it's
+      // the default HEAD or OPTIONS context (in which case, replace it)
+      const existingContext = routeStore.methodContexts[method]
+      if (
+        existingContext !== undefined &&
+        (method !== 'HEAD' || existingContext !== routeStore.methodContexts.GET) &&
+        (method !== 'OPTIONS' || existingContext.handler !== defaultOptionsHandler)
+      ) {
+        throw new Error(`Cannot create route "${method} ${path}" because it already exists`)
+      }
 
-      const appRouteContexts = routeContexts.get(this)
-      if (appRouteContexts === undefined) {
-        routeContexts.set(this, [routeContext])
-      } else {
-        appRouteContexts.push(routeContext)
+      routeStore.methodContexts[method] = routeContext
+      userMethodContexts[method] = routeContext
+
+      if (method === 'GET' && routeStore.methodContexts.HEAD === undefined) {
+        routeStore.methodContexts.HEAD = routeContext // Set default HEAD route
+        allowedMethods.push('GET', 'HEAD')
+      } else if (method !== 'HEAD' || !allowedMethods.includes('HEAD')) {
+        allowedMethods.push(method)
       }
     }
+
+    allowedMethods.sort() // Keep the allowed methods sorted to ensure consistency
 
     return this // Chainable
-  }
-
-  function recordRoute(routePath, methods, routeContext, appInstance) {
-    const methodRoutes = {}
-    for (var i = 0; i < methods.length; i++) {
-      methodRoutes[methods[i]] = routeContext
-    }
-
-    if (!routes.has(routePath)) {
-      routes.set(routePath, {appInstance, methodRoutes})
-      return
-    }
-
-    const routeData = routes.get(routePath)
-    Object.assign(routeData.methodRoutes, methodRoutes)
-  }
-
-  function registerAutoHandlers() {
-    for (const [routePath, routeData] of routes) {
-      const {methodRoutes} = routeData
-      const methods = Object.keys(methodRoutes)
-
-      // Create a HEAD handler if a GET handler was set and a HEAD handler wasn't
-      if (methodRoutes.GET !== undefined && methodRoutes.HEAD === undefined) {
-        router.on('HEAD', routePath, noop, methodRoutes.GET)
-        methods.push('HEAD')
-      }
-
-      methods.sort() // For consistent Allow headers
-
-      // Create an OPTIONS handler if one wasn't set
-      const optionsIndex = methods.indexOf('OPTIONS')
-      if (optionsIndex === -1) {
-        const optionsHandler = createOptionsHandler(methods.join(','))
-        routeData.appInstance.options(routePath, optionsHandler)
-      } else {
-        // Remove OPTIONS for the next part
-        methods.splice(optionsIndex, 1)
-      }
-
-      // Create a 405 handler for all unset, supported methods
-      const unsetMethods = supportedMethods.filter(
-        method => method !== 'OPTIONS' && methods.indexOf(method) === -1
-      )
-      if (unsetMethods.length > 0) {
-        routeData.appInstance.route({
-          method: unsetMethods,
-          path: routePath,
-          handler: create405Handler(methods.join(',')),
-        })
-      }
-
-      // Try to save memory since this is no longer needed
-      routeData.appInstance = null
-    }
   }
 
   function onLoad(handler) {
@@ -397,9 +381,6 @@ function medley(options) {
         loadCallbackQueue = null
         return
       }
-
-      registeringAutoHandlers = true
-      registerAutoHandlers()
 
       loaded = true
 
@@ -499,8 +480,8 @@ function medley(options) {
   }
 
   function *routesIterator() {
-    for (const [routePath, {methodRoutes}] of routes) {
-      yield [routePath, methodRoutes]
+    for (const [routePath, methodContexts] of routes) {
+      yield [routePath, methodContexts]
     }
   }
 }

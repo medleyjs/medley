@@ -33,7 +33,7 @@ Incoming Request
 
 The first step Medley takes after receiving a request is to find the route that matches the URL of the request.
 
-Medley uses the [`find-my-way`](https://www.npmjs.com/package/find-my-way) router to make this step fast and efficient.
+Medley uses [`@medley/router`](https://www.npmjs.com/package/@medley/router) for routing.
 
 ## `onRequest` Hooks
 
@@ -79,6 +79,10 @@ See the [`Routes` documentation](Routes.md) for more information on route handle
 #### Not-Found Handler
 
 If the request URL does not match any routes, the [`notFoundHandler`](Medley.md#notfoundhandler) is invoked. Global hooks **are** run before/after this handler.
+
+#### Method-Not-Allowed Handler
+
+If the request URL matches a route but has no handler for the request method, the [`methodNotAllowedHandler`](Medley.md#methodnotallowedhandler) is invoked. Global hooks **are** run before/after this handler.
 
 ## Serialize Body
 

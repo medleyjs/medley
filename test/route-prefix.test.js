@@ -26,31 +26,10 @@ test('route without a prefix', (t) => {
   })
 })
 
-test('prefix joined with "/" route path when strictRouting=false', (t) => {
+test('prefix joined with "" and "/" route path', (t) => {
   t.plan(4)
 
-  const app = medley({strictRouting: false})
-
-  app.createSubApp('/v1')
-    .get('/', (req, res) => {
-      res.send('payload')
-    })
-
-  request(app, '/v1', (err, res) => {
-    t.error(err)
-    t.equal(res.body, 'payload')
-  })
-
-  request(app, '/v1/', (err, res) => {
-    t.error(err)
-    t.equal(res.body, 'payload')
-  })
-})
-
-test('prefix joined with "" and "/" route path when strictRouting=true', (t) => {
-  t.plan(4)
-
-  const app = medley({strictRouting: true})
+  const app = medley()
 
   app.createSubApp('/v1')
     .get('', (req, res) => {
@@ -211,7 +190,7 @@ test('prefix works many levels deep', (t) => {
     .createSubApp('/v2')
     .createSubApp() // No prefix on this level
     .createSubApp('/v3')
-    .get('/', (req, res) => {
+    .get('', (req, res) => {
       res.send('payload')
     })
 

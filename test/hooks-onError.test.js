@@ -178,7 +178,7 @@ test('encapsulated onError hook', (t) => {
     })
   })
 
-  request(app, '/test', (err, res) => {
+  request(app, '/test/', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 500)
     t.strictEqual(res.headers['content-type'], 'text/plain; charset=utf-8')
@@ -253,7 +253,7 @@ test('async onError hook can send a response by returning a value', (t) => {
     t.strictEqual(res.body, 'Error: promise error')
   })
 
-  request(app, '/async', (err, res) => {
+  request(app, '/async/', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 500)
     t.strictEqual(res.headers['content-type'], 'text/plain; charset=utf-8')

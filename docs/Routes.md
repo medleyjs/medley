@@ -22,9 +22,7 @@ app.route(options)
 
 Type: `string` | `Array<string>`
 
-The HTTP method(s) the route will run for. Can be any method found in the
-[`http.METHODS`](https://nodejs.org/api/http.html#http_http_methods) array
-(except for `CONNECT`).
+The HTTP method(s) the route will run for.
 
 ```js
 app.route({
@@ -55,12 +53,12 @@ app.route({
   method: 'GET',
   path: '/user/:id',
   handler: function(req, res) {
-    console.log(req.params.id); // '1003' (for example)
+    console.log(req.url); // '/user/1003' (for example)
   }
 });
 ````
 
-See the [URL-Building](#url-building) section for details on the formats
+See the [**Route Path Formats**](#route-path-formats) section for details on the formats
 the `path` option can take.
 
 #### `handler` (required)
@@ -186,7 +184,7 @@ app.patch(path, [options,] handler)
 app.delete(path, [options,] handler)
 app.options(path, [options,] handler)
 
-// Registers a route that handles all supported methods
+// Registers a route that handles all methods in `require('http').METHODS`
 app.all(path, [options,] handler)
 ```
 
@@ -245,64 +243,91 @@ app.get('/path', {
 *If the `handler` is specified in both the `options` object and as the
 third parameter, the third parameter will take precedence.*
 
-## URL-Building
+## Route Path Formats
 
-Medley supports any route paths supported by
-[`find-my-way`](https://github.com/delvedor/find-my-way).
+Medley supports any route path format supported by [`@medley/router`](https://github.com/@medley/router).
 
-URL parameters are specified with a colon (`:`) before the parameter
-name, and wildcard paths use an asterisk (`*`).
+The path formats are as follows:
 
-_Note that static routes are always checked before parametric and wildcard routes._
+### 1. Static
 
-```js
-// Static
-app.get('/api/user', (req, res) => {});
+Static routes match exactly the path provided.
 
-// Parametric
-app.get('/api/:userId', (req, res) => {});
-app.get('/api/:userId/:secretToken', (req, res) => {});
-
-// Wildcard
-app.get('/api/*', (req, res) => {});
+```
+/
+/about
+/api/login
 ```
 
-Regular expression routes are also supported, but be aware that they are
-expensive in terms of performance.
+### 2. Parametric
 
-```js
-// Parametric with regex
-app.get('/api/:file(^\\d+).png', (req, res) => {});
+Path segments that begin with a `:` denote a parameter and will match anything
+up to the next `/` or to the end of the path.
+
+```
+/users/:userID
+/users/:userID/posts
+/users/:userID/posts/:postID
 ```
 
-To define a path with more than one parameter within the same path part,
-a hyphen (`-`) can be used to separate the parameters:
+Everything after the `:` character will be the name of the parameter in the
+`req.params` object.
 
 ```js
-// Multi-parametric
-app.get('/api/near/:lat-:lng/radius/:r', (req, res) => {
-  // Matches: '/api/near/10.856-32.284/radius/50'
-  req.params // { lat: '10.856', lng: '32.284', r: '50' }
+app.get('/users/:userID', (req, res) => {
+  // Request URL: /users/100
+  console.log(req.params); // { userID: '100' }
 });
 ```
 
-Multiple parameters also work with regular expressions:
+If multiple routes have a parameter in the same part of the route, the
+parameter names must be the same. For example, registering the following two
+routes would be an error because the `:id` and `:userID` parameters conflict
+with each other:
 
-```js
-app.get('/api/at/:hour(^\\d{2})h:minute(^\\d{2})m', (req, res) => {
-  // Matches: '/api/at/02h:50m'
-  req.params // { hour: '02', minute: '50' }
-});
+```
+/users/:id
+/users/:userID/posts
 ```
 
-In this case, the parameter separator can be any character that is not
-matched by the regular expression.
+Parameters may start anywhere in the path. For example, the following are valid routes:
 
-Having a route with multiple parameters may affect negatively the performance,
-so prefer the single parameter approach whenever possible.
+```js
+'/api/v:version' // Matches '/api/v1'
+'/on-:event'     // Matches '/on-click'
+```
 
-For more information on the router used by Medley, check out
-[`find-my-way`](https://github.com/delvedor/find-my-way).
+### 3. Wildcard
+
+Routes that end with a `*` are wildcard routes. The `*` will match any
+characters in the rest of the path, including `/` characters or no characters.
+
+For example, the following route:
+
+```
+/static/*
+```
+
+will match all of these URLs:
+
+```
+/static/
+/static/favicon.ico
+/static/js/main.js
+/static/css/vendor/bootstrap.css
+```
+
+The wildcard value will be set in the route `params` object with `'*'` as the key.
+
+```js
+app.get('/static/*', (req, res) => {
+  if (req.url === '/static/favicon.ico') {
+    console.log(req.params); // { '*': 'favicon.ico' }
+  } else if (req.url === '/static/') {
+    console.log(req.params); // { '*': '' }
+  }
+});
+```
 
 <a id="async-await"></a>
 ## Async-Await / Promises

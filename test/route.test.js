@@ -14,26 +14,6 @@ test('.route() should throw on missing method', (t) => {
   t.end()
 })
 
-test('.route() should throw on unsupported method', (t) => {
-  const app = medley()
-
-  t.throws(
-    () => app.route({method: 'TROLL', path: '/', handler: _ => _}),
-    new RangeError('"TROLL" method is not supported')
-  )
-  t.end()
-})
-
-test('.route() should throw if one method in an array is unsupported', (t) => {
-  const app = medley()
-
-  t.throws(
-    () => app.route({method: ['GET', 'TROLL'], path: '/', handler: _ => _}),
-    new RangeError('"TROLL" method is not supported')
-  )
-  t.end()
-})
-
 test('Should throw on missing handler', (t) => {
   const app = medley()
 
@@ -70,14 +50,34 @@ test('.route() throws if path is not a string', (t) => {
   t.end()
 })
 
-test('.route() should throw on multiple assignment to the same route', (t) => {
+test('.route() should throw if the route was already defined', (t) => {
   const app = medley()
 
   app.get('/', _ => _)
 
   t.throws(
     () => app.get('/', _ => _),
-    new Error("Method 'GET' already declared for route '/'")
+    new Error('Cannot create route "GET /" because it already exists')
+  )
+  t.end()
+})
+
+test('.route() should throw if the user already defined a HEAD or OPTIONS route', (t) => {
+  const app = medley()
+
+  app.route({
+    method: ['HEAD', 'OPTIONS'],
+    path: '/',
+    handler: _ => _,
+  })
+
+  t.throws(
+    () => app.head('/', _ => _),
+    new Error('Cannot create route "HEAD /" because it already exists')
+  )
+  t.throws(
+    () => app.options('/', _ => _),
+    new Error('Cannot create route "OPTIONS /" because it already exists')
   )
   t.end()
 })

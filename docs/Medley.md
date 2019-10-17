@@ -6,12 +6,11 @@ object which is used to customize the resulting instance. The options are:
 
 + [`http2`](#http2)
 + [`https`](#https)
-+ [`maxParamLength`](#maxparamlength)
++ [`methodNotAllowedHandler`](#methodnotallowedhandler)
 + [`notFoundHandler`](#notfoundhandler)
 + [`onErrorSending`](#onerrorsending)
 + [`queryParser`](#queryparser)
 + [`server`](#server)
-+ [`strictRouting`](#strictrouting)
 + [`trustProxy`](#trustproxy)
 
 ## Options
@@ -52,18 +51,59 @@ const app = medley({
 });
 ```
 
-### `maxParamLength`
+### `methodNotAllowedHandler`
 
-Type: `number`<br>
-Default: `100`
+Type: `function(req, res)` (`req` - [Request](Request.md), `res` - [Response](Response.md))
 
-This option sets a limit on the number of characters in the parameters of
-parametric (standard, regex, and multi-parametric) routes.
+A handler function that is called when the request URL matches a route but
+there is no handler for the request method.
 
-This can be useful to protect against [DoS attacks](https://www.owasp.org/index.php/Regular_expression_Denial_of_Service_-_ReDoS)
-for routes with regex parameters.
+```js
+const medley = require('@medley/medley');
+const app = medley({
+  methodNotAllowedHandler: (req, res) => {
+    res.status(405).send('Method Not Allowed: ' + req.method);
+  }
+});
+```
 
-*If the maximum length limit is reached, the request will not match the route.*
+[`405 Method Not Allowed`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/405)
+responses require the [`Allow`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Allow)
+header to be set. To make this convenient, the [`res.config`](Response.md#resconfig)
+object in the handler will contain an `allowedMethods` property, which will be an
+array of the HTTP methods that have handlers for the route.
+
+```js
+const medley = require('@medley/medley');
+const app = medley({
+  methodNotAllowedHandler: (req, res) => {
+    res.config.allowedMethods; // ['GET', 'HEAD', 'POST']
+    res.setHeader('allow', res.config.allowedMethods.join());
+    res.status(405).send('Method Not Allowed: ' + req.method);
+  }
+});
+
+app.get('/users', (req, res) => { /* ... */ });
+app.post('/users', (req, res) => { /* ... */ });
+```
+
+While this handler is intended to be used to send a [`405 Method Not Allowed`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/405)
+response, it could be used to send a `404 Not Found` response instead.
+
+```js
+const medley = require('@medley/medley');
+
+function notFoundHandler(req, res) {
+  res.status(404).send('Not Found: ' + req.url);
+}
+
+const app = medley({
+  notFoundHandler,
+  methodNotAllowedHandler: notFoundHandler,
+});
+```
+
+[Hooks](Hooks.md) that are added to the root `app` will run before/after the `methodNotAllowedHandler`.
 
 ### `notFoundHandler`
 
@@ -75,7 +115,7 @@ A handler function that is called when no routes match the request URL.
 const medley = require('@medley/medley');
 const app = medley({
   notFoundHandler: (req, res) => {
-    res.status(404).send('Route Not Found');
+    res.status(404).send('Not Found: ' + req.url);
   }
 });
 ```
@@ -136,38 +176,6 @@ const http = require('http');
 const server = http.createServer()
 
 const app = medley({ server });
-```
-
-### `strictRouting`
-
-Default: `false`
-
-Enables strict routing. When `true`, the router treats "/foo" and "/foo/" as
-different. Otherwise, the router treats "/foo" and "/foo/" as the same.
-
-```js
-const medley = require('@medley/medley');
-const app = medley({ strictRouting: false });
-
-// Registers both "/foo" and "/foo/"
-app.get('/foo/', (req, res) => {
-  res.send('foo');
-});
-
-// Registers both "/bar" and "/bar/"
-app.get('/bar', (req, res) => {
-  res.send('bar');
-});
-
-const strictApp = medley({ strictRouting: true });
-
-strictApp.get('/foo', (req, res) => {
-  res.send('foo');
-});
-
-strictApp.get('/foo/', (req, res) => {
-  res.send('different foo');
-});
 ```
 
 ### `trustProxy`

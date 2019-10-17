@@ -1,12 +1,9 @@
 'use strict'
 
 const {test} = require('tap')
-const http = require('http')
 const h2url = require('h2url')
 const request = require('./utils/request')
 const medley = require('..')
-
-const supportedMethods = http.METHODS.filter(method => method !== 'CONNECT')
 
 test('Default 404 handler', (t) => {
   t.plan(4)
@@ -61,34 +58,34 @@ test('Custom 404 handler - invalid type', (t) => {
   t.end()
 })
 
-test('The default 404 handler runs for all supported HTTP methods', (t) => {
-  t.plan(4 * supportedMethods.length)
+test('The default 404 handler runs for requests with a non-standard method', (t) => {
+  t.plan(4)
 
-  const app = medley()
+  const app = medley({http2: true})
 
   app.all('/', () => {
     t.fail('Handler should not be called')
   })
 
-  for (const method of supportedMethods) {
-    request(app, {method, url: '/not-found'}, (err, res) => {
-      t.error(err)
-      t.equal(res.statusCode, 404)
-      t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
+  app.listen(0, 'localhost', async (err) => {
+    app.server.unref()
+    t.error(err)
 
-      if (method === 'HEAD') {
-        t.equal(res.body, '')
-      } else {
-        t.equal(res.body, `Not Found: ${method} /not-found`)
-      }
+    const res = await h2url.concat({
+      method: 'NONSTANDARD',
+      url: `http://localhost:${app.server.address().port}/not-found`,
     })
-  }
+    t.equal(res.headers[':status'], 404)
+    t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
+    t.equal(res.body, 'Not Found: NONSTANDARD /not-found')
+  })
 })
 
-test('Custom 404 handlers run for all supported HTTP methods', (t) => {
-  t.plan(4 * supportedMethods.length)
+test('Custom 404 handler runs for requests with a non-standard method', (t) => {
+  t.plan(4)
 
   const app = medley({
+    http2: true,
     notFoundHandler: (req, res) => {
       res.status(404).send(`Custom Not Found: ${req.method} ${req.url}`)
     },
@@ -98,19 +95,18 @@ test('Custom 404 handlers run for all supported HTTP methods', (t) => {
     t.fail('Handler should not be called')
   })
 
-  for (const method of supportedMethods) {
-    request(app, {method, url: '/not-found'}, (err, res) => {
-      t.error(err)
-      t.equal(res.statusCode, 404)
-      t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
+  app.listen(0, 'localhost', async (err) => {
+    app.server.unref()
+    t.error(err)
 
-      if (method === 'HEAD') {
-        t.equal(res.body, '')
-      } else {
-        t.equal(res.body, `Custom Not Found: ${method} /not-found`)
-      }
+    const res = await h2url.concat({
+      method: 'NONSTANDARD',
+      url: `http://localhost:${app.server.address().port}/not-found`,
     })
-  }
+    t.equal(res.headers[':status'], 404)
+    t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
+    t.equal(res.body, 'Custom Not Found: NONSTANDARD /not-found')
+  })
 })
 
 test('Hooks on the root app run for the default 404 handler', (t) => {
@@ -234,58 +230,5 @@ test('not-found route lookups do not fail with the Accept-Version header', (t) =
     t.error(err)
     t.equal(res.statusCode, 404)
     t.equal(res.body, 'not found')
-  })
-})
-
-test('Sends a 404 for methods not supported by find-my-way', (t) => {
-  t.plan(5)
-
-  const app = medley({http2: true})
-
-  app.all('/', () => {
-    t.fail('The handler should not be called')
-  })
-
-  app.listen(0, 'localhost', async (err) => {
-    app.server.unref()
-    t.error(err)
-
-    const res = await h2url.concat({
-      method: 'TROLL',
-      url: `http://localhost:${app.server.address().port}/`,
-    })
-    t.equal(res.headers[':status'], 404)
-    t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
-    t.equal(res.headers['content-length'], '18')
-    t.equal(res.body, 'Not Found: TROLL /')
-  })
-})
-
-test('Calls the custom 404 handler for methods not supported by find-my-way', (t) => {
-  t.plan(5)
-
-  const app = medley({
-    http2: true,
-    notFoundHandler: (req, res) => {
-      res.status(404).send(req.method + ' not found')
-    },
-  })
-
-  app.all('/', () => {
-    t.fail('The handler should not be called')
-  })
-
-  app.listen(0, 'localhost', async (err) => {
-    app.server.unref()
-    t.error(err)
-
-    const res = await h2url.concat({
-      method: 'TROLL',
-      url: `http://localhost:${app.server.address().port}/`,
-    })
-    t.equal(res.headers[':status'], 404)
-    t.equal(res.headers['content-type'], 'text/plain; charset=utf-8')
-    t.equal(res.headers['content-length'], '15')
-    t.equal(res.body, 'TROLL not found')
   })
 })

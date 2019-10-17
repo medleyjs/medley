@@ -209,6 +209,33 @@ const app = medley();
 app.createSubApp('/api').register(require('./routes'));
 ```
 
+The path in the route definition will be directly appended to the path prefix
+passed to `createSubApp()`. There is no special handling of `/` characters
+(except for one case described below).
+
+```js
+const medley = require('@medley/medley');
+const app = medley();
+
+const subApp = app.createSubApp('/user');
+subApp.get('/', (req, res) => {}); // Creates a route for '/user/'
+// The above route will not run for: '/user'.
+// The following would create a route on the sub-app for '/user':
+subApp.get('', (req, res) => {});
+```
+
+The only case where registering a route on a sub-app with a prefix includes
+special handling for the `/` character is when the sub-app’s prefix ends
+with a `/` and the route path begins with a `/`.
+
+```js
+const medley = require('@medley/medley');
+const app = medley();
+
+const subApp = app.createSubApp('/users/');
+subApp.get('/:id', (req, res) => {}); // Creates a route for '/users/:id'
+```
+
 <a id="decorate"></a>
 ### `app.decorate(name, value)`
 
