@@ -6,11 +6,7 @@ const request = require('../utils/request')
 
 t.plan(1)
 
-process.removeAllListeners('uncaughtException')
-
-process.on('uncaughtException', (err) => {
-  t.equal(err.message, 'kaboom')
-})
+t.expectUncaughtException(null, new Error('kaboom'))
 
 const app = medley()
 
@@ -24,5 +20,5 @@ app.route({
 })
 
 request(app, '/', () => {
-  // Ignroe error
+  // Ignore error
 })
