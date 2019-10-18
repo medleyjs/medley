@@ -3,8 +3,13 @@
 const {test} = require('tap')
 const request = require('./utils/request')
 const medley = require('..')
-const sleep = require('then-sleep')
 const statusCodes = require('http').STATUS_CODES
+
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms)
+  })
+}
 
 const opts = {
   responseSchema: {
