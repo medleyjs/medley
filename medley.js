@@ -266,6 +266,22 @@ function medley(options) {
       throw new TypeError(`Route 'path' must be a string. Got a value of type '${typeof path}': ${path}`)
     }
 
+    const optionalParamMatch = path.match(/(.*)\/(\*|:[^/]+)\?$/)
+
+    if (optionalParamMatch !== null) {
+      if (optionalParamMatch[1] === '') {
+        const type = optionalParamMatch[2] === '*' ? 'wildcard' : 'parameter'
+        throw new Error(`Invalid route: ${path}\nCannot have an optional ${type} at the URL root`)
+      }
+
+      this.route({ // Register route for path without parameter/wildcard
+        ...opts,
+        path: optionalParamMatch[1],
+      })
+
+      path = path.slice(0, -1) // Slice off trailing '?' and continue
+    }
+
     if (this._routePrefix.endsWith('/') && path.startsWith('/')) {
       path = this._routePrefix + path.slice(1)
     } else {

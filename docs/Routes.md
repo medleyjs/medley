@@ -297,6 +297,28 @@ Parameters may start anywhere in the path. For example, the following are valid 
 '/on-:event'     // Matches '/on-click'
 ```
 
+#### Optional Parameters
+
+Medley also supports optional parameters, which are defined by placing a `?`
+character after a parameter at the end of the route path.
+
+```js
+app.get('/user/:id?', () => {});
+```
+
+Using the optional parameter syntax is really a shorthand for defining two
+routes: one with the parameter, and one without the parameter or trailing
+`/` character.
+
+```js
+// So this:
+app.get('/user/:id?', () => {});
+
+// Is a shorthand for this:
+app.get('/user', () => {});
+app.get('/user/:id', () => {});
+```
+
 ### 3. Wildcard
 
 Routes that end with a `*` are wildcard routes. The `*` will match any
@@ -327,6 +349,28 @@ app.get('/static/*', (req, res) => {
     console.log(req.params); // { '*': '' }
   }
 });
+```
+
+#### Optional Wildcard
+
+Medley also supports optional wildcards, which are defined by placing a `?`
+character after the wildcard `*` character.
+
+```js
+app.get('/static/*?', () => {});
+```
+
+Using the optional wildcard syntax is really a shorthand for defining two
+routes: one with the wildcard, and one without the wildcard or trailing
+`/` character.
+
+```js
+// So this:
+app.get('/static/*?', () => {});
+
+// Is a shorthand for this:
+app.get('/static', () => {});
+app.get('/static/*', () => {});
 ```
 
 <a id="async-await"></a>
