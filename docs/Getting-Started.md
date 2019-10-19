@@ -91,14 +91,15 @@ See the [**Hooks** documentation](Hooks.md) for more information. Also check
 out the [**Lifecyle** documentation](Lifecyle.md) to see where hooks are
 run during the lifetime of a request.
 
-### Adding Decorators
+### Adding Properties (Extensions)
 
-Medley's functionality can be extended by adding decorators to the `app`,
+Medley's functionality can be extended by adding properties to the `app`,
 `req`, and `res` objects.
 
 ```js
-app.decorateRequest('startTime', 0); // Default start time
-app.decorateRequest('recordStartTime', function() {
+app.extendRequest('startTime', 0); // Claim the `startTime` property
+
+app.extendRequest('recordStartTime', function() {
   this.startTime = Date.now();
 });
 
@@ -108,12 +109,12 @@ app.addHook('onRequest', (req, res, next) => {
 });
 ```
 
-In addition to adding custom functionality to Medley, decorators are also
+In addition to adding custom functionality to Medley, extensions are also
 useful for "claiming" a property on the `req`, `res`, and `app` objects so
 that different parts of an application don't accidentally try to use the
 same property for different things.
 
-See the [**Decorators** documentation](Decorators.md) for more information.
+See the [**Extensions** documentation](Extensions.md) for more information.
 
 ### JSON Serialization
 
@@ -139,7 +140,7 @@ See the [`Serialization` documentation](Serialization.md) for more information.
 
 ### Encapsulating Functionality
 
-Hooks and app decorators can be encapsulated within sub-apps to
+Hooks and app extensions can be encapsulated within sub-apps to
 isolate different functionality to specific parts of an application. Sub-apps are created with
 the [`app.createSubApp()`](App.md#createsubapp) method.
 
@@ -160,7 +161,7 @@ module.exports = function userRoutes(app) {
 ```
 
 See [`app.createSubApp()`](App.md#createsubapp), [Hooks Encapsulation](Hooks.md#encapsulation),
-[`app.decorate()`](Decorators.md#decorate), and [Route Prefixing](Routes.md#route-prefixing)
+[`app.extend()`](Extensions.md#extend), and [Route Prefixing](Routes.md#route-prefixing)
 for details.
 
 ### Starting the Server

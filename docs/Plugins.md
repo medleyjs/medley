@@ -23,7 +23,7 @@ The `plugin` function will receive two parameters:
 **my-plugin.js**
 ```js
 function myPlugin(app, options) {
-  app.decorate('myPluginData', {
+  app.extend('myPluginData', {
     receivedOptions: options,
     exampleData: 'value'
   });

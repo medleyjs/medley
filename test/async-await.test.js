@@ -95,25 +95,19 @@ test('should throw if an async function returns a value and res.error() is also 
   })
 })
 
-test('support response decorators with await', (t) => {
+test('Allows responding with `res.send()` inside of an async function', (t) => {
   t.plan(2)
 
   const app = medley()
 
-  app.decorateResponse('wow', function() {
-    setImmediate(() => {
-      this.send({hello: 'world'})
-    })
-  })
-
   app.get('/', async (req, res) => {
     await sleep(1)
-    res.wow()
+    res.send('success')
   })
 
   request(app, '/', (err, res) => {
     t.error(err)
-    t.strictSame(JSON.parse(res.body), {hello: 'world'})
+    t.equal(res.body, 'success')
   })
 })
 

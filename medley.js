@@ -124,10 +124,10 @@ function medley(options) {
 
     createSubApp,
 
-    // Decorator methods
-    decorate: decorateApp,
-    decorateRequest,
-    decorateResponse,
+    // Extension methods
+    extend: extendApp,
+    extendRequest,
+    extendResponse,
 
     // Hooks
     addHook,
@@ -215,27 +215,27 @@ function medley(options) {
     return subApp
   }
 
-  function decorateApp(name, value) {
+  function extendApp(name, value) {
     if (name in this) {
-      throw new Error(`A decorator called '${name}' has already been added`)
+      throw new Error(`A '${name}' property already exists on the app`)
     }
 
     this[name] = value
     return this
   }
 
-  function decorateRequest(name, value) {
+  function extendRequest(name, value) {
     if (name in Request.prototype) {
-      throw new Error(`A decorator called '${name}' has already been added to Request`)
+      throw new Error(`A '${name}' property already exists on the Request object`)
     }
 
     Request.prototype[name] = value
     return this
   }
 
-  function decorateResponse(name, value) {
+  function extendResponse(name, value) {
     if (name in Response.prototype) {
-      throw new Error(`A decorator called '${name}' has already been added to Response`)
+      throw new Error(`A '${name}' property already exists on the Response object`)
     }
 
     Response.prototype[name] = value

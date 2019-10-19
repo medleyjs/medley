@@ -21,9 +21,9 @@ const app = medley();
 + [`.addHook(hookName, hookHandler)`](#add-hook)
 + [`.close([callback])`](#close)
 + [`.createSubApp([prefix])`](#createsubapp)
-+ [`.decorate(name, value)`](#decorate)
-+ [`.decorateRequest(name, value)`](#decorate-request)
-+ [`.decorateResponse(name, value)`](#decorate-response)
++ [`.extend(name, value)`](#extend)
++ [`.extendRequest(name, value)`](#extend-request)
++ [`.extendResponse(name, value)`](#extend-response)
 + [`.listen(port [, host][, backlog][, callback])`](#listen)
 + [`.load([callback])`](#load)
 + [`.onClose(callback)`](#on-close)
@@ -138,8 +138,8 @@ app.close((err) => {
 Returns a new sub-app.
 
 A sub-app is created as as snapshot of its parent and inherits its parent's
-[hooks](Hooks.md) and [app decorators](Decorators.md#decorate). New hooks
-and app decorators that are added to the sub-app are scoped only to that
+[hooks](Hooks.md) and [properties](Extensions.md#extend). New hooks
+and properties that are added to the sub-app are scoped only to that
 sub-app and its own sub-apps.
 
 A `prefix` string can be specified which will be the prefix for all routes
@@ -236,28 +236,38 @@ const subApp = app.createSubApp('/users/');
 subApp.get('/:id', (req, res) => {}); // Creates a route for '/users/:id'
 ```
 
-<a id="decorate"></a>
-### `app.decorate(name, value)`
+<a id="extend"></a>
+### `app.extend(name, value)`
 
 + Chainable
 
-Safely adds a new property to the `app`. See the [Decorators](Decorators.md) documentation.
+Safely adds a new property to the `app`.
 
-<a id="decorate-request"></a>
-### `app.decorateRequest(name, value)`
+```js
+app.extend('config', {
+  host: 'ww.example.com',
+  port: 3000
+});
+console.log(app.config); // { host: 'ww.example.com', port: 3000 }
+```
+
+See the [Extensions](Extensions.md) documentation for more details.
+
+<a id="extend-request"></a>
+### `app.extendRequest(name, value)`
 
 + Chainable
 
-Safely adds a new property to the [`Request`](Request.md) object for the current
-`app` instance. See the [Decorators](Decorators.md) documentation.
+Safely adds a new property to the [`Request`](Request.md) object.
+See the [Extensions](Extensions.md) documentation for details.
 
-<a id="decorate-response"></a>
-### `app.decorateResponse(name, value)`
+<a id="extend-response"></a>
+### `app.extendResponse(name, value)`
 
 + Chainable
 
-Safely adds a new property to the [`Response`](Response.md) object for the current
-`app` instance. See the [Decorators](Decorators.md) documentation.
+Safely adds a new property to the [`Response`](Response.md) object.
+See the [Extensions](Extensions.md) documentation for details.
 
 <a id="listen"></a>
 ### `app.listen([port[, host[, backlog]]][, callback])`

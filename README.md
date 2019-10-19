@@ -44,7 +44,7 @@ app.listen(3000)
 + [The `res` Object](https://github.com/medleyjs/medley/blob/master/docs/Response.md)
 + [The Request Lifecyle](https://github.com/medleyjs/medley/blob/master/docs/Lifecyle.md)
 + [Hooks](https://github.com/medleyjs/medley/blob/master/docs/Hooks.md)
-+ [Decorators](https://github.com/medleyjs/medley/blob/master/docs/Decorators.md)
++ [Extensions](https://github.com/medleyjs/medley/blob/master/docs/Extensions.md)
 + [JSON Serialization](https://github.com/medleyjs/medley/blob/master/docs/Serialization.md)
 + [HTTP/2](https://github.com/medleyjs/medley/blob/master/docs/HTTP2.md)
 + [Plugins](https://github.com/medleyjs/medley/blob/master/docs/Plugins.md)
@@ -56,7 +56,7 @@ app.listen(3000)
 + Performance on par with [Fastify](https://github.com/fastify/fastify)
 + Full support for both `async`/`await` and callbacks
 + Automatic `HEAD`, `OPTIONS`, and `405` responses
-+ Facilities for safely extending the framework ([decorators](https://github.com/medleyjs/medley/blob/master/docs/Decorators.md))
++ Facilities for safely extending the framework ([extensions](https://github.com/medleyjs/medley/blob/master/docs/Extensions.md))
 + 100% test coverage
 + HTTP/2 support
 
