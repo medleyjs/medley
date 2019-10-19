@@ -7,7 +7,7 @@ const medley = require('..')
 const noop = () => {}
 
 test('Optional params', (t) => {
-  t.plan(21)
+  t.plan(25)
 
   const app = medley()
 
@@ -28,6 +28,11 @@ test('Optional params', (t) => {
     t.equal(res.statusCode, 200)
     t.equal(res.body, '{}')
   })
+  request(app, '/user/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.body, '{}')
+  })
   request(app, '/user/123', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 200)
@@ -35,6 +40,11 @@ test('Optional params', (t) => {
   })
 
   request(app, '/events', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 200)
+    t.equal(res.body, 'Events: {}')
+  })
+  request(app, '/events/', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 200)
     t.equal(res.body, 'Events: {}')
@@ -51,10 +61,7 @@ test('Optional params', (t) => {
     t.equal(res.body, 'Events with subtypes: {"type":"change"}')
   })
 
-  request(app, '/user/', (err, res) => {
-    t.error(err)
-    t.equal(res.statusCode, 404)
-  })
+  // Does not match routes
   request(app, '/user/123/comments', (err, res) => {
     t.error(err)
     t.equal(res.statusCode, 404)
@@ -81,10 +88,15 @@ test('Throws if routes with an optional parameter conflict with static routes', 
     .get('/events/:type?', noop)
     .get('/events/:type/subtypes', noop)
     .get('/static', noop)
+    .get('/r/', noop)
 
   t.throws(
     () => app.get('/user', noop),
     new Error('Cannot create route "GET /user" because it already exists')
+  )
+  t.throws(
+    () => app.get('/user/', noop),
+    new Error('Cannot create route "GET /user/" because it already exists')
   )
   t.throws(
     () => app.get('/user/:id', noop),
@@ -95,8 +107,16 @@ test('Throws if routes with an optional parameter conflict with static routes', 
     new Error('Cannot create route "GET /events" because it already exists')
   )
   t.throws(
+    () => app.get('/events/', noop),
+    new Error('Cannot create route "GET /events/" because it already exists')
+  )
+  t.throws(
     () => app.get('/static/:file?', noop),
     new Error('Cannot create route "GET /static" because it already exists')
+  )
+  t.throws(
+    () => app.get('/r/:roomID?', noop),
+    new Error('Cannot create route "GET /r/" because it already exists')
   )
   t.end()
 })

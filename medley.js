@@ -269,8 +269,10 @@ function medley(options) {
     const optionalParamMatch = path.match(/(.*)\/(\*|:[^/]+)\?$/)
 
     if (optionalParamMatch !== null) {
+      const isParam = optionalParamMatch[2] !== '*'
+
       if (optionalParamMatch[1] === '') {
-        const type = optionalParamMatch[2] === '*' ? 'wildcard' : 'parameter'
+        const type = isParam ? 'parameter' : 'wildcard'
         throw new Error(`Invalid route: ${path}\nCannot have an optional ${type} at the URL root`)
       }
 
@@ -278,6 +280,13 @@ function medley(options) {
         ...opts,
         path: optionalParamMatch[1],
       })
+
+      if (isParam) {
+        this.route({ // Register route without parameter and with trailing `/`
+          ...opts,
+          path: optionalParamMatch[1] + '/',
+        })
+      }
 
       path = path.slice(0, -1) // Slice off trailing '?' and continue
     }

@@ -306,9 +306,9 @@ character after a parameter at the end of the route path.
 app.get('/user/:id?', () => {});
 ```
 
-Using the optional parameter syntax is really a shorthand for defining two
-routes: one with the parameter, and one without the parameter or trailing
-`/` character.
+Using the optional parameter syntax is really a shorthand for defining three
+routes: one with the parameter, and two without the parameter, where one has
+the trailing `/` character and the other does not.
 
 ```js
 // So this:
@@ -316,6 +316,7 @@ app.get('/user/:id?', () => {});
 
 // Is a shorthand for this:
 app.get('/user', () => {});
+app.get('/user/', () => {});
 app.get('/user/:id', () => {});
 ```
 
