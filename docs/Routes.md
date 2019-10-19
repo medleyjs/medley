@@ -320,6 +320,14 @@ app.get('/user/', () => {});
 app.get('/user/:id', () => {});
 ```
 
+For the two routes without the parameter, the parameter’s value in the
+`req.params` object will be `undefined`.
+
+```js
+// If matched route `/user` or `/user/`
+req.params.id === undefined
+```
+
 ### 3. Wildcard
 
 Routes that end with a `*` are wildcard routes. The `*` will match any
@@ -372,6 +380,14 @@ app.get('/static/*?', () => {});
 // Is a shorthand for this:
 app.get('/static', () => {});
 app.get('/static/*', () => {});
+```
+
+For the route without the wildcard, the wildcard parameter’s value in the
+`req.params` object will be `undefined`.
+
+```js
+// If matched route `/static`
+req.params['*'] === undefined
 ```
 
 <a id="async-await"></a>

@@ -7,18 +7,19 @@ const medley = require('..')
 const noop = () => {}
 
 test('Optional params', (t) => {
-  t.plan(25)
+  t.plan(31)
 
   const app = medley()
 
   app.get('/user/:id?', (req, res) => {
+    t.ok(req.params.hasOwnProperty('id'), 'req.params should always have the optional parameter property')
     res.send(req.params)
   })
 
   app.get('/events/:type?', (req, res) => {
+    t.ok(req.params.hasOwnProperty('type'), 'req.params should always have the optional parameter property')
     res.send('Events: ' + JSON.stringify(req.params))
   })
-
   app.get('/events/:type/subtypes', (req, res) => {
     res.send('Events with subtypes: ' + JSON.stringify(req.params))
   })
@@ -123,11 +124,12 @@ test('Throws if routes with an optional parameter conflict with static routes', 
 
 
 test('Optional wildcard', (t) => {
-  t.plan(18)
+  t.plan(24)
 
   const app = medley()
 
   app.get('/static/*?', (req, res) => {
+    t.ok(req.params.hasOwnProperty('*'), 'req.params should always have the optional wildcard property')
     res.send(req.params)
   })
 

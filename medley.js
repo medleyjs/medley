@@ -20,6 +20,8 @@ const {
   defaultNotFoundHandler,
 } = require('./lib/RequestHandlers')
 
+const kOptionalParamName = Symbol('optionalParamName')
+
 function defaultOnErrorSending(err) {
   debug('Error occurred while sending:\n%O', err)
 }
@@ -91,6 +93,7 @@ function medley(options) {
     storeFactory: () => ({
       methodContexts: Object.create(null),
       fallbackContext: null, // For 405 Method Not Allowed responses
+      optionalParamName: null,
     }),
   })
   const rootAppHooks = new Hooks()
@@ -276,15 +279,21 @@ function medley(options) {
         throw new Error(`Invalid route: ${path}\nCannot have an optional ${type} at the URL root`)
       }
 
+      const paramName = isParam
+        ? optionalParamMatch[2].slice(1) // Slice off leading ':'
+        : optionalParamMatch[2]
+
       this.route({ // Register route for path without parameter/wildcard
         ...opts,
         path: optionalParamMatch[1],
+        [kOptionalParamName]: paramName,
       })
 
       if (isParam) {
         this.route({ // Register route without parameter and with trailing `/`
           ...opts,
           path: optionalParamMatch[1] + '/',
+          [kOptionalParamName]: paramName,
         })
       }
 
@@ -326,6 +335,10 @@ function medley(options) {
       )
       routeStore.methodContexts.OPTIONS = optionsContext
       appRouteContexts.push(optionsContext)
+
+      if (opts[kOptionalParamName] !== undefined) {
+        routeStore.optionalParamName = opts[kOptionalParamName]
+      }
     }
 
     const routeContext = RouteContext.create(
