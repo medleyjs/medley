@@ -3,7 +3,6 @@
 const {test} = require('tap')
 const request = require('./utils/request')
 const medley = require('..')
-const statusCodes = require('http').STATUS_CODES
 
 function sleep(ms) {
   return new Promise((resolve) => {
@@ -24,7 +23,7 @@ const opts = {
   },
 }
 
-test('async await', (t) => {
+test('async handlers can return the response body', (t) => {
   t.plan(8)
 
   const app = medley()
@@ -53,7 +52,7 @@ test('async await', (t) => {
   })
 })
 
-test('should throw if an async function returns a value and res.send() is also called', (t) => {
+test('`res.send()` should throw if called after an async handler returns a value', (t) => {
   t.plan(3)
 
   const app = medley()
@@ -74,7 +73,7 @@ test('should throw if an async function returns a value and res.send() is also c
   })
 })
 
-test('should throw if an async function returns a value and res.error() is also called', (t) => {
+test('`res.error()` should throw if called after an async handler returns a value', (t) => {
   t.plan(3)
 
   const app = medley()
@@ -111,28 +110,22 @@ test('Allows responding with `res.send()` inside of an async function', (t) => {
   })
 })
 
-test('thrown Error in handler sets HTTP status code', (t) => {
+test('Errors thrown inside an async route handler are caught and handled', (t) => {
   t.plan(3)
 
   const app = medley()
 
-  const err = new Error('winter is coming')
-  err.statusCode = 418
-
   app.get('/', async () => {
-    throw err
+    throw new Error('kaboom')
   })
 
-  request(app, '/', (error, res) => {
-    t.error(error)
-    t.strictEqual(res.statusCode, 418)
-    t.strictDeepEqual(
-      {
-        error: statusCodes['418'],
-        message: err.message,
-        statusCode: 418,
-      },
-      JSON.parse(res.body)
-    )
+  request(app, '/', (err, res) => {
+    t.error(err)
+    t.equal(res.statusCode, 500)
+    t.strictSame(JSON.parse(res.body), {
+      error: 'Internal Server Error',
+      message: 'kaboom',
+      statusCode: 500,
+    })
   })
 })

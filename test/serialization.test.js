@@ -14,7 +14,7 @@ const opts = {
         },
       },
     },
-    201: { // shorthand
+    201: { // Schema shorthand
       hello: {
         type: 'number',
       },
@@ -34,65 +34,60 @@ app.get('/wrong-object-for-schema', opts, (req, res) => {
   res.status(201).send({uno: 1}) // Will send { }
 })
 
-// No checks
+// Status code does not match schema
 app.get('/empty', opts, (req, res) => {
   res.status(204).send()
 })
-
 app.get('/400', opts, (req, res) => {
   res.status(400).send({hello: 'DOOM'})
 })
 
-test('shorthand - string get ok', (t) => {
+test('Full object schema', (t) => {
   t.plan(4)
 
   request(app, '/string', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 200)
     t.strictEqual(res.headers['content-length'], '' + res.body.length)
-    t.deepEqual(JSON.parse(res.body), {hello: 'world'})
+    t.strictSame(JSON.parse(res.body), {hello: 'world'})
   })
 })
 
-test('shorthand - number get ok', (t) => {
+test('Shorthand object schema', (t) => {
   t.plan(4)
 
   request(app, '/number', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 201)
     t.strictEqual(res.headers['content-length'], '' + res.body.length)
-    t.deepEqual(JSON.parse(res.body), {hello: 55})
+    t.strictSame(JSON.parse(res.body), {hello: 55})
   })
 })
 
-test('shorthand - wrong-object-for-schema', (t) => {
+test('Serializer omits properties that do not match the schema', (t) => {
   t.plan(4)
 
   request(app, '/wrong-object-for-schema', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 201)
     t.strictEqual(res.headers['content-length'], '' + res.body.length)
-    t.deepEqual(JSON.parse(res.body), {})
+    t.strictSame(JSON.parse(res.body), {})
   })
 })
 
-test('shorthand - empty', (t) => {
-  t.plan(3)
+test('Responses that do not match a schema status code are not affected', (t) => {
+  t.plan(7)
 
   request(app, '/empty', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 204)
     t.strictEqual(res.body, '')
   })
-})
-
-test('shorthand - 400', (t) => {
-  t.plan(4)
 
   request(app, '/400', (err, res) => {
     t.error(err)
     t.strictEqual(res.statusCode, 400)
     t.strictEqual(res.headers['content-length'], '' + res.body.length)
-    t.deepEqual(JSON.parse(res.body), {hello: 'DOOM'})
+    t.strictSame(JSON.parse(res.body), {hello: 'DOOM'})
   })
 })

@@ -155,8 +155,8 @@ test('encapsulated onError hook', (t) => {
 
   const app = medley()
 
-  app.get('/', function(req, response) {
-    response.error(new Error('kaboom'))
+  app.get('/', function(req, res) {
+    res.error(new Error('kaboom'))
   })
 
   app.createSubApp('/test')
