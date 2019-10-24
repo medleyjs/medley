@@ -185,7 +185,7 @@ See [`app.listen()`](App.md#listen).
 ### HTTP/2
 
 Medley works with Node's [`HTTP/2` module](https://nodejs.org/api/http2.html).
-See the [**HTTP2** documentation](HTTP2.md) to learn how to configure an app
+See the [`http2` documentation](Medley.md#http2) to learn how to configure an app
 to use HTTP/2.
 
 ### Plugins

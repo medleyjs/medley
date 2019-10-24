@@ -9,7 +9,6 @@ The modules used:
 + [autocannon](https://github.com/mcollina/autocannon): An HTTP/1.1 benchmarking tool for Node.
 + [branch-comparer](https://github.com/StarpTech/branch-comparer): Checks out multiple git branches, executes scripts, and logs the results.
 + [concurrently](https://github.com/kimmobrunfeldt/concurrently): Run commands concurrently.
-+ [npx](https://github.com/zkat/npx) NPM package runner - We using it to run scripts against different Node.js versions and execute local binaries. Shipped with `npm@5.2.0`.
 
 ## Simple
 
@@ -19,10 +18,10 @@ The modules used:
 npm run benchmark
 ```
 
-### Run the test against different Node.js versions ✨
+### Run the test against different Node.js versions
 
 ```sh
-npx -p node@6 -- npm run benchmark
+npx -p node@12 -- npm run benchmark
 ```
 
 ## Advanced
@@ -33,10 +32,10 @@ npx -p node@6 -- npm run benchmark
 branchcmp --rounds 2 --script "npm run benchmark"
 ```
 
-### Run the test in different branches against different Node.js versions ✨
+### Run the test in different branches against different Node.js versions
 
 ```sh
-branchcmp --rounds 2 --script "npm run benchmark"
+branchcmp --rounds 2 --script "npx -p node@12 -- npm run benchmark"
 ```
 
 ### Compare current branch with master (Gitflow)

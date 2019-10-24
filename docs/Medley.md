@@ -1,7 +1,7 @@
-# medley()
+# medley([options])
 
 The Medley module exports a factory function that is used to create a new
-[**`app`**](App.md) instance. This factory function accepts an options
+[**`app`**](App.md) instance. This factory function accepts an `options`
 object which is used to customize the resulting instance. The options are:
 
 + [`http2`](#http2)
@@ -23,16 +23,33 @@ Default: `false`
 An object used to configure the HTTP server to use HTTP/2. The options are the
 same as the Node.js core
 [`http2.createSecureServer()`](https://nodejs.org/api/http2.html#http2_http2_createsecureserver_options_onrequesthandler)
-method (when the `key` or `cert` options are present) or the
+method when the `key` or `cert` options are present, or
 [`http2.createServer()`](https://nodejs.org/api/http2.html#http2_http2_createserver_options_onrequesthandler)
-method (when the `key` and `cert` options are not present -- this is not supported by browsers).
+when the `key` and `cert` options are not present (but note that this type of
+server is not supported by browsers).
+
+```js
+const fs = require('fs');
+const path = require('path');
+const medley = require('@medley/medley');
+
+const app = medley({
+  http2: {
+    key: fs.readFileSync(path.join(__dirname, 'tls', 'app.key')),
+    cert: fs.readFileSync(path.join(__dirname, 'tls', 'app.cert')),
+    allowHTTP1: true, // Optionally enable fallback support for HTTP/1
+  }
+});
+```
 
 If `true`, the HTTP server will be created to use unencrypted HTTP/2 without
 any options. Note that unencrypted HTTP/2 is not supported by browsers.
 
-See the [HTTP/2 docs](HTTP2.md) for more information and examples.
+```js
+const app = medley({ http2: true });
+```
 
-The `https` option is ignored if this option is present.
+The `https` option is ignored when this option is present.
 
 ### `https`
 
@@ -43,6 +60,7 @@ are the same as the Node.js core
 [`https.createServer()` method](https://nodejs.org/api/https.html#https_https_createserver_options_requestlistener).
 
 ```js
+const medley = require('@medley/medley');
 const app = medley({
   https: {
     key: fs.readFileSync(path.join(__dirname, 'tls', 'app.key')),
@@ -51,12 +69,19 @@ const app = medley({
 });
 ```
 
+This option is ignored if the `http2` option is present.
+
 ### `methodNotAllowedHandler`
 
-Type: `function(req, res)` (`req` - [Request](Request.md), `res` - [Response](Response.md))
+Type: `function(req, res)`<br>
+&emsp;`req` - [Request](Request.md)<br>
+&emsp;`res` - [Response](Response.md)
 
 A handler function that is called when the request URL matches a route but
-there is no handler for the request method.
+there is no handler for the request method. In this situation, sending a
+[`405 Method Not Allowed`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/405)
+response is usually the correct action (as it is the default action when this
+function is not supplied).
 
 ```js
 const medley = require('@medley/medley');
@@ -64,6 +89,22 @@ const app = medley({
   methodNotAllowedHandler: (req, res) => {
     res.status(405).send('Method Not Allowed: ' + req.method);
   }
+});
+```
+
+While this handler is intended to be used to send a `405 Method Not Allowed`
+response, it could be used to send a `404 Not Found` response instead.
+
+```js
+const medley = require('@medley/medley');
+
+function notFoundHandler(req, res) {
+  res.status(404).send('Not Found: ' + req.url);
+}
+
+const app = medley({
+  notFoundHandler,
+  methodNotAllowedHandler: notFoundHandler,
 });
 ```
 
@@ -87,27 +128,13 @@ app.get('/users', (req, res) => { /* ... */ });
 app.post('/users', (req, res) => { /* ... */ });
 ```
 
-While this handler is intended to be used to send a [`405 Method Not Allowed`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/405)
-response, it could be used to send a `404 Not Found` response instead.
-
-```js
-const medley = require('@medley/medley');
-
-function notFoundHandler(req, res) {
-  res.status(404).send('Not Found: ' + req.url);
-}
-
-const app = medley({
-  notFoundHandler,
-  methodNotAllowedHandler: notFoundHandler,
-});
-```
-
 [Hooks](Hooks.md) that are added to the root `app` will run before/after the `methodNotAllowedHandler`.
 
 ### `notFoundHandler`
 
-Type: `function(req, res)` (`req` - [Request](Request.md), `res` - [Response](Response.md))
+Type: `function(req, res)`<br>
+&emsp;`req` - [Request](Request.md)<br>
+&emsp;`res` - [Response](Response.md)
 
 A handler function that is called when no routes match the request URL.
 
@@ -132,20 +159,19 @@ sent to the [`onError` hooks](Hooks.md#onError-hook) (since these errors can occ
 after the `onError` hooks have already run), so the best that can be done is to
 log the error.
 
-```js
-const logger = require('some-logger'); // Just an example
-const app = medley({
-  onErrorSending: (err) => {
-    logger.error(err);
-    // Always use a real logger rather than console.error()
-  }
-});
-```
-
 Specifically, this function will be called when:
 
 + Sending a stream errors
 + An [`onSend` hook](Hooks.md#onSend-hook) errors
+
+```js
+const logger = require('./my-logger'); // Just an example
+const app = medley({
+  onErrorSending: (err) => {
+    logger.error(err);
+  }
+});
+```
 
 ### `queryParser`
 

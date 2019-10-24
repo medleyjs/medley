@@ -46,7 +46,6 @@ app.listen(3000)
 + [Hooks](https://github.com/medleyjs/medley/blob/master/docs/Hooks.md)
 + [Extensions](https://github.com/medleyjs/medley/blob/master/docs/Extensions.md)
 + [JSON Serialization](https://github.com/medleyjs/medley/blob/master/docs/Serialization.md)
-+ [HTTP/2](https://github.com/medleyjs/medley/blob/master/docs/HTTP2.md)
 + [Plugins](https://github.com/medleyjs/medley/blob/master/docs/Plugins.md)
 
 
