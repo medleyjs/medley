@@ -142,11 +142,6 @@ A sub-app is created as as snapshot of its parent and inherits its parent's
 and properties that are added to the sub-app are scoped only to that
 sub-app and its own sub-apps.
 
-A `prefix` string can be specified which will be the prefix for all routes
-defined on the sub-app. Prefixes are compounded for nested sub-apps. See the
-[Route Prefixing](Routes.md#route-prefixing) section for details on how the
-`prefix` option affects routes.
-
 ```js
 const medley = require('@medley/medley');
 const app = medley();
@@ -159,7 +154,9 @@ const app = medley();
     next();
   });
 
-  subApp.get('/status', (req, res) => res.send('OK'));
+  subApp.get('/status', (req, res) => { // Route URL is: /status
+    res.send('OK');
+  });
 }
 
 {
@@ -174,8 +171,8 @@ const app = medley();
     // Get current user
   });
 
+  // Prefixes are compounded for nested sub-apps
   const v1App = apiApp.createSubApp('/v1');
-
   v1App.post('/login', (req, res) => { // Route URL is: /api/v1/login
     // Log user in
   });

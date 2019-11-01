@@ -393,8 +393,8 @@ req.params['*'] === undefined
 <a id="async-await"></a>
 ## Async-Await / Promises
 
-Medley has a convenient feature for `async` functions. If an `async` function returns a value,
-it will be sent automatically.
+Medley has a convenient feature for `async` functions. If an `async` function
+returns a value, that value will automatically be sent as the response body.
 
 ```js
 app.get('/', async (req, res) => {
@@ -435,50 +435,3 @@ as not returning anything all (see the
 
 **Warning:** An error will be thrown if `return value` and `res.send()`
 are used at the same time because a response cannot be sent twice.
-
-## Route Prefixing
-
-Sometimes it is necessary to maintain two or more different versions of the same API. A classic
-approach is to prefix a set of routes with the API version number, `/v1` for example. A simple
-way to accomplish this would be to include the prefix in every route declaration:
-
-```js
-app.get('/v1/user', (req, res) => { ... })
-```
-
-But an alternative would be to use [`app.createSubApp()`](App.md#createsubapp) to create separate
-sub-apps with a different prefix for each group of routes:
-
-**app.js**
-```js
-const medley = require('@medley/medley');
-const app = medley();
-
-app.createSubApp('/v1').register(require('./routes/v1/user'));
-app.createSubApp('/v2').register(require('./routes/v2/user'));
-
-app.listen(3000);
-```
-
-**./routes/v1/user.js**
-```js
-module.exports = function v1Routes(subApp) {
-  subApp.get('/user', (req, res) => {
-    // v1 implementation
-  });
-};
-```
-
-**./routes/v2/user.js**
-```js
-module.exports = function v2Routes(subApp) {
-  subApp.get('/user', (req, res) => {
-    // v2 implementation
-  });
-};
-```
-
-Now the following routes will be defined, each with a different implementation:
-
-+ `/v1/user`
-+ `/v2/user`

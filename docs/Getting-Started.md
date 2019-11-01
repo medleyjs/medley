@@ -161,8 +161,7 @@ module.exports = function userRoutes(app) {
 ```
 
 See [`app.createSubApp()`](App.md#createsubapp), [Hooks Encapsulation](Hooks.md#encapsulation),
-[`app.extend()`](Extensions.md#extend), and [Route Prefixing](Routes.md#route-prefixing)
-for details.
+and [`app.extend()`](Extensions.md#extend) for details.
 
 ### Starting the Server
 
