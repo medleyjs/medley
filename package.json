@@ -42,6 +42,7 @@
     "end-of-stream": "^1.4.4"
   },
   "devDependencies": {
+    "@nwoltman/eslint-config": "^0.5.1",
     "JSONStream": "^1.3.5",
     "autocannon": "^4.2.0",
     "branch-comparer": "^0.4.0",

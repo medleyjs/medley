@@ -1,7 +1,6 @@
 'use strict'
 
-const t = require('tap')
-const test = t.test
+const {test} = require('tap')
 const medley = require('..')
 
 test('app[@@iterator] iterates over registered routes', (t) => {

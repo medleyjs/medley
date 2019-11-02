@@ -1,6 +1,6 @@
 'use strict'
 
-const test = require('tap').test
+const {test} = require('tap')
 const medley = require('..')
 
 test('.listen(cb)', (t) => {

@@ -137,14 +137,14 @@ test('Destroying streams prematurely', (t) => {
     t.error(err)
     app.server.unref()
 
-    var port = app.server.address().port
+    const {port} = app.server.address()
 
-    http.get(`http://localhost:${port}`, function(response) {
-      t.strictEqual(response.statusCode, 200)
-      response.on('readable', function() {
-        response.destroy()
+    http.get(`http://localhost:${port}`, (res) => {
+      t.strictEqual(res.statusCode, 200)
+      res.on('readable', () => {
+        res.destroy()
       })
-      response.on('close', function() {
+      res.on('close', () => {
         t.pass('Response closed')
       })
     })

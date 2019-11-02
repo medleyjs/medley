@@ -1,7 +1,6 @@
 'use strict'
 
-const t = require('tap')
-const test = t.test
+const {test} = require('tap')
 const medley = require('..')
 
 test('.close() stops the server and runs onClose handlers in the context of the app', (t) => {

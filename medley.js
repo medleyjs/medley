@@ -517,7 +517,7 @@ function medley(options) {
     runOnCloseHandlers(onCloseHandlers, cb)
   }
 
-  function *routesIterator() {
+  function* routesIterator() {
     for (const [routePath, methodContexts] of routes) {
       yield [routePath, methodContexts]
     }
