@@ -112,40 +112,40 @@ test('onSend hook stream', (t) => {
   })
 })
 
-test('Destroying streams prematurely', (t) => {
-  t.plan(3)
+test('should close the sent stream if the response stream was destroyed prematurely', (t) => {
+  t.plan(4)
 
   const app = medley()
 
-  app.get('/', function(req, res) {
+  app.get('/', (req, res) => {
     t.pass('Received request')
 
-    var sent = false
-    var reallyLongStream = new stream.Readable({
+    let sent = false
+    const infiniteStream = new stream.Readable({
       read() {
         if (!sent) {
           this.push(Buffer.from('hello\n'))
+          sent = true
         }
-        sent = true
       },
     })
 
-    res.send(reallyLongStream)
+    infiniteStream.on('close', () => {
+      t.pass('Stream closed')
+    })
+
+    res.send(infiniteStream)
   })
 
   app.listen(0, (err) => {
     t.error(err)
     app.server.unref()
 
-    const {port} = app.server.address()
-
-    http.get(`http://localhost:${port}`, (res) => {
+    http.get(`http://localhost:${app.server.address().port}`, (res) => {
       t.strictEqual(res.statusCode, 200)
+
       res.on('readable', () => {
         res.destroy()
-      })
-      res.on('close', () => {
-        t.pass('Response closed')
       })
     })
   })
@@ -249,27 +249,27 @@ test('should handle destroying a stream if headers are already sent', (t) => {
 test('should call the onErrorSending function if the stream was destroyed prematurely', (t) => {
   t.plan(5)
 
-  function onErrorSending(err) {
-    t.type(err, Error)
-    t.equal(err.message, 'premature close')
-  }
-
-  const app = medley({onErrorSending})
+  const app = medley({
+    onErrorSending(err) {
+      t.type(err, Error)
+      t.equal(err.message, 'premature close')
+    },
+  })
 
   app.get('/', (req, res) => {
     t.pass('Received request')
 
-    var sent = false
-    var reallyLongStream = new stream.Readable({
+    let sent = false
+    const infiniteStream = new stream.Readable({
       read() {
         if (!sent) {
           this.push(Buffer.from('hello\n'))
+          sent = true
         }
-        sent = true
       },
     })
 
-    res.send(reallyLongStream)
+    res.send(infiniteStream)
   })
 
   app.listen(0, (err) => {
@@ -281,9 +281,6 @@ test('should call the onErrorSending function if the stream was destroyed premat
 
       res.on('readable', () => {
         res.destroy()
-      })
-      res.on('close', () => {
-        t.pass('Response closed')
       })
     })
   })
