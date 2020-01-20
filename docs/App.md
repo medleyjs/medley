@@ -137,7 +137,7 @@ app.close((err) => {
 
 Returns a new sub-app.
 
-A sub-app is created as as snapshot of its parent and inherits its parent's
+A sub-app is created as a snapshot of its parent and inherits its parent’s
 [hooks](Hooks.md) and [properties](Extensions.md#extend). New hooks
 and properties that are added to the sub-app are scoped only to that
 sub-app and its own sub-apps.
