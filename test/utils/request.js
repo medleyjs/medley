@@ -17,14 +17,15 @@ async function request(app, url, options, cb) {
   if (typeof url === 'object') {
     cb = options
     options = undefined
-    url.baseUrl = (url.rejectUnauthorized === false ? 'https' : 'http') +
-      '://localhost:' + app.server.address().port
+    url.url = (url.rejectUnauthorized === false ? 'https' : 'http') +
+      '://localhost:' + app.server.address().port + url.url
   } else if (typeof options === 'object') {
-    options.baseUrl = (options.rejectUnauthorized === false ? 'https' : 'http') +
-      '://localhost:' + app.server.address().port
+    url = (options.rejectUnauthorized === false ? 'https' : 'http') +
+      '://localhost:' + app.server.address().port + url
   } else {
     cb = options
-    options = {baseUrl: 'http://localhost:' + app.server.address().port}
+    options = undefined
+    url = 'http://localhost:' + app.server.address().port + url
   }
 
   if (cb === undefined) {

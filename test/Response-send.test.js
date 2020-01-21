@@ -151,7 +151,7 @@ test('buffer without Content-Type should default to application/octet-stream', (
     res.send(Buffer.alloc(1024))
   })
 
-  request(app, '/', {encoding: null}, (err, res) => {
+  request(app, '/', {responseType: 'buffer'}, (err, res) => {
     t.error(err)
     t.strictEqual(res.headers['content-type'], 'application/octet-stream')
     t.strictDeepEqual(res.body, Buffer.alloc(1024))
@@ -168,7 +168,7 @@ test('buffer with Content-Type should not change the Content-Type', (t) => {
     res.send(Buffer.alloc(1024))
   })
 
-  request(app, '/', {encoding: null}, (err, res) => {
+  request(app, '/', {responseType: 'buffer'}, (err, res) => {
     t.error(err)
     t.strictEqual(res.headers['content-type'], 'text/plain')
     t.strictDeepEqual(res.body, Buffer.alloc(1024))
