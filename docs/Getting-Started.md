@@ -4,7 +4,7 @@
 
 ```sh
 # npm
-npm install @medley/medley --save
+npm install @medley/medley
 
 # yarn
 yarn add @medley/medley

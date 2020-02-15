@@ -18,7 +18,9 @@ that will take full advantage of Node's [`HTTP/2` module](https://nodejs.org/api
 Install:
 
 ```sh
-npm install @medley/medley --save
+npm install @medley/medley
+# or
+yarn add @medley/medley
 ```
 
 Create a web server:
